@@ -1,0 +1,5 @@
+# Contract changes need the contracts owner's review.
+/src/clubops/contracts/       @Nohra2005
+/src/clubops/capabilities/registry.py @Nohra2005
+/schemas/                     @Nohra2005
+/docs/contracts.md            @Nohra2005

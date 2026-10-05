@@ -1,0 +1,468 @@
+{
+  "form_id": "osa_event_proposal",
+  "version": "2026-2027",
+  "title": "Event Proposal 2026-2027",
+  "fields": [
+    {
+      "field_id": "q01",
+      "label": "Club/Society Name",
+      "help": null,
+      "type": "text",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "profile.form_name"
+    },
+    {
+      "field_id": "q02",
+      "label": "If your Club/Society is not listed, please indicate the Club/Society name",
+      "help": null,
+      "type": "text",
+      "required": false,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "human"
+    },
+    {
+      "field_id": "q03",
+      "label": "Requester's First Name",
+      "help": null,
+      "type": "text",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "requester.first_name"
+    },
+    {
+      "field_id": "q04",
+      "label": "Requester's Last Name",
+      "help": null,
+      "type": "text",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "requester.last_name"
+    },
+    {
+      "field_id": "q05",
+      "label": "Requester's AUB ID number",
+      "help": null,
+      "type": "aub_id",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": true,
+      "source": "requester.aub_id"
+    },
+    {
+      "field_id": "q06",
+      "label": "Requester's Position in the Club/Society",
+      "help": null,
+      "type": "text",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "requester.role"
+    },
+    {
+      "field_id": "q07",
+      "label": "Requester's AUB E-mail",
+      "help": null,
+      "type": "email",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "requester.aub_email"
+    },
+    {
+      "field_id": "q08",
+      "label": "Requester's Phone",
+      "help": null,
+      "type": "phone",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": true,
+      "source": "requester.phone"
+    },
+    {
+      "field_id": "q09",
+      "label": "Event/Activity Title",
+      "help": null,
+      "type": "text",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.title"
+    },
+    {
+      "field_id": "q10",
+      "label": "Event/Activity Type",
+      "help": null,
+      "type": "single_choice",
+      "required": true,
+      "required_if": null,
+      "choices": [
+        "Conference",
+        "Community Service Event",
+        "Concert",
+        "Debate",
+        "Exhibition",
+        "Film Screening",
+        "Gala Dinner",
+        "Lecture",
+        "Meeting",
+        "Play",
+        "Reception",
+        "Sport",
+        "Trip",
+        "Workshop",
+        "Other"
+      ],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.event_type"
+    },
+    {
+      "field_id": "q11",
+      "label": "If you chose other, please specify",
+      "help": null,
+      "type": "text",
+      "required": false,
+      "required_if": {
+        "field_id": "q10",
+        "equals": "Other"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.event_type_other"
+    },
+    {
+      "field_id": "q12",
+      "label": "Which of the 17 SDGs does your event/activity contribute to?",
+      "help": "The published form lists SDG 4 twice; it is recorded once here.",
+      "type": "multi_choice",
+      "required": false,
+      "required_if": null,
+      "choices": [
+        "SDG 1: No Poverty",
+        "SDG 2: Zero Hunger",
+        "SDG 3: Good Health and Well-Being",
+        "SDG 4: Quality Education",
+        "SDG 5: Gender Equality",
+        "SDG 6: Clean Water and Sanitation",
+        "SDG 7: Affordable and Clean Energy",
+        "SDG 8: Decent Work and Economic Growth",
+        "SDG 9: Industry, Innovation, and Infrastructure",
+        "SDG 10: Reduced Inequalities",
+        "SDG 11: Sustainable Cities and Communities",
+        "SDG 12: Responsible Consumption and Production",
+        "SDG 13: Climate Action",
+        "SDG 14: Life Below Water",
+        "SDG 15: Life on Land",
+        "SDG 16: Peace, Justice, and Strong Institutions",
+        "SDG 17: Partnership for the Goals"
+      ],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.sdgs"
+    },
+    {
+      "field_id": "q13",
+      "label": "Event Starting Date",
+      "help": "Please book the studentactivities@aub.edu.lb Outlook calendar by sending a calendar invitation",
+      "type": "date",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.start"
+    },
+    {
+      "field_id": "q14",
+      "label": "Event Starting Time (Enter time in 24-hour format, e.g. 13:00)",
+      "help": null,
+      "type": "time_24h",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.start"
+    },
+    {
+      "field_id": "q15",
+      "label": "Event Ending Date",
+      "help": null,
+      "type": "date",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.end"
+    },
+    {
+      "field_id": "q16",
+      "label": "Event Ending Time (Enter time in 24-hour format, e.g. 13:00)",
+      "help": null,
+      "type": "time_24h",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.end"
+    },
+    {
+      "field_id": "q17",
+      "label": "Event Location",
+      "help": "For facility reservation, please refer to https://www.aub.edu.lb/AboutUs/Pages/webreserve.aspx",
+      "type": "text",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.venue"
+    },
+    {
+      "field_id": "q18",
+      "label": "Please briefly describe your activity, including all pertinent details",
+      "help": null,
+      "type": "long_text",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.description"
+    },
+    {
+      "field_id": "q19",
+      "label": "Do you require any materials for your event (e.g., chairs, tables, boards, tents, etc.)?",
+      "help": null,
+      "type": "single_choice",
+      "required": true,
+      "required_if": null,
+      "choices": [
+        "Yes",
+        "No"
+      ],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.needs_materials"
+    },
+    {
+      "field_id": "q20",
+      "label": "Does your event include catering?",
+      "help": "If yes, refer to the Procurement Set Menus",
+      "type": "single_choice",
+      "required": true,
+      "required_if": null,
+      "choices": [
+        "Yes",
+        "No"
+      ],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.has_catering"
+    },
+    {
+      "field_id": "q21",
+      "label": "If the activity involves public speakers, provide first name, last name, nationality, subject of the talk, and attach a brief CV of each",
+      "help": null,
+      "type": "file",
+      "required": false,
+      "required_if": null,
+      "choices": [],
+      "max_files": 10,
+      "sensitive": false,
+      "source": "attachment.speaker_cv"
+    },
+    {
+      "field_id": "q22",
+      "label": "Is this event open to AUB students only or AUB students and non-AUB students (non-AUB community guests require approval)?",
+      "help": null,
+      "type": "single_choice",
+      "required": true,
+      "required_if": null,
+      "choices": [
+        "AUB students only",
+        "AUB students and Non-AUB students"
+      ],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.audience"
+    },
+    {
+      "field_id": "q23",
+      "label": "Approximate number of guests expected to attend",
+      "help": null,
+      "type": "count_range",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.expected_attendance"
+    },
+    {
+      "field_id": "q24",
+      "label": "For non-AUB guests, provide a list of their names in an Excel file",
+      "help": null,
+      "type": "file",
+      "required": false,
+      "required_if": {
+        "field_id": "q22",
+        "equals": "AUB students and Non-AUB students"
+      },
+      "choices": [],
+      "max_files": 1,
+      "sensitive": false,
+      "source": "attachment.guest_list"
+    },
+    {
+      "field_id": "q25",
+      "label": "Admission to the event is",
+      "help": null,
+      "type": "single_choice",
+      "required": true,
+      "required_if": null,
+      "choices": [
+        "Free Entry",
+        "By ticket",
+        "Not applicable"
+      ],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.admission"
+    },
+    {
+      "field_id": "q26",
+      "label": "If admission is by ticket, indicate the ticket price with the currency",
+      "help": null,
+      "type": "text",
+      "required": false,
+      "required_if": {
+        "field_id": "q25",
+        "equals": "By ticket"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.ticket_price"
+    },
+    {
+      "field_id": "q27",
+      "label": "How do you plan to cover the expenses of your event?",
+      "help": "Single or multiple choice is not visible on the printed form; to confirm on the live form.",
+      "type": "multi_choice",
+      "required": true,
+      "required_if": null,
+      "choices": [
+        "Club Account",
+        "External Sponsor",
+        "Faculty/Department Aid",
+        "USFC",
+        "No expenses"
+      ],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.funding"
+    },
+    {
+      "field_id": "q28",
+      "label": "If your event includes a reception with food and beverages, list the items and suppliers",
+      "help": null,
+      "type": "long_text",
+      "required": false,
+      "required_if": {
+        "field_id": "q20",
+        "equals": "Yes"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.catering_items"
+    },
+    {
+      "field_id": "q29",
+      "label": "Upload any poster, ad, brochure or other promotional material",
+      "help": null,
+      "type": "file",
+      "required": false,
+      "required_if": null,
+      "choices": [],
+      "max_files": 5,
+      "sensitive": false,
+      "source": "attachment.poster"
+    },
+    {
+      "field_id": "q30",
+      "label": "Download the Expense form, complete it and upload it here",
+      "help": null,
+      "type": "file",
+      "required": false,
+      "required_if": null,
+      "choices": [],
+      "max_files": 5,
+      "sensitive": false,
+      "source": "attachment.expense_form"
+    },
+    {
+      "field_id": "q31",
+      "label": "Provide a confirmation if the event is funded by an external sponsor, faculty/department aid, or USFC",
+      "help": null,
+      "type": "file",
+      "required": false,
+      "required_if": null,
+      "choices": [],
+      "max_files": 1,
+      "sensitive": false,
+      "source": "attachment.funding_confirmation"
+    },
+    {
+      "field_id": "q32",
+      "label": "Adviser's Name (first and last name, no prefix such as Dr. or Prof.)",
+      "help": null,
+      "type": "text",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "profile.adviser.name"
+    },
+    {
+      "field_id": "q33",
+      "label": "Adviser's AUB Email",
+      "help": null,
+      "type": "email",
+      "required": true,
+      "required_if": null,
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "profile.adviser.aub_email"
+    }
+  ]
+}

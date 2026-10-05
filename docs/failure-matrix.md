@@ -1,0 +1,44 @@
+# Failure Matrix
+
+Every known way ClubOps can fail, how it is detected, what the system does, and the test that proves it.
+`tests/test_failure_matrix.py` fails CI if a row marked **covered** or **partial** points to a test that does not exist.
+When a new failure is found (in evaluation, red-teaming or real use), add a row and a regression test in the same PR.
+
+Categories follow the course brief: invalid input · ambiguous input · tool failure · malformed output · rate limit · malicious input · unauthorized action.
+
+| ID | Failure | Category | Detected by | System response | Test | Status |
+|---|---|---|---|---|---|---|
+| F-01 | Time written in 12-hour format on a 24-hour field (seen in a real draft: "3:30", "5") | invalid input | form validator | error issue; draft not submittable | `tests/test_validate.py::test_twelve_hour_times_from_real_draft_are_rejected` | covered |
+| F-02 | Event date in the form disagrees with the date in the description (seen in a real draft) | ambiguous input | intake cross-checks facts | blocking question to the cabinet | — | planned (Phase 1, intake) |
+| F-03 | Required form field left empty | invalid input | form validator | error issue | `tests/test_validate.py::test_missing_required_field` | covered |
+| F-04 | Answer is not one of the form's options | invalid input | form validator | error issue listing valid options | `tests/test_validate.py::test_choice_must_be_an_option` | covered |
+| F-05 | Event ends before it starts | invalid input | form validator, EventSpec invariant | error issue / rejected spec | `tests/test_validate.py::test_end_before_start` | covered |
+| F-06 | Model guessed a value nobody stated | ambiguous input | answer origin = inferred | warning; a human must confirm | `tests/test_validate.py::test_inferred_value_is_a_warning_not_an_error` | covered |
+| F-07 | OSA changes the form for a new year | unexpected input | form version check | draft rejected until the template is updated | `tests/test_validate.py::test_draft_for_another_form_version_is_rejected` | covered |
+| F-08 | Model API times out or errors | tool failure | capability runner | retry within policy, then FAILED with declared fallback | `tests/test_runner.py::test_retries_stop_at_policy_limit` | covered |
+| F-09 | Model API rate-limits (429) | rate limit | capability runner | backoff and retry | `tests/test_runner.py::test_retryable_error_is_retried_then_succeeds` | covered |
+| F-10 | Model returns output that breaks the schema | malformed output | contract validation | retry, then FAILED (never passed downstream) | `tests/test_runner.py::test_malformed_model_output_is_retried_then_reported` | covered |
+| F-11 | A capability returns the wrong type | malformed output | capability runner | FAILED internal error | `tests/test_runner.py::test_wrong_response_type_is_internal_error` | covered |
+| F-12 | Chat or email contains instructions aimed at the agent | malicious input | capture flags it | refused without retry | `tests/test_runner.py::test_injection_is_refused_without_retry` | covered |
+| F-13 | Cabinet member accepts a flagged proposal without thinking | malicious input | verify | acceptance requires a written reason | `tests/test_store.py::test_flagged_proposal_needs_a_reason_to_accept` | covered |
+| F-14 | Fake "OSA rule" injected into the shared knowledge base | malicious input | verify | AUB-wide rules need a club president | `tests/test_store.py::test_aub_rules_need_a_president` | covered |
+| F-15 | Ordinary member tries to verify know-how | unauthorized action | verify | refused | `tests/test_store.py::test_member_cannot_verify` | covered |
+| F-16 | Unauthenticated user claims a cabinet role | unauthorized action | Actor.verified | refused | `tests/test_store.py::test_unauthenticated_cabinet_member_cannot_verify` | covered |
+| F-17 | Member of another club calls a capability | unauthorized action | capability runner | refused | `tests/test_runner.py::test_actor_from_another_club_is_refused` | covered |
+| F-18 | Approved email is edited before it is sent | malicious input | payload hash | execution blocked; needs new approval | `tests/test_approve.py::test_payload_edited_after_approval_is_blocked` | covered |
+| F-19 | Approval by a role not allowed for that action | unauthorized action | approval gate | blocked | `tests/test_approve.py::test_role_without_permission_is_blocked` | covered |
+| F-20 | A retry sends the same email twice | tool failure | idempotency key | second execution blocked | `tests/test_approve.py::test_second_execution_is_blocked` | covered |
+| F-21 | Approval used after it expired | unauthorized action | approval gate | blocked | `tests/test_approve.py::test_expired_action_is_blocked` | covered |
+| F-22 | Unverified know-how shown as fact in a handover | malformed output | handover assembly | only verified items are facts; unverified ones become open questions | `tests/test_handover.py::test_unverified_know_how_never_appears_as_fact` | covered |
+| F-23 | Answer claims know-how without a source (hallucination) | malformed output | Answer contract | rejected; must cite or say "not known" | `tests/test_contracts.py::test_known_answer_cites_and_unknown_answer_does_not` | covered |
+| F-24 | Know-how nobody has confirmed for over a year | stale data | gap checks | flagged for the handover interview | `tests/test_handover.py::test_stale_items_are_flagged` | covered |
+| F-25 | Two sources contradict each other | ambiguous input | capture (contradiction proposal) | a human decides; the loser is superseded, history kept | `tests/test_store.py::test_accepted_contradiction_supersedes_the_loser` | covered |
+| F-26 | Plan built from an outdated version of the event | stale data | revision check | FAILED stale input | `tests/test_plan.py::test_rules_for_older_spec_revision_are_rejected` | covered |
+| F-27 | A required lead time has already passed | invalid input | backward planner | plan marked infeasible with the earliest feasible date | `tests/test_plan.py::test_passed_lead_time_makes_plan_infeasible_with_earliest_date` | covered |
+| F-28 | A rule changed between judging and planning | stale data | requirement derivation | FAILED stale input | `tests/test_plan.py::test_verdict_on_unknown_rule_version_is_stale` | covered |
+| F-29 | Personal data leaks into traces | privacy | trace contract | traces carry metadata only | `tests/test_contracts.py::test_trace_meta_has_no_content_fields` | covered |
+| F-30 | One club's know-how appears in another club's handover | privacy | club scoping | only AUB-wide rules are shared | `tests/test_handover.py::test_other_clubs_know_how_is_not_included` | covered |
+| F-31 | Event description is missing its date | ambiguous input | planner | blocking question | `tests/test_plan.py::test_missing_start_asks_a_question` | covered |
+| F-32 | OSA changes a rule mid-year by email | stale data | capture → update proposal | new version after verification; old one kept as history | `tests/test_store.py::test_update_supersedes_previous_version_and_keeps_history` | partial (store side; capture planned) |
+| F-33 | A sponsor cancels close to the event | tool failure | sponsor state machine | replacement suggestions for the same category | — | planned (Phase 2) |
+| F-34 | Model spend exceeds the per-packet budget | budget | runner budget check | fallback path, cost reported | — | planned (Phase 1) |

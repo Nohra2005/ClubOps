@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Real club data never enters git (see docs/data-provenance.md)
+data/raw/
+data/private/
+*.chat.txt
+*_export.zip
+
+# Local run output
+traces/
+!traces/samples/
+results/tmp/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store

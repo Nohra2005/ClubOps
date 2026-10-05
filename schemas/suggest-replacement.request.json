@@ -1,0 +1,169 @@
+{
+  "$comment": "clubops 0.1.0 \u00b7 capability suggest-replacement 0.0.1 \u00b7 generated",
+  "$defs": {
+    "NeedStatus": {
+      "enum": [
+        "open",
+        "pitched",
+        "confirmed",
+        "declined",
+        "cancelled"
+      ],
+      "title": "NeedStatus",
+      "type": "string"
+    },
+    "SourceKind": {
+      "enum": [
+        "chat_message",
+        "email",
+        "retrospective",
+        "interview",
+        "event_log",
+        "form",
+        "document",
+        "user_input"
+      ],
+      "title": "SourceKind",
+      "type": "string"
+    },
+    "SourceRef": {
+      "additionalProperties": false,
+      "description": "Points at the exact place a fact came from.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/SourceKind"
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "message id, line range, page",
+          "title": "Locator"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "title": "Observed At",
+          "type": "string"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "verbatim supporting text",
+          "title": "Quote"
+        },
+        "source_id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Source Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "source_id",
+        "observed_at"
+      ],
+      "title": "SourceRef",
+      "type": "object"
+    },
+    "SponsorNeed": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "description": "e.g. 'water', 'prizes', 'printing'",
+          "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+          "title": "Category",
+          "type": "string"
+        },
+        "confirmation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "the email or message confirming it (form Q31)"
+        },
+        "description": {
+          "maxLength": 300,
+          "title": "Description",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^ev-[a-z0-9-]{2,63}$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "need_id": {
+          "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+          "title": "Need Id",
+          "type": "string"
+        },
+        "sponsor": {
+          "anyOf": [
+            {
+              "pattern": "^kh-[a-z0-9-]{2,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "RELATIONSHIP item currently filling the need",
+          "title": "Sponsor"
+        },
+        "status": {
+          "$ref": "#/$defs/NeedStatus"
+        }
+      },
+      "required": [
+        "need_id",
+        "event_id",
+        "category",
+        "description",
+        "status"
+      ],
+      "title": "SponsorNeed",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "exclude": {
+      "description": "already asked or declined",
+      "items": {
+        "pattern": "^kh-[a-z0-9-]{2,63}$",
+        "type": "string"
+      },
+      "title": "Exclude",
+      "type": "array"
+    },
+    "need": {
+      "$ref": "#/$defs/SponsorNeed"
+    }
+  },
+  "required": [
+    "need"
+  ],
+  "title": "ReplacementRequest",
+  "type": "object"
+}

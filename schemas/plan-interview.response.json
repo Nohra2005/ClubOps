@@ -1,0 +1,388 @@
+{
+  "$comment": "clubops 0.1.0 \u00b7 capability plan-interview 0.1.0 \u00b7 generated",
+  "$defs": {
+    "Error": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/ErrorCode"
+        },
+        "message": {
+          "maxLength": 1000,
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "Error",
+      "type": "object"
+    },
+    "ErrorCode": {
+      "enum": [
+        "invalid_input",
+        "ambiguous_input",
+        "not_found",
+        "not_authorized",
+        "stale_input",
+        "conflict",
+        "upstream_timeout",
+        "upstream_error",
+        "rate_limited",
+        "malformed_model_output",
+        "injection_suspected",
+        "budget_exceeded",
+        "internal"
+      ],
+      "title": "ErrorCode",
+      "type": "string"
+    },
+    "Interview": {
+      "additionalProperties": false,
+      "description": "Questions for the outgoing officer. Answers are captured as SourceKind.INTERVIEW.",
+      "properties": {
+        "club_id": {
+          "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+          "title": "Club Id",
+          "type": "string"
+        },
+        "questions": {
+          "items": {
+            "$ref": "#/$defs/InterviewQuestion"
+          },
+          "maxItems": 25,
+          "title": "Questions",
+          "type": "array"
+        },
+        "role": {
+          "$ref": "#/$defs/Role"
+        }
+      },
+      "required": [
+        "club_id",
+        "role",
+        "questions"
+      ],
+      "title": "Interview",
+      "type": "object"
+    },
+    "InterviewQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "gap_id": {
+          "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+          "title": "Gap Id",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 400,
+          "title": "Text",
+          "type": "string"
+        },
+        "why": {
+          "description": "why the agent is asking, shown to the officer",
+          "maxLength": 300,
+          "title": "Why",
+          "type": "string"
+        }
+      },
+      "required": [
+        "gap_id",
+        "text",
+        "why"
+      ],
+      "title": "InterviewQuestion",
+      "type": "object"
+    },
+    "Issue": {
+      "additionalProperties": false,
+      "description": "A finding about the data (e.g. a time not in 24-hour format). Not a failure of the call.",
+      "properties": {
+        "code": {
+          "pattern": "^[a-z_]+(\\.[a-z0-9_]+)+$",
+          "title": "Code",
+          "type": "string"
+        },
+        "fix": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fix"
+        },
+        "message": {
+          "maxLength": 500,
+          "title": "Message",
+          "type": "string"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "Issue",
+      "type": "object"
+    },
+    "Question": {
+      "additionalProperties": false,
+      "description": "Something only a human can answer before the work can continue.",
+      "properties": {
+        "blocking": {
+          "default": true,
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "choices": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Choices",
+          "type": "array"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "question_id": {
+          "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 400,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_id",
+        "text"
+      ],
+      "title": "Question",
+      "type": "object"
+    },
+    "Role": {
+      "enum": [
+        "president",
+        "vice_president",
+        "secretary",
+        "treasurer",
+        "events",
+        "sponsorship",
+        "communications",
+        "member",
+        "adviser"
+      ],
+      "title": "Role",
+      "type": "string"
+    },
+    "Severity": {
+      "enum": [
+        "error",
+        "warning",
+        "info"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "Status": {
+      "enum": [
+        "ok",
+        "needs_input",
+        "failed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "TraceMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "capability": {
+          "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+          "title": "Capability",
+          "type": "string"
+        },
+        "capability_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Capability Version",
+          "type": "string"
+        },
+        "cost_usd": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "default": "0",
+          "title": "Cost Usd"
+        },
+        "latency_ms": {
+          "minimum": 0,
+          "title": "Latency Ms",
+          "type": "integer"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "prompt_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Prompt Version"
+        },
+        "replayed": {
+          "default": false,
+          "title": "Replayed",
+          "type": "boolean"
+        },
+        "retries": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Retries",
+          "type": "integer"
+        },
+        "started_at": {
+          "format": "date-time",
+          "title": "Started At",
+          "type": "string"
+        },
+        "tokens_in": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Tokens In",
+          "type": "integer"
+        },
+        "tokens_out": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Tokens Out",
+          "type": "integer"
+        },
+        "trace_id": {
+          "maxLength": 64,
+          "minLength": 8,
+          "title": "Trace Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id",
+        "capability",
+        "capability_version",
+        "started_at",
+        "latency_ms"
+      ],
+      "title": "TraceMeta",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Interview"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "degraded": {
+      "default": false,
+      "description": "True when a declared fallback produced the data",
+      "title": "Degraded",
+      "type": "boolean"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Error"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "issues": {
+      "items": {
+        "$ref": "#/$defs/Issue"
+      },
+      "title": "Issues",
+      "type": "array"
+    },
+    "questions": {
+      "items": {
+        "$ref": "#/$defs/Question"
+      },
+      "title": "Questions",
+      "type": "array"
+    },
+    "status": {
+      "$ref": "#/$defs/Status"
+    },
+    "trace": {
+      "$ref": "#/$defs/TraceMeta"
+    }
+  },
+  "required": [
+    "status",
+    "trace"
+  ],
+  "title": "Result[Interview]",
+  "type": "object"
+}
