@@ -9,7 +9,7 @@ from enum import StrEnum
 
 from pydantic import Field
 
-from clubops.contracts.common import Contract, EventId, ItemId, Slug, SourceRef
+from clubops.contracts.common import ClubId, Contract, EventId, ItemId, Slug, SourceRef
 
 
 class NeedStatus(StrEnum):
@@ -41,6 +41,7 @@ class SponsorNeed(Contract):
 
 
 class ReplacementRequest(Contract):
+    club_id: ClubId
     need: SponsorNeed
     exclude: list[ItemId] = Field(default_factory=list, description="already asked or declined")
 

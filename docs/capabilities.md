@@ -17,7 +17,7 @@ Contract version **0.1.0**. Every capability returns `Result[<response>]` (see [
 | `apply-rules` 0.1.0 | agentic | frozen | `RuleApplicationRequest` → `RuleApplication` | 45s / 2 | mark every rule 'uncertain' so nothing is silently skipped |
 | `draft-proposal` 0.1.0 | agentic | frozen | `DraftProposalRequest` → `ProposalDraft` | 45s / 2 | fill mapped fields only; free-text fields left for a human |
 | `plan-backward` 0.1.0 | deterministic | frozen | `PlanRequest` → `Plan` | 2s / 0 | — |
-| `suggest-replacement` 0.0.1 | agentic | provisional | `ReplacementRequest` → `ReplacementSuggestions` | 20s / 1 | list verified sponsors offering the same category |
+| `suggest-replacement` 0.0.2 | agentic | provisional | `ReplacementRequest` → `ReplacementSuggestions` | 20s / 1 | list verified sponsors offering the same category |
 
 ## Permissions
 

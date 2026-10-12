@@ -62,9 +62,34 @@ class KnowHowStore:
         self.pending[proposal.proposal_id] = proposal
 
     def verify(self, request: VerifyRequest, actor: Actor, now: datetime) -> Outcome[VerifyResult]:
-        proposal = request.proposal
-        if proposal.proposal_id not in self.pending:
+        """Apply a cabinet member's decision to a queued proposal.
+
+        The queued copy is the only one trusted: a request carrying different content under the
+        same id (a stale screen, or a tampered request that drops injection flags) is refused.
+        Every check runs before anything changes, so a refused decision leaves the proposal queued.
+        Changing the content is only possible through ``accept_edited``, which is explicit.
+        """
+        proposal, candidate = self._checked(request, actor)
+        if request.decision is VerifyDecision.REJECT:
+            del self.pending[proposal.proposal_id]
+            return Outcome(data=VerifyResult(committed=None))
+
+        committed, to_supersede = self._next_version(proposal, candidate, actor, now)
+        for item_id in to_supersede:
+            self._mark_superseded(item_id)
+        self._versions.setdefault(committed.item_id, []).append(committed)
+        del self.pending[proposal.proposal_id]
+        return Outcome(data=VerifyResult(committed=committed, superseded=to_supersede))
+
+    def _checked(self, request: VerifyRequest, actor: Actor) -> tuple[KnowHowProposal, KnowHowItem]:
+        """Every refusal happens here, before the store changes."""
+        proposal = self.pending.get(request.proposal.proposal_id)
+        if proposal is None:
             raise CapabilityError(ErrorCode.NOT_FOUND, "no pending proposal with this id")
+        if request.proposal != proposal:
+            raise CapabilityError(
+                ErrorCode.STALE_INPUT, "the proposal differs from the queued one; reload it and decide again"
+            )
         if not actor.is_cabinet:
             raise CapabilityError(ErrorCode.NOT_AUTHORIZED, "only verified cabinet members verify know-how")
         candidate = request.edited_candidate or proposal.candidate
@@ -76,11 +101,12 @@ class KnowHowStore:
             raise CapabilityError(
                 ErrorCode.INJECTION_SUSPECTED, "accepting a flagged proposal requires a written reason"
             )
+        return proposal, candidate
 
-        del self.pending[proposal.proposal_id]
-        if request.decision is VerifyDecision.REJECT:
-            return Outcome(data=VerifyResult(committed=None))
-
+    def _next_version(
+        self, proposal: KnowHowProposal, candidate: KnowHowItem, actor: Actor, now: datetime
+    ) -> tuple[KnowHowItem, list[ItemId]]:
+        """The item to commit and the items it supersedes. Reads only; the caller writes."""
         stamp = {
             "status": ItemStatus.VERIFIED,
             "verified_by": actor.member_id,
@@ -91,15 +117,14 @@ class KnowHowStore:
         if proposal.op is not ProposalOp.CREATE and target is None:
             raise CapabilityError(ErrorCode.NOT_FOUND, "the proposal's target item does not exist")
 
-        superseded: list[ItemId] = []
         match proposal.op:
             case ProposalOp.CREATE:
                 if candidate.item_id in self._versions:
                     raise CapabilityError(ErrorCode.CONFLICT, "an item with this id already exists")
-                committed = _rebuild(candidate, version=1, **stamp)
+                return _rebuild(candidate, version=1, **stamp), []
             case ProposalOp.UPDATE if target is not None:
                 committed = _rebuild(candidate, item_id=target.item_id, version=target.version + 1, **stamp)
-                self._mark_superseded(target.item_id)
+                return committed, [target.item_id]
             case ProposalOp.MERGE if target is not None:
                 sources = list(
                     {(s.kind, s.source_id, s.locator): s for s in [*target.sources, *candidate.sources]}.values()
@@ -109,7 +134,7 @@ class KnowHowStore:
                     source_count=max(len(sources), target.support.source_count),
                 )
                 committed = _rebuild(target, sources=sources, support=support, version=target.version + 1, **stamp)
-                self._mark_superseded(target.item_id)
+                return committed, [target.item_id]
             case ProposalOp.RETIRE if target is not None:
                 committed = _rebuild(
                     target,
@@ -119,21 +144,21 @@ class KnowHowStore:
                     verified_by=actor.member_id,
                     verified_at=now,
                 )
-                self._mark_superseded(target.item_id)
+                return committed, [target.item_id]
             case ProposalOp.CONTRADICTION:
                 # Accepting a contradiction means the candidate wins over the items it conflicts with.
-                committed = _rebuild(candidate, version=1, supersedes=proposal.target_item, **stamp)
-                for loser in proposal.conflicts_with:
-                    if self.latest(loser) is not None:
-                        self._mark_superseded(loser)
-                        superseded.append(loser)
+                losers = [loser for loser in proposal.conflicts_with if self.latest(loser) is not None]
+                existing = self.latest(candidate.item_id)
+                if existing is None:
+                    return _rebuild(candidate, version=1, supersedes=proposal.target_item, **stamp), losers
+                if candidate.item_id in losers:
+                    # The winner keeps the loser's id: it is that item's next version, not a second version 1.
+                    return _rebuild(candidate, version=existing.version + 1, supersedes=None, **stamp), losers
+                raise CapabilityError(
+                    ErrorCode.CONFLICT, "the winning item reuses the id of an item it does not conflict with"
+                )
             case _:
                 raise CapabilityError(ErrorCode.INTERNAL, f"unhandled proposal op {proposal.op}")
-
-        if proposal.op in (ProposalOp.UPDATE, ProposalOp.MERGE, ProposalOp.RETIRE):
-            superseded.append(committed.item_id)
-        self._versions.setdefault(committed.item_id, []).append(committed)
-        return Outcome(data=VerifyResult(committed=committed, superseded=superseded))
 
     def _mark_superseded(self, item_id: ItemId) -> None:
         versions = self._versions[item_id]
