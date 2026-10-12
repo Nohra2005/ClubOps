@@ -21,7 +21,7 @@ Kept current in every PR that changes what a row points to.
 | Authorization, least privilege | `Actor`, club scoping, cabinet-only capabilities, approval gate | in place |
 | Secret and PII protection | [knowledge-base.md](knowledge-base.md), `RequesterDetails` (secrets), metadata-only traces | in place (redaction step planned with capture) |
 | Prompt-injection defences | `Untrusted`, propose-only capture, flagged proposals | contracts in place; capture planned (Phase 1) |
-| Failure Matrix | [failure-matrix.md](failure-matrix.md) | in place (34 rows, 30 covered by tests) |
+| Failure Matrix | [failure-matrix.md](failure-matrix.md) | in place (40 rows: 36 covered, 2 partial, 2 planned) |
 | Threat model | [threat-model.md](threat-model.md) | in place |
 | **5. Software engineering (10%)** | | |
 | Modular repo, typing, central configuration, no dead code | `src/clubops/`; ruff + strict mypy in CI | in place (central config planned with the first model call) |

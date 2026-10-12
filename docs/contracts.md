@@ -28,7 +28,7 @@ Expected failures never cross a capability boundary as exceptions.
 ## 3. Authentication and authorization
 
 - Every call carries an `Actor`: member, club, roles, and whether the member is authenticated with an AUB account.
-- The runner refuses a request whose `club_id` differs from the actor's club.
+- The runner refuses a request if any `club_id` in it, at any depth (e.g. `spec.club_id`), differs from the actor's club. A test requires every request type to name its club; `verify` is the one exception, and the store checks the club itself.
 - Capabilities marked *cabinet only* refuse unauthenticated users and ordinary members.
 - AUB-wide rules can only be verified by a club president.
 - Executing an action requires an approval from an authenticated member of the same club holding one of the action's approver roles, for the exact payload, before it expires, once.

@@ -2,14 +2,15 @@
 
 This is where the cross-cutting rules live, so individual capabilities stay simple:
 authorization, club scoping, input/output type checks, retries for retryable errors,
-and one trace record per call. Traces never contain request or response bodies.
+the per-attempt timeout, the declared fallback, and one trace record per call.
+Traces never contain request or response bodies.
 """
 
 from __future__ import annotations
 
 import time
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -34,15 +35,6 @@ from clubops.contracts.common import (
 T = TypeVar("T", bound=BaseModel)
 
 
-class CapabilityError(Exception):
-    """Raised inside a capability for an expected failure; converted to a FAILED result."""
-
-    def __init__(self, code: ErrorCode, message: str) -> None:
-        super().__init__(message)
-        self.code = code
-        self.message = message
-
-
 @dataclass(frozen=True)
 class Usage:
     model: str | None = None
@@ -51,6 +43,31 @@ class Usage:
     tokens_out: int = 0
     cost_usd: Decimal = Decimal("0")
     replayed: bool = False
+
+    def __add__(self, other: Usage) -> Usage:
+        """Combine two attempts: tokens and cost add up; the latest model and prompt version win."""
+        return Usage(
+            model=other.model or self.model,
+            prompt_version=other.prompt_version or self.prompt_version,
+            tokens_in=self.tokens_in + other.tokens_in,
+            tokens_out=self.tokens_out + other.tokens_out,
+            cost_usd=self.cost_usd + other.cost_usd,
+            replayed=self.replayed or other.replayed,
+        )
+
+
+class CapabilityError(Exception):
+    """Raised inside a capability for an expected failure; converted to a FAILED result.
+
+    ``usage`` carries what the failed attempt spent, so retries and failures still count
+    toward cost (a model call that returned malformed output was still paid for).
+    """
+
+    def __init__(self, code: ErrorCode, message: str, usage: Usage | None = None) -> None:
+        super().__init__(message)
+        self.code = code
+        self.message = message
+        self.usage = usage or Usage()
 
 
 @dataclass(frozen=True)
@@ -66,6 +83,23 @@ class Tracer(Protocol):
     def record(self, trace: TraceMeta, status: Status, error: ErrorCode | None) -> None: ...
 
 
+def club_ids(value: object) -> Iterator[str]:
+    """Every ``club_id`` anywhere in a request, however deeply nested (e.g. ``spec.club_id``)."""
+    if isinstance(value, BaseModel):
+        for name in type(value).model_fields:
+            child = getattr(value, name)
+            if name == "club_id" and isinstance(child, str):
+                yield child
+            else:
+                yield from club_ids(child)
+    elif isinstance(value, list | tuple | set | frozenset):
+        for child in value:
+            yield from club_ids(child)
+    elif isinstance(value, dict):
+        for child in value.values():
+            yield from club_ids(child)
+
+
 def run(
     spec: CapabilitySpec,
     fn: Callable[[BaseModel], Outcome[T]],
@@ -74,11 +108,23 @@ def run(
     tracer: Tracer,
     *,
     trace_id: str | None = None,
+    fallback: Callable[[BaseModel], Outcome[T]] | None = None,
     sleep: Callable[[float], None] = time.sleep,
+    clock: Callable[[], float] = time.perf_counter,
 ) -> Result[T]:
+    """Run ``fn`` under ``spec``'s policy.
+
+    ``fallback`` is the code behind the spec's declared fallback. It runs when retries are
+    exhausted or the budget is exceeded, and its data is returned with ``degraded=True``.
+    It never runs for refusals (unauthorized, injection), which must stay refusals.
+
+    An attempt that takes longer than ``policy.timeout_s`` is treated as an upstream timeout
+    and its late answer is discarded. The model client also sets its own request timeout from
+    the policy, so in practice slow calls are cut off before this check.
+    """
     trace_id = trace_id or uuid.uuid4().hex
     started = datetime.now(UTC)
-    t0 = time.perf_counter()
+    t0 = clock()
     retries = 0
     usage = Usage()
 
@@ -98,7 +144,7 @@ def run(
             prompt_version=usage.prompt_version,
             model=usage.model,
             started_at=started,
-            latency_ms=int((time.perf_counter() - t0) * 1000),
+            latency_ms=int((clock() - t0) * 1000),
             tokens_in=usage.tokens_in,
             tokens_out=usage.tokens_out,
             cost_usd=usage.cost_usd,
@@ -123,24 +169,44 @@ def run(
         return fail(ErrorCode.INVALID_INPUT, f"expected {spec.request.__name__}, got {type(request).__name__}")
     if spec.requires_cabinet and not actor.is_cabinet:
         return fail(ErrorCode.NOT_AUTHORIZED, "only verified cabinet members can do this")
-    request_club = getattr(request, "club_id", None)
-    if request_club is not None and request_club != actor.club_id:
+    if any(club != actor.club_id for club in club_ids(request)):
         return fail(ErrorCode.NOT_AUTHORIZED, "actor belongs to another club")
 
     while True:
+        attempt_started = clock()
         try:
             outcome = fn(request)
         except CapabilityError as exc:
             code, message = exc.code, exc.message
+            usage = usage + exc.usage
         except ValidationError as exc:
             code, message = ErrorCode.MALFORMED_MODEL_OUTPUT, f"output failed validation: {exc.error_count()} errors"
         else:
-            usage = outcome.usage
-            break
-        if ERROR_BEHAVIOR[code] is Recovery.RETRY and retries < spec.policy.max_retries:
+            usage = usage + outcome.usage
+            if clock() - attempt_started <= spec.policy.timeout_s:
+                break
+            code, message = ErrorCode.UPSTREAM_TIMEOUT, f"attempt exceeded {spec.policy.timeout_s}s; answer discarded"
+        recovery = ERROR_BEHAVIOR[code]
+        if recovery is Recovery.RETRY and retries < spec.policy.max_retries:
             retries += 1
             sleep(min(2.0**retries, 10.0))
             continue
+        if fallback is not None and recovery in (Recovery.RETRY, Recovery.FALLBACK):
+            try:
+                outcome = fallback(request)
+            except CapabilityError as exc:
+                usage = usage + exc.usage
+                return fail(exc.code, f"{message}; fallback also failed: {exc.message}")
+            usage = usage + outcome.usage
+            if outcome.data is None or not isinstance(outcome.data, spec.response):
+                return fail(code, f"{message}; fallback produced no usable data")
+            return finish(
+                Status.OK,
+                data=outcome.data,
+                issues=outcome.issues,
+                questions=outcome.questions,
+                degraded=True,
+            )
         return fail(code, message)
 
     if outcome.data is None:
