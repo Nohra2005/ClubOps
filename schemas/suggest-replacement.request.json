@@ -1,5 +1,5 @@
 {
-  "$comment": "clubops 0.1.0 \u00b7 capability suggest-replacement 0.0.1 \u00b7 generated",
+  "$comment": "clubops 0.1.0 \u00b7 capability suggest-replacement 0.0.2 \u00b7 generated",
   "$defs": {
     "NeedStatus": {
       "enum": [
@@ -148,6 +148,11 @@
   },
   "additionalProperties": false,
   "properties": {
+    "club_id": {
+      "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+      "title": "Club Id",
+      "type": "string"
+    },
     "exclude": {
       "description": "already asked or declined",
       "items": {
@@ -162,6 +167,7 @@
     }
   },
   "required": [
+    "club_id",
     "need"
   ],
   "title": "ReplacementRequest",

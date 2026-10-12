@@ -186,7 +186,7 @@ CAPABILITIES: tuple[CapabilitySpec, ...] = (
     # ------------------------------------------------------------ sponsors
     CapabilitySpec(
         name="suggest-replacement",
-        version="0.0.1",
+        version="0.0.2",
         control=Control.AGENTIC,
         stability=Stability.PROVISIONAL,
         request=sponsors.ReplacementRequest,
