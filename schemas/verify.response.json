@@ -1,0 +1,1178 @@
+{
+  "$comment": "clubops 0.1.0 \u00b7 capability verify 0.1.0 \u00b7 generated",
+  "$defs": {
+    "DecisionDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "alternatives_considered": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Alternatives Considered",
+          "type": "array"
+        },
+        "decided_on": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Decided On"
+        },
+        "decision": {
+          "maxLength": 300,
+          "title": "Decision",
+          "type": "string"
+        },
+        "kind": {
+          "const": "decision",
+          "default": "decision",
+          "title": "Kind",
+          "type": "string"
+        },
+        "rationale": {
+          "maxLength": 600,
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "decision",
+        "rationale"
+      ],
+      "title": "DecisionDetails",
+      "type": "object"
+    },
+    "Error": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/ErrorCode"
+        },
+        "message": {
+          "maxLength": 1000,
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "Error",
+      "type": "object"
+    },
+    "ErrorCode": {
+      "enum": [
+        "invalid_input",
+        "ambiguous_input",
+        "not_found",
+        "not_authorized",
+        "stale_input",
+        "conflict",
+        "upstream_timeout",
+        "upstream_error",
+        "rate_limited",
+        "malformed_model_output",
+        "injection_suspected",
+        "budget_exceeded",
+        "internal"
+      ],
+      "title": "ErrorCode",
+      "type": "string"
+    },
+    "GotchaDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "avoid_by": {
+          "maxLength": 300,
+          "title": "Avoid By",
+          "type": "string"
+        },
+        "consequence": {
+          "maxLength": 300,
+          "title": "Consequence",
+          "type": "string"
+        },
+        "kind": {
+          "const": "gotcha",
+          "default": "gotcha",
+          "title": "Kind",
+          "type": "string"
+        },
+        "trigger": {
+          "maxLength": 300,
+          "title": "Trigger",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trigger",
+        "consequence",
+        "avoid_by"
+      ],
+      "title": "GotchaDetails",
+      "type": "object"
+    },
+    "IdentityDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "aspect": {
+          "enum": [
+            "mission",
+            "tone",
+            "audience",
+            "signature_event",
+            "brand",
+            "values"
+          ],
+          "title": "Aspect",
+          "type": "string"
+        },
+        "kind": {
+          "const": "identity",
+          "default": "identity",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "aspect"
+      ],
+      "title": "IdentityDetails",
+      "type": "object"
+    },
+    "Issue": {
+      "additionalProperties": false,
+      "description": "A finding about the data (e.g. a time not in 24-hour format). Not a failure of the call.",
+      "properties": {
+        "code": {
+          "pattern": "^[a-z_]+(\\.[a-z0-9_]+)+$",
+          "title": "Code",
+          "type": "string"
+        },
+        "fix": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fix"
+        },
+        "message": {
+          "maxLength": 500,
+          "title": "Message",
+          "type": "string"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "Issue",
+      "type": "object"
+    },
+    "ItemStatus": {
+      "enum": [
+        "proposed",
+        "verified",
+        "disputed",
+        "superseded",
+        "retired"
+      ],
+      "title": "ItemStatus",
+      "type": "string"
+    },
+    "KnowHowItem": {
+      "additionalProperties": false,
+      "properties": {
+        "club_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "None only for AUB-scope items",
+          "title": "Club Id"
+        },
+        "details": {
+          "discriminator": {
+            "mapping": {
+              "decision": "#/$defs/DecisionDetails",
+              "gotcha": "#/$defs/GotchaDetails",
+              "identity": "#/$defs/IdentityDetails",
+              "lesson": "#/$defs/LessonDetails",
+              "obligation": "#/$defs/ObligationDetails",
+              "procedure": "#/$defs/ProcedureDetails",
+              "relationship": "#/$defs/RelationshipDetails",
+              "rhythm": "#/$defs/RhythmDetails",
+              "rule": "#/$defs/RuleDetails"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/ProcedureDetails"
+            },
+            {
+              "$ref": "#/$defs/LessonDetails"
+            },
+            {
+              "$ref": "#/$defs/RelationshipDetails"
+            },
+            {
+              "$ref": "#/$defs/GotchaDetails"
+            },
+            {
+              "$ref": "#/$defs/DecisionDetails"
+            },
+            {
+              "$ref": "#/$defs/IdentityDetails"
+            },
+            {
+              "$ref": "#/$defs/RhythmDetails"
+            },
+            {
+              "$ref": "#/$defs/ObligationDetails"
+            },
+            {
+              "$ref": "#/$defs/RuleDetails"
+            }
+          ],
+          "title": "Details"
+        },
+        "item_id": {
+          "pattern": "^kh-[a-z0-9-]{2,63}$",
+          "title": "Item Id",
+          "type": "string"
+        },
+        "last_confirmed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Confirmed At"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        },
+        "stated_by_role": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Role"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "statement": {
+          "description": "the know-how in plain words",
+          "maxLength": 1500,
+          "minLength": 3,
+          "title": "Statement",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/ItemStatus"
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "pattern": "^kh-[a-z0-9-]{2,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Supersedes"
+        },
+        "support": {
+          "$ref": "#/$defs/Support"
+        },
+        "tags": {
+          "items": {
+            "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "title": {
+          "maxLength": 120,
+          "minLength": 3,
+          "title": "Title",
+          "type": "string"
+        },
+        "valid_from": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid From"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        },
+        "verified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verified At"
+        },
+        "verified_by": {
+          "anyOf": [
+            {
+              "pattern": "^m-[a-z0-9-]{2,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verified By"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "visibility": {
+          "$ref": "#/$defs/Visibility",
+          "default": "cabinet"
+        }
+      },
+      "required": [
+        "item_id",
+        "scope",
+        "club_id",
+        "title",
+        "statement",
+        "details",
+        "sources",
+        "support",
+        "status",
+        "version"
+      ],
+      "title": "KnowHowItem",
+      "type": "object"
+    },
+    "LessonDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "context": {
+          "maxLength": 500,
+          "title": "Context",
+          "type": "string"
+        },
+        "kind": {
+          "const": "lesson",
+          "default": "lesson",
+          "title": "Kind",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "worked",
+            "failed",
+            "mixed"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "recommendation": {
+          "maxLength": 500,
+          "title": "Recommendation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "outcome",
+        "context",
+        "recommendation"
+      ],
+      "title": "LessonDetails",
+      "type": "object"
+    },
+    "ObligationDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "due_rule": {
+          "description": "e.g. 'last week of each semester'",
+          "maxLength": 200,
+          "title": "Due Rule",
+          "type": "string"
+        },
+        "kind": {
+          "const": "obligation",
+          "default": "obligation",
+          "title": "Kind",
+          "type": "string"
+        },
+        "owed_to": {
+          "description": "e.g. OSA",
+          "maxLength": 120,
+          "title": "Owed To",
+          "type": "string"
+        },
+        "owner_role": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Role"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "owed_to",
+        "due_rule"
+      ],
+      "title": "ObligationDetails",
+      "type": "object"
+    },
+    "ProcedureDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "applies_when": {
+          "description": "tags such as 'green-field', 'prizes'",
+          "items": {
+            "type": "string"
+          },
+          "title": "Applies When",
+          "type": "array"
+        },
+        "goal": {
+          "maxLength": 200,
+          "title": "Goal",
+          "type": "string"
+        },
+        "kind": {
+          "const": "procedure",
+          "default": "procedure",
+          "title": "Kind",
+          "type": "string"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/Step"
+          },
+          "minItems": 1,
+          "title": "Steps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "goal",
+        "steps"
+      ],
+      "title": "ProcedureDetails",
+      "type": "object"
+    },
+    "Question": {
+      "additionalProperties": false,
+      "description": "Something only a human can answer before the work can continue.",
+      "properties": {
+        "blocking": {
+          "default": true,
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "choices": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Choices",
+          "type": "array"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "question_id": {
+          "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 400,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_id",
+        "text"
+      ],
+      "title": "Question",
+      "type": "object"
+    },
+    "RelationshipDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "contact_ref": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "reference to a cabinet-only contact, never the raw number",
+          "title": "Contact Ref"
+        },
+        "kind": {
+          "const": "relationship",
+          "default": "relationship",
+          "title": "Kind",
+          "type": "string"
+        },
+        "offers": {
+          "description": "sponsor categories or services, e.g. 'water'",
+          "items": {
+            "type": "string"
+          },
+          "title": "Offers",
+          "type": "array"
+        },
+        "party_name": {
+          "maxLength": 120,
+          "title": "Party Name",
+          "type": "string"
+        },
+        "party_type": {
+          "enum": [
+            "sponsor",
+            "vendor",
+            "aub_office",
+            "venue",
+            "other_club",
+            "other"
+          ],
+          "title": "Party Type",
+          "type": "string"
+        },
+        "preferred_channel": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Preferred Channel"
+        }
+      },
+      "required": [
+        "party_name",
+        "party_type"
+      ],
+      "title": "RelationshipDetails",
+      "type": "object"
+    },
+    "Requirement": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Detail"
+        },
+        "kind": {
+          "$ref": "#/$defs/RequirementKind"
+        },
+        "lead_time_days": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lead Time Days"
+        },
+        "name": {
+          "maxLength": 200,
+          "title": "Name",
+          "type": "string"
+        },
+        "requirement_id": {
+          "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+          "title": "Requirement Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "requirement_id",
+        "kind",
+        "name"
+      ],
+      "title": "Requirement",
+      "type": "object"
+    },
+    "RequirementKind": {
+      "enum": [
+        "form",
+        "approval",
+        "document",
+        "lead_time",
+        "restriction"
+      ],
+      "title": "RequirementKind",
+      "type": "string"
+    },
+    "RhythmDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "rhythm",
+          "default": "rhythm",
+          "title": "Kind",
+          "type": "string"
+        },
+        "month": {
+          "maximum": 12,
+          "minimum": 1,
+          "title": "Month",
+          "type": "integer"
+        },
+        "recurs": {
+          "enum": [
+            "yearly",
+            "fall",
+            "spring"
+          ],
+          "title": "Recurs",
+          "type": "string"
+        }
+      },
+      "required": [
+        "month",
+        "recurs"
+      ],
+      "title": "RhythmDetails",
+      "type": "object"
+    },
+    "Role": {
+      "enum": [
+        "president",
+        "vice_president",
+        "secretary",
+        "treasurer",
+        "events",
+        "sponsorship",
+        "communications",
+        "member",
+        "adviser"
+      ],
+      "title": "Role",
+      "type": "string"
+    },
+    "RuleDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "rule",
+          "default": "rule",
+          "title": "Kind",
+          "type": "string"
+        },
+        "requirements": {
+          "items": {
+            "$ref": "#/$defs/Requirement"
+          },
+          "minItems": 1,
+          "title": "Requirements",
+          "type": "array"
+        },
+        "triggers": {
+          "description": "event facts that make the rule relevant, e.g. 'non_aub_guests', 'prizes', 'budget_over_threshold'",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Triggers",
+          "type": "array"
+        }
+      },
+      "required": [
+        "triggers",
+        "requirements"
+      ],
+      "title": "RuleDetails",
+      "type": "object"
+    },
+    "Scope": {
+      "enum": [
+        "aub",
+        "club"
+      ],
+      "title": "Scope",
+      "type": "string"
+    },
+    "Severity": {
+      "enum": [
+        "error",
+        "warning",
+        "info"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "SourceKind": {
+      "enum": [
+        "chat_message",
+        "email",
+        "retrospective",
+        "interview",
+        "event_log",
+        "form",
+        "document",
+        "user_input"
+      ],
+      "title": "SourceKind",
+      "type": "string"
+    },
+    "SourceRef": {
+      "additionalProperties": false,
+      "description": "Points at the exact place a fact came from.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/SourceKind"
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "message id, line range, page",
+          "title": "Locator"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "title": "Observed At",
+          "type": "string"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "verbatim supporting text",
+          "title": "Quote"
+        },
+        "source_id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Source Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "source_id",
+        "observed_at"
+      ],
+      "title": "SourceRef",
+      "type": "object"
+    },
+    "Status": {
+      "enum": [
+        "ok",
+        "needs_input",
+        "failed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "Step": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "maxLength": 300,
+          "title": "Action",
+          "type": "string"
+        },
+        "actor_role": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Role"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "channel": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "email, webreserve form, in person...",
+          "title": "Channel"
+        },
+        "lead_time_days": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "days before the event this must happen",
+          "title": "Lead Time Days"
+        },
+        "order": {
+          "minimum": 1,
+          "title": "Order",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "order",
+        "action"
+      ],
+      "title": "Step",
+      "type": "object"
+    },
+    "Support": {
+      "additionalProperties": false,
+      "description": "How well-supported an item is. Replaces an uncalibrated 'confidence' score.",
+      "properties": {
+        "events": {
+          "items": {
+            "pattern": "^ev-[a-z0-9-]{2,63}$",
+            "type": "string"
+          },
+          "title": "Events",
+          "type": "array"
+        },
+        "source_count": {
+          "minimum": 1,
+          "title": "Source Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "source_count"
+      ],
+      "title": "Support",
+      "type": "object"
+    },
+    "TraceMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "capability": {
+          "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+          "title": "Capability",
+          "type": "string"
+        },
+        "capability_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Capability Version",
+          "type": "string"
+        },
+        "cost_usd": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "default": "0",
+          "title": "Cost Usd"
+        },
+        "latency_ms": {
+          "minimum": 0,
+          "title": "Latency Ms",
+          "type": "integer"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "prompt_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Prompt Version"
+        },
+        "replayed": {
+          "default": false,
+          "title": "Replayed",
+          "type": "boolean"
+        },
+        "retries": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Retries",
+          "type": "integer"
+        },
+        "started_at": {
+          "format": "date-time",
+          "title": "Started At",
+          "type": "string"
+        },
+        "tokens_in": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Tokens In",
+          "type": "integer"
+        },
+        "tokens_out": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Tokens Out",
+          "type": "integer"
+        },
+        "trace_id": {
+          "maxLength": 64,
+          "minLength": 8,
+          "title": "Trace Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id",
+        "capability",
+        "capability_version",
+        "started_at",
+        "latency_ms"
+      ],
+      "title": "TraceMeta",
+      "type": "object"
+    },
+    "VerifyResult": {
+      "additionalProperties": false,
+      "properties": {
+        "committed": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KnowHowItem"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "superseded": {
+          "items": {
+            "pattern": "^kh-[a-z0-9-]{2,63}$",
+            "type": "string"
+          },
+          "title": "Superseded",
+          "type": "array"
+        }
+      },
+      "required": [
+        "committed"
+      ],
+      "title": "VerifyResult",
+      "type": "object"
+    },
+    "Visibility": {
+      "enum": [
+        "cabinet",
+        "aub_public"
+      ],
+      "title": "Visibility",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/VerifyResult"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "degraded": {
+      "default": false,
+      "description": "True when a declared fallback produced the data",
+      "title": "Degraded",
+      "type": "boolean"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Error"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "issues": {
+      "items": {
+        "$ref": "#/$defs/Issue"
+      },
+      "title": "Issues",
+      "type": "array"
+    },
+    "questions": {
+      "items": {
+        "$ref": "#/$defs/Question"
+      },
+      "title": "Questions",
+      "type": "array"
+    },
+    "status": {
+      "$ref": "#/$defs/Status"
+    },
+    "trace": {
+      "$ref": "#/$defs/TraceMeta"
+    }
+  },
+  "required": [
+    "status",
+    "trace"
+  ],
+  "title": "Result[VerifyResult]",
+  "type": "object"
+}

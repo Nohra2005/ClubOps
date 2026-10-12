@@ -1,0 +1,56 @@
+{
+  "$comment": "clubops 0.1.0 \u00b7 capability find-gaps 0.1.0 \u00b7 generated",
+  "$defs": {
+    "Role": {
+      "enum": [
+        "president",
+        "vice_president",
+        "secretary",
+        "treasurer",
+        "events",
+        "sponsorship",
+        "communications",
+        "member",
+        "adviser"
+      ],
+      "title": "Role",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "as_of": {
+      "format": "date",
+      "title": "As Of",
+      "type": "string"
+    },
+    "club_id": {
+      "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+      "title": "Club Id",
+      "type": "string"
+    },
+    "role": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Role"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "stale_after_days": {
+      "default": 365,
+      "minimum": 30,
+      "title": "Stale After Days",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "club_id",
+    "as_of"
+  ],
+  "title": "GapRequest",
+  "type": "object"
+}

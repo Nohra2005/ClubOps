@@ -1,0 +1,29 @@
+{
+  "$comment": "clubops 0.1.0 \u00b7 capability ask 0.1.0 \u00b7 generated",
+  "additionalProperties": false,
+  "properties": {
+    "as_of": {
+      "format": "date",
+      "title": "As Of",
+      "type": "string"
+    },
+    "club_id": {
+      "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+      "title": "Club Id",
+      "type": "string"
+    },
+    "question": {
+      "maxLength": 500,
+      "minLength": 3,
+      "title": "Question",
+      "type": "string"
+    }
+  },
+  "required": [
+    "club_id",
+    "question",
+    "as_of"
+  ],
+  "title": "AskRequest",
+  "type": "object"
+}

@@ -1,0 +1,456 @@
+{
+  "$comment": "clubops 0.1.0 \u00b7 capability apply-rules 0.1.0 \u00b7 generated",
+  "$defs": {
+    "Admission": {
+      "enum": [
+        "free_entry",
+        "by_ticket",
+        "not_applicable"
+      ],
+      "title": "Admission",
+      "type": "string"
+    },
+    "AttendanceRange": {
+      "additionalProperties": false,
+      "properties": {
+        "high": {
+          "minimum": 1,
+          "title": "High",
+          "type": "integer"
+        },
+        "low": {
+          "minimum": 1,
+          "title": "Low",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "low",
+        "high"
+      ],
+      "title": "AttendanceRange",
+      "type": "object"
+    },
+    "Audience": {
+      "enum": [
+        "aub_students_only",
+        "aub_and_non_aub_students"
+      ],
+      "title": "Audience",
+      "type": "string"
+    },
+    "EventSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "admission": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Admission"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "audience": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Audience"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "catering_items": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Catering Items",
+          "type": "array"
+        },
+        "club_id": {
+          "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+          "title": "Club Id",
+          "type": "string"
+        },
+        "collaborating_clubs": {
+          "items": {
+            "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+            "type": "string"
+          },
+          "title": "Collaborating Clubs",
+          "type": "array"
+        },
+        "confirmed_by": {
+          "anyOf": [
+            {
+              "pattern": "^m-[a-z0-9-]{2,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "set when a cabinet member confirms the spec",
+          "title": "Confirmed By"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "end": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End"
+        },
+        "estimated_budget": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Money"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "event_id": {
+          "pattern": "^ev-[a-z0-9-]{2,63}$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EventType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "event_type_other": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Event Type Other"
+        },
+        "expected_attendance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AttendanceRange"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "funding": {
+          "items": {
+            "$ref": "#/$defs/Funding"
+          },
+          "title": "Funding",
+          "type": "array"
+        },
+        "has_catering": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Has Catering"
+        },
+        "has_prizes": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Has Prizes"
+        },
+        "has_sales": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Has Sales"
+        },
+        "needs_materials": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Needs Materials"
+        },
+        "revision": {
+          "description": "bumped on every change; downstream outputs record the revision they used",
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "sdgs": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Sdgs",
+          "type": "array"
+        },
+        "speakers": {
+          "items": {
+            "$ref": "#/$defs/Speaker"
+          },
+          "title": "Speakers",
+          "type": "array"
+        },
+        "start": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start"
+        },
+        "ticket_price": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Money"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "title": {
+          "anyOf": [
+            {
+              "maxLength": 150,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "venue": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Venue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "event_id",
+        "club_id",
+        "revision"
+      ],
+      "title": "EventSpec",
+      "type": "object"
+    },
+    "EventType": {
+      "enum": [
+        "conference",
+        "community_service_event",
+        "concert",
+        "debate",
+        "exhibition",
+        "film_screening",
+        "gala_dinner",
+        "lecture",
+        "meeting",
+        "play",
+        "reception",
+        "sport",
+        "trip",
+        "workshop",
+        "other"
+      ],
+      "title": "EventType",
+      "type": "string"
+    },
+    "Funding": {
+      "enum": [
+        "club_account",
+        "external_sponsor",
+        "faculty_department_aid",
+        "usfc",
+        "no_expenses"
+      ],
+      "title": "Funding",
+      "type": "string"
+    },
+    "Money": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$",
+              "type": "string"
+            }
+          ],
+          "title": "Amount"
+        },
+        "currency": {
+          "default": "USD",
+          "enum": [
+            "USD",
+            "LBP"
+          ],
+          "title": "Currency",
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount"
+      ],
+      "title": "Money",
+      "type": "object"
+    },
+    "Speaker": {
+      "additionalProperties": false,
+      "properties": {
+        "first_name": {
+          "maxLength": 60,
+          "title": "First Name",
+          "type": "string"
+        },
+        "last_name": {
+          "maxLength": 60,
+          "title": "Last Name",
+          "type": "string"
+        },
+        "nationality": {
+          "maxLength": 60,
+          "title": "Nationality",
+          "type": "string"
+        },
+        "topic": {
+          "maxLength": 200,
+          "title": "Topic",
+          "type": "string"
+        }
+      },
+      "required": [
+        "first_name",
+        "last_name",
+        "nationality",
+        "topic"
+      ],
+      "title": "Speaker",
+      "type": "object"
+    },
+    "Venue": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/VenueKind"
+        },
+        "name": {
+          "maxLength": 120,
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "name"
+      ],
+      "title": "Venue",
+      "type": "object"
+    },
+    "VenueKind": {
+      "enum": [
+        "green_field",
+        "west_hall",
+        "classroom",
+        "other_on_campus",
+        "off_campus",
+        "online"
+      ],
+      "title": "VenueKind",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "as_of": {
+      "format": "date",
+      "title": "As Of",
+      "type": "string"
+    },
+    "spec": {
+      "$ref": "#/$defs/EventSpec"
+    }
+  },
+  "required": [
+    "spec",
+    "as_of"
+  ],
+  "title": "RuleApplicationRequest",
+  "type": "object"
+}

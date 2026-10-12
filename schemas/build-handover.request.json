@@ -1,0 +1,62 @@
+{
+  "$comment": "clubops 0.1.0 \u00b7 capability build-handover 0.1.0 \u00b7 generated",
+  "$defs": {
+    "Role": {
+      "enum": [
+        "president",
+        "vice_president",
+        "secretary",
+        "treasurer",
+        "events",
+        "sponsorship",
+        "communications",
+        "member",
+        "adviser"
+      ],
+      "title": "Role",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "as_of": {
+      "format": "date",
+      "title": "As Of",
+      "type": "string"
+    },
+    "club_id": {
+      "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+      "title": "Club Id",
+      "type": "string"
+    },
+    "incoming": {
+      "anyOf": [
+        {
+          "pattern": "^m-[a-z0-9-]{2,63}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Incoming"
+    },
+    "outgoing": {
+      "pattern": "^m-[a-z0-9-]{2,63}$",
+      "title": "Outgoing",
+      "type": "string"
+    },
+    "role": {
+      "$ref": "#/$defs/Role"
+    }
+  },
+  "required": [
+    "club_id",
+    "role",
+    "outgoing",
+    "as_of"
+  ],
+  "title": "HandoverRequest",
+  "type": "object"
+}

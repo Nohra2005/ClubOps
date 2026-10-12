@@ -1,0 +1,119 @@
+{
+  "$comment": "clubops 0.1.0 \u00b7 capability plan-interview 0.1.0 \u00b7 generated",
+  "$defs": {
+    "Gap": {
+      "additionalProperties": false,
+      "properties": {
+        "about": {
+          "anyOf": [
+            {
+              "pattern": "^kh-[a-z0-9-]{2,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "About"
+        },
+        "gap_id": {
+          "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+          "title": "Gap Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/GapKind"
+        },
+        "priority": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ],
+          "title": "Priority",
+          "type": "string"
+        },
+        "question": {
+          "description": "what to ask the outgoing officer",
+          "maxLength": 400,
+          "title": "Question",
+          "type": "string"
+        },
+        "topic": {
+          "maxLength": 200,
+          "title": "Topic",
+          "type": "string"
+        }
+      },
+      "required": [
+        "gap_id",
+        "kind",
+        "topic",
+        "question",
+        "priority"
+      ],
+      "title": "Gap",
+      "type": "object"
+    },
+    "GapKind": {
+      "enum": [
+        "missing",
+        "stale",
+        "unverified",
+        "contradiction",
+        "unowned_obligation"
+      ],
+      "title": "GapKind",
+      "type": "string"
+    },
+    "Role": {
+      "enum": [
+        "president",
+        "vice_president",
+        "secretary",
+        "treasurer",
+        "events",
+        "sponsorship",
+        "communications",
+        "member",
+        "adviser"
+      ],
+      "title": "Role",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "club_id": {
+      "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+      "title": "Club Id",
+      "type": "string"
+    },
+    "gaps": {
+      "items": {
+        "$ref": "#/$defs/Gap"
+      },
+      "minItems": 1,
+      "title": "Gaps",
+      "type": "array"
+    },
+    "max_questions": {
+      "default": 12,
+      "maximum": 25,
+      "minimum": 1,
+      "title": "Max Questions",
+      "type": "integer"
+    },
+    "role": {
+      "$ref": "#/$defs/Role"
+    }
+  },
+  "required": [
+    "club_id",
+    "role",
+    "gaps"
+  ],
+  "title": "InterviewRequest",
+  "type": "object"
+}
