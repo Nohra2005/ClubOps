@@ -1,0 +1,26 @@
+# Design log
+
+Every design choice, in the order it was made, with the alternatives considered and the reason. It feeds the final report's design-choices section. Bigger choices also get an ADR in `adr/`.
+
+Status: **decided** · **proposed** (awaiting the owner's confirmation) · **superseded**.
+
+| # | Date | Decision | Alternatives considered | Why | Status |
+|---|---|---|---|---|---|
+| D-01 | 2026-10-12 | One OpenAI-compatible model client over `httpx`, provider set by configuration | A provider SDK; a framework (LangChain etc.) | Minimal dependencies; switch provider without code changes | decided |
+| D-02 | 2026-10-12 | Model calls run in `replay` mode by default; `record` and `live` on request | Always live | Free, reproducible results without API keys (brief: reproducibility) | decided |
+| D-03 | 2026-10-12 | Free model tier for synthetic data; a cheap paid provider that does not train on inputs for real club data | One provider for everything | Cost limit set by the owner; real chats must not be used for training | decided |
+| D-04 | 2026-10-12 | Recordings of real-data model calls are never committed | Commit all recordings | They contain club data | decided |
+| D-05 | 2026-10-12 | AUB-wide rules stored once for all clubs; the system is multi-club, tested on the Running Club | One store per club | Rules must not be duplicated; avoid a running-only design | decided |
+| D-06 | 2026-10-12 | All cabinet members use the system; the adviser is read-only | President only | Matches how the club works | decided |
+| D-07 | 2026-10-15 | The agent never creates, redraws or retraces a logo; it uses official files and asks the owner when a file is too small | Recreate logos from images | A redrawn logo is wrong and misrepresents the brand (found during the Oct 18 triathlon work) | decided |
+| D-08 | 2026-10-21 | Tatiana owns `capture` and the evaluation datasets | Split capture and evaluation | Capture labels (D1) must exist before capture is built, so one owner is simpler | decided |
+| D-09 | 2026-10-21 | Before any text reaches the model, phone numbers, AUB IDs and e-mail addresses are replaced with placeholders; names are kept. Extracted items do not record who said what | Redact nothing; also redact names | Brief requires "secret and PII protection" and memory privacy considerations; names of offices and contacts are part of the know-how (who decides what) | decided |
+| D-10 | 2026-10-21 | Separate contacts store (name, role, organization, channel, phone/e-mail), cabinet-only, never sent to the model or quoted; know-how items point to it with `contact_ref` | Contacts inside know-how items; no contact details | The cabinet needs contact details; the model does not | decided |
+| D-11 | 2026-10-21 | Rule items carry a source authority: `official_document` > `office_email` > `stated_by_president`. A weaker source that conflicts with a stronger one becomes a contradiction for a person to resolve | Treat all sources equally | Oct 15: a rule stated verbally ("Red Bull allowed") was overruled by an office (Athletics). Becomes a regression test | decided |
+| D-12 | 2026-10-21 | Asset registry for files (logos, templates, signed agreements): owner, source, official yes/no, resolution or vector, allowed uses; know-how items can point to assets | Keep files outside the system | The agent guessed logos when no official file was recorded (see D-07) | decided |
+| D-13 | 2026-10-21 | Hybrid memory: verified know-how items are the source of truth and are retrieved first; redacted chat excerpts are a fallback, always shown as "unverified". Plain RAG over raw chats is kept as an evaluation baseline | RAG over raw chats only; verified items only | Know-how changes and gets overruled; plain RAG returns old and new versions alike. Comparing the two answers the brief's "compare design choices" | proposed |
+| D-14 | 2026-10-21 | Raw exports are deleted after capture, but a redacted excerpt store is kept outside the repo; it is the evaluation data, the RAG baseline's corpus and the hybrid fallback | Delete everything after capture | Capture cannot be evaluated or audited without the source | proposed |
+| D-15 | 2026-10-21 | Staff e-mails: only office decisions are captured, without quotes or names. Presidents' chat: excluded until its members agree | Use everything; exclude both | Brief requires authorized data; an office's ruling is institutional, not personal | proposed |
+| D-16 | 2026-10-21 | Tatiana labels all of D1 (150+ items) before capture is built; one cabinet member independently labels about 30 items to report agreement | One labeller; a model as second labeller | Shows the labels are not one person's opinion; a model would be the system grading itself | proposed |
+| D-17 | 2026-10-21 | Chats are cut into episodes at silences (6 hours, and always at a gap over a day) | Fixed-size chunks; model-based topic splitting | Club tasks are discussed in bursts; no model cost; episodes are natural units for D1 and the excerpt store | proposed |
+| D-18 | 2026-10-21 | Voice notes, images and documents omitted from exports are counted and reported as a limitation; episodes that are mostly omitted media are marked low-evidence | Transcribe voice notes | Lebanese-dialect transcription is unreliable and out of scope for now | proposed |
