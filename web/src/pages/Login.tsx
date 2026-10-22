@@ -25,7 +25,7 @@ export default function Login() {
     );
   }
   return (
-    <div className="login-page">
+    <main className="login-page">
       <div className="login-art">
         <Link to="/events" className="brand">
           <div className="brand-symbol">
@@ -65,6 +65,6 @@ export default function Login() {
           </>
         )}
       </div>
-    </div>
+    </main>
   );
 }

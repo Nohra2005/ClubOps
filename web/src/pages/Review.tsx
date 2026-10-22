@@ -189,6 +189,7 @@ function ReviewItem({
               <input
                 type="file"
                 accept=".pdf,.txt"
+                aria-label="Upload replacement document"
                 ref={file}
                 className="sr-only"
                 onChange={async (e) => {
