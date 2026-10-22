@@ -18,6 +18,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [signedOut, setSignedOut] = useState(false);
   useEffect(() => { if (!toast) return; const timer = setTimeout(() => setToast(''), 4500); return () => clearTimeout(timer); }, [toast]);
   useEffect(() => { const down = () => setOffline(true); const up = () => setOffline(false); const storage = () => setToast('Browser storage is unavailable. Changes stay in this tab only.'); window.addEventListener('clubops-offline', down); window.addEventListener('offline', down); window.addEventListener('online', up); window.addEventListener('clubops-storage-unavailable', storage); return () => { window.removeEventListener('clubops-offline', down); window.removeEventListener('offline', down); window.removeEventListener('online', up); window.removeEventListener('clubops-storage-unavailable', storage); }; }, []);
+  if (window.location.pathname === '/login') return <>{children}</>;
   if (user.loading && (!user.value || (api.mode === 'demo' && (user.value.club.id !== session.club || user.value.role !== session.role)))) return <div className="boot"><div className="brand-symbol">c<span>•</span></div><p>Opening your club workspace…</p><div className="skeleton" /></div>;
   if (user.error || !user.value) return <div className="boot"><h1>Let's get you connected.</h1><p>{user.error}</p><button className="button primary" onClick={user.reload}>Try again</button><a className="button" href="/login">Sign in</a></div>;
   const me = user.value;

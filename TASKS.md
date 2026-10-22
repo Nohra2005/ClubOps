@@ -348,7 +348,7 @@ Reference documents:
 
 ### C-12 States and cost rules
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-05
 - What: Loading, empty, error and fallback states from the spec; AI buttons disabled while running; nothing calls AI on page load.
 - Done when: every state in the spec's table can be shown.

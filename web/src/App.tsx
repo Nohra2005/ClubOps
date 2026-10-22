@@ -14,6 +14,7 @@ import Knowledge, { KnowledgeFact } from './pages/Knowledge';
 import Handover from './pages/Handover';
 import Settings from './pages/Settings';
 import Setup from './pages/Setup';
+import Login from './pages/Login';
 import { storage } from './api';
 
 const navigation = [
@@ -61,10 +62,6 @@ function Shell() {
 
 export function PageHeading({ eyebrow, title, description, action }: { eyebrow?: string; title: string; description: string; action?: React.ReactNode }) { return <div className="page-heading"><div>{eyebrow && <div className="eyebrow">{eyebrow}</div>}<h1>{title}</h1><p>{description}</p></div>{action && <div className="heading-action">{action}</div>}</div>; }
 
-function Login() {
-  const { api, signIn } = useApp(); const navigate = useNavigate(); const [message, setMessage] = useState('');
-  return <div className="login-page"><div className="login-art"><Link to="/events" className="brand"><div className="brand-symbol">c<span>•</span></div><span>clubops.</span></Link><div><span className="eyebrow">A BETTER WAY TO RUN YOUR CLUB</span><h1>Great events.<br />A lasting legacy.</h1><p>Keep your plans, your people, and everything you've learned together.</p></div><small>Made for the cabinet. Built for the next one.</small></div><div className="login-form"><span className="eyebrow">WELCOME TO CLUBOPS</span><h2>Your club starts here.</h2><p>Sign in to your cabinet workspace.</p><button className="button google-button" onClick={() => { const url = import.meta.env.VITE_AUTH_LOGIN_URL; if (api.mode === 'http' && url) window.location.assign(url); else setMessage('Google sign-in will open when your club server is connected. You can explore the sample workspace below.'); }}><span className="google-g">G</span> Continue with Google</button>{message && <p role="status" className="inline-note">{message}</p>}{api.mode === 'demo' && <><div className="divider-label">or take a look around</div><button className="button primary" onClick={() => { signIn(); navigate('/events'); }}>Explore the demo <ArrowRight size={16} /></button><small>Sample accounts and fictional records. No Google account is connected.</small></>}</div></div>;
-}
 function NotFound() { return <><PageHeading eyebrow="404" title="This page took a wrong turn." description="It may have moved, or the link may be incomplete." /><Link to="/events" className="button primary">Back to Events <ArrowRight size={16} /></Link></>; }
 
 export default function App() { return <BrowserRouter><AppProvider><Routes><Route path="/login" element={<Login />} /><Route element={<Shell />}><Route index element={<Navigate to="/events" replace />} /><Route path="events" element={<Events />} /><Route path="events/new" element={<NewEvent />} /><Route path="events/:id" element={<EventDetail />} /><Route path="chat" element={<Chat />} /><Route path="review" element={<Review />} /><Route path="calendar" element={<Calendar />} /><Route path="knowledge" element={<Knowledge />} /><Route path="knowledge/:id" element={<KnowledgeFact />} /><Route path="handover" element={<Handover />} /><Route path="settings" element={<Settings />} /><Route path="setup" element={<Setup />} /><Route path="*" element={<NotFound />} /></Route></Routes></AppProvider></BrowserRouter>; }
