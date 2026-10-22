@@ -375,6 +375,13 @@ Reference documents:
 - What: Fix what the final test finds; help with the demo.
 - Done when: demo day.
 
+### C-16 Repair the frontend PR dependency audit
+- Owner: christophe
+- Status: doing
+- Needs: C-12
+- What: With Christophe's explicit authorization, update the vulnerable Python dependency blocking PR #9, verify the locked environment and CI, and record the handoff.
+- Done when: the dependency audit and existing PR checks pass without disabling security checks.
+
 ---
 
 ## Joey: calendar, reminders, drafts
