@@ -341,7 +341,7 @@ Reference documents:
 
 ### C-11 Settings and new-club setup
 - Owner: christophe
-- Status: doing
+- Status: done
 - Needs: C-03, C-04
 - What: Cabinet, Google connection, OSA email inbox, documents, AI cost; the setup flow.
 - Done when: works on fake data.
