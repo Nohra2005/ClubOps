@@ -6,7 +6,7 @@ onto the form without translation. Unknown facts stay ``None`` and become questi
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from enum import StrEnum
 from typing import Self
 
@@ -171,4 +171,40 @@ class EventDraft(Contract):
         missing = filled - set(self.provenance)
         if missing:
             raise ValueError(f"fields without provenance: {sorted(missing)}")
+        return self
+
+
+# ------------------------------------------------------------ status and history
+
+
+class EventStatus(StrEnum):
+    """Where an event is in its life (UI spec, Events screen)."""
+
+    DRAFT = "draft"  # details being filled
+    PLANNED = "planned"  # the agent made a plan; waiting for a cabinet member to approve it
+    APPROVED = "approved"  # plan approved; calendar items sent
+    DONE = "done"  # the date has passed; after-event form due
+    CLOSED = "closed"  # after-event form filled
+    CANCELLED = "cancelled"
+
+
+class EventRecord(Contract):
+    """A past or current event, kept as history (D-21). Know-how support points here."""
+
+    event_id: EventId
+    club_id: ClubId
+    title: str = Field(max_length=150)
+    event_type: EventType | None = None
+    on: date
+    status: EventStatus
+    spec_revision: int | None = Field(default=None, ge=1)
+    participants: int | None = Field(default=None, ge=0)
+    sponsors: list[str] = Field(default_factory=list)
+    partners: list[str] = Field(default_factory=list, description="other clubs or organizations")
+    outcome: str | None = Field(default=None, max_length=1000, description="from the after-event form")
+
+    @model_validator(mode="after")
+    def _closed(self) -> Self:
+        if self.status is EventStatus.CLOSED and self.outcome is None:
+            raise ValueError("a closed event records its outcome (the after-event form)")
         return self

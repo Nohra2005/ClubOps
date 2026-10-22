@@ -115,7 +115,7 @@ Reference documents:
 
 ### T-13 Contract changes for the new scope
 - Owner: tatiana
-- Status: todo
+- Status: review
 - Needs: none
 - What: Add to the contracts: "not sure" answers with `ask` and `look_in`; agent runs (steps, questions, step and cost limits); event status; calendar items (see `docs/calendar-contract.md`); drafts (`DraftRequest` → `Draft`, used by Joey's templates); contacts (D-10), assets (D-12) and event history (D-21), with their SQLite tables. Bump versions, run `make schemas`.
 - Done when: merged; Christophe and Joey told what changed.

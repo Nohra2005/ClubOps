@@ -1,0 +1,162 @@
+{
+  "$comment": "clubops 0.2.0 \u00b7 capability calendar-items 0.1.0 \u00b7 generated",
+  "$defs": {
+    "Plan": {
+      "additionalProperties": false,
+      "properties": {
+        "earliest_feasible_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Earliest Feasible Date"
+        },
+        "event_id": {
+          "pattern": "^ev-[a-z0-9-]{2,63}$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "feasible": {
+          "description": "False when a lead time has already passed",
+          "title": "Feasible",
+          "type": "boolean"
+        },
+        "spec_revision": {
+          "minimum": 1,
+          "title": "Spec Revision",
+          "type": "integer"
+        },
+        "tasks": {
+          "items": {
+            "$ref": "#/$defs/PlanTask"
+          },
+          "title": "Tasks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "event_id",
+        "spec_revision",
+        "tasks",
+        "feasible"
+      ],
+      "title": "Plan",
+      "type": "object"
+    },
+    "PlanTask": {
+      "additionalProperties": false,
+      "properties": {
+        "due": {
+          "format": "date",
+          "title": "Due",
+          "type": "string"
+        },
+        "owner_role": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Role"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "requirement_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requirement Id"
+        },
+        "state": {
+          "$ref": "#/$defs/TaskState"
+        },
+        "task_id": {
+          "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 200,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "task_id",
+        "title",
+        "due",
+        "state"
+      ],
+      "title": "PlanTask",
+      "type": "object"
+    },
+    "Role": {
+      "enum": [
+        "president",
+        "vice_president",
+        "secretary",
+        "treasurer",
+        "events",
+        "sponsorship",
+        "communications",
+        "member",
+        "adviser"
+      ],
+      "title": "Role",
+      "type": "string"
+    },
+    "TaskState": {
+      "enum": [
+        "todo",
+        "due_today",
+        "overdue"
+      ],
+      "title": "TaskState",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "approved_by": {
+      "description": "items are only sent after a cabinet member approves the plan",
+      "pattern": "^m-[a-z0-9-]{2,63}$",
+      "title": "Approved By",
+      "type": "string"
+    },
+    "club_id": {
+      "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+      "title": "Club Id",
+      "type": "string"
+    },
+    "event_id": {
+      "pattern": "^ev-[a-z0-9-]{2,63}$",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "plan": {
+      "$ref": "#/$defs/Plan"
+    }
+  },
+  "required": [
+    "club_id",
+    "event_id",
+    "plan",
+    "approved_by"
+  ],
+  "title": "CalendarItemsRequest",
+  "type": "object"
+}

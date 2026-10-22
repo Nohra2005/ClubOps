@@ -1,5 +1,7 @@
 # Calendar contract (event plan → Google Calendar)
 
+The code version is `src/clubops/contracts/calendar.py` (`CalendarItem`), exported as `schemas/calendar-items.response.json`. A test checks that the example below is valid, so this page and the code cannot drift apart.
+
 What the backend gives the calendar part, and what the calendar part does with it. Owner of the calendar part: Joey (TASKS.md J-01 to J-09). Owner of the plan side: Tatiana (T-13, T-14). Decided 2026-10-22 (design log D-45).
 
 ## Rules
@@ -13,9 +15,9 @@ What the backend gives the calendar part, and what the calendar part does with i
 
 | Field | Type | Example | Notes |
 |---|---|---|---|
-| `item_id` | string | `triathlon-2026/book-hostler` | stable; `<event_id>/<task_id>`, or `club/<name>` for club-wide items |
+| `item_id` | string | `ev-triathlon-2026/book-hostler` | stable; `<event_id>/<task>`, or `club/<name>` for club-wide items |
 | `club_id` | string | `running-club` | |
-| `event_id` | string or null | `triathlon-2026` | null for club-wide reminders |
+| `event_id` | string or null | `ev-triathlon-2026` | null for club-wide reminders |
 | `kind` | `event` \| `task` | `task` | |
 | `title` | string | `Ask Hostler for access to track and pool` | |
 | `date` | date | `2026-10-04` | tasks: all-day on this date |
@@ -58,14 +60,19 @@ Planning "Sprint Triathlon, 18 Oct" and approving the plan sends one event and i
 
 ```json
 [
-  {"item_id": "triathlon-2026/event", "kind": "event", "title": "AUB Sprint Triathlon",
-   "date": "2026-10-18", "start": "2026-10-18T06:00+03:00", "end": "2026-10-18T12:00+03:00",
+  {"item_id": "ev-triathlon-2026/event", "club_id": "running-club", "event_id": "ev-triathlon-2026",
+   "kind": "event", "title": "AUB Sprint Triathlon", "date": "2026-10-18",
+   "start": "2026-10-18T06:00:00+03:00", "end": "2026-10-18T12:00:00+03:00",
    "owner_role": "all_cabinet", "reminders": [{"before_days": 1}], "status": "open"},
-  {"item_id": "triathlon-2026/book-hostler", "kind": "task", "title": "Ask Hostler for access to track and pool",
-   "date": "2026-10-04", "owner_role": "events",
-   "reminders": [{"before_days": 2}, {"on_day_at": "08:00"}], "status": "open"},
-  {"item_id": "triathlon-2026/impact-form", "kind": "task", "title": "Fill the OSA impact report",
-   "date": "2026-10-20", "owner_role": "president",
-   "reminders": [{"after_days": 2}, {"after_days": 5}], "repeat_until_done": true, "status": "open"}
+  {"item_id": "ev-triathlon-2026/book-hostler", "club_id": "running-club", "event_id": "ev-triathlon-2026",
+   "kind": "task", "title": "Ask Hostler for access to track and pool", "date": "2026-10-04",
+   "owner_role": "events", "reminders": [{"before_days": 2}, {"on_day_at": "08:00:00"}], "status": "open"},
+  {"item_id": "ev-triathlon-2026/impact-form", "club_id": "running-club", "event_id": "ev-triathlon-2026",
+   "kind": "task", "title": "Fill the OSA impact report", "date": "2026-10-20",
+   "owner_role": "president", "reminders": [{"after_days": 2}, {"after_days": 5}],
+   "repeat_until_done": true, "status": "open"},
+  {"item_id": "club/osa-rule-check-2026-09", "club_id": "running-club", "event_id": null,
+   "kind": "task", "title": "Check the OSA rules page for this year's update", "date": "2026-09-01",
+   "owner_role": "president", "reminders": [{"on_day_at": "09:00:00"}], "status": "open"}
 ]
 ```

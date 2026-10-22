@@ -55,3 +55,13 @@ No entries yet — `capture`'s contract (`CaptureRequest`/`CaptureResult` in `sr
 **Next:** T-13 contract changes (not-sure answers, agent runs, event status, calendar items, drafts, contacts, assets, event history + their tables).
 
 **Open questions / blockers:** F-54 (two files, no shared transaction) left as a known limit.
+
+## 2026-10-22 — Tatiana Nohra, with Claude (feat/contracts-v0.2)
+
+**Did:** Contracts 0.2.0 (D-54): Answer with `ask`/`look_in`; agent run; calendar item; draft; event status and history; contact; asset. New provisional capabilities `plan-event`, `draft`, `calendar-items`; `ask` 0.2.0. Directory store (contacts, assets, events) in the shared/club SQLite files. Schemas regenerated. F-55 to F-60.
+
+**State:** `make check` passes (233 tests). Branch `feat/contracts-v0.2` pushed; PR should carry the `contract-change` label.
+
+**Next:** tell Christophe (UI examples updated to the new fields; `schemas/` is the source of truth) and Joey (`schemas/calendar-items.*`, `schemas/draft.*`). Then T-14 planner agent (needs the API key soon) or T-15 rules.
+
+**Open questions / blockers:** none.

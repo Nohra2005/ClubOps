@@ -1,5 +1,5 @@
 {
-  "$comment": "clubops 0.1.0 \u00b7 capability suggest-replacement 0.0.2 \u00b7 generated",
+  "$comment": "clubops 0.2.0 \u00b7 capability suggest-replacement 0.0.2 \u00b7 generated",
   "$defs": {
     "Candidate": {
       "additionalProperties": false,

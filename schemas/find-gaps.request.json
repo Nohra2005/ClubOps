@@ -1,5 +1,5 @@
 {
-  "$comment": "clubops 0.1.0 \u00b7 capability find-gaps 0.1.0 \u00b7 generated",
+  "$comment": "clubops 0.2.0 \u00b7 capability find-gaps 0.1.0 \u00b7 generated",
   "$defs": {
     "Role": {
       "enum": [

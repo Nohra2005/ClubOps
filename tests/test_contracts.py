@@ -15,7 +15,7 @@ from clubops.contracts.common import Contract, Error, ErrorCode, Result, Role, S
 from clubops.contracts.event import EventSpec, EventType
 from clubops.contracts.forms import FormTemplate
 from clubops.contracts.handover import HandoverEntry
-from clubops.contracts.knowhow import Answer, ItemStatus, KnowHowProposal, ProposalOp, Scope
+from clubops.contracts.knowhow import Answer, AskWho, ItemStatus, KnowHowProposal, ProposalOp, Scope
 from tests.factories import CLUB, NOW, item, proposal, rule, source
 
 TRACE = TraceMeta(trace_id="t" * 16, capability="ask", capability_version="0.1.0", started_at=NOW, latency_ms=1)
@@ -86,7 +86,9 @@ def test_known_answer_cites_and_unknown_answer_does_not() -> None:
         Answer(known=True, text="yes", basis="verified")
     with pytest.raises(ValidationError):
         Answer(known=False, text="?", citations=["kh-a"], basis="none")
-    Answer(known=False, text="Not in the club's know-how.", basis="none")
+    with pytest.raises(ValidationError):
+        Answer(known=False, text="Not in the club's know-how.", basis="none")  # must say who to ask
+    Answer(known=False, text="Not in the club's know-how.", basis="none", ask=AskWho(who="the club president"))
 
 
 def test_handover_entry_must_cite() -> None:
@@ -127,7 +129,7 @@ def test_proposed_action_hash_must_match_payload() -> None:
 
 def test_contracts_are_strict() -> None:
     with pytest.raises(ValidationError):
-        Answer(known=False, text="x", basis="none", surprise="field")  # type: ignore[call-arg]
+        Answer(known=False, text="x", basis="none", ask=AskWho(who="the club president"), surprise="field")  # type: ignore[call-arg]
 
 
 @pytest.mark.parametrize("spec", CAPABILITIES, ids=lambda s: s.name)

@@ -11,7 +11,19 @@ from enum import StrEnum
 
 from pydantic import BaseModel
 
-from clubops.contracts import approvals, event, forms, handover, knowhow, planning, rules, sponsors
+from clubops.contracts import (
+    agent,
+    approvals,
+    calendar,
+    drafts,
+    event,
+    forms,
+    handover,
+    knowhow,
+    planning,
+    rules,
+    sponsors,
+)
 
 
 class Control(StrEnum):
@@ -88,13 +100,13 @@ CAPABILITIES: tuple[CapabilitySpec, ...] = (
     ),
     CapabilitySpec(
         name="ask",
-        version="0.1.0",
+        version="0.2.0",
         control=Control.AGENTIC,
         stability=Stability.FROZEN,
         request=knowhow.AskRequest,
         response=knowhow.Answer,
-        policy=Policy(timeout_s=20, max_retries=1, fallback="answer 'not known'"),
-        summary="Answer a question from verified know-how only, with citations, or say it is not known.",
+        policy=Policy(timeout_s=20, max_retries=1, fallback="answer 'not known' and name the club president to ask"),
+        summary="Answer a question from verified know-how only, with citations, or say it is not known and who to ask.",
         may_read=("knowhow.verified",),
     ),
     CapabilitySpec(
@@ -181,6 +193,47 @@ CAPABILITIES: tuple[CapabilitySpec, ...] = (
         response=planning.Plan,
         policy=DETERMINISTIC,
         summary="Compute task due dates backward from the event date using rule lead times.",
+        may_propose=(approvals.ActionKind.SEND_CALENDAR_INVITE,),
+    ),
+    # ------------------------------------------------------------- agent, drafts, calendar (v0.2, D-42/D-45)
+    CapabilitySpec(
+        name="plan-event",
+        version="0.1.0",
+        control=Control.AGENTIC,
+        stability=Stability.PROVISIONAL,
+        request=agent.PlanEventRequest,
+        response=agent.AgentRun,
+        policy=Policy(
+            timeout_s=60, max_retries=1, fallback="checklist from the rulebook only; every rule marked uncertain"
+        ),
+        summary="Agent loop: chooses its own steps (memory, past events, rules, calendar, proposal), asks when "
+        "information is missing, stops at its step and cost limits.",
+        may_read=("knowhow.verified", "club.profile", "events.history", "forms"),
+        takes_untrusted=True,
+    ),
+    CapabilitySpec(
+        name="draft",
+        version="0.1.0",
+        control=Control.AGENTIC,
+        stability=Stability.PROVISIONAL,
+        request=drafts.DraftRequest,
+        response=drafts.Draft,
+        policy=Policy(timeout_s=30, max_retries=1, fallback="the template's fixed text with blanks for a person"),
+        summary="Write one draft (announcement, email, caption, poster text, expense form, shifts, impact report) "
+        "from a template; a person copies or sends it.",
+        may_read=("knowhow.verified", "club.profile", "events.history"),
+        may_propose=(approvals.ActionKind.SEND_EMAIL, approvals.ActionKind.SHARE_REMINDER),
+        takes_untrusted=True,
+    ),
+    CapabilitySpec(
+        name="calendar-items",
+        version="0.1.0",
+        control=Control.DETERMINISTIC,
+        stability=Stability.PROVISIONAL,
+        request=calendar.CalendarItemsRequest,
+        response=calendar.CalendarItems,
+        policy=DETERMINISTIC,
+        summary="Turn an approved plan into calendar items with default reminders (docs/calendar-contract.md).",
         may_propose=(approvals.ActionKind.SEND_CALENDAR_INVITE,),
     ),
     # ------------------------------------------------------------ sponsors
