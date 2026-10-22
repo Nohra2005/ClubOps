@@ -45,7 +45,7 @@ Reference documents:
 
 ### T-03 Write the learning test (10 facts)
 - Owner: tatiana
-- Status: todo
+- Status: done
 - Needs: none
 - What: 10 facts to teach ClubOps (by chat, after-event form or forwarded email) and, for each, a later question that should use it.
 - Done when: 10 fact + question pairs saved privately.
