@@ -101,7 +101,7 @@ Reference documents:
 
 ### T-11 Redaction
 - Owner: tatiana
-- Status: todo
+- Status: review
 - Needs: none
 - What: Replace phones, AUB IDs, emails and links before any text reaches the model (D-09, D-36). Don't redact money ranges like "1500-3000".
 - Done when: merged with tests, including false-positive cases.
