@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { ApiError } from './api/client';
 
-export function useResource<T>(load: () => Promise<T>, keys: unknown[]) {
+export function useResource<T>(load: () => Promise<T>, keys: unknown[], retain = false) {
   const loader = useRef(load); loader.current = load;
   const [value, setValue] = useState<T>();
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(true);
   const [revision, setRevision] = useState(0);
   useEffect(() => {
-    let active = true; setLoading(true); setValue(undefined); setError(undefined);
+    let active = true; setLoading(true); if (!retain) setValue(undefined); setError(undefined);
     loader.current().then(result => { if (active) { setValue(result); setLoading(false); } }).catch((cause: unknown) => {
       if (!active) return;
       setError(cause instanceof Error ? cause.message : 'Something went wrong. Please try again.'); setLoading(false);
