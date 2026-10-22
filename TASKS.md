@@ -271,7 +271,7 @@ Reference documents:
 
 ### C-01 Read the UI spec and pick the stack
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: none
 - What: Read the UI spec. Choose any framework that deploys on the same free host. Agree the sign-in method with Tatiana (AUB email link or Google sign-in).
 - Done when: stack and sign-in written in `docs/design-log.md` (one row each).

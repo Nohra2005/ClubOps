@@ -1,0 +1,12 @@
+:root { font-family: 'DM Sans Variable', sans-serif; color: #222f2e; background: #f6f7f3; font-synthesis: none; -webkit-font-smoothing: antialiased; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+button, input, textarea, select { font: inherit; }
+button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+button, a { touch-action: manipulation; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid #609d92; outline-offset: 3px; }
+.welcome { max-width: 700px; margin: 15vh auto; padding: 32px; }
+.wordmark { font: 800 32px 'Manrope Variable', sans-serif; letter-spacing: -1.8px; color: #173c3a; }
+.wordmark span { font-size: 12px; vertical-align: top; letter-spacing: 0; margin-left: 3px; }
+h1, h2, h3 { font-family: 'Manrope Variable', sans-serif; }
