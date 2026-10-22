@@ -327,7 +327,7 @@ Reference documents:
 
 ### C-09 Knowledge screen and fact page
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-03, C-04
 - What: The 5 tabs, plain search, fact page with sources and history.
 - Done when: works on fake data.

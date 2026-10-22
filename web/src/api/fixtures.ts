@@ -17,7 +17,7 @@ export const proposalLabels = [
 
 export function proposalFor(fields: EventFields, clubName: string): ProposalAnswer[] {
   const answers: Record<number, string> = { 1: clubName, 3: 'Alex', 4: 'Morgan', 6: 'President', 9: fields.title, 10: 'Sport', 13: fields.date, 14: fields.time, 15: fields.date, 16: fields.end_time, 17: fields.venue, 18: fields.description, 19: 'To confirm', 20: fields.catering, 22: fields.audience, 23: fields.expected_attendance, 25: 'Free entry', 27: fields.budget === '0' ? 'No expenses' : 'To confirm', 28: fields.catering === 'No' ? 'Not applicable' : fields.sponsors, 32: 'Robin Taylor' };
-  return proposalLabels.map((label, i) => ({ field_id: `q${String(i + 1).padStart(2, '0')}`, label, value: answers[i + 1] ?? '', origin: answers[i + 1] ? ([1, 3, 4, 6, 32].includes(i + 1) ? 'retrieved' : 'stated') : 'missing', ...([1, 3, 4, 6, 32].includes(i + 1) ? { source: { item_id: 'kh-demo-profile', label: 'Demo club profile', kind: 'note' as const } } : {}) }));
+  return proposalLabels.map((label, i) => ({ field_id: `q${String(i + 1).padStart(2, '0')}`, label, value: answers[i + 1] ?? '', origin: answers[i + 1] ? ([1, 3, 4, 6, 32].includes(i + 1) ? 'retrieved' : 'stated') : 'missing', ...([1, 3, 4, 6, 32].includes(i + 1) ? { source: { item_id: 'kh-demo-profile', label: 'Demo club profile', kind: 'note' as const, quote: 'Synthetic cabinet profile used only for the frontend demo.' } } : {}) }));
 }
 
 export function eventFor(id: string, title: string, date: string, status: EventDetail['status'], clubName = 'Running Club'): EventDetail {

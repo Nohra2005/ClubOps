@@ -32,7 +32,7 @@ export class ApiClient {
   review(filter: ReviewFilter = 'all') { return this.request<ReviewCard[]>(`/review?filter=${filter}`); }
   decide(id: string, decision: ReviewDecision) { return this.post<ReviewCard>(`/review/${encodeURIComponent(id)}`, decision); }
   calendar(month: string) { return this.request<CalendarData>(`/calendar?month=${month}`); }
-  knowledge(tab: KnowledgeTab, q = '') { return this.request<KnowledgeItem[]>(`/knowledge?tab=${tab}&q=${encodeURIComponent(q)}`); }
+  knowledge(tab: KnowledgeTab | '', q = '') { return this.request<KnowledgeItem[]>(`/knowledge?tab=${tab}&q=${encodeURIComponent(q)}`); }
   fact(id: string) { return this.request<KnowledgeItem>(`/knowledge/${encodeURIComponent(id)}`); }
   handover(role: Role) { return this.request<HandoverGuide>(`/handover/${role}`); }
   cabinet() { return this.request<Member[]>('/cabinet'); }
