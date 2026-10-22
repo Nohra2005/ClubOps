@@ -72,6 +72,7 @@ export function createMockTransport(storage: StorageLike, session: DemoSession, 
       if (run.question?.kind === 'details') {
         let fields: EventFields; try { fields = JSON.parse(text); } catch { throw new ApiError('Please check the event details and try again.', 422); }
         for (const key of ['title','date','time','end_time','venue','audience','expected_attendance','budget'] as const) requiredText(fields[key], 500);
+        if (fields.date < '2026-11-05') run.infeasible = { name: 'Demo venue confirmation', lead_time_days: 14, earliest_date: '2026-11-05' };
         event.fields = fields; event.title = fields.title; event.venue = fields.venue; event.start = `${fields.date}T${fields.time}:00+03:00`; event.end = `${fields.date}T${fields.end_time}:00+03:00`; event.origins = Object.fromEntries(Object.keys(fields).map(k => [k, { origin: fields[k as keyof EventFields] ? 'stated' : 'missing' }]));
       } else event.fields.has_prizes = text;
       run.status = 'working'; run.phase = 'planning'; run.polls = 0; delete run.question; charge(data, 'Event planning'); result = run;
@@ -123,7 +124,7 @@ export function createMockTransport(storage: StorageLike, session: DemoSession, 
     } else if (path.startsWith('/__ui/')) {
       const action = path.slice(6);
       if (action === 'approval') { const row = eventFromBody(data, body).approvals.find(a => a.approval_id === body.approval_id); if (!row || !['needed','requested','granted'].includes(String(body.status))) throw new ApiError('Approval not found.', 404); row.status = body.status as typeof row.status; }
-      else if (action === 'proposal') { const row = eventFromBody(data, body).proposal.find(a => a.field_id === body.field_id); if (!row) throw new ApiError('Question not found.', 404); row.value = String(body.value); row.origin = row.value.trim() ? 'stated' : 'missing'; }
+      else if (action === 'proposal') { const row = eventFromBody(data, body).proposal.find(a => a.field_id === body.field_id); if (!row) throw new ApiError('Question not found.', 404); row.value = String(body.value); row.origin = row.value.trim() ? 'stated' : 'missing'; delete row.source; }
       else if (action === 'draft') { const row = eventFromBody(data, body).drafts[body.type as DraftType]; if (!row) throw new ApiError('Write the draft first.', 404); row.text = String(body.text); row.updated_at = now(); }
       else if (action === 'leaders') { const event = eventFromBody(data, body); event.leaders = body.leaders as EventDetail['leaders']; event.route = String(body.route); }
       else if (action === 'knowledge-edit') { const fact = data.knowledge.find(k => k.item_id === body.item_id); if (!fact) throw new ApiError('Fact not found.', 404); addFact(data, requiredText(body.text), `Suggested edit: ${fact.title}`); }

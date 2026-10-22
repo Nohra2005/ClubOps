@@ -299,7 +299,7 @@ Reference documents:
 
 ### C-05 Events screens
 - Owner: christophe
-- Status: doing
+- Status: done
 - Needs: C-03, C-04
 - What: Event list; new-event flow (describe, check details, agent steps panel with questions); event page with its 6 tabs; plan approval bar; run planner warning.
 - Done when: the full flow works on fake data.
