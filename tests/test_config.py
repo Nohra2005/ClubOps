@@ -13,7 +13,8 @@ def test_defaults_never_call_the_network(tmp_path: Path) -> None:
     assert settings.mode is ModelMode.REPLAY
     assert settings.calls_network is False
     assert settings.api_key is None
-    assert settings.budget_usd_per_packet == Decimal("0.50")
+    assert settings.budget_usd_per_packet == Decimal("0.05")
+    assert settings.max_steps_per_plan == 8
 
 
 def test_environment_overrides_dotenv_and_key_is_secret(tmp_path: Path) -> None:
