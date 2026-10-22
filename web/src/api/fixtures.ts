@@ -135,7 +135,7 @@ export function eventFor(
     audience: 'Club members',
     expected_attendance: '30–40',
     budget: '0',
-    sponsors: 'Cedar Coffee (not confirmed)',
+    sponsors: clubName === 'Running Club' ? 'Cedar Coffee (not confirmed)' : '',
     has_prizes: 'No',
     catering: 'No',
     partner_clubs: '',
@@ -148,7 +148,7 @@ export function eventFor(
     ['announcement', 'Share the announcement', '2026-10-27', 'communications', 'todo'],
     ['leaders', 'Assign the pace group leaders', '2026-10-28', 'events', 'done'],
   ] as const;
-  return {
+  const event: EventDetail = {
     event_id: id,
     title,
     start: `${date}T17:00:00+03:00`,
@@ -158,7 +158,7 @@ export function eventFor(
     task_count: 4,
     tasks_done: status === 'closed' || status === 'done' ? 4 : 1,
     overdue_tasks: status === 'planned' ? 1 : 0,
-    event_type: 'weekly_run',
+    event_type: clubName === 'Running Club' ? 'weekly_run' : 'club_event',
     plan_outdated: false,
     revision: 1,
     fields,
@@ -205,36 +205,44 @@ export function eventFor(
         source: venueSource,
       },
     ],
-    tasks: taskDefs.map(([key, text, due, role, state]) => ({
-      task_id: `${id}/${key}`,
-      event_id: id,
-      title: text,
-      due,
-      owner_role: role,
-      state: status === 'closed' || status === 'done' ? 'done' : state,
-      source: key === 'coffee' ? coffeeSource : venueSource,
-    })),
+    tasks: taskDefs
+      .filter(([key]) => clubName === 'Running Club' || key !== 'coffee')
+      .map(([key, text, due, role, state]) => ({
+        task_id: `${id}/${key}`,
+        event_id: id,
+        title: text,
+        due,
+        owner_role: role,
+        state: status === 'closed' || status === 'done' ? 'done' : state,
+        source: key === 'coffee' ? coffeeSource : venueSource,
+      })),
     proposal: proposalFor(fields, clubName),
     drafts: {},
-    tips: [
-      {
-        item_id: coffeeSource.item_id,
-        title: 'Give your sponsor time',
-        statement: 'For this demo, Cedar Coffee needs ten days of notice.',
-        source: coffeeSource,
-      },
-      {
-        item_id: debriefSource.item_id,
-        title: 'Make the pace groups clear',
-        statement: 'Label each group so new members know where to start.',
-        source: debriefSource,
-      },
-    ],
+    tips:
+      clubName === 'Running Club'
+        ? [
+            {
+              item_id: coffeeSource.item_id,
+              title: 'Give your sponsor time',
+              statement: 'For this demo, Cedar Coffee needs ten days of notice.',
+              source: coffeeSource,
+            },
+            {
+              item_id: debriefSource.item_id,
+              title: 'Make the pace groups clear',
+              statement: 'Label each group so new members know where to start.',
+              source: debriefSource,
+            },
+          ]
+        : [],
     route: 'Campus loop · 5 km · meet at the main entrance',
-    leaders: [
-      { id: 'lead-1', name: 'Sam Lee', pace: 'Easy · 7:00/km' },
-      { id: 'lead-2', name: 'Jamie Reed', pace: 'Steady · 6:00/km' },
-    ],
+    leaders:
+      clubName === 'Running Club'
+        ? [
+            { id: 'lead-1', name: 'Sam Lee', pace: 'Easy · 7:00/km' },
+            { id: 'lead-2', name: 'Jamie Reed', pace: 'Steady · 6:00/km' },
+          ]
+        : [],
     agent_run: {
       run_id: `run-${id}`,
       status: 'done',
@@ -250,6 +258,9 @@ export function eventFor(
       ],
     },
   };
+  event.task_count = event.tasks.length;
+  event.tasks_done = event.tasks.filter((task) => task.state === 'done').length;
+  return event;
 }
 
 export function createWorkspace(clubId: string): Workspace {

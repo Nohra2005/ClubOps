@@ -61,6 +61,7 @@ export default function Chat() {
   const [search] = useSearchParams();
   const historyKey = `clubops.chat.demo.${me.club.id}.${me.user.member_id}`;
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    if (api.mode !== 'demo') return [];
     try {
       const value = JSON.parse(storage.getItem(historyKey) ?? '[]');
       return Array.isArray(value)

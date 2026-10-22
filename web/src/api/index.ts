@@ -11,7 +11,7 @@ const memory = new Map<string, string>();
 export const storage: StorageLike = {
   getItem(key) {
     try {
-      return localStorage.getItem(key) ?? memory.get(key) ?? null;
+      return memory.get(key) ?? localStorage.getItem(key) ?? null;
     } catch {
       return memory.get(key) ?? null;
     }

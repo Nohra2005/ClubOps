@@ -16,6 +16,38 @@ const client = (club = 'running-club', role = 'president' as const) =>
   new ApiClient(createMockTransport(storage, { club, role }, { delay: 0 }), 'demo');
 
 describe('synthetic API safety boundaries', () => {
+  it('does not borrow another club’s chat answers or generated event tips', async () => {
+    const asme = client('asme');
+    expect((await asme.ask('What did we learn from the last run?')).kind).toBe('unknown');
+    expect((await asme.ask('What does Cedar Coffee need?')).kind).toBe('unknown');
+    const planned = await asme.plan('A synthetic ASME workshop');
+    const run = await asme.run(planned.run_id);
+    const event = await asme.event(run.event_id!);
+    expect(JSON.stringify(event)).not.toContain('Cedar Coffee');
+    expect(event.tips).toEqual([]);
+    expect(event.task_count).toBe(event.tasks.length);
+  });
+  it('invalidates a guide sign-off when approved knowledge changes', async () => {
+    const api = client();
+    await api.signOff('president');
+    expect((await api.handover('president')).signed_off_at).toBeTruthy();
+    await api.decide('review-coffee', {
+      decision: 'approve',
+      opened_at: '2026-10-22T10:00:00Z',
+      decided_at: '2026-10-22T10:01:00Z',
+    });
+    expect((await api.handover('president')).signed_off_at).toBeUndefined();
+  });
+  it('proposes shared-rule retirement without retiring the current rule', async () => {
+    const api = client();
+    await api.retire('kh-demo-venue');
+    expect((await api.fact('kh-demo-venue')).status).toBe('current');
+    expect(
+      (await api.review()).some(
+        (card) => card.title.startsWith('Retire:') && card.status === 'pending',
+      ),
+    ).toBe(true);
+  });
   it('isolates persisted workspaces and refuses cross-club deep links', async () => {
     const running = client();
     const asme = client('asme');

@@ -1,13 +1,5 @@
 import { ApiError, type RequestOptions, type Transport } from './client';
-import {
-  clubs,
-  coffeeSource,
-  createWorkspace,
-  debriefSource,
-  DEMO_TODAY,
-  eventFor,
-  proposalFor,
-} from './fixtures';
+import { clubs, createWorkspace, DEMO_TODAY, eventFor, proposalFor } from './fixtures';
 import {
   draftLabels,
   roleLabels,
@@ -261,6 +253,7 @@ export function createMockTransport(
           },
         ]),
       );
+      event.agent_run = undefined;
       data.events.unshift(event);
       charge(data, 'Event planning');
       result = { run_id: newRun(data, event).run_id };
@@ -460,27 +453,51 @@ export function createMockTransport(
     } else if (path === '/chat/ask' && method === 'POST') {
       const text = requiredText(body.text);
       charge(data, 'Chat');
-      result = /insurance|open.water|unknown|not sure|outside guests/i.test(text)
-        ? ({
-            kind: 'unknown',
-            known: false,
-            text: "I don't know this yet.",
-            basis: 'none',
-            ask: { who: 'Student Activities Office', role: 'Confirm the responsible contact' },
-            look_in: 'The current official club handbook',
-            fallback: options.scenario === 'fallback',
-          } satisfies ChatReply)
-        : ({
-            kind: 'answer',
-            known: true,
-            text: /last|learn|welcome/i.test(text)
-              ? 'From the synthetic welcome-run debrief: clearly mark each pace group and introduce the leaders before starting.'
-              : 'In this demo, Cedar Coffee asked for ten days of notice and an estimated head count. Confirm this with your sponsor before relying on it.',
-            basis: /disagree|conflict/i.test(text) ? 'disputed' : 'verified',
-            citations: [/last|learn|welcome/i.test(text) ? debriefSource : coffeeSource],
-            ...(/disagree|conflict/i.test(text) ? { review_id: 'review-conflict' } : {}),
-            fallback: options.scenario === 'fallback',
-          } satisfies ChatReply);
+      const disputed = /disagree|conflict/i.test(text)
+        ? data.review.find((card) => card.type === 'disagreement' && card.status === 'pending')
+        : undefined;
+      const itemId = /last|learn|welcome/i.test(text)
+        ? 'kh-demo-welcome'
+        : /coffee|cedar|sponsor/i.test(text)
+          ? 'kh-demo-coffee'
+          : /venue|contact|hostler/i.test(text)
+            ? 'kh-demo-contact'
+            : '';
+      const item = data.knowledge.find(
+        (item) => item.item_id === itemId && item.status === 'current',
+      );
+      result =
+        disputed && disputed.alternative
+          ? ({
+              kind: 'answer',
+              known: true,
+              text: `Two sources disagree: ${disputed.statement} ${disputed.alternative.statement}`,
+              basis: 'disputed',
+              citations: [disputed.source, disputed.alternative.source],
+              review_id: disputed.id,
+              fallback: options.scenario === 'fallback',
+            } satisfies ChatReply)
+          : item && !/insurance|open.water|unknown|not sure|outside guests/i.test(text)
+            ? ({
+                kind: 'answer',
+                known: true,
+                text: item.statement,
+                basis: 'verified',
+                citations: [{ ...item.sources[0], item_id: item.item_id }],
+                fallback: options.scenario === 'fallback',
+              } satisfies ChatReply)
+            : ({
+                kind: 'unknown',
+                known: false,
+                text: "I don't know this yet.",
+                basis: 'none',
+                ask: {
+                  who: 'Student Activities Office or the outgoing cabinet',
+                  role: 'Confirm the responsible contact',
+                },
+                look_in: 'The current official club handbook and approved cabinet notes',
+                fallback: options.scenario === 'fallback',
+              } satisfies ChatReply);
     } else if (path === '/chat/teach' && method === 'POST') {
       const text = requiredText(body.text);
       const card = addFact(data, text);
