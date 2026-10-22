@@ -8,7 +8,14 @@ test('batch review excludes rules and records review timing', async ({ page }) =
   await expect(rule).toBeVisible();
   await rule.getByRole('button', { name: 'Approve', exact: true }).click();
   await expect(rule).toContainText('Waiting for 2nd president');
-  const reviewed = await page.evaluate(() => JSON.parse(localStorage.getItem('clubops.demo.workspace.v1.running-club')!).review.find((r: { id: string }) => r.id === 'review-coffee'));
-  expect(reviewed.opened_at).toBeTruthy(); expect(reviewed.decided_at).toBeTruthy(); expect(reviewed.status).toBe('approved');
-  await page.reload(); await expect(page.locator('#review-rule')).toContainText('Waiting for 2nd president');
+  const reviewed = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('clubops.demo.workspace.v1.running-club')!).review.find(
+      (r: { id: string }) => r.id === 'review-coffee',
+    ),
+  );
+  expect(reviewed.opened_at).toBeTruthy();
+  expect(reviewed.decided_at).toBeTruthy();
+  expect(reviewed.status).toBe('approved');
+  await page.reload();
+  await expect(page.locator('#review-rule')).toContainText('Waiting for 2nd president');
 });

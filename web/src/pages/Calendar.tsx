@@ -1,18 +1,215 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { ArrowUpRight, CalendarDays, Check, ChevronLeft, ChevronRight, Circle, Link2 } from 'lucide-react';
+import {
+  ArrowUpRight,
+  CalendarDays,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Circle,
+  Link2,
+} from 'lucide-react';
 import { useApp } from '../AppContext';
 import { DEMO_TODAY } from '../api/fixtures';
 import { roleLabels, type CalendarItem } from '../api/types';
-import { ErrorNotice, FilterTabs, Modal, Resource, StatusBadge } from '../components/ui';
-import { PageHeading } from '../App';
+import {
+  PageHeading,
+  ErrorNotice,
+  FilterTabs,
+  Modal,
+  Resource,
+  StatusBadge,
+} from '../components/ui';
 import { useAction, useResource } from '../hooks';
 import { formatDate } from '../lib';
 
 export default function Calendar() {
-  const { api, me, canEdit, isPresident, refresh } = useApp(); const [month,setMonth] = useState(api.mode === 'demo' ? DEMO_TODAY.slice(0,7) : new Date().toISOString().slice(0,7)); const [filter,setFilter] = useState('all'); const [selected,setSelected] = useState<CalendarItem>(); const data = useResource(() => api.calendar(month),[api,month]); const action = useAction();
-  const [year,monthNumber] = month.split('-').map(Number); const start = new Date(year,monthNumber-1,1); const offset = (start.getDay()+6)%7; const length = new Date(year,monthNumber,0).getDate(); const slots = Math.ceil((offset+length)/7)*7;
-  const items = (data.value?.items ?? []).filter(item => filter === 'all' || (item.kind === 'task' && [me.role,'all_cabinet'].includes(item.owner_role)));
-  const move = (amount: number) => { const next = new Date(year,monthNumber-1+amount,1); setMonth(`${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}`); };
-  return <><PageHeading eyebrow="THE NEXT DEADLINE, IN SIGHT" title="Calendar" description="Approved events, tasks, and the dates your club shouldn't miss." action={data.value?.connected ? <span className="calendar-sync"><Check size={13} />{api.mode === 'demo' ? 'Demo sync ready' : 'Calendar connected'}</span> : isPresident ? <Link to="/settings#calendar" className="calendar-sync not-connected"><Link2 size={13} /> Not connected · connect Google</Link> : <span className="calendar-sync not-connected">Google is not connected</span>} /><div className="calendar-toolbar"><div className="month-switch"><button className="icon-button" aria-label="Previous month" onClick={() => move(-1)}><ChevronLeft size={18} /></button><h2>{start.toLocaleDateString('en-GB',{ month: 'long',year: 'numeric' })}</h2><button className="icon-button" aria-label="Next month" onClick={() => move(1)}><ChevronRight size={18} /></button><button className="button small" onClick={() => setMonth(DEMO_TODAY.slice(0,7))}>Today</button></div><FilterTabs value={filter} onChange={setFilter} label="Calendar task filter" options={[{ value: 'all',label: 'All' },{ value: 'mine',label: 'My tasks' }]} /></div><Resource loading={data.loading} error={data.error} retry={data.reload}><section className="calendar-panel" aria-label="Club calendar"><div className="calendar-weekdays">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(day => <span key={day}>{day}</span>)}</div><div className="calendar-grid">{Array.from({ length: slots },(_,i) => { const day = i-offset+1; const date = `${month}-${String(day).padStart(2,'0')}`; const outside = day < 1 || day > length; return <div className={`calendar-day${outside ? ' outside' : ''}${date === DEMO_TODAY ? ' today' : ''}`} key={i}>{!outside && <><span className="day-number">{day}</span><div className="day-items">{items.filter(item => item.date === date).map(item => <button className={`calendar-item calendar-${item.kind}${item.status === 'done' ? ' calendar-done' : ''}`} key={item.item_id} onClick={() => setSelected(item)} aria-label={`${item.title}, ${formatDate(item.date)}`} title={item.title}>{item.kind === 'task' && (item.status === 'done' ? <Check size={8} /> : <Circle size={6} fill="currentColor" />)}<span>{item.title}</span></button>)}</div></>}</div>; })}</div></section><div className="calendar-footer"><div><span><i className="legend-event" /> Events</span><span><i className="legend-task" /> Tasks & reminders</span></div><span>Make changes in ClubOps. Google Calendar is a copy.</span></div>{items.length === 0 && <p className="inline-note calendar-empty">No {filter === 'mine' ? 'tasks assigned to your role' : 'approved events or tasks'} this month.</p>}</Resource><Modal open={!!selected} title={selected?.title ?? ''} onClose={() => setSelected(undefined)}>{selected && <><div className="calendar-item-detail"><p><CalendarDays size={16} /> {formatDate(selected.date,true)}</p><p>Owner: <strong>{selected.owner_role === 'all_cabinet' ? 'All cabinet' : roleLabels[selected.owner_role]}</strong></p><StatusBadge status={selected.status === 'done' ? 'done' : 'todo'} />{!selected.event_id && <p className="inline-note">A club-wide reminder. It is not attached to an event.</p>}</div><div className="form-actions">{selected.event_id && <Link className="button" to={`/events/${encodeURIComponent(selected.event_id)}`}>Open event <ArrowUpRight size={14} /></Link>}{selected.kind === 'task' && canEdit && <button className="button primary" disabled={action.pending} onClick={async () => { const result = await action.run(() => api.task(selected.task_id ?? selected.item_id,{ state: selected.status === 'done' ? 'todo' : 'done' })); if (result.ok) { setSelected({ ...selected,status: selected.status === 'done' ? 'open' : 'done' }); data.reload(); refresh(); } }}>{selected.status === 'done' ? 'Mark not done' : 'Mark done'}</button>}</div><ErrorNotice message={action.error} /></>}</Modal></>;
+  const { api, me, canEdit, isPresident, refresh } = useApp();
+  const [month, setMonth] = useState(
+    api.mode === 'demo' ? DEMO_TODAY.slice(0, 7) : new Date().toISOString().slice(0, 7),
+  );
+  const [filter, setFilter] = useState('all');
+  const [selected, setSelected] = useState<CalendarItem>();
+  const data = useResource(() => api.calendar(month), [api, month]);
+  const action = useAction();
+  const [year, monthNumber] = month.split('-').map(Number);
+  const start = new Date(year, monthNumber - 1, 1);
+  const offset = (start.getDay() + 6) % 7;
+  const length = new Date(year, monthNumber, 0).getDate();
+  const slots = Math.ceil((offset + length) / 7) * 7;
+  const items = (data.value?.items ?? []).filter(
+    (item) =>
+      filter === 'all' ||
+      (item.kind === 'task' && [me.role, 'all_cabinet'].includes(item.owner_role)),
+  );
+  const move = (amount: number) => {
+    const next = new Date(year, monthNumber - 1 + amount, 1);
+    setMonth(`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`);
+  };
+  return (
+    <>
+      <PageHeading
+        eyebrow="THE NEXT DEADLINE, IN SIGHT"
+        title="Calendar"
+        description="Approved events, tasks, and the dates your club shouldn't miss."
+        action={
+          data.value?.connected ? (
+            <span className="calendar-sync">
+              <Check size={13} />
+              {api.mode === 'demo' ? 'Demo sync ready' : 'Calendar connected'}
+            </span>
+          ) : isPresident ? (
+            <Link to="/settings#calendar" className="calendar-sync not-connected">
+              <Link2 size={13} /> Not connected · connect Google
+            </Link>
+          ) : (
+            <span className="calendar-sync not-connected">Google is not connected</span>
+          )
+        }
+      />
+      <div className="calendar-toolbar">
+        <div className="month-switch">
+          <button className="icon-button" aria-label="Previous month" onClick={() => move(-1)}>
+            <ChevronLeft size={18} />
+          </button>
+          <h2>{start.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</h2>
+          <button className="icon-button" aria-label="Next month" onClick={() => move(1)}>
+            <ChevronRight size={18} />
+          </button>
+          <button className="button small" onClick={() => setMonth(DEMO_TODAY.slice(0, 7))}>
+            Today
+          </button>
+        </div>
+        <FilterTabs
+          value={filter}
+          onChange={setFilter}
+          label="Calendar task filter"
+          options={[
+            { value: 'all', label: 'All' },
+            { value: 'mine', label: 'My tasks' },
+          ]}
+        />
+      </div>
+      <Resource loading={data.loading} error={data.error} retry={data.reload}>
+        <section className="calendar-panel" aria-label="Club calendar">
+          <div className="calendar-weekdays">
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+              <span key={day}>{day}</span>
+            ))}
+          </div>
+          <div className="calendar-grid">
+            {Array.from({ length: slots }, (_, i) => {
+              const day = i - offset + 1;
+              const date = `${month}-${String(day).padStart(2, '0')}`;
+              const outside = day < 1 || day > length;
+              return (
+                <div
+                  className={`calendar-day${outside ? ' outside' : ''}${date === DEMO_TODAY ? ' today' : ''}`}
+                  key={i}
+                >
+                  {!outside && (
+                    <>
+                      <span className="day-number">{day}</span>
+                      <div className="day-items">
+                        {items
+                          .filter((item) => item.date === date)
+                          .map((item) => (
+                            <button
+                              className={`calendar-item calendar-${item.kind}${item.status === 'done' ? ' calendar-done' : ''}`}
+                              key={item.item_id}
+                              onClick={() => setSelected(item)}
+                              aria-label={`${item.title}, ${formatDate(item.date)}`}
+                              title={item.title}
+                            >
+                              {item.kind === 'task' &&
+                                (item.status === 'done' ? (
+                                  <Check size={8} />
+                                ) : (
+                                  <Circle size={6} fill="currentColor" />
+                                ))}
+                              <span>{item.title}</span>
+                            </button>
+                          ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+        <div className="calendar-footer">
+          <div>
+            <span>
+              <i className="legend-event" /> Events
+            </span>
+            <span>
+              <i className="legend-task" /> Tasks & reminders
+            </span>
+          </div>
+          <span>Make changes in ClubOps. Google Calendar is a copy.</span>
+        </div>
+        {items.length === 0 && (
+          <p className="inline-note calendar-empty">
+            No {filter === 'mine' ? 'tasks assigned to your role' : 'approved events or tasks'} this
+            month.
+          </p>
+        )}
+      </Resource>
+      <Modal open={!!selected} title={selected?.title ?? ''} onClose={() => setSelected(undefined)}>
+        {selected && (
+          <>
+            <div className="calendar-item-detail">
+              <p>
+                <CalendarDays size={16} /> {formatDate(selected.date, true)}
+              </p>
+              <p>
+                Owner:{' '}
+                <strong>
+                  {selected.owner_role === 'all_cabinet'
+                    ? 'All cabinet'
+                    : roleLabels[selected.owner_role]}
+                </strong>
+              </p>
+              <StatusBadge status={selected.status === 'done' ? 'done' : 'todo'} />
+              {!selected.event_id && (
+                <p className="inline-note">A club-wide reminder. It is not attached to an event.</p>
+              )}
+            </div>
+            <div className="form-actions">
+              {selected.event_id && (
+                <Link className="button" to={`/events/${encodeURIComponent(selected.event_id)}`}>
+                  Open event <ArrowUpRight size={14} />
+                </Link>
+              )}
+              {selected.kind === 'task' && canEdit && (
+                <button
+                  className="button primary"
+                  disabled={action.pending}
+                  onClick={async () => {
+                    const result = await action.run(() =>
+                      api.task(selected.task_id ?? selected.item_id, {
+                        state: selected.status === 'done' ? 'todo' : 'done',
+                      }),
+                    );
+                    if (result.ok) {
+                      setSelected({
+                        ...selected,
+                        status: selected.status === 'done' ? 'open' : 'done',
+                      });
+                      data.reload();
+                      refresh();
+                    }
+                  }}
+                >
+                  {selected.status === 'done' ? 'Mark not done' : 'Mark done'}
+                </button>
+              )}
+            </div>
+            <ErrorNotice message={action.error} />
+          </>
+        )}
+      </Modal>
+    </>
+  );
 }

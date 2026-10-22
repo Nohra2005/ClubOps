@@ -1,58 +1,184 @@
-import type { AgentRun, CalendarData, ChatReply, Draft, DraftType, EventDetail, EventFields, EventSummary, HandoverGuide, KnowledgeItem, KnowledgeTab, Me, Member, ReviewCard, ReviewDecision, ReviewFilter, Role, SetupStep, Task, Usage } from './types';
+import type {
+  AgentRun,
+  CalendarData,
+  ChatReply,
+  Draft,
+  DraftType,
+  EventDetail,
+  EventFields,
+  EventSummary,
+  HandoverGuide,
+  KnowledgeItem,
+  KnowledgeTab,
+  Me,
+  Member,
+  ReviewCard,
+  ReviewDecision,
+  ReviewFilter,
+  Role,
+  SetupStep,
+  Task,
+  Usage,
+} from './types';
 
 export class ApiError extends Error {
   status: number;
-  constructor(message: string, status = 0) { super(message); this.name = 'ApiError'; this.status = status; }
+  constructor(message: string, status = 0) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
 }
-export interface RequestOptions { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'; body?: unknown; signal?: AbortSignal }
+export interface RequestOptions {
+  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  body?: unknown;
+  signal?: AbortSignal;
+}
 export type Transport = (path: string, options?: RequestOptions) => Promise<unknown>;
 
 export class ApiClient {
-  constructor(private transport: Transport, readonly mode: 'demo' | 'http') {}
-  private request<T>(path: string, options?: RequestOptions): Promise<T> { return this.transport(path, options) as Promise<T>; }
-  private post<T>(path: string, body?: unknown) { return this.request<T>(path, { method: 'POST', body }); }
+  constructor(
+    private transport: Transport,
+    readonly mode: 'demo' | 'http',
+  ) {}
+  private request<T>(path: string, options?: RequestOptions): Promise<T> {
+    return this.transport(path, options) as Promise<T>;
+  }
+  private post<T>(path: string, body?: unknown) {
+    return this.request<T>(path, { method: 'POST', body });
+  }
   private extension<T>(action: string, body?: unknown): Promise<T> {
-    if (this.mode !== 'demo') return Promise.reject(new ApiError('This action is not available yet. Your changes are still on this page.', 501));
+    if (this.mode !== 'demo')
+      return Promise.reject(
+        new ApiError('This action is not available yet. Your changes are still on this page.', 501),
+      );
     return this.post<T>(`/__ui/${action}`, body);
   }
-  me() { return this.request<Me>('/me'); }
-  events() { return this.request<EventSummary[]>('/events'); }
-  event(id: string) { return this.request<EventDetail>(`/events/${encodeURIComponent(id)}`); }
-  plan(description: string) { return this.post<{ run_id: string }>('/events/plan', { description }); }
-  run(id: string, signal?: AbortSignal) { return this.request<AgentRun>(`/runs/${encodeURIComponent(id)}`, { signal }); }
-  answerRun(id: string, text: string) { return this.post<AgentRun>(`/runs/${encodeURIComponent(id)}/answer`, { text }); }
-  editEvent(id: string, fields: Partial<EventFields>) { return this.request<EventDetail>(`/events/${encodeURIComponent(id)}`, { method: 'PATCH', body: { fields } }); }
-  rebuild(id: string) { return this.post<{ run_id: string }>(`/events/${encodeURIComponent(id)}/rebuild`); }
-  approvePlan(id: string, revision: number) { return this.post<EventDetail>(`/events/${encodeURIComponent(id)}/approve-plan`, { revision }); }
-  task(id: string, fields: Partial<Pick<Task, 'state' | 'owner_role'>>) { return this.request<Task>(`/tasks/${encodeURIComponent(id)}`, { method: 'PATCH', body: fields }); }
-  draft(id: string, type: DraftType, instruction?: string) { return this.post<Draft>(`/events/${encodeURIComponent(id)}/drafts/${type}`, { instruction }); }
-  afterEvent(id: string, answers: Record<string, string>) { return this.post<{ draft: Draft; review_count: number }>(`/events/${encodeURIComponent(id)}/after-event`, { answers }); }
-  ask(text: string) { return this.post<ChatReply>('/chat/ask', { text }); }
-  teach(text: string) { return this.post<ChatReply>('/chat/teach', { text }); }
-  review(filter: ReviewFilter = 'all') { return this.request<ReviewCard[]>(`/review?filter=${filter}`); }
-  decide(id: string, decision: ReviewDecision) { return this.post<ReviewCard>(`/review/${encodeURIComponent(id)}`, decision); }
-  calendar(month: string) { return this.request<CalendarData>(`/calendar?month=${month}`); }
-  knowledge(tab: KnowledgeTab | '', q = '') { return this.request<KnowledgeItem[]>(`/knowledge?tab=${tab}&q=${encodeURIComponent(q)}`); }
-  fact(id: string) { return this.request<KnowledgeItem>(`/knowledge/${encodeURIComponent(id)}`); }
-  handover(role: Role) { return this.request<HandoverGuide>(`/handover/${role}`); }
-  cabinet() { return this.request<Member[]>('/cabinet'); }
-  addMember(member: Omit<Member, 'member_id'>) { return this.post<Member>('/cabinet', member); }
-  removeMember(id: string) { return this.request<void>('/cabinet', { method: 'DELETE', body: { member_id: id } }); }
-  upload(file: File) { const body = new FormData(); body.append('file', file); return this.post<KnowledgeItem>('/documents', body); }
-  usage() { return this.request<Usage>('/usage'); }
-  setup(answer?: string) { return this.post<SetupStep>('/setup/next', answer === undefined ? {} : { answer }); }
-  approval(event_id: string, approval_id: string, status: string) { return this.extension('approval', { event_id, approval_id, status }); }
-  saveProposal(event_id: string, field_id: string, value: string) { return this.extension('proposal', { event_id, field_id, value }); }
-  saveDraft(event_id: string, type: DraftType, text: string) { return this.extension('draft', { event_id, type, text }); }
-  saveLeaders(event_id: string, leaders: EventDetail['leaders'], route: string) { return this.extension('leaders', { event_id, leaders, route }); }
-  feedback(id: string, value: string, reason: string) { return this.extension('feedback', { id, value, reason }); }
-  suggestEdit(item_id: string, text: string) { return this.extension('knowledge-edit', { item_id, text }); }
-  retire(item_id: string) { return this.extension('knowledge-retire', { item_id }); }
-  signOff(role: Role) { return this.extension('handover-signoff', { role }); }
-  google(connected: boolean) { return this.extension('google', { connected }); }
-  changeRole(member_id: string, role: Role) { return this.extension('member-role', { member_id, role }); }
-  continueRun(run_id: string) { return this.extension<{ run_id: string }>('run-continue', { run_id }); }
-  stopRun(run_id: string) { return this.extension('run-stop', { run_id }); }
+  me() {
+    return this.request<Me>('/me');
+  }
+  events() {
+    return this.request<EventSummary[]>('/events');
+  }
+  event(id: string) {
+    return this.request<EventDetail>(`/events/${encodeURIComponent(id)}`);
+  }
+  plan(description: string) {
+    return this.post<{ run_id: string }>('/events/plan', { description });
+  }
+  run(id: string, signal?: AbortSignal) {
+    return this.request<AgentRun>(`/runs/${encodeURIComponent(id)}`, { signal });
+  }
+  answerRun(id: string, text: string) {
+    return this.post<AgentRun>(`/runs/${encodeURIComponent(id)}/answer`, { text });
+  }
+  editEvent(id: string, fields: Partial<EventFields>) {
+    return this.request<EventDetail>(`/events/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: { fields },
+    });
+  }
+  rebuild(id: string) {
+    return this.post<{ run_id: string }>(`/events/${encodeURIComponent(id)}/rebuild`);
+  }
+  approvePlan(id: string, revision: number) {
+    return this.post<EventDetail>(`/events/${encodeURIComponent(id)}/approve-plan`, { revision });
+  }
+  task(id: string, fields: Partial<Pick<Task, 'state' | 'owner_role'>>) {
+    return this.request<Task>(`/tasks/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: fields,
+    });
+  }
+  draft(id: string, type: DraftType, instruction?: string) {
+    return this.post<Draft>(`/events/${encodeURIComponent(id)}/drafts/${type}`, { instruction });
+  }
+  afterEvent(id: string, answers: Record<string, string>) {
+    return this.post<{ draft: Draft; review_count: number }>(
+      `/events/${encodeURIComponent(id)}/after-event`,
+      { answers },
+    );
+  }
+  ask(text: string) {
+    return this.post<ChatReply>('/chat/ask', { text });
+  }
+  teach(text: string) {
+    return this.post<ChatReply>('/chat/teach', { text });
+  }
+  review(filter: ReviewFilter = 'all') {
+    return this.request<ReviewCard[]>(`/review?filter=${filter}`);
+  }
+  decide(id: string, decision: ReviewDecision) {
+    return this.post<ReviewCard>(`/review/${encodeURIComponent(id)}`, decision);
+  }
+  calendar(month: string) {
+    return this.request<CalendarData>(`/calendar?month=${month}`);
+  }
+  knowledge(tab: KnowledgeTab | '', q = '') {
+    return this.request<KnowledgeItem[]>(`/knowledge?tab=${tab}&q=${encodeURIComponent(q)}`);
+  }
+  fact(id: string) {
+    return this.request<KnowledgeItem>(`/knowledge/${encodeURIComponent(id)}`);
+  }
+  handover(role: Role) {
+    return this.request<HandoverGuide>(`/handover/${role}`);
+  }
+  cabinet() {
+    return this.request<Member[]>('/cabinet');
+  }
+  addMember(member: Omit<Member, 'member_id'>) {
+    return this.post<Member>('/cabinet', member);
+  }
+  removeMember(id: string) {
+    return this.request<void>('/cabinet', { method: 'DELETE', body: { member_id: id } });
+  }
+  upload(file: File) {
+    const body = new FormData();
+    body.append('file', file);
+    return this.post<KnowledgeItem>('/documents', body);
+  }
+  usage() {
+    return this.request<Usage>('/usage');
+  }
+  setup(answer?: string) {
+    return this.post<SetupStep>('/setup/next', answer === undefined ? {} : { answer });
+  }
+  approval(event_id: string, approval_id: string, status: string) {
+    return this.extension('approval', { event_id, approval_id, status });
+  }
+  saveProposal(event_id: string, field_id: string, value: string) {
+    return this.extension('proposal', { event_id, field_id, value });
+  }
+  saveDraft(event_id: string, type: DraftType, text: string) {
+    return this.extension('draft', { event_id, type, text });
+  }
+  saveLeaders(event_id: string, leaders: EventDetail['leaders'], route: string) {
+    return this.extension('leaders', { event_id, leaders, route });
+  }
+  feedback(id: string, value: string, reason: string) {
+    return this.extension('feedback', { id, value, reason });
+  }
+  suggestEdit(item_id: string, text: string) {
+    return this.extension('knowledge-edit', { item_id, text });
+  }
+  retire(item_id: string) {
+    return this.extension('knowledge-retire', { item_id });
+  }
+  signOff(role: Role) {
+    return this.extension('handover-signoff', { role });
+  }
+  google(connected: boolean) {
+    return this.extension('google', { connected });
+  }
+  changeRole(member_id: string, role: Role) {
+    return this.extension('member-role', { member_id, role });
+  }
+  continueRun(run_id: string) {
+    return this.extension<{ run_id: string }>('run-continue', { run_id });
+  }
+  stopRun(run_id: string) {
+    return this.extension('run-stop', { run_id });
+  }
 }
 
 export function httpTransport(base = '/api'): Transport {
@@ -64,15 +190,46 @@ export function httpTransport(base = '/api'): Transport {
     if (options.signal?.aborted) controller.abort();
     try {
       const form = options.body instanceof FormData;
-      const response = await fetch(`${base.replace(/\/$/, '')}${path}`, { method: options.method ?? 'GET', credentials: 'include', headers: options.body && !form ? { 'Content-Type': 'application/json', 'X-Requested-With': 'ClubOps' } : undefined, body: options.body ? (form ? options.body as FormData : JSON.stringify(options.body)) : undefined, signal: controller.signal });
-      if (!response.ok) throw new ApiError(response.status === 401 ? 'Please sign in to continue.' : response.status === 403 ? "You don't have permission for this action." : response.status === 409 ? 'This item changed. Reload it before approving.' : "ClubOps couldn't finish this. Your edits are still on this page.", response.status);
+      const response = await fetch(`${base.replace(/\/$/, '')}${path}`, {
+        method: options.method ?? 'GET',
+        credentials: 'include',
+        headers:
+          options.body && !form
+            ? { 'Content-Type': 'application/json', 'X-Requested-With': 'ClubOps' }
+            : undefined,
+        body: options.body
+          ? form
+            ? (options.body as FormData)
+            : JSON.stringify(options.body)
+          : undefined,
+        signal: controller.signal,
+      });
+      if (!response.ok)
+        throw new ApiError(
+          response.status === 401
+            ? 'Please sign in to continue.'
+            : response.status === 403
+              ? "You don't have permission for this action."
+              : response.status === 409
+                ? 'This item changed. Reload it before approving.'
+                : "ClubOps couldn't finish this. Your edits are still on this page.",
+          response.status,
+        );
       if (response.status === 204) return undefined;
-      if (!response.headers.get('content-type')?.includes('application/json')) throw new ApiError('ClubOps returned an unreadable response. Please try again.', 502);
+      if (!response.headers.get('content-type')?.includes('application/json'))
+        throw new ApiError('ClubOps returned an unreadable response. Please try again.', 502);
       return await response.json();
     } catch (error) {
       if (error instanceof ApiError) throw error;
       if (options.signal?.aborted) throw new DOMException('Cancelled', 'AbortError');
-      throw new ApiError(controller.signal.aborted ? 'This took too long. Your edits are still here. Try again.' : "Can't reach ClubOps. Your edits are kept on this page.");
-    } finally { clearTimeout(timeout); options.signal?.removeEventListener('abort', abort); }
+      throw new ApiError(
+        controller.signal.aborted
+          ? 'This took too long. Your edits are still here. Try again.'
+          : "Can't reach ClubOps. Your edits are kept on this page.",
+      );
+    } finally {
+      clearTimeout(timeout);
+      options.signal?.removeEventListener('abort', abort);
+    }
   };
 }
