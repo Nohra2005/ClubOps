@@ -45,3 +45,13 @@ No entries yet — `capture`'s contract (`CaptureRequest`/`CaptureResult` in `sr
 **Next:** T-12 SQLite storage, then T-13 contract changes.
 
 **Open questions / blockers:** D-36 (hide links) and D-38 (French) still "proposed": Tatiana to confirm. Standalone AUB usernames not caught (F-50).
+
+## 2026-10-22 — Tatiana Nohra, with Claude (feat/sqlite-store)
+
+**Did:** SQLite storage behind the existing store (`knowhow/backends.py`): memory, single file, and split layout (`general.db` + `clubs/<club>.db`); full-text search (`store.search`). All 20 store tests run on all three backends; 7 new tests (restart, club separation, search, rollback). F-51 to F-54, D-53, ADR 0004 updated.
+
+**State:** `make check` passes (212 tests). Branch `feat/sqlite-store` pushed.
+
+**Next:** T-13 contract changes (not-sure answers, agent runs, event status, calendar items, drafts, contacts, assets, event history + their tables).
+
+**Open questions / blockers:** F-54 (two files, no shared transaction) left as a known limit.
