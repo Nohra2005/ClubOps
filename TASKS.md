@@ -334,7 +334,7 @@ Reference documents:
 
 ### C-10 Handover screen
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-03, C-04
 - What: Role picker, role guide with gaps, download, "ask about this role".
 - Done when: works on fake data.
