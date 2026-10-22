@@ -12,6 +12,7 @@ import Review from './pages/Review';
 import Calendar from './pages/Calendar';
 import Knowledge, { KnowledgeFact } from './pages/Knowledge';
 import Handover from './pages/Handover';
+import Settings from './pages/Settings';
 
 const navigation = [
   { to: '/chat', label: 'Chat', icon: MessageCircle },
@@ -64,4 +65,4 @@ function Login() {
 }
 function NotFound() { return <><PageHeading eyebrow="404" title="This page took a wrong turn." description="It may have moved, or the link may be incomplete." /><Link to="/events" className="button primary">Back to Events <ArrowRight size={16} /></Link></>; }
 
-export default function App() { return <BrowserRouter><AppProvider><Routes><Route path="/login" element={<Login />} /><Route element={<Shell />}><Route index element={<Navigate to="/events" replace />} /><Route path="events" element={<Events />} /><Route path="events/new" element={<NewEvent />} /><Route path="events/:id" element={<EventDetail />} /><Route path="chat" element={<Chat />} /><Route path="review" element={<Review />} /><Route path="calendar" element={<Calendar />} /><Route path="knowledge" element={<Knowledge />} /><Route path="knowledge/:id" element={<KnowledgeFact />} /><Route path="handover" element={<Handover />} /><Route path="settings" element={<Placeholder title="Settings" description="Your cabinet, connections and club preferences." />} /><Route path="setup" element={<Placeholder title="Welcome to your club" description="Start with shared rules. Build the rest together." />} /><Route path="*" element={<NotFound />} /></Route></Routes></AppProvider></BrowserRouter>; }
+export default function App() { return <BrowserRouter><AppProvider><Routes><Route path="/login" element={<Login />} /><Route element={<Shell />}><Route index element={<Navigate to="/events" replace />} /><Route path="events" element={<Events />} /><Route path="events/new" element={<NewEvent />} /><Route path="events/:id" element={<EventDetail />} /><Route path="chat" element={<Chat />} /><Route path="review" element={<Review />} /><Route path="calendar" element={<Calendar />} /><Route path="knowledge" element={<Knowledge />} /><Route path="knowledge/:id" element={<KnowledgeFact />} /><Route path="handover" element={<Handover />} /><Route path="settings" element={<Settings />} /><Route path="setup" element={<Placeholder title="Welcome to your club" description="Start with shared rules. Build the rest together." />} /><Route path="*" element={<NotFound />} /></Route></Routes></AppProvider></BrowserRouter>; }
