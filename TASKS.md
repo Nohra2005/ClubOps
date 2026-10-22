@@ -37,10 +37,11 @@ Reference documents:
 
 ### T-02 Write the chatbot test (30 questions)
 - Owner: tatiana
-- Status: todo
+- Status: done
 - Needs: none
 - What: 30 questions a cabinet member would ask, each with the correct answer and its source. 10 of them must be ones ClubOps should answer "not sure, ask X".
 - Done when: 30 rows saved privately, with answer, source, and who to ask for the "not sure" ones.
+- Result (2026-10-22): `clubops-raw/eval/chatbot-questions.csv`, 30 questions, 10 "not sure".
 
 ### T-03 Write the learning test (10 facts)
 - Owner: tatiana
@@ -151,7 +152,7 @@ Reference documents:
 - Owner: tatiana
 - Status: todo
 - Needs: T-11, T-12
-- What: Turn chat teaching, the after-event form, forwarded OSA emails and uploaded documents into proposed facts; merge repeats; detect contradictions; flag outdated documents. Nothing is saved until approved in Review.
+- What: Turn chat teaching, the after-event form, forwarded OSA emails and uploaded documents (including past expense forms, kept as a price list) into proposed facts; merge repeats; detect contradictions; flag outdated documents. Nothing is saved until approved in Review.
 - Done when: each input type produces Review cards; approve / reject / merge work.
 
 ### T-19 Handover pack and role guides
