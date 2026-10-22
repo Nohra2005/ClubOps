@@ -14,6 +14,7 @@ test('opens shareable routes and fits the phone viewport', async ({ page }, test
   ]) {
     await page.goto(route);
     await expect(page.locator('main h1')).toBeVisible();
+    await expect(page.locator('.loading-block')).toHaveCount(0);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
     ).toBe(true);

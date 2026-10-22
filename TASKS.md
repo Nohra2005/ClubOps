@@ -355,10 +355,11 @@ Reference documents:
 
 ### C-13 Connect to the real backend
 - Owner: christophe
-- Status: todo
+- Status: blocked
 - Needs: C-12, T-22
 - What: Switch from fake data to the real API; fix mismatches with Tatiana.
 - Done when: every screen works on the deployed backend.
+- Blocker: T-22 is not done. Demo and HTTP adapters are ready; `web/API_NOTES.md` lists the response, action and Google session contracts to agree with Tatiana.
 
 ### C-14 Deploy the frontend
 - Owner: christophe

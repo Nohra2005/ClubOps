@@ -5,7 +5,14 @@ export default defineConfig({
   fullyParallel: true,
   workers: 2,
   timeout: 35_000,
-  use: { baseURL: 'http://127.0.0.1:5173', channel: 'chrome', trace: 'retain-on-failure' },
+  use: {
+    baseURL: 'http://127.0.0.1:5173',
+    channel:
+      process.env.PLAYWRIGHT_CHANNEL === 'bundled'
+        ? undefined
+        : (process.env.PLAYWRIGHT_CHANNEL ?? 'chrome'),
+    trace: 'retain-on-failure',
+  },
   projects: [
     { name: 'desktop', use: { viewport: { width: 1440, height: 1000 } } },
     {
