@@ -349,3 +349,40 @@ kbd { font: 11px inherit; padding: 2px 6px; border: 1px solid var(--line); borde
 .locked-note { display: inline-flex; align-items: center; gap: 7px; font-size: 10px; color: #889679; }
 .notice p { margin: 5px 0 12px; }
 @media (max-width: 650px) { .event-facts { gap: 14px; padding: 15px; } .event-facts .event-facts-right { margin-left: 0; } .approval-row { grid-template-columns: 1fr 100px; gap: 16px; } .approval-row > div:first-child { grid-column: 1/-1; } .approval-deadline { display: flex; gap: 8px; align-items: center; } .approval-deadline > span:first-child { margin: 0; } .approval-deadline .status { margin: 0; } .task-row { grid-template-columns: 18px 1fr 100px; gap: 11px; } .task-row > :nth-child(3) { grid-column: 2; display: flex; align-items: center; gap: 8px; } .task-row > :last-child { grid-column: 3; grid-row: 2; } .task-title { grid-column: 2/-1; } .task-row .due-label { margin: 0; } .draft-grid, .tips-grid { grid-template-columns: 1fr; } .proposal-panel .panel-header { align-items: flex-start; flex-direction: column; } .proposal-row { grid-template-columns: 24px 1fr 24px; gap: 9px; } .proposal-label h3 { font-size: 11px; } .leader-edit { flex-wrap: wrap; } }
+.chat-workspace { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; max-width: 1000px; margin: 0 auto; }
+.chat-messages { min-height: 330px; max-height: 56vh; overflow-y: auto; padding: 30px; }
+.chat-welcome { text-align: center; padding: 30px 5px 15px; }
+.chat-welcome-icon { margin: 0 auto 23px; width: 55px; height: 55px; border-radius: 16px; display: grid; place-items: center; background: #eef4e5; color: #819765; }
+.chat-welcome h2 { font-size: 25px; margin-bottom: 14px; }
+.chat-welcome > p { font-size: 12px; color: var(--muted); }
+.chat-welcome .eyebrow { display: block; font-size: 8px; }
+.suggestions { display: flex; gap: 9px; margin-top: 28px; }
+.suggestions button { flex: 1; text-align: left; padding: 14px; border: 1px solid #e7ebdf; border-radius: 8px; font-size: 10px; color: #798b67; background: #fcfdf9; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; line-height: 1.6; }
+.suggestions button:hover { border-color: #b7c8a6; }
+.suggestions button > svg { flex-shrink: 0; margin-top: 3px; }
+.chat-compose { padding: 20px 25px 15px; border-top: 1px solid #ecf0e5; background: #fdfefb; }
+.compose-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.segmented { display: inline-flex; gap: 3px; padding: 3px; border-radius: 6px; background: #f0f3e9; }
+.segmented button { display: flex; align-items: center; gap: 6px; font-size: 9px; padding: 7px 10px; border-radius: 4px; color: #8d9b7e; }
+.segmented button[aria-pressed=true] { background: white; color: #4d6c47; box-shadow: 0 1px 3px #2748250c; }
+.compose-toolbar .text-button { font-size: 9px; color: #8a997d; }
+.chat-compose form { display: flex; gap: 12px; border: 1px solid #dce5d1; border-radius: 9px; padding: 10px; background: white; align-items: flex-end; }
+.chat-compose textarea { border: 0; width: 100%; padding: 5px 7px; font-size: 12px; resize: none; min-height: 48px; }
+.send-button { display: grid; place-items: center; width: 34px; height: 34px; flex-shrink: 0; background: var(--green); color: white; border-radius: 7px; }
+.compose-note { display: flex; justify-content: space-between; gap: 12px; font-size: 8px; color: #9ba58e; margin-top: 11px; }
+.chat-message { display: flex; gap: 13px; margin-bottom: 28px; }
+.chat-message > div { min-width: 0; flex: 1; }
+.message-author { font-size: 10px; font-weight: 650; margin: 0 0 8px; padding-top: 3px; color: #748466; }
+.chat-message p { font-size: 12px; line-height: 1.85; white-space: pre-wrap; margin-bottom: 12px; overflow-wrap: anywhere; }
+.message-user p { background: #f2f5ec; padding: 13px 17px; border-radius: 0 9px 9px 9px; color: #6e7e60; display: inline-block; }
+.assistant-avatar { width: 30px; height: 30px; border-radius: 9px; background: var(--green); color: #dce9bb; font: 750 20px/30px 'Manrope Variable',sans-serif; text-align: center; letter-spacing: -1px; flex-shrink: 0; }
+.source-list { display: flex; flex-wrap: wrap; gap: 7px; }
+.thinking { display: flex; align-items: center; gap: 13px; font-size: 11px; color: #889a76; }
+.thinking-dots { animation: thinking 1s infinite; }
+@keyframes thinking { 50% { opacity: .2; } }
+.learned-card { display: flex; gap: 12px; background: #f0f5e8; border: 1px solid #dfe9d1; padding: 16px; border-radius: 9px; color: #668153; }
+.learned-card > svg { flex-shrink: 0; }
+.learned-card strong { font-size: 12px; }
+.learned-card p { font-size: 11px; margin: 8px 0; }
+.learned-card a { font-size: 10px; color: #627e4a; }
+@media (max-width: 650px) { .chat-messages { padding: 22px 17px; min-height: 300px; max-height: 55vh; } .chat-welcome { padding-top: 10px; } .chat-welcome h2 { font-size: 21px; } .suggestions { flex-direction: column; gap: 7px; margin-top: 23px; } .suggestions button { padding: 10px 13px; } .chat-compose { padding: 15px; } .compose-note span:last-child { display: none; } .compose-toolbar { flex-wrap: wrap; } .chat-message { gap: 9px; } .chat-message p { font-size: 11px; } .chat-welcome .eyebrow { font-size: 7px; } }

@@ -285,7 +285,7 @@ Reference documents:
 
 ### C-03 Shared components
 - Owner: christophe
-- Status: doing
+- Status: done
 - Needs: C-02
 - What: Source chip, origin tag, "not sure" card, approve bar, draft card, status badge, agent steps panel.
 - Done when: each component is used on at least one screen with fake data.
@@ -306,7 +306,7 @@ Reference documents:
 
 ### C-06 Chat screen
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-03, C-04
 - What: The four reply kinds, thumbs up/down with "what was wrong", paste a document.
 - Done when: works on fake data.
