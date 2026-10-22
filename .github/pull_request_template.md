@@ -1,6 +1,8 @@
 ## What and why
 
-<!-- One or two sentences. Link the issue: Closes #… -->
+<!-- One or two sentences. -->
+
+Task: <!-- e.g. T-14, C-05, J-02 (from TASKS.md) -->
 
 ## Type
 
@@ -12,6 +14,8 @@
 ## Checklist
 
 - [ ] `make check` passes locally
+- [ ] Task status updated in `TASKS.md`; design choices added to `docs/design-log.md`
+- [ ] Only my own folders changed (see `AGENTS.md`), or the owner approved
 - [ ] New behaviour has tests, including at least one failure case
 - [ ] New failure modes have a row in `docs/failure-matrix.md` with a regression test
 - [ ] No real club data, personal data or secrets in this PR

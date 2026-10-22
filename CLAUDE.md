@@ -1,5 +1,6 @@
 # Notes for AI coding assistants working in this repo
 
+- **Read `AGENTS.md` first.** It has the team protocol: who owns which folders, the contracts between parts, and the steps for every session. The plan and rubric coverage are in `docs/plan.md`; tasks in `TASKS.md`.
 - Read `docs/architecture.md` and `docs/contracts.md` before changing code.
 - Contracts in `src/clubops/contracts/` and `capabilities/registry.py` are shared agreements. Do not change a frozen contract unless the task is explicitly a contract change; if it is, bump versions and run `make schemas`.
 - Capabilities return `Result[T]` through `capabilities/runner.run`; raise `CapabilityError` for expected failures, never bare exceptions.

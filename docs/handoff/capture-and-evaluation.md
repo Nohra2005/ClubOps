@@ -15,3 +15,13 @@ No entries yet — `capture`'s contract (`CaptureRequest`/`CaptureResult` in `sr
 **Next:** Tatiana labels 5 episodes, calibration check, then the remaining 35. Freeze the hash in `eval/FROZEN.md` before any capture code.
 
 **Open questions / blockers:** Only `cabinet.txt` is on disk so far; members-group, tala-dm, triathlon and presidents chats still need copying into `data/raw/chats/` (presidents chat: only OSA staff messages, D-15). D-36 to D-39 are proposed, awaiting Tatiana.
+
+## 2026-10-22 — Tatiana Nohra, with Claude (chore/team-plan)
+
+**Did:** Scope settled (D-40 to D-49). The 40-episode chat labelling is dropped; evaluation is now the past-events test (21 events drafted in the private `clubops-raw/eval/d5-events.csv`), a 30-question chatbot test and a learning test. Added `TASKS.md`, `AGENTS.md`, `docs/plan.md`, `docs/calendar-contract.md`, `scripts/tasks.py`.
+
+**State:** `make check` passes. Branch `chore/team-plan` pushed, PR to open.
+
+**Next:** T-01 (correct the past-events table), then T-02, T-03.
+
+**Open questions / blockers:** D-36 and D-38 still need Tatiana's OK. T-33 (handover test) keep or drop by 8 November.
