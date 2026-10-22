@@ -292,7 +292,7 @@ Reference documents:
 
 ### C-04 Fake API
 - Owner: christophe
-- Status: doing
+- Status: done
 - Needs: C-01
 - What: Serve the example JSON from the UI spec for every endpoint in its API table, so all screens work without the backend.
 - Done when: switching to the real API is one setting.
