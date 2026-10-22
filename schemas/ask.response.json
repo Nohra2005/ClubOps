@@ -1,9 +1,21 @@
 {
-  "$comment": "clubops 0.1.0 \u00b7 capability ask 0.1.0 \u00b7 generated",
+  "$comment": "clubops 0.2.0 \u00b7 capability ask 0.2.0 \u00b7 generated",
   "$defs": {
     "Answer": {
       "additionalProperties": false,
       "properties": {
+        "ask": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AskWho"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "required when not known: who to ask"
+        },
         "basis": {
           "enum": [
             "verified",
@@ -26,6 +38,20 @@
           "title": "Known",
           "type": "boolean"
         },
+        "look_in": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "where the answer may be written down",
+          "title": "Look In"
+        },
         "text": {
           "maxLength": 1500,
           "title": "Text",
@@ -38,6 +64,38 @@
         "basis"
       ],
       "title": "Answer",
+      "type": "object"
+    },
+    "AskWho": {
+      "additionalProperties": false,
+      "description": "Who can answer what ClubOps doesn't know (D-49). A person, an office, or both.",
+      "properties": {
+        "role": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "e.g. 'Student Activities Coordinator, OSA'",
+          "title": "Role"
+        },
+        "who": {
+          "description": "e.g. 'Tala Charif' or 'Antoine Bookstore'",
+          "maxLength": 120,
+          "minLength": 2,
+          "title": "Who",
+          "type": "string"
+        }
+      },
+      "required": [
+        "who"
+      ],
+      "title": "AskWho",
       "type": "object"
     },
     "Error": {

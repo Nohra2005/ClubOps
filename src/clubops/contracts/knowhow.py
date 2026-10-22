@@ -343,11 +343,20 @@ class AskRequest(Contract):
     as_of: date
 
 
+class AskWho(Contract):
+    """Who can answer what ClubOps doesn't know (D-49). A person, an office, or both."""
+
+    who: str = Field(min_length=2, max_length=120, description="e.g. 'Tala Charif' or 'Antoine Bookstore'")
+    role: str | None = Field(default=None, max_length=120, description="e.g. 'Student Activities Coordinator, OSA'")
+
+
 class Answer(Contract):
     known: bool
     text: str = Field(max_length=1500)
     citations: list[ItemId] = Field(default_factory=list)
     basis: Literal["verified", "single_source", "disputed", "none"]
+    ask: AskWho | None = Field(default=None, description="required when not known: who to ask")
+    look_in: str | None = Field(default=None, max_length=200, description="where the answer may be written down")
 
     @model_validator(mode="after")
     def _cited(self) -> Self:
@@ -355,6 +364,8 @@ class Answer(Contract):
             raise ValueError("a known answer cites at least one verified item")
         if not self.known and (self.citations or self.basis != "none"):
             raise ValueError("an unknown answer has no citations and basis 'none'")
+        if not self.known and self.ask is None:
+            raise ValueError("an unknown answer says who to ask (D-49)")
         return self
 
 

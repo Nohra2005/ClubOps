@@ -13,7 +13,7 @@ from clubops.capabilities import registry
 from clubops.capabilities.runner import CapabilityError, Outcome, Usage, run
 from clubops.contracts.common import ErrorCode, Question, Role, Status
 from clubops.contracts.event import EventSpec
-from clubops.contracts.knowhow import Answer, AskRequest, GapReport, GapRequest
+from clubops.contracts.knowhow import Answer, AskRequest, AskWho, GapReport, GapRequest
 from clubops.contracts.planning import PlanRequest
 from clubops.contracts.rules import RuleApplication, RuleApplicationRequest
 from clubops.contracts.sponsors import NeedStatus, ReplacementRequest, SponsorNeed
@@ -24,9 +24,11 @@ ASK = registry.get("ask")
 REQUEST = AskRequest(club_id=CLUB, question="Who sponsored water last year?", as_of=date(2026, 10, 5))
 NO_SLEEP = lambda _s: None  # noqa: E731
 
+PRESIDENT = AskWho(who="the club president")
+
 
 def unknown(_: object) -> Outcome[Answer]:
-    return Outcome(data=Answer(known=False, text="Not in the club's know-how.", basis="none"))
+    return Outcome(data=Answer(known=False, text="Not in the club's know-how.", basis="none", ask=PRESIDENT))
 
 
 def test_ok_result_and_one_trace_line() -> None:
@@ -169,7 +171,7 @@ def test_every_request_names_its_club() -> None:
 
 
 def not_known_fallback(_: object) -> Outcome[Answer]:
-    return Outcome(data=Answer(known=False, text="Not known (fallback).", basis="none"))
+    return Outcome(data=Answer(known=False, text="Not known (fallback).", basis="none", ask=PRESIDENT))
 
 
 def test_declared_fallback_runs_after_retries_and_is_marked_degraded() -> None:
