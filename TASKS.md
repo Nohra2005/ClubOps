@@ -313,7 +313,7 @@ Reference documents:
 
 ### C-07 Review screen
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-03, C-04
 - What: All card types, filters, grouping by source, approve all (facts only, never rules).
 - Done when: works on fake data.

@@ -386,3 +386,29 @@ kbd { font: 11px inherit; padding: 2px 6px; border: 1px solid var(--line); borde
 .learned-card p { font-size: 11px; margin: 8px 0; }
 .learned-card a { font-size: 10px; color: #627e4a; }
 @media (max-width: 650px) { .chat-messages { padding: 22px 17px; min-height: 300px; max-height: 55vh; } .chat-welcome { padding-top: 10px; } .chat-welcome h2 { font-size: 21px; } .suggestions { flex-direction: column; gap: 7px; margin-top: 23px; } .suggestions button { padding: 10px 13px; } .chat-compose { padding: 15px; } .compose-note span:last-child { display: none; } .compose-toolbar { flex-wrap: wrap; } .chat-message { gap: 9px; } .chat-message p { font-size: 11px; } .chat-welcome .eyebrow { font-size: 7px; } }
+.review-total { display: flex; gap: 8px; align-items: center; font-size: 11px; color: #7c9165; border: 1px solid #dce6ce; background: #f2f6e9; padding: 11px 15px; border-radius: 7px; }
+.review-intro { display: flex; gap: 15px; padding: 21px 24px; background: #edf3e6; border: 1px solid #e0e9d4; border-radius: 10px; margin-bottom: 22px; color: #738a5b; }
+.review-intro > svg { flex-shrink: 0; margin-top: 2px; }
+.review-intro strong { font-size: 12px; font-weight: 600; }
+.review-intro p { font-size: 10px; color: #8c9b79; margin: 6px 0 0; }
+.review-group { margin-bottom: 28px; }
+.review-card { padding: 23px 26px; margin-bottom: 12px; background: white; border: 1px solid var(--line); border-radius: 10px; scroll-margin-top: 25px; }
+.review-card.highlighted { border-color: #a8bd8b; box-shadow: 0 0 0 3px #eaf2df; }
+.review-card-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.review-card-heading > div { flex: 1; }
+.review-card-heading .tiny-label { font-size: 7px; color: #91a17f; }
+.review-card-heading h3 { margin: 5px 0 0; font-size: 13px; }
+.review-icon { display: grid; place-items: center; height: 35px; width: 35px; border-radius: 8px; background: #eff4e8; color: #819968; flex-shrink: 0; }
+.review-rule { background: #edf2f7; color: #7b91ab; }
+.review-disagreement { background: #fbf1dd; color: #b89658; }
+.review-card blockquote { margin: 14px 0; padding: 12px 16px; background: #f8faf4; border-left: 2px solid #d2dfc0; font-size: 11px; color: #92a17f; line-height: 1.8; }
+.review-statement { font-size: 12px; color: #6b7e5d; line-height: 1.8; margin: 0 0 10px; overflow-wrap: anywhere; }
+.review-actions { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; border-top: 1px solid #edf0e6; margin-top: 18px; padding-top: 16px; }
+.review-actions .muted { color: #a4ae98; font-size: 10px; margin-left: 5px; }
+.rule-note { display: flex; gap: 7px; align-items: center; font-size: 9px; color: #8f9e80; margin: 14px 0 0; }
+.review-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.review-comparison > div { padding: 17px; border: 1px solid #e6eadd; border-radius: 7px; background: #fcfdf9; min-width: 0; }
+.comparison-heading { font-size: 8px; font-weight: 600; letter-spacing: .2px; color: #8c9b79; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.comparison-heading span { color: #68864c; background: #edf4df; padding: 2px 5px; border-radius: 3px; font-size: 7px; }
+.review-comparison p { font-size: 11px; color: #6e825d; margin: 13px 0; overflow-wrap: anywhere; }
+@media (max-width: 650px) { .review-card { padding: 19px 17px; } .review-card-heading { flex-wrap: wrap; } .review-card-heading > div { min-width: 170px; } .review-card-heading > .status { margin-left: 47px; } .review-comparison { grid-template-columns: 1fr; } .review-intro { padding: 18px; } .review-group .group-heading { gap: 10px; flex-wrap: wrap; } .review-group .group-heading .text-button { font-size: 10px; } }
