@@ -1,7 +1,7 @@
 # Rubric map
 
 Where each requirement of the course brief is answered. Status: **in place** (in the repo now), **planned** (with its phase).
-Kept current in every PR that changes what a row points to.
+Kept current in every PR that changes what a row points to. The plan for covering each item, with tasks and owners, is in [plan.md](plan.md#rubric-coverage-target-100100--bonus).
 
 | Brief requirement | Where | Status |
 |---|---|---|

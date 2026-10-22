@@ -2,11 +2,11 @@
 
 ## Workflow
 
-1. Every piece of work starts as an issue on the GitHub Projects board, with an owner and a phase.
+1. Every piece of work is a task in [`TASKS.md`](TASKS.md), with an owner. Read [`AGENTS.md`](AGENTS.md) for the team protocol.
 2. Branch from `main`: `feat/<area>-<short-name>`, `fix/…`, `eval/…`, `docs/…`.
 3. Open a pull request early. Fill in the template.
-4. **One approving review from a teammate** and a green CI are required to merge. Squash-merge.
-5. Nobody pushes to `main` directly (branch protection).
+4. **One approving review from a teammate** and a green CI before merging. Squash-merge.
+5. Nobody pushes to `main` directly. Branch protection isn't available on a free private repo (GitHub returns 403), so this is by agreement.
 
 ## Contract changes
 
@@ -30,17 +30,17 @@ Contracts are the agreements between our parts; changing one can silently break 
 - Fixtures and tests use synthetic data only.
 - Secrets live in `.env` (ignored). Copy `.env.example`.
 
-## Ownership (proposal, to be confirmed by the team)
+## Ownership
 
-| Area | Owner |
-|---|---|
-| Contracts, knowledge base, handover | Tatiana Nohra |
-| Capture from chats and emails, evaluation datasets | Christophe El Chabab |
-| Event packet: intake, rules, proposal, approval queue UI | Joey Saade |
+Decided 2026-10-22 (design log D-46). Folders and contracts per owner are in [`AGENTS.md`](AGENTS.md).
 
-Everyone reviews outside their own area at least once a week.
+| Area | Owner | Handoff log |
+|---|---|---|
+| Backend, agent, memory, evaluation | Tatiana Nohra | `docs/handoff/capture-and-evaluation.md`, `docs/handoff/contracts-knowledge-handover.md`, `docs/handoff/event-packet.md` |
+| Web app | Christophe El Chabab | `docs/handoff/web.md` |
+| Calendar, reminders, draft templates | Joey Saade | `docs/handoff/calendar-and-drafts.md` |
 
-This is the primary way work is split: by area, not by who happens to be free. The contracts are frozen interfaces between areas specifically so three people (and three different AI tools) can work inside their own area in parallel without stepping on each other — that's the whole point of ADR 0001. Pick up your next task from the area you own; cross-area work goes through a PR the other owner reviews.
+Work is split by area so three people and three AI tools can work in parallel, each against the contracts. Cross-area changes go through a PR the other owner reviews.
 
 ## Session handoff
 
@@ -48,5 +48,5 @@ Area ownership doesn't solve continuity *within* an area — work on one area st
 
 - Before ending a work session on an area (finished the task or not), append an entry to that area's log: what you did, whether it's committed/pushed/in review, the one most useful next step, and any open question or assumption you made that should be checked. Use `docs/handoff/TEMPLATE.md`'s field list.
 - Starting a session on an area: read that area's log (just the last couple of entries, not the whole history) before starting, the same way `find-gaps`/`plan-interview` read the club's own know-how log before an officer handover — this project eats its own dog food here on purpose.
-- The log is additive — append at the bottom, don't rewrite old entries. It's a record of what actually happened, not a status board; GitHub Issues and the Projects board are the status board.
+- The log is additive — append at the bottom, don't rewrite old entries. It's a record of what actually happened, not a status board; `TASKS.md` is the status board.
 - A log entry is not a substitute for a commit message, a PR description, or Failure Matrix rows — it's the "what would I tell the next person in five sentences" layer that those don't cover.

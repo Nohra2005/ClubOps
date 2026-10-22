@@ -1,5 +1,7 @@
 # ClubOps
 
+> **Team and AI assistants, start here:** [`AGENTS.md`](AGENTS.md) (protocol) · [`docs/plan.md`](docs/plan.md) (big picture and rubric coverage) · [`TASKS.md`](TASKS.md) (who does what; `make tasks WHO=<name>`).
+
 **An AI agent that keeps a student club's know-how alive across cabinet handovers, and uses it to prepare the club's event paperwork.**
 
 EECE 503N / 798S Agentic Systems · American University of Beirut · Fall 2026
