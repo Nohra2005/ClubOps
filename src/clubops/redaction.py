@@ -21,15 +21,15 @@ from typing import Literal
 Kind = Literal["phone", "aub_id", "email", "other_pii"]
 
 # WhatsApp exports wrap phone numbers in invisible direction marks; remove them first.
-_INVISIBLE = re.compile("[‎‏‪-‮⁦-⁩]")
-_SEP = r"[   ‑.\-]"
+_INVISIBLE = re.compile("[\u200e\u200f\u202a-\u202e\u2066-\u2069]")
+_SEP = "[ \u00a0\u202f\u2011.\\-]"
 
 _URL = re.compile(r"https?://([^/\s?#]+)[^\s]*", re.IGNORECASE)
 _EMAIL = re.compile(r"\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+\b")
 # AUB ID numbers are 9 digits starting with the enrolment year, e.g. 2024xxxxx.
 _AUB_ID = re.compile(r"(?<!\d)20\d{7}(?!\d)")
 # International: a "+" then 8 to 15 digits with common separators and brackets.
-_PHONE_INTL = re.compile(r"\+\d(?:[   ‑.\-()]*\d){7,14}")
+_PHONE_INTL = re.compile("\\+\\d(?:[ \u00a0\u202f\u2011.\\-()]*\\d){7,14}")
 # Lebanese without a country code: mobiles 03/3, 70, 71, 76, 78, 79, 81 or landlines 01-09,
 # then exactly 6 more digits, possibly grouped ("76 123456", "3 123 456", "01 234 567").
 _PHONE_LB = re.compile(rf"(?<![\d+/:])(?:0?(?:3|7[016-9]|81)|0[1-9])(?:{_SEP}?\d){{6}}(?![\d/:])")
