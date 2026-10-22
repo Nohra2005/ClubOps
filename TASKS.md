@@ -285,7 +285,7 @@ Reference documents:
 
 ### C-03 Shared components
 - Owner: christophe
-- Status: todo
+- Status: doing
 - Needs: C-02
 - What: Source chip, origin tag, "not sure" card, approve bar, draft card, status badge, agent steps panel.
 - Done when: each component is used on at least one screen with fake data.
