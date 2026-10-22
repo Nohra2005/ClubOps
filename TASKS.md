@@ -278,7 +278,7 @@ Reference documents:
 
 ### C-02 App shell
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-01
 - What: Layout, sidebar with badges, top bar, routes, roles (adviser read-only: buttons hidden), phone layout at 375 px.
 - Done when: every route opens with placeholder content on desktop and phone.
