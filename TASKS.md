@@ -29,10 +29,11 @@ Reference documents:
 
 ### T-01 Correct the past-events table
 - Owner: tatiana
-- Status: doing
+- Status: done
 - Needs: none
 - What: Fill `approvals_real` for the 21 events in the private table (`clubops-raw/eval/d5-events.csv`). Answer the "?" rows first.
 - Done when: every row has its real approvals; the 10 "?" questions are answered.
+- Result (2026-10-22): 19 events kept (2 dropped), 27 facts learned, each tagged with its source event (`clubops-raw/eval/facts-learned.csv`). Two small open details: E10 (was the Neo coffee sponsored?), E19 (held in elections week?).
 
 ### T-02 Write the chatbot test (30 questions)
 - Owner: tatiana
