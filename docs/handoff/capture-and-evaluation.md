@@ -25,3 +25,13 @@ No entries yet — `capture`'s contract (`CaptureRequest`/`CaptureResult` in `sr
 **Next:** T-01 (correct the past-events table), then T-02, T-03.
 
 **Open questions / blockers:** D-36 and D-38 still need Tatiana's OK. T-33 (handover test) keep or drop by 8 November.
+
+## 2026-10-22 — Tatiana Nohra, with Claude (feat/model-client)
+
+**Did:** Built the model client (`src/clubops/model/`): any OpenAI-compatible provider, replay/record/live, schema validation, cost per call, per-plan budget ($0.05, 8 steps). 19 tests on a fake provider; failure rows F-41 to F-46; D-52. Running Club tests frozen (eval/FROZEN.md).
+
+**State:** `make check` passes (135 tests). Branch `feat/model-client` pushed, on top of `chore/team-plan`.
+
+**Next:** T-11 redaction, then T-12 storage, T-13 contract changes. API key from the professor needed only from T-14/T-17.
+
+**Open questions / blockers:** Which provider the professor's key is for; confirm it doesn't train on inputs (D-03).

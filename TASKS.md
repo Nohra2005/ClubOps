@@ -94,7 +94,7 @@ Reference documents:
 
 ### T-10 Model client
 - Owner: tatiana
-- Status: doing
+- Status: review
 - Needs: none
 - What: One OpenAI-compatible client with replay / record / live modes, a cost budget per call and per plan, and validation of the output against the contracts. Branch `feat/model-client-and-redaction`.
 - Done when: merged, with tests; `make check` passes without API keys.

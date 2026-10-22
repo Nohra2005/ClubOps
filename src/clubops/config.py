@@ -12,8 +12,12 @@ from dataclasses import dataclass
 from decimal import Decimal
 from enum import StrEnum
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pydantic import SecretStr
+
+if TYPE_CHECKING:
+    from clubops.model.budget import Budget
 
 
 class ModelMode(StrEnum):
@@ -30,9 +34,16 @@ class Settings:
     price_in_per_mtok: Decimal
     price_out_per_mtok: Decimal
     budget_usd_per_packet: Decimal
+    max_steps_per_plan: int
     mode: ModelMode
     recordings_dir: Path
     trace_path: Path
+
+    def new_budget(self) -> Budget:
+        """A fresh per-plan budget with the configured limits."""
+        from clubops.model.budget import Budget
+
+        return Budget(max_usd=self.budget_usd_per_packet, max_steps=self.max_steps_per_plan)
 
     @property
     def calls_network(self) -> bool:
@@ -68,7 +79,8 @@ def load_settings(env: dict[str, str] | None = None, dotenv: Path = Path(".env")
         model=get("CLUBOPS_MODEL"),
         price_in_per_mtok=Decimal(get("CLUBOPS_PRICE_IN_PER_MTOK", "0") or "0"),
         price_out_per_mtok=Decimal(get("CLUBOPS_PRICE_OUT_PER_MTOK", "0") or "0"),
-        budget_usd_per_packet=Decimal(get("CLUBOPS_BUDGET_USD_PER_PACKET", "0.50") or "0.50"),
+        budget_usd_per_packet=Decimal(get("CLUBOPS_BUDGET_USD_PER_PACKET", "0.05") or "0.05"),  # D-42
+        max_steps_per_plan=int(get("CLUBOPS_MAX_STEPS_PER_PLAN", "8") or "8"),  # D-42
         mode=ModelMode(get("CLUBOPS_MODEL_MODE") or ModelMode.REPLAY.value),
         recordings_dir=Path(get("CLUBOPS_RECORDINGS_DIR", "eval/recordings") or "eval/recordings"),
         trace_path=Path(get("CLUBOPS_TRACE_PATH", "traces/clubops.jsonl") or "traces/clubops.jsonl"),
