@@ -320,7 +320,7 @@ Reference documents:
 
 ### C-08 Calendar screen
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-03, C-04
 - What: Month view read from ClubOps, my tasks / all, item details, Google sync status.
 - Done when: works on fake data.
