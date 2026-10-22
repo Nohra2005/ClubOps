@@ -35,3 +35,13 @@ No entries yet — `capture`'s contract (`CaptureRequest`/`CaptureResult` in `sr
 **Next:** T-11 redaction, then T-12 storage, T-13 contract changes. API key from the professor needed only from T-14/T-17.
 
 **Open questions / blockers:** Which provider the professor's key is for; confirm it doesn't train on inputs (D-03).
+
+## 2026-10-22 — Tatiana Nohra, with Claude (feat/redaction)
+
+**Did:** `src/clubops/redaction.py`: hides links (keeps site name), e-mails, AUB IDs, Lebanese and international phones; leaves money ranges, dates, times, prices, distances, CRN alone. 29 tests on made-up data; private check on the real cabinet chat found nothing personal left. Failure rows F-47 to F-50.
+
+**State:** `make check` passes. Branch `feat/redaction` pushed.
+
+**Next:** T-12 SQLite storage, then T-13 contract changes.
+
+**Open questions / blockers:** D-36 (hide links) and D-38 (French) still "proposed": Tatiana to confirm. Standalone AUB usernames not caught (F-50).
