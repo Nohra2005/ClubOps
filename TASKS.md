@@ -53,7 +53,7 @@ Reference documents:
 ### T-04 Freeze the test sets
 - Owner: tatiana
 - Status: todo
-- Needs: T-01, T-02, T-03
+- Needs: T-01, T-02, T-03, T-36, T-37
 - What: Pick a random 30% held out (record the seed). Record the file hashes and date in `eval/FROZEN.md`.
 - Done when: `eval/FROZEN.md` is committed, before any code for T-14 or T-17.
 
@@ -208,7 +208,7 @@ Reference documents:
 - Owner: tatiana
 - Status: todo
 - Needs: T-05, T-06, T-14, T-15, T-16, T-17
-- What: Plan the held-out events with every baseline and with ClubOps (3 runs each, report the spread); automatic check against what really happened; blind 1–5 grading by the 3 graders; chatbot test; learning test; cost per successful plan. Fix what it finds and turn each failure into a regression test.
+- What: Plan the held-out events with every baseline and with ClubOps (3 runs each, report the spread), plus ClubOps with an empty club memory (rules-only score) and the ASME events (D-50); automatic check against what really happened; blind 1–5 grading by the 3 graders; chatbot test; learning test; cost per successful plan. Fix what it finds and turn each failure into a regression test.
 - Done when: result tables in `results/`, reproducible with `make eval`.
 
 ### T-27 Poster, demo and report
@@ -266,6 +266,27 @@ Reference documents:
 - Needs: T-27, T-30, T-31
 - What: The grader is likely an AI agent reading the repo. Add a "How to grade this project" section at the top of the README: each rubric item → the file that proves it → the command that reproduces it (see `docs/plan.md`). Then have a fresh AI session, with no context, grade the repo against the rubric and fix every gap it finds.
 - Done when: a fresh-session review finds no rubric item without evidence.
+
+### T-35 ASME data (real second club)
+- Owner: tatiana
+- Status: todo
+- Needs: none
+- What: Ask Alexis (ASME president) for 3-5 past proposals (ideally a workshop, trip or conference), what each really needed, his OK to use them privately, and a 10-minute setup chat later. Remove phone numbers and IDs.
+- Done when: ASME events and their real approvals are in the private eval folder.
+
+### T-36 One made-up event per missing event type
+- Owner: tatiana
+- Status: todo
+- Needs: none
+- What: 10 short event descriptions for types the Running Club never ran (workshop, conference, film screening, concert, exhibition, gala, meeting, competition, trip, play). Label each one's approvals from the OSA documents only. Mark them synthetic.
+- Done when: 10 labelled events saved privately and included in T-04's freeze.
+
+### T-37 Other presidents' questions
+- Owner: tatiana
+- Status: todo
+- Needs: none
+- What: Take the real questions from the presidents' group, reword them with no names (D-51), write the correct answer or "not sure, ask X" from OSA staff replies and documents.
+- Done when: added to the chatbot test before T-04's freeze.
 
 ---
 
