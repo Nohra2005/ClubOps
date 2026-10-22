@@ -1,5 +1,12 @@
 import { ApiError, type RequestOptions, type Transport } from './client';
-import { clubs, createWorkspace, DEMO_TODAY, eventFor, proposalFor } from './fixtures';
+import {
+  clubs,
+  createWorkspace,
+  DEMO_TODAY,
+  eventFor,
+  demoTimestamp,
+  proposalFor,
+} from './fixtures';
 import {
   draftLabels,
   roleLabels,
@@ -329,8 +336,8 @@ export function createMockTransport(
         event.fields = fields;
         event.title = fields.title;
         event.venue = fields.venue;
-        event.start = `${fields.date}T${fields.time}:00+03:00`;
-        event.end = `${fields.date}T${fields.end_time}:00+03:00`;
+        event.start = demoTimestamp(fields.date, fields.time);
+        event.end = demoTimestamp(fields.date, fields.end_time);
         event.origins = Object.fromEntries(
           Object.keys(fields).map((k) => [
             k,
@@ -413,8 +420,8 @@ export function createMockTransport(
         event.fields = { ...event.fields, ...fields };
         event.title = event.fields.title;
         event.venue = event.fields.venue;
-        event.start = `${event.fields.date}T${event.fields.time}:00+03:00`;
-        event.end = `${event.fields.date}T${event.fields.end_time}:00+03:00`;
+        event.start = demoTimestamp(event.fields.date, event.fields.time);
+        event.end = demoTimestamp(event.fields.date, event.fields.end_time);
         event.revision++;
         event.plan_outdated = true;
         if (event.status === 'approved') event.status = 'planned';

@@ -21,13 +21,12 @@ import {
   StatusBadge,
 } from '../components/ui';
 import { useAction, useResource } from '../hooks';
-import { formatDate } from '../lib';
+import { formatDate, todayInBeirut } from '../lib';
 
 export default function Calendar() {
   const { api, me, canEdit, isPresident, refresh } = useApp();
-  const [month, setMonth] = useState(
-    api.mode === 'demo' ? DEMO_TODAY.slice(0, 7) : new Date().toISOString().slice(0, 7),
-  );
+  const today = api.mode === 'demo' ? DEMO_TODAY : todayInBeirut();
+  const [month, setMonth] = useState(today.slice(0, 7));
   const [filter, setFilter] = useState('all');
   const [selected, setSelected] = useState<CalendarItem>();
   const data = useResource(() => api.calendar(month), [api, month]);
@@ -76,7 +75,7 @@ export default function Calendar() {
           <button className="icon-button" aria-label="Next month" onClick={() => move(1)}>
             <ChevronRight size={18} />
           </button>
-          <button className="button small" onClick={() => setMonth(DEMO_TODAY.slice(0, 7))}>
+          <button className="button small" onClick={() => setMonth(today.slice(0, 7))}>
             Today
           </button>
         </div>
@@ -104,7 +103,7 @@ export default function Calendar() {
               const outside = day < 1 || day > length;
               return (
                 <div
-                  className={`calendar-day${outside ? ' outside' : ''}${date === DEMO_TODAY ? ' today' : ''}`}
+                  className={`calendar-day${outside ? ' outside' : ''}${date === today ? ' today' : ''}`}
                   key={i}
                 >
                   {!outside && (

@@ -39,7 +39,7 @@ import {
   StatusBadge,
 } from '../components/ui';
 import { useAction, useResource } from '../hooks';
-import { copyText, downloadText, formatDate, formatTime } from '../lib';
+import { copyText, downloadText, formatDate, formatTime, todayInBeirut } from '../lib';
 
 function EditEvent({
   event,
@@ -293,7 +293,7 @@ function AfterEvent({ event, onSaved }: { event: EventData; onSaved: () => void 
       remember: '',
     },
   );
-  if (event.fields.date > DEMO_TODAY)
+  if (event.fields.date > (api.mode === 'demo' ? DEMO_TODAY : todayInBeirut()))
     return (
       <EmptyState
         title="The story isn't finished yet."
@@ -572,7 +572,8 @@ export default function EventDetail() {
                                   api.task(task.task_id, {
                                     state: e.target.checked
                                       ? 'done'
-                                      : task.due < DEMO_TODAY
+                                      : task.due <
+                                          (api.mode === 'demo' ? DEMO_TODAY : todayInBeirut())
                                         ? 'overdue'
                                         : 'todo',
                                   }),

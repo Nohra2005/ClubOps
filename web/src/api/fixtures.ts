@@ -119,6 +119,17 @@ export function proposalFor(fields: EventFields, clubName: string): ProposalAnsw
   }));
 }
 
+// Demo events use the real Beirut offset for their date, including winter time.
+export function demoTimestamp(date: string, time: string) {
+  const zone = new Intl.DateTimeFormat('en', {
+    timeZone: 'Asia/Beirut',
+    timeZoneName: 'longOffset',
+  })
+    .formatToParts(new Date(`${date}T12:00:00Z`))
+    .find((part) => part.type === 'timeZoneName')!.value;
+  return `${date}T${time}:00${zone.replace('GMT', '') || '+00:00'}`;
+}
+
 export function eventFor(
   id: string,
   title: string,
@@ -151,8 +162,8 @@ export function eventFor(
   const event: EventDetail = {
     event_id: id,
     title,
-    start: `${date}T17:00:00+03:00`,
-    end: `${date}T18:30:00+03:00`,
+    start: demoTimestamp(date, '17:00'),
+    end: demoTimestamp(date, '18:30'),
     venue: fields.venue,
     status,
     task_count: 4,
