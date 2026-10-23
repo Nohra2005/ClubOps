@@ -29,6 +29,20 @@ AUB_HOLIDAYS: dict[date, str] = {
 }
 
 
+def is_working_day(day: date, holidays: dict[date, str] = AUB_HOLIDAYS) -> bool:
+    """AUB offices work Monday to Friday, except holidays."""
+    return day.weekday() < 5 and day not in holidays
+
+
+def working_days_before(day: date, n: int, holidays: dict[date, str] = AUB_HOLIDAYS) -> date:
+    """The date n working days before ``day`` (OSA: '2 weeks before, excluding weekends and holidays')."""
+    while n > 0:
+        day -= timedelta(days=1)
+        if is_working_day(day, holidays):
+            n -= 1
+    return day
+
+
 def _state(due: date, today: date) -> TaskState:
     return TaskState.OVERDUE if due < today else TaskState.DUE_TODAY if due == today else TaskState.TODO
 

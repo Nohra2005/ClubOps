@@ -159,7 +159,7 @@ CAPABILITIES: tuple[CapabilitySpec, ...] = (
     ),
     CapabilitySpec(
         name="apply-rules",
-        version="0.1.0",
+        version="0.1.1",
         control=Control.AGENTIC,
         stability=Stability.FROZEN,
         request=rules.RuleApplicationRequest,
@@ -186,7 +186,7 @@ CAPABILITIES: tuple[CapabilitySpec, ...] = (
     ),
     CapabilitySpec(
         name="plan-backward",
-        version="0.1.0",
+        version="0.1.1",
         control=Control.DETERMINISTIC,
         stability=Stability.FROZEN,
         request=planning.PlanRequest,

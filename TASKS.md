@@ -80,10 +80,11 @@ Reference documents:
 
 ### T-08 Enter the AUB rules (shared rulebook)
 - Owner: tatiana
-- Status: todo
+- Status: review
 - Needs: T-07, T-12
 - What: Turn the OSA rules into rule items in the General store, each with source and authority. Verify each one.
 - Done when: every rule in the approval-code key exists as a verified rule item with its source.
+- Progress (2026-10-23): 25 rules drafted in `data/rulebook/aub-rules.json`. Left: Tatiana reads them and loads them as verified (`uv run python scripts/load_rulebook.py --verified-by m-tatiana-nohra`).
 
 ### T-09 Seed the Running Club know-how
 - Owner: tatiana
@@ -129,7 +130,7 @@ Reference documents:
 
 ### T-15 Rules, approvals list and deadlines
 - Owner: tatiana
-- Status: todo
+- Status: review
 - Needs: T-08, T-13
 - What: Apply the rules to an event (`apply-rules`), list the approvals, compute task due dates backward (`plan-backward`), warn when a lead time has passed.
 - Done when: works on the test events with uncertain rules marked, never silently skipped.

@@ -699,6 +699,12 @@
           "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
           "title": "Requirement Id",
           "type": "string"
+        },
+        "working_days": {
+          "default": false,
+          "description": "lead time counts working days only (no weekends or AUB holidays)",
+          "title": "Working Days",
+          "type": "boolean"
         }
       },
       "required": [

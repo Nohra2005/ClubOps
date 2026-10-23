@@ -1,0 +1,1062 @@
+[
+ {
+  "item_id": "kh-aub-proposal",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Every event needs an OSA event proposal",
+  "statement": "Every club or society event needs the OSA Event Proposal form, at least 2 weeks before the event, not counting weekends and holidays. Book the Student Activities Outlook calendar for the date by sending a calendar invitation.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "always"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "osa-proposal",
+     "kind": "form",
+     "name": "OSA event proposal + calendar invitation to Student Activities",
+     "lead_time_days": 10,
+     "working_days": true
+    }
+   ]
+  },
+  "tags": [
+   "proposal",
+   "prop"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "osa-financial-policy",
+    "locator": "aub.edu.lb/SAO/activities/Documents/Financial Policy.pdf",
+    "quote": "Finalized Expense form + Student Activity/Poster Display Request ... >= 2 weeks before the event, excluding weekends/holidays",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   },
+   {
+    "kind": "form",
+    "source_id": "osa-event-proposal-2026-2027",
+    "locator": "Microsoft Form, Event Proposal 2026-2027",
+    "quote": "Please book the studentactivities@aub.edu.lb Outlook calendar by sending a calendar invitation",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 2
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-adviser",
+  "scope": "aub",
+  "club_id": null,
+  "title": "The adviser approves every proposal",
+  "statement": "The club's adviser must approve the proposal; the form sends it to the adviser's AUB e-mail.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "always"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "adviser-approval",
+     "kind": "approval",
+     "name": "Adviser approves the proposal",
+     "lead_time_days": 10,
+     "working_days": true
+    }
+   ]
+  },
+  "tags": [
+   "proposal",
+   "adviser",
+   "adv"
+  ],
+  "sources": [
+   {
+    "kind": "form",
+    "source_id": "osa-event-proposal-2026-2027",
+    "locator": "Microsoft Form, Event Proposal 2026-2027",
+    "quote": "Adviser's AUB Email ... otherwise your form won't be submitted correctly to your adviser",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-expense-form",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Anything the club pays for goes on the expense form",
+  "statement": "All expenses need OSA approval before any commitment: fill the expense form and upload it with the proposal. Items given by sponsors are not listed on it. Buying something also needs a proposal.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "expenses"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "expense-form",
+     "kind": "form",
+     "name": "Expense form uploaded with the proposal",
+     "lead_time_days": 10,
+     "working_days": true
+    }
+   ]
+  },
+  "tags": [
+   "money",
+   "exp"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "osa-financial-policy",
+    "locator": "aub.edu.lb/SAO/activities/Documents/Financial Policy.pdf",
+    "quote": "All revenues/expenses (monetary or not) need OSA approval before any commitment.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   },
+   {
+    "kind": "user_input",
+    "source_id": "running-club-president-2026-10",
+    "locator": "stated by the Running Club president",
+    "quote": "sponsors are not included on the expense form",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 2
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-receipts",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Receipts within 1 week after the event",
+  "statement": "Receipts and invoices go to Student Activities within 1 week after the event; after 4 weeks they are rejected.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "expenses"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "receipts",
+     "kind": "document",
+     "name": "Receipts and invoices within 1 week after the event"
+    }
+   ]
+  },
+  "tags": [
+   "money",
+   "after-event",
+   "rcpt"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "osa-financial-policy",
+    "locator": "aub.edu.lb/SAO/activities/Documents/Financial Policy.pdf",
+    "quote": "Receipts/invoices within 1 week after the event; after 4 weeks automatically rejected.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-majority-vote",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Spending over $200 needs a members' vote",
+  "statement": "Expenses over $200 need a majority vote of the members, recorded in minutes and submitted with the proposal.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "budget_over_200"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "majority-vote",
+     "kind": "document",
+     "name": "Minutes of the members' majority vote",
+     "lead_time_days": 10,
+     "working_days": true
+    }
+   ]
+  },
+  "tags": [
+   "money",
+   "vote"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "osa-financial-policy",
+    "locator": "aub.edu.lb/SAO/activities/Documents/Financial Policy.pdf",
+    "quote": "Expenses over $200 need a majority vote of members, recorded in minutes, submitted with the proposal.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-major-event",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Major events need 6 weeks",
+  "statement": "Major events (conferences, gala dinners, rally paper, or a budget over $1,000) are submitted at least 6 weeks before.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "major_event"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "major-lead-time",
+     "kind": "lead_time",
+     "name": "Submit the proposal 6 weeks before (major event)",
+     "lead_time_days": 42
+    }
+   ]
+  },
+  "tags": [
+   "proposal",
+   "money",
+   "major"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "osa-financial-policy",
+    "locator": "aub.edu.lb/SAO/activities/Documents/Financial Policy.pdf",
+    "quote": "Major events (conferences, gala dinners, rally paper, or budget > $1,000): >= 6 weeks before.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-sponsor-document",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Sponsors need a sponsorship document",
+  "statement": "Each sponsor needs a document stating the type of sponsorship (money, goods, discount, vouchers, service) and what the sponsor gets; money also states timing and method.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "external_sponsor"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "sponsor-document",
+     "kind": "document",
+     "name": "Sponsorship document (type + what the sponsor gets)",
+     "lead_time_days": 10,
+     "working_days": true
+    }
+   ]
+  },
+  "tags": [
+   "sponsors",
+   "spon"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "osa-financial-policy",
+    "locator": "aub.edu.lb/SAO/activities/Documents/Financial Policy.pdf",
+    "quote": "Sponsor documents state the sponsorship type (money, goods, discount, vouchers, service) and the return (e.g. logo)",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-sponsor-ban",
+  "scope": "aub",
+  "club_id": null,
+  "title": "No energy-drink, alcohol, tobacco or bar sponsors",
+  "statement": "Sponsors may not be related to energy drinks, alcohol, cigarettes or bars.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "external_sponsor"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "sponsor-check",
+     "kind": "restriction",
+     "name": "Check no sponsor is an energy drink, alcohol, cigarette or bar brand"
+    }
+   ]
+  },
+  "tags": [
+   "sponsors",
+   "noban"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "osa-financial-policy",
+    "locator": "aub.edu.lb/SAO/activities/Documents/Financial Policy.pdf",
+    "quote": "No sponsors related to energy drinks, alcohol, cigarettes or bars.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-prizes",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Prizes: winners e-mailed, no cash",
+  "statement": "Prizes go on the expense form; after the event, e-mail the winners' names, IDs, contacts and amounts. No cash handling.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "prizes"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "prize-winners",
+     "kind": "document",
+     "name": "E-mail winners' names, IDs and amounts; prizes on the expense form"
+    }
+   ]
+  },
+  "tags": [
+   "prizes",
+   "prize"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "osa-financial-policy",
+    "locator": "aub.edu.lb/SAO/activities/Documents/Financial Policy.pdf",
+    "quote": "Prizes: email with winners' names, IDs, contacts, amounts; no cash handling; prizes in the Expense form.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-poster-approval",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Posters and flyers need the OSA stamp",
+  "statement": "Posters need OSA approval and a stamp before posting (official boards only, max A3, 75 per event); flyer distribution needs approval in advance. Sponsor logos max 3 x 3 cm.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "publicity"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "poster-approval",
+     "kind": "approval",
+     "name": "OSA approval and stamp for posters and flyers",
+     "lead_time_days": 10,
+     "working_days": true
+    }
+   ]
+  },
+  "tags": [
+   "publicity",
+   "post"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "osa-poster-policy",
+    "locator": "aub.edu.lb/SAO/activities/Documents/poster-policy.pdf",
+    "quote": "OSA approval + stamp before posting; submitted to West Hall 112.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-logo-use",
+  "scope": "aub",
+  "club_id": null,
+  "title": "No AUB logo without Communications approval",
+  "statement": "AUB's logo or branding may not be used without prior approval from the Office of Communications. Logos of non-AUB entities are not put on club material.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "publicity"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "logo-check",
+     "kind": "restriction",
+     "name": "No AUB logo without Communications approval; no non-AUB logos"
+    }
+   ]
+  },
+  "tags": [
+   "publicity",
+   "design",
+   "logo"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "aub-online-communication-policy",
+    "locator": "AUB policytech docid 2988",
+    "quote": "AUB's logo or other branding elements may NOT be used in digital communication without prior approval from the Office of Communications.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   },
+   {
+    "kind": "user_input",
+    "source_id": "running-club-president-2026-10",
+    "locator": "stated by the Running Club president",
+    "quote": "Non-AUB entities may not have a logo on club material.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 2
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-no-mass-email",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Mass e-mail may not promote events",
+  "statement": "Mass e-mail may not promote events or send reminders; use the events website, newsletter, campus screens or social media.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "publicity"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "no-mass-email",
+     "kind": "restriction",
+     "name": "Promote through the events site, screens or social media"
+    }
+   ]
+  },
+  "tags": [
+   "publicity",
+   "email"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "aub-communications-digital",
+    "locator": "aub.edu.lb/communications/Pages/digital.aspx",
+    "quote": "Mass email may NOT promote events (no reminders either).",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-hostler-booking",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Hostler facilities are requested 2 weeks ahead",
+  "statement": "Hostler / CHSC facilities (Green Field, track, pool, courts) are requested at least 2 weeks ahead; clubs come last in priority and may be bumped; one supervisor per 20 participants.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "hostler_venue"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "hostler-booking",
+     "kind": "approval",
+     "name": "Hostler / CHSC facility request",
+     "lead_time_days": 14
+    }
+   ]
+  },
+  "tags": [
+   "venue",
+   "sports",
+   "host"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "aub-sports-facilities-guidelines",
+    "locator": "AUB policytech docid 1571",
+    "quote": "Exclusive use: request >= 2 weeks ahead through the director of university sports",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-room-booking",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Rooms are reserved through WebReserve",
+  "statement": "Rooms for an event are reserved through AUB WebReserve (West Hall auditoriums A, B, C, Bathish, room 310).",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "indoor_room"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "room-booking",
+     "kind": "approval",
+     "name": "Reserve the room on WebReserve",
+     "lead_time_days": 10,
+     "working_days": true
+    }
+   ]
+  },
+  "tags": [
+   "venue",
+   "room"
+  ],
+  "sources": [
+   {
+    "kind": "form",
+    "source_id": "osa-event-proposal-2026-2027",
+    "locator": "Microsoft Form, Event Proposal 2026-2027",
+    "quote": "For facility reservation, please refer to the following link: webreserve",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   },
+   {
+    "kind": "document",
+    "source_id": "osa-room-reservation",
+    "locator": "aub.edu.lb/SAO/activities/Pages/RoomReservation.aspx",
+    "quote": "Click here to reserve any room",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 2
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-non-aub-guests",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Non-AUB guests need approval and a list of names",
+  "statement": "Guests from outside AUB need approval; attach an Excel list of their names to the proposal.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "non_aub_guests"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "guest-approval",
+     "kind": "approval",
+     "name": "Approval for non-AUB guests + Excel list of names",
+     "lead_time_days": 10,
+     "working_days": true
+    }
+   ]
+  },
+  "tags": [
+   "guests",
+   "guest"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "osa-activity-request",
+    "locator": "aub.edu.lb/SAO/activities/Documents/poster-display-request.pdf",
+    "quote": "Non-AUB community guests require approval.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   },
+   {
+    "kind": "form",
+    "source_id": "osa-event-proposal-2026-2027",
+    "locator": "Microsoft Form, Event Proposal 2026-2027",
+    "quote": "For non-AUB guests, please provide a list of their names in an excel file",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 2
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-tickets",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Tickets and fees: list of participants and payments",
+  "statement": "Ticketed events, trips and tournaments need an Excel of participants with tracking numbers and the amount each paid.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "tickets"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "ticket-list",
+     "kind": "document",
+     "name": "Excel of participants, tracking numbers and amounts paid"
+    }
+   ]
+  },
+  "tags": [
+   "money",
+   "tick"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "osa-financial-policy",
+    "locator": "aub.edu.lb/SAO/activities/Documents/Financial Policy.pdf",
+    "quote": "Ticketed events / trips / tournaments: Excel of participants, tracking numbers, amount paid each.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-collaboration",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Partner clubs: state the split",
+  "statement": "Events with other student organizations or departments state how expenses and revenues are split.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "partner_club"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "collab-split",
+     "kind": "document",
+     "name": "Expense and revenue split with the partner",
+     "lead_time_days": 10,
+     "working_days": true
+    }
+   ]
+  },
+  "tags": [
+   "partners",
+   "collab"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "osa-financial-policy",
+    "locator": "aub.edu.lb/SAO/activities/Documents/Financial Policy.pdf",
+    "quote": "Collaboration with other student orgs/departments: state the expense/revenue split.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-external-org",
+  "scope": "aub",
+  "club_id": null,
+  "title": "External organizations: overview and split",
+  "statement": "Events with an NGO or other non-AUB organization include an overview of it, its role and the expense split. External NGOs generally may not use clubs for fundraising.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "external_org"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "external-overview",
+     "kind": "document",
+     "name": "Overview of the external organization, its role and the split",
+     "lead_time_days": 10,
+     "working_days": true
+    }
+   ]
+  },
+  "tags": [
+   "partners",
+   "ext"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "osa-financial-policy",
+    "locator": "aub.edu.lb/SAO/activities/Documents/Financial Policy.pdf",
+    "quote": "Collaboration with NGOs / non-AUB entities: overview of the entity, its role, the expense split.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-speakers",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Speakers: details and CV, free of charge",
+  "statement": "Public speakers need first name, last name, nationality, subject and a brief CV; speakers and performers must be free of charge.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "speaker"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "speaker-details",
+     "kind": "document",
+     "name": "Speaker names, nationality, subject and CV",
+     "lead_time_days": 10,
+     "working_days": true
+    }
+   ]
+  },
+  "tags": [
+   "speakers",
+   "speak"
+  ],
+  "sources": [
+   {
+    "kind": "form",
+    "source_id": "osa-event-proposal-2026-2027",
+    "locator": "Microsoft Form, Event Proposal 2026-2027",
+    "quote": "please provide the following (First Name, Last Name, Nationality), the subject of their talk and attach a brief CV",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   },
+   {
+    "kind": "document",
+    "source_id": "osa-financial-policy",
+    "locator": "aub.edu.lb/SAO/activities/Documents/Financial Policy.pdf",
+    "quote": "Speakers/performers must be free of charge.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 2
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-food",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Food and drinks: list items and suppliers",
+  "statement": "Events with food or drinks list the items and suppliers, using the procurement set menus; OSA sets a food ceiling per event type.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "catering"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "food-list",
+     "kind": "document",
+     "name": "List of food items and suppliers (procurement set menus)",
+     "lead_time_days": 10,
+     "working_days": true
+    }
+   ]
+  },
+  "tags": [
+   "food",
+   "food"
+  ],
+  "sources": [
+   {
+    "kind": "form",
+    "source_id": "osa-event-proposal-2026-2027",
+    "locator": "Microsoft Form, Event Proposal 2026-2027",
+    "quote": "please provide the list of items and the corresponding suppliers",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   },
+   {
+    "kind": "document",
+    "source_id": "osa-financial-policy",
+    "locator": "aub.edu.lb/SAO/activities/Documents/Financial Policy.pdf",
+    "quote": "Food ceiling set by OSA per event type.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 2
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-safety",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Risky activities need an EHSRM safety recommendation",
+  "statement": "Some activities (water, big crowds, roads, physical risk) need a safety recommendation signed by an EHSRM safety officer.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "risky_activity"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "safety-recommendation",
+     "kind": "approval",
+     "name": "EHSRM safety recommendation",
+     "lead_time_days": 10,
+     "working_days": true
+    }
+   ]
+  },
+  "tags": [
+   "safety",
+   "safe"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "osa-activity-request",
+    "locator": "aub.edu.lb/SAO/activities/Documents/poster-display-request.pdf",
+    "quote": "Some activities need an EHSRM (safety) recommendation.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-filming",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Official filming needs Communications approval",
+  "statement": "Official filming or photography on AUB premises to promote an event needs Office of Communications authorization and consent of identifiable people.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "filming"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "filming-approval",
+     "kind": "approval",
+     "name": "Communications authorization for filming + consent forms",
+     "lead_time_days": 10,
+     "working_days": true
+    }
+   ]
+  },
+  "tags": [
+   "publicity",
+   "film"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "aub-online-communication-policy",
+    "locator": "AUB policytech docid 2988",
+    "quote": "Official filming/photography on AUB premises to promote AUB programs or events ... needs Office of Communications authorization",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-usfc",
+  "scope": "aub",
+  "club_id": null,
+  "title": "USFC money: no catering, prizes or salaries",
+  "statement": "USFC funding needs the event approved first and cannot pay for catering, prizes or salaries; it must be disclosed in publicity.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "usfc"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "usfc-limits",
+     "kind": "restriction",
+     "name": "USFC money cannot pay for catering, prizes or salaries"
+    }
+   ]
+  },
+  "tags": [
+   "money",
+   "usfc"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "usfc-funding",
+    "locator": "aub.edu.lb/SAO/activities/Pages/USFCFunding.aspx",
+    "quote": "Event must be AUB-approved first; no catering, no prizes, no salaries",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-fundraiser",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Fundraisers prove payment to the beneficiary",
+  "statement": "Fundraisers include proof of payment to the beneficiary in the impact report.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "fundraiser"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "fund-proof",
+     "kind": "document",
+     "name": "Proof of payment to the beneficiary (in the impact report)"
+    }
+   ]
+  },
+  "tags": [
+   "money",
+   "after-event",
+   "fund"
+  ],
+  "sources": [
+   {
+    "kind": "form",
+    "source_id": "osa-impact-report-2026-2027",
+    "locator": "Microsoft Form, Post-Event Impact Report 2026/27",
+    "quote": "funds raised, proof of payment to beneficiary (fundraisers)",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-impact-report",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Impact report after every event",
+  "statement": "After every event, fill the Post-Event Impact Report (attendees, impact, lessons learned, photos).",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "always"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "impact-report",
+     "kind": "form",
+     "name": "Post-Event Impact Report after the event"
+    }
+   ]
+  },
+  "tags": [
+   "after-event",
+   "impact"
+  ],
+  "sources": [
+   {
+    "kind": "form",
+    "source_id": "osa-impact-report-2026-2027",
+    "locator": "Microsoft Form, Post-Event Impact Report 2026/27",
+    "quote": "Impact: attendees, impact on club, goal achieved, LESSONS LEARNED",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "proposed",
+  "version": 1
+ }
+]

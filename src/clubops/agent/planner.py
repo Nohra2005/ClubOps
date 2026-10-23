@@ -23,7 +23,6 @@ from typing import Protocol, Self
 
 from pydantic import Field, model_validator
 
-from clubops.agent.holidays import move_off_holidays
 from clubops.agent.rules_check import check_rules
 from clubops.capabilities.plan import plan_backward
 from clubops.capabilities.runner import CapabilityError
@@ -43,6 +42,7 @@ from clubops.contracts.event import (
 from clubops.contracts.knowhow import Kind, KnowHowItem
 from clubops.contracts.planning import Plan, PlanRequest
 from clubops.contracts.rules import Applicability, RuleApplication
+from clubops.holidays import move_off_holidays
 from clubops.knowhow.directory import Directory
 from clubops.knowhow.store import KnowHowStore
 from clubops.model.budget import Budget
@@ -152,7 +152,7 @@ class ModelDecider:
 def build_prompt(state: RunState) -> str:
     """Short on purpose (D-43): known facts, what is missing, recent results, the user's words."""
     known = state.spec.model_dump(
-        mode="json", exclude_none=True, exclude={"event_id", "club_id", "revision", "confirmed_by"}
+        mode="json", exclude_none=True, exclude={"event_id", "club_id", "revision", "confirmed_by", "description"}
     )
     known = {k: v for k, v in known.items() if v not in ([], "")}
     missing = [
@@ -191,7 +191,7 @@ class Planner:
         *,
         step_limit: int = 8,
         cost_limit_usd: Decimal = Decimal("0.05"),
-        rules: Callable[[EventSpec, list[KnowHowItem]], RuleApplication] = check_rules,
+        rules: Callable[[EventSpec, list[KnowHowItem], Budget | None], RuleApplication] = check_rules,
     ) -> None:
         self.decide = decide
         self.store = store
@@ -218,7 +218,12 @@ class Planner:
             ),
             description=request.description,
             today=request.today,
-            spec=EventSpec(event_id=event_id, club_id=request.club_id, revision=1),
+            spec=EventSpec(
+                event_id=event_id,
+                club_id=request.club_id,
+                revision=1,
+                description=redact(request.description.content).text[:2000],
+            ),
             answers=[request.answer] if request.answer else [],
         )
         return self._loop(state)
@@ -277,7 +282,8 @@ class Planner:
             try:
                 if call == state.last_call:
                     raise Refused("Already did this step; choosing another")
-                state, note = self._run_tool(state, step)
+                state, note = self._run_tool(state, step, budget)
+                state = self._spent(state, budget)
             except Refused as why:
                 state = self._add_step(state, step.tool, str(why), StepState.FAILED)
                 state = state.model_copy(update={"notes": [*state.notes, f"refused {step.tool}: {why}"]})
@@ -290,7 +296,7 @@ class Planner:
 
     # ------------------------------------------------------------------ tools
 
-    def _run_tool(self, state: RunState, step: NextStep) -> tuple[RunState, str]:
+    def _run_tool(self, state: RunState, step: NextStep, budget: Budget) -> tuple[RunState, str]:
         spec, club = state.spec, state.run.club_id
         match step.tool:
             case Tool.UPDATE_EVENT:
@@ -308,7 +314,7 @@ class Planner:
 
             case Tool.CHECK_RULES:
                 rules = self.store.current(club, state.today, kinds=[Kind.RULE])
-                result = self.rules(spec, rules)
+                result = self.rules(spec, rules, budget)
                 applies = sum(v.verdict is Applicability.APPLIES for v in result.verdicts)
                 unsure = [v for v in result.verdicts if v.verdict is Applicability.UNCERTAIN]
                 note = f"rules: {applies} apply, {len(unsure)} not sure, {len(result.requirements)} things needed"

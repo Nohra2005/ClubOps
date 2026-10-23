@@ -9,6 +9,7 @@ from clubops.contracts.common import ErrorCode, ItemId, Question
 from clubops.contracts.knowhow import KnowHowItem, RuleDetails
 from clubops.contracts.planning import Plan, PlanRequest, PlanTask, TaskState
 from clubops.contracts.rules import Applicability, DerivedRequirement, RuleVerdict
+from clubops.holidays import working_days_before
 
 
 def derive_requirements(verdicts: list[RuleVerdict], rules: dict[ItemId, KnowHowItem]) -> list[DerivedRequirement]:
@@ -61,7 +62,11 @@ def plan_backward(request: PlanRequest) -> Outcome[Plan]:
         req = derived.requirement
         if req.lead_time_days is None:
             continue
-        due = event_day - timedelta(days=req.lead_time_days)
+        due = (
+            working_days_before(event_day, req.lead_time_days)
+            if req.working_days
+            else event_day - timedelta(days=req.lead_time_days)
+        )
         state = TaskState.OVERDUE if due < today else TaskState.DUE_TODAY if due == today else TaskState.TODO
         if state is TaskState.OVERDUE:
             shortfall = max(shortfall, (today - due).days)

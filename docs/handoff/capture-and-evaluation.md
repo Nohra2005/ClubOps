@@ -85,3 +85,13 @@ No entries yet — `capture`'s contract (`CaptureRequest`/`CaptureResult` in `sr
 **Next:** T-15 rules; ASME test events (T-36).
 
 **Open questions / blockers:** how event spaces are booked (WebReserve confirmed for West Hall; Green Field unknown); academic calendar (exam weeks).
+
+## 2026-10-23 — Tatiana Nohra, with Claude (feat/planner-tools-v2, continued)
+
+**Did:** T-08 rulebook (25 AUB rules with quoted sources, `scripts/build_rulebook.py`, `scripts/load_rulebook.py`); T-15 rule check: code for facts + one model call for description-only triggers (`agent/rules_judge.py`, prompt `rules-judge-v1`); working-day lead times (`Requirement.working_days`), holidays moved to `clubops/holidays.py`. ASME test events (15) drafted privately. D-65; F-88 to F-92. `apply-rules` 0.1.1, `plan-backward` 0.1.1.
+
+**State:** `make check` passes (315 tests).
+
+**Next:** Tatiana reviews the 25 rules; Alexis fills real approvals for ASME; then T-16 proposal draft (both form versions: 33 and 39 questions).
+
+**Open questions / blockers:** none new.
