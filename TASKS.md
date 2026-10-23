@@ -122,7 +122,7 @@ Reference documents:
 
 ### T-14 Event planner agent
 - Owner: tatiana
-- Status: todo
+- Status: review
 - Needs: T-04, T-10, T-12, T-13
 - What: The agent loop: it chooses its own steps (search memory, look at similar past events, check rules, check calendar clashes, fill the proposal), asks the user when information is missing, and stops at 8 steps or $0.05.
 - Done when: it plans an event end to end and shows its steps; tests cover the limits and a missing-info question.
