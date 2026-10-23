@@ -425,49 +425,50 @@ Reference documents:
 
 ### J-01 Read the calendar contract and set up Google
 - Owner: joey
-- Status: todo
+- Status: blocked
 - Needs: none
 - What: Read `docs/calendar-contract.md`. Create the Google Cloud project, turn on the Calendar API, create the shared club calendar. Secrets never go in the repo.
 - Done when: a test item appears in the shared calendar from your code.
+- Blocked: OAuth client, club calendar IDs and a cabinet-approved live test are not available yet. The adapter and setup steps are in `src/clubops/calendar/README.md`.
 
 ### J-02 Sync calendar items
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: J-01, T-13
 - What: Create, move (same ID, new date), and delete items so Google always matches ClubOps. ClubOps is the boss; edits in Google are overwritten. Only approved plans are sent.
 - Done when: tests show no duplicates when an item is sent twice or moved.
 
 ### J-03 Reminders
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: J-02
 - What: Default reminders from the contract; reminders go only to the person holding the task's role; everyone sees the shared calendar.
 - Done when: a test task reminds the right person at the right times.
 
 ### J-04 Club-wide reminders
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: J-02
 - What: Reminders not tied to an event: OSA rule check (monthly from September until the rules are in), cabinet elections (April), impact form after each event.
 - Done when: they appear in the calendar with no event attached.
 
 ### J-05 Done and cancelled
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: J-02
 - What: Task done stops its reminders; event cancelled deletes all its items.
 - Done when: tested.
 
 ### J-06 Calendar tests and failure rows
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: J-05
 - What: Tests with a fake Google (no real calls in `make check`); a Failure Matrix row for each failure mode (Google down, item sent twice, role with no person).
 - Done when: `make check` passes with your tests.
 
 ### J-07 Draft templates
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: none
 - What: Templates for: WhatsApp announcement, reminder message, sponsor email, Instagram caption, poster text (never logos), expense form, volunteer shifts, impact report. Match the club's real style (look at past announcements).
 - Done when: each template produces a draft a cabinet member would send without edits.
