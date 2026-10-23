@@ -382,6 +382,13 @@ Reference documents:
 - What: With Christophe's explicit authorization, update the vulnerable Python dependency blocking PR #9, verify the locked environment and CI, and record the handoff.
 - Done when: the dependency audit and existing PR checks pass without disabling security checks.
 
+### C-17 Sync main and check contracts 0.2.0
+- Owner: christophe
+- Status: doing
+- Needs: C-12
+- What: Merge the latest main into the frontend branch, preserve both teammates' work, and check frontend models against the published 0.2.0 contracts without inventing API endpoints.
+- Done when: merge conflicts are resolved, confirmed frontend mismatches are fixed and tested, remaining T-22 agreements are documented, and checks pass on the updated PR.
+
 ---
 
 ## Joey: calendar, reminders, drafts
