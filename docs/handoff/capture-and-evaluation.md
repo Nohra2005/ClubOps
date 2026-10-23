@@ -25,3 +25,43 @@ No entries yet — `capture`'s contract (`CaptureRequest`/`CaptureResult` in `sr
 **Next:** T-01 (correct the past-events table), then T-02, T-03.
 
 **Open questions / blockers:** D-36 and D-38 still need Tatiana's OK. T-33 (handover test) keep or drop by 8 November.
+
+## 2026-10-22 — Tatiana Nohra, with Claude (feat/model-client)
+
+**Did:** Built the model client (`src/clubops/model/`): any OpenAI-compatible provider, replay/record/live, schema validation, cost per call, per-plan budget ($0.05, 8 steps). 19 tests on a fake provider; failure rows F-41 to F-46; D-52. Running Club tests frozen (eval/FROZEN.md).
+
+**State:** `make check` passes (135 tests). Branch `feat/model-client` pushed, on top of `chore/team-plan`.
+
+**Next:** T-11 redaction, then T-12 storage, T-13 contract changes. API key from the professor needed only from T-14/T-17.
+
+**Open questions / blockers:** Which provider the professor's key is for; confirm it doesn't train on inputs (D-03).
+
+## 2026-10-22 — Tatiana Nohra, with Claude (feat/redaction)
+
+**Did:** `src/clubops/redaction.py`: hides links (keeps site name), e-mails, AUB IDs, Lebanese and international phones; leaves money ranges, dates, times, prices, distances, CRN alone. 29 tests on made-up data; private check on the real cabinet chat found nothing personal left. Failure rows F-47 to F-50.
+
+**State:** `make check` passes. Branch `feat/redaction` pushed.
+
+**Next:** T-12 SQLite storage, then T-13 contract changes.
+
+**Open questions / blockers:** D-36 (hide links) and D-38 (French) still "proposed": Tatiana to confirm. Standalone AUB usernames not caught (F-50).
+
+## 2026-10-22 — Tatiana Nohra, with Claude (feat/sqlite-store)
+
+**Did:** SQLite storage behind the existing store (`knowhow/backends.py`): memory, single file, and split layout (`general.db` + `clubs/<club>.db`); full-text search (`store.search`). All 20 store tests run on all three backends; 7 new tests (restart, club separation, search, rollback). F-51 to F-54, D-53, ADR 0004 updated.
+
+**State:** `make check` passes (212 tests). Branch `feat/sqlite-store` pushed.
+
+**Next:** T-13 contract changes (not-sure answers, agent runs, event status, calendar items, drafts, contacts, assets, event history + their tables).
+
+**Open questions / blockers:** F-54 (two files, no shared transaction) left as a known limit.
+
+## 2026-10-22 — Tatiana Nohra, with Claude (feat/contracts-v0.2)
+
+**Did:** Contracts 0.2.0 (D-54): Answer with `ask`/`look_in`; agent run; calendar item; draft; event status and history; contact; asset. New provisional capabilities `plan-event`, `draft`, `calendar-items`; `ask` 0.2.0. Directory store (contacts, assets, events) in the shared/club SQLite files. Schemas regenerated. F-55 to F-60.
+
+**State:** `make check` passes (233 tests). Branch `feat/contracts-v0.2` pushed; PR should carry the `contract-change` label.
+
+**Next:** tell Christophe (UI examples updated to the new fields; `schemas/` is the source of truth) and Joey (`schemas/calendar-items.*`, `schemas/draft.*`). Then T-14 planner agent (needs the API key soon) or T-15 rules.
+
+**Open questions / blockers:** none.

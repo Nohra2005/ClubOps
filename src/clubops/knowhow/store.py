@@ -1,8 +1,9 @@
-"""In-memory knowledge base with the verified-write rule built in.
+"""The knowledge base, with the verified-write rule built in.
 
 Proposals wait in ``pending`` until a cabinet member verifies them. Nothing else writes items.
 History is kept: an updated item keeps its old versions, marked superseded.
-A SQLite implementation will replace this behind the same methods (docs/adr/0004).
+Where the data lives is a backend's job (memory, or SQLite files: ``backends.py``, ADR 0004);
+every rule is here, so all backends behave the same.
 """
 
 from __future__ import annotations
@@ -25,6 +26,7 @@ from clubops.contracts.knowhow import (
     VerifyRequest,
     VerifyResult,
 )
+from clubops.knowhow.backends import Backend, MemoryBackend
 
 
 def _rebuild(item: KnowHowItem, **changes: Any) -> KnowHowItem:
@@ -33,21 +35,43 @@ def _rebuild(item: KnowHowItem, **changes: Any) -> KnowHowItem:
 
 
 class KnowHowStore:
-    def __init__(self) -> None:
-        self._versions: dict[ItemId, list[KnowHowItem]] = {}
-        self.pending: dict[str, KnowHowProposal] = {}
+    def __init__(self, backend: Backend | None = None) -> None:
+        self.backend: Backend = backend if backend is not None else MemoryBackend()
+
+    def close(self) -> None:
+        self.backend.close()
 
     # ------------------------------------------------------------------ reads
 
+    @property
+    def pending(self) -> dict[str, KnowHowProposal]:
+        """Proposals waiting for a cabinet member's decision (a snapshot; change it through submit/verify)."""
+        return self.backend.pending_all()
+
     def latest(self, item_id: ItemId) -> KnowHowItem | None:
-        versions = self._versions.get(item_id)
+        versions = self.backend.versions(item_id)
         return versions[-1] if versions else None
 
     def history(self, item_id: ItemId) -> list[KnowHowItem]:
-        return list(self._versions.get(item_id, []))
+        return self.backend.versions(item_id)
 
     def visible(self, club_id: ClubId) -> list[KnowHowItem]:
-        return [v[-1] for v in self._versions.values() if v[-1].scope is Scope.AUB or v[-1].club_id == club_id]
+        return [i for i in self.backend.latest_all() if i.scope is Scope.AUB or i.club_id == club_id]
+
+    def search(self, club_id: ClubId, text: str, limit: int = 10) -> list[KnowHowItem]:
+        """Approved items this club may see, best match first (plain full-text search, no model)."""
+        found: list[KnowHowItem] = []
+        for item_id, _score in self.backend.search(text, limit * 3):
+            item = self.latest(item_id)
+            if (
+                item is not None
+                and item.status in (ItemStatus.VERIFIED, ItemStatus.DISPUTED)
+                and (item.scope is Scope.AUB or item.club_id == club_id)
+            ):
+                found.append(item)
+            if len(found) == limit:
+                break
+        return found
 
     def current(self, club_id: ClubId, on: date, kinds: Iterable[Kind] | None = None) -> list[KnowHowItem]:
         wanted = set(kinds) if kinds is not None else None
@@ -59,7 +83,7 @@ class KnowHowStore:
     # ----------------------------------------------------------------- writes
 
     def submit(self, proposal: KnowHowProposal) -> None:
-        self.pending[proposal.proposal_id] = proposal
+        self.backend.pending_put(proposal)
 
     def verify(self, request: VerifyRequest, actor: Actor, now: datetime) -> Outcome[VerifyResult]:
         """Apply a cabinet member's decision to a queued proposal.
@@ -71,19 +95,20 @@ class KnowHowStore:
         """
         proposal, candidate = self._checked(request, actor)
         if request.decision is VerifyDecision.REJECT:
-            del self.pending[proposal.proposal_id]
+            self.backend.pending_delete(proposal.proposal_id)
             return Outcome(data=VerifyResult(committed=None))
 
         committed, to_supersede = self._next_version(proposal, candidate, actor, now)
-        for item_id in to_supersede:
-            self._mark_superseded(item_id)
-        self._versions.setdefault(committed.item_id, []).append(committed)
-        del self.pending[proposal.proposal_id]
+        with self.backend.transaction():
+            for item_id in to_supersede:
+                self._mark_superseded(item_id)
+            self.backend.append(committed)
+            self.backend.pending_delete(proposal.proposal_id)
         return Outcome(data=VerifyResult(committed=committed, superseded=to_supersede))
 
     def _checked(self, request: VerifyRequest, actor: Actor) -> tuple[KnowHowProposal, KnowHowItem]:
         """Every refusal happens here, before the store changes."""
-        proposal = self.pending.get(request.proposal.proposal_id)
+        proposal = self.backend.pending_all().get(request.proposal.proposal_id)
         if proposal is None:
             raise CapabilityError(ErrorCode.NOT_FOUND, "no pending proposal with this id")
         if request.proposal != proposal:
@@ -119,7 +144,7 @@ class KnowHowStore:
 
         match proposal.op:
             case ProposalOp.CREATE:
-                if candidate.item_id in self._versions:
+                if self.backend.has(candidate.item_id):
                     raise CapabilityError(ErrorCode.CONFLICT, "an item with this id already exists")
                 return _rebuild(candidate, version=1, **stamp), []
             case ProposalOp.UPDATE if target is not None:
@@ -161,6 +186,6 @@ class KnowHowStore:
                 raise CapabilityError(ErrorCode.INTERNAL, f"unhandled proposal op {proposal.op}")
 
     def _mark_superseded(self, item_id: ItemId) -> None:
-        versions = self._versions[item_id]
-        if versions[-1].status is ItemStatus.VERIFIED:
-            versions[-1] = _rebuild(versions[-1], status=ItemStatus.SUPERSEDED)
+        latest = self.latest(item_id)
+        if latest is not None and latest.status is ItemStatus.VERIFIED:
+            self.backend.replace_latest(_rebuild(latest, status=ItemStatus.SUPERSEDED))
