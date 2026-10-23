@@ -17,8 +17,10 @@ belong in git.
    role-calendar access when the cabinet changes.
 3. After a cabinet member approves the current plan revision, call `event_items`, then
    `CalendarSync.sync(item, approved=True, role_emails=...)` for each item. Never call it
-   from page load or an unapproved plan. Save failed jobs and retry them; `SyncError`
-   means Google may be unavailable. Show the item as not synced until retry succeeds.
+   from page load or an unapproved plan. `SyncQueue` saves approved items in SQLite;
+   drain it after approval and on a retry schedule. A `SyncError` leaves the item pending.
+   Show the item as not synced until retry succeeds. Store the queue in private host data,
+   outside the repository.
 4. Member addresses for role checks come from the backend's private club directory.
    A missing holder sends the reminder to the president's private role calendar and
    returns `missing_roles` so Review can ask the cabinet to assign the role. Deployment

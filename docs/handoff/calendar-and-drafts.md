@@ -23,3 +23,13 @@ No entries yet.
 **Next:** Get the shared calendar and private role calendar IDs, OAuth client and private approved message examples; then run a cabinet-approved live calendar test and draft review.
 
 **Open questions / blockers:** J-01 remains blocked on live Google setup. T-22 must connect approval and retry persistence. Non-WhatsApp J-07 templates are still to do.
+
+## 2026-10-23 — Joey, retry-queue follow-up (PR #15)
+
+**Did:** Added a SQLite queue for approved calendar items. A Google outage leaves the latest version pending across a restart; a later drain retries it and clears it after successful sync.
+
+**State:** Fake-Google tests cover the outage, restart and replacement with a moved date. Backend scheduling and UI sync status still need T-22.
+
+**Next:** Have T-22 call queue enqueue only after revision-bound plan approval, then drain on the server schedule.
+
+**Open questions / blockers:** Live Google setup and private message examples are pending Joey's account data.

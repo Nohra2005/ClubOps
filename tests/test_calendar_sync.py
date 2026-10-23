@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from pathlib import Path
 
 import httpx
 import pytest
 
 from clubops.calendar.items import cabinet_elections_item, cancel_items, event_items, impact_form_item, osa_rule_checks
+from clubops.calendar.queue import SyncQueue
 from clubops.calendar.sync import CalendarSync, GoogleCalendarGateway, SyncError, google_id
 from clubops.contracts.calendar import CalendarItem, ItemKind, ItemStatus, Reminder
 from clubops.contracts.common import Role
@@ -77,6 +79,28 @@ def test_google_failure_is_retriable_and_club_ids_are_isolated() -> None:
     with pytest.raises(SyncError, match="retry later"):
         sync.sync(task(), approved=True, role_emails={})
     assert google_id("math-club", "ev-example/book-room") != google_id("other-club", "ev-example/book-room")
+
+
+def test_failed_sync_stays_queued_across_restart_then_clears(tmp_path: Path) -> None:
+    gateway = FakeGateway()
+    gateway.fail = True
+    sync = CalendarSync(
+        gateway,
+        {"math-club": "shared"},
+        {"math-club": {Role.PRESIDENT: "president-private"}},
+    )
+    queue = SyncQueue(tmp_path / "calendar.sqlite")
+    with pytest.raises(ValueError, match="approved"):
+        queue.enqueue(task(), approved=False)
+    queue.enqueue(task(), approved=True)
+    queue.enqueue(task().model_copy(update={"date": date(2026, 11, 5)}), approved=True)
+    assert queue.pending()[0].date == date(2026, 11, 5)
+    assert queue.drain(sync, lambda _: {Role.PRESIDENT: "president@example.test"}) == []
+    assert len(SyncQueue(tmp_path / "calendar.sqlite").pending()) == 1
+    gateway.fail = False
+    result = SyncQueue(tmp_path / "calendar.sqlite").drain(sync, lambda _: {Role.PRESIDENT: "president@example.test"})
+    assert len(result) == 1
+    assert queue.pending() == []
 
 
 def test_all_cabinet_reminders_use_private_role_calendars() -> None:
