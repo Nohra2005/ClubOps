@@ -1,0 +1,37 @@
+# Frontend verification — 22 October 2026
+
+Scope: C-01 through C-12 against the synthetic demo API. C-13 is blocked by T-22. Google OAuth, model calls, real calendar sync, forwarding email and deployment have not been exercised or represented as completed integration.
+
+| Check                                          | Observed result                                                        | Reproduce                                                                                                                                                  |
+| ---------------------------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend lint, formatting, strict types, build | Passed                                                                 | `cd web && npm run check`                                                                                                                                  |
+| Frontend unit tests                            | 13 passed                                                              | `npm test` in `web/`                                                                                                                                       |
+| Real-browser workflows                         | 36 passed, desktop and 375px phone                                     | `npm run test:e2e` in `web/`                                                                                                                               |
+| Automated accessibility                        | Passed on 11 main routes at both widths; WCAG 2 A/AA and 2.1 AA checks | Accessibility test within the browser suite                                                                                                                |
+| Production npm dependency audit                | 0 reported vulnerabilities                                             | `npm audit --omit=dev`                                                                                                                                     |
+| Locked Python dependency audit (C-16)          | No known vulnerabilities after updating `certifi` to 2026.10.19        | Root `uv export --locked --format requirements-txt --no-hashes --no-emit-project --output-file requirements.txt`, then `uvx pip-audit -r requirements.txt` |
+| Existing Python suite                          | 116 passed; 93.63% coverage                                            | Root `uv run pytest --cov`, using a workspace temporary directory on this machine                                                                          |
+| Existing Python lint/types                     | Passed                                                                 | Root Make targets / equivalent Ruff and mypy commands                                                                                                      |
+| Schema and task checks                         | Passed                                                                 | `python -X utf8 scripts/export_schemas.py --check`; `python scripts/tasks.py --check`                                                                      |
+
+Browser workflows cover planning, questions, approval persistence, chat sources/uncertainty/teaching, review batches, second-president state, calendar completion, knowledge edit proposals, handover export/sign-off, member/document management, setup with skipped questions, adviser restrictions, double clicks, offline/error/fallback/empty/loading states and run limits. They use real Chrome with synthetic records and do not incur model charges.
+
+Visual inspection included the event overview and task workspace at desktop and phone sizes, plus the loaded phone Settings layout. Text contrast was corrected after automated checks found low-contrast secondary labels. Browser tests also check horizontal fit of the main routes.
+
+This is frontend evidence, not evidence that the unimplemented backend agent meets its evaluation targets. C-16 fixes the Python dependency-audit failure reported in the project review: Christophe explicitly authorized updating the locked `certifi` package to 2026.10.19. The local audit uses Windows system certificate trust (`uv --system-certs` and `truststore` for `pip-audit`) to verify the network's certificate; TLS verification and vulnerability checks remain enabled. The shared GitHub workflow does not yet run the new frontend checks.
+
+Both existing GitHub jobs passed on security-fix commit `1043c2f`: dependency vulnerability audit and lint/types/tests/contract drift. See [run 39793167497](https://github.com/Nohra2005/ClubOps/actions/runs/39793167497).
+
+## Contract synchronization — 23 October 2026 (C-17)
+
+Merged main through `597685d`, preserving both teams' changes. Canonical main decision IDs D-50–D-54 and failure IDs F-41–F-60 remain unchanged; conflicting unpublished frontend entries now use D-55–D-59 and F-61–F-70. New compatibility cases are F-71–F-75. The initial 22 October results above are historical; current results follow.
+
+| Check                               | Observed result                                                                                                 | Reproduce                                                                              |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Frontend quality gates              | Passed; 33 unit tests, lint, formatting, strict types and production build                                      | `cd web && npm run check`                                                              |
+| Existing demo browser workflows     | All 36 cases verified: 34 passed initially; the two chat cases passed after removing duplicate uncertainty text | `npm run test:e2e`; targeted recheck: `npm run test:e2e -- e2e/chat.spec.ts`           |
+| HTTP contract browser workflows     | 8 passed, desktop and 375px phone                                                                               | `npm run test:e2e:http`                                                                |
+| Merged Python suite                 | 233 passed; 95.18% coverage                                                                                     | Root `uv run pytest --cov`, with a fresh workspace temporary directory on this machine |
+| Merged lint/types, schema and tasks | Passed; Ruff formatting for 56 files and mypy for 35 source files                                               | Root Make targets / equivalent commands; UTF-8 schema check on Windows                 |
+
+HTTP checks use the actual fetch transport and screen components with intercepted synthetic responses. They do not prove that T-22, Google authentication, calendar sync or deployment are complete. `API_NOTES.md` records the confirmed mappings and remaining response/route agreements. The Windows command-runner account became unavailable during verification; the isolated port-5174 test server needed explicit cleanup before Playwright returned its successful result. The existing demo preview on port 5173 was preserved.

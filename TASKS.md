@@ -301,94 +301,95 @@ Reference documents:
 
 ### C-01 Read the UI spec and pick the stack
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: none
 - What: Read the UI spec. Choose any framework that deploys on the same free host. Agree the sign-in method with Tatiana (AUB email link or Google sign-in).
 - Done when: stack and sign-in written in `docs/design-log.md` (one row each).
 
 ### C-02 App shell
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-01
 - What: Layout, sidebar with badges, top bar, routes, roles (adviser read-only: buttons hidden), phone layout at 375 px.
 - Done when: every route opens with placeholder content on desktop and phone.
 
 ### C-03 Shared components
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-02
 - What: Source chip, origin tag, "not sure" card, approve bar, draft card, status badge, agent steps panel.
 - Done when: each component is used on at least one screen with fake data.
 
 ### C-04 Fake API
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-01
 - What: Serve the example JSON from the UI spec for every endpoint in its API table, so all screens work without the backend.
 - Done when: switching to the real API is one setting.
 
 ### C-05 Events screens
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-03, C-04
 - What: Event list; new-event flow (describe, check details, agent steps panel with questions); event page with its 6 tabs; plan approval bar; run planner warning.
 - Done when: the full flow works on fake data.
 
 ### C-06 Chat screen
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-03, C-04
 - What: The four reply kinds, thumbs up/down with "what was wrong", paste a document.
 - Done when: works on fake data.
 
 ### C-07 Review screen
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-03, C-04
 - What: All card types, filters, grouping by source, approve all (facts only, never rules).
 - Done when: works on fake data.
 
 ### C-08 Calendar screen
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-03, C-04
 - What: Month view read from ClubOps, my tasks / all, item details, Google sync status.
 - Done when: works on fake data.
 
 ### C-09 Knowledge screen and fact page
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-03, C-04
 - What: The 5 tabs, plain search, fact page with sources and history.
 - Done when: works on fake data.
 
 ### C-10 Handover screen
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-03, C-04
 - What: Role picker, role guide with gaps, download, "ask about this role".
 - Done when: works on fake data.
 
 ### C-11 Settings and new-club setup
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-03, C-04
 - What: Cabinet, Google connection, OSA email inbox, documents, AI cost; the setup flow.
 - Done when: works on fake data.
 
 ### C-12 States and cost rules
 - Owner: christophe
-- Status: todo
+- Status: done
 - Needs: C-05
 - What: Loading, empty, error and fallback states from the spec; AI buttons disabled while running; nothing calls AI on page load.
 - Done when: every state in the spec's table can be shown.
 
 ### C-13 Connect to the real backend
 - Owner: christophe
-- Status: todo
+- Status: blocked
 - Needs: C-12, T-22
 - What: Switch from fake data to the real API; fix mismatches with Tatiana.
 - Done when: every screen works on the deployed backend.
+- Blocker: T-22 is not done. Demo and HTTP adapters are ready; `web/API_NOTES.md` lists the response, action and Google session contracts to agree with Tatiana.
 
 ### C-14 Deploy the frontend
 - Owner: christophe
@@ -404,55 +405,70 @@ Reference documents:
 - What: Fix what the final test finds; help with the demo.
 - Done when: demo day.
 
+### C-16 Repair the frontend PR dependency audit
+- Owner: christophe
+- Status: done
+- Needs: C-12
+- What: With Christophe's explicit authorization, update the vulnerable Python dependency blocking PR #9, verify the locked environment and CI, and record the handoff.
+- Done when: the dependency audit and existing PR checks pass without disabling security checks.
+
+### C-17 Sync main and check contracts 0.2.0
+- Owner: christophe
+- Status: review
+- Needs: C-12
+- What: Merge the latest main into the frontend branch, preserve both teammates' work, and check frontend models against the published 0.2.0 contracts without inventing API endpoints.
+- Done when: merge conflicts are resolved, confirmed frontend mismatches are fixed and tested, remaining T-22 agreements are documented, and checks pass on the updated PR.
+
 ---
 
 ## Joey: calendar, reminders, drafts
 
 ### J-01 Read the calendar contract and set up Google
 - Owner: joey
-- Status: todo
+- Status: blocked
 - Needs: none
 - What: Read `docs/calendar-contract.md`. Create the Google Cloud project, turn on the Calendar API, create the shared club calendar. Secrets never go in the repo.
 - Done when: a test item appears in the shared calendar from your code.
+- Blocked: OAuth client, club calendar IDs and a cabinet-approved live test are not available yet. The adapter and setup steps are in `src/clubops/calendar/README.md`.
 
 ### J-02 Sync calendar items
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: J-01, T-13
 - What: Create, move (same ID, new date), and delete items so Google always matches ClubOps. ClubOps is the boss; edits in Google are overwritten. Only approved plans are sent.
 - Done when: tests show no duplicates when an item is sent twice or moved.
 
 ### J-03 Reminders
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: J-02
 - What: Default reminders from the contract; reminders go only to the person holding the task's role; everyone sees the shared calendar.
 - Done when: a test task reminds the right person at the right times.
 
 ### J-04 Club-wide reminders
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: J-02
 - What: Reminders not tied to an event: OSA rule check (monthly from September until the rules are in), cabinet elections (April), impact form after each event.
 - Done when: they appear in the calendar with no event attached.
 
 ### J-05 Done and cancelled
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: J-02
 - What: Task done stops its reminders; event cancelled deletes all its items.
 - Done when: tested.
 
 ### J-06 Calendar tests and failure rows
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: J-05
 - What: Tests with a fake Google (no real calls in `make check`); a Failure Matrix row for each failure mode (Google down, item sent twice, role with no person).
 - Done when: `make check` passes with your tests.
 
 ### J-07 Draft templates
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: none
 - What: Templates for: WhatsApp announcement, reminder message, sponsor email, Instagram caption, poster text (never logos), expense form, volunteer shifts, impact report. Match the club's real style (look at past announcements).
 - Done when: each template produces a draft a cabinet member would send without edits.

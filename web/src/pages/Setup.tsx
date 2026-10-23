@@ -1,0 +1,191 @@
+import { useState } from 'react';
+import { Link, Navigate, useNavigate } from 'react-router';
+import { ArrowRight, BookOpen, Check, MessageCircle, ShieldCheck } from 'lucide-react';
+import { useApp } from '../AppContext';
+import { storage } from '../api';
+import type { SetupStep } from '../api/types';
+import { PageHeading, ErrorNotice, Loading } from '../components/ui';
+import { useAction, useResource } from '../hooks';
+
+export default function Setup() {
+  const { api, me, isPresident, refresh } = useApp();
+  const navigate = useNavigate();
+  const rules = useResource(() => api.knowledge('rules'), [api]);
+  const [step, setStep] = useState<SetupStep>();
+  const [answer, setAnswer] = useState('');
+  const [history, setHistory] = useState<{ question: string; answer: string }[]>([]);
+  const action = useAction();
+  const proposals = useResource(() => api.review('facts'), [api, step?.done]);
+  if (!isPresident) return <Navigate to="/events" replace />;
+  async function next(value?: string) {
+    const result = await action.run(() => api.setup(value));
+    if (result.ok) {
+      if (step && value !== undefined)
+        setHistory((previous) => [
+          ...previous,
+          { question: step.question, answer: value === '[skip]' ? 'Skipped for now' : value },
+        ]);
+      setStep(result.value);
+      setAnswer('');
+      if (result.value.done) refresh();
+    }
+  }
+  const stop = () => {
+    storage.setItem(`clubops.setup.paused.${me.club.id}`, 'yes');
+    navigate('/events');
+  };
+  return (
+    <div className="setup-page">
+      <PageHeading
+        eyebrow="YOUR CLUB, WITH A HEAD START"
+        title={
+          !step
+            ? `Welcome, ${me.club.name}.`
+            : step.done
+              ? 'A good beginning.'
+              : 'Make this workspace yours.'
+        }
+        description="Start with shared rules. Add your club's own people, places and lessons."
+      />
+      {!step ? (
+        <section className="panel setup-welcome">
+          <div className="setup-welcome-icon">
+            <BookOpen size={31} />
+          </div>
+          <h2>You already have the AUB rules.</h2>
+          <p>
+            <strong>{rules.value?.length ?? '…'} shared rule examples</strong> are ready in this
+            demo. Real rules must come from verified official sources.
+          </p>
+          <div className="setup-promises">
+            <div>
+              <ShieldCheck size={17} />
+              <span>Every new fact goes to Review first.</span>
+            </div>
+            <div>
+              <MessageCircle size={17} />
+              <span>Short questions, one at a time. About ten minutes.</span>
+            </div>
+            <div>
+              <Check size={17} />
+              <span>Skip a question or stop whenever you need to.</span>
+            </div>
+          </div>
+          <div className="form-actions">
+            <button className="button primary" disabled={action.pending} onClick={() => next()}>
+              {action.pending ? 'Opening setup…' : 'Start club setup'}
+              <ArrowRight size={14} />
+            </button>
+            <button className="text-button" onClick={stop}>
+              Do this later
+            </button>
+          </div>
+          <ErrorNotice message={action.error || rules.error} />
+        </section>
+      ) : step.done ? (
+        <section className="panel setup-complete">
+          <span className="setup-check">
+            <Check size={28} />
+          </span>
+          <h2>Your club is ready to start.</h2>
+          <p>What you shared is proposed knowledge. Check it before the club relies on it.</p>
+          {proposals.loading ? (
+            <Loading rows={1} />
+          ) : (
+            <div className="setup-proposals">
+              <h3>Proposed facts</h3>
+              {proposals.value
+                ?.filter((card) => card.group === `${me.club.name} setup`)
+                .map((card) => (
+                  <div key={card.id}>
+                    <span />
+                    {card.statement}
+                  </div>
+                ))}
+              {!proposals.value?.some((card) => card.group === `${me.club.name} setup`) && (
+                <p>No new facts were recorded. You can teach the club later in Chat.</p>
+              )}
+            </div>
+          )}
+          <div className="form-actions">
+            <Link className="button primary" to="/review">
+              Review what we learned <ArrowRight size={14} />
+            </Link>
+            <Link className="button" to="/events">
+              Open Events
+            </Link>
+          </div>
+        </section>
+      ) : (
+        <>
+          <div className="setup-progress">
+            <div>
+              <span>Getting to know your club</span>
+              <strong>
+                {step.index} of {step.total}
+              </strong>
+            </div>
+            <div className="progress-track">
+              <span style={{ width: `${((step.index - 1) / step.total) * 100}%` }} />
+            </div>
+          </div>
+          {history.length > 0 && (
+            <details className="setup-history">
+              <summary>Your answers so far ({history.length})</summary>
+              {history.map((row, i) => (
+                <div key={i}>
+                  <strong>{row.question}</strong>
+                  <p>{row.answer}</p>
+                </div>
+              ))}
+            </details>
+          )}
+          <section className="panel setup-question">
+            <span className="assistant-avatar">c.</span>
+            <h2>{step.question}</h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (answer.trim()) next(answer.trim());
+              }}
+            >
+              <label className="field">
+                <span className="sr-only">Your setup answer</span>
+                <textarea
+                  autoFocus
+                  rows={5}
+                  maxLength={2000}
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  placeholder="Tell us what you know…"
+                  required
+                />
+              </label>
+              <div className="form-actions">
+                <button className="button primary" disabled={action.pending || !answer.trim()}>
+                  {action.pending ? 'Saving your answer…' : 'Next question'}
+                  <ArrowRight size={14} />
+                </button>
+                <button
+                  className="text-button"
+                  type="button"
+                  disabled={action.pending}
+                  onClick={() => next('[skip]')}
+                >
+                  Skip this question
+                </button>
+              </div>
+              <ErrorNotice message={action.error} />
+            </form>
+          </section>
+          <button className="text-button stop-setup" onClick={stop} disabled={action.pending}>
+            Stop for now · your answers are kept
+          </button>
+          <p className="inline-note">
+            AI runs when you choose Next question or Skip. Nothing runs while you type.
+          </p>
+        </>
+      )}
+    </div>
+  );
+}

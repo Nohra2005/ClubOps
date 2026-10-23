@@ -1,0 +1,9 @@
+node_modules/
+.npm-cache/
+dist/
+.vite/
+test-results/
+playwright-report/
+*.tsbuildinfo
+.env.local
+.env.*.local
