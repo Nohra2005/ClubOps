@@ -80,10 +80,11 @@ Reference documents:
 
 ### T-08 Enter the AUB rules (shared rulebook)
 - Owner: tatiana
-- Status: todo
+- Status: done
 - Needs: T-07, T-12
 - What: Turn the OSA rules into rule items in the General store, each with source and authority. Verify each one.
 - Done when: every rule in the approval-code key exists as a verified rule item with its source.
+- Progress (2026-10-23): 25 rules in `data/rulebook/aub-rules.json`, reviewed and approved by Tatiana (D-66).
 
 ### T-09 Seed the Running Club know-how
 - Owner: tatiana
@@ -129,7 +130,7 @@ Reference documents:
 
 ### T-15 Rules, approvals list and deadlines
 - Owner: tatiana
-- Status: todo
+- Status: review
 - Needs: T-08, T-13
 - What: Apply the rules to an event (`apply-rules`), list the approvals, compute task due dates backward (`plan-backward`), warn when a lead time has passed.
 - Done when: works on the test events with uncertain rules marked, never silently skipped.
@@ -269,10 +270,11 @@ Reference documents:
 
 ### T-35 ASME data (real second club)
 - Owner: tatiana
-- Status: todo
+- Status: doing
 - Needs: none
 - What: Ask Alexis (ASME president) for 3-5 past proposals (ideally a workshop, trip or conference), what each really needed, his OK to use them privately, and a 10-minute setup chat later. Remove phone numbers and IDs.
 - Done when: ASME events and their real approvals are in the private eval folder.
+- Progress (2026-10-23): Alexis sent 4 proposals (screen recordings) and 12 expense forms. 15 ASME events drafted privately in `clubops-raw/eval/asme-events.csv` with guessed approvals; personal details removed. Left: Alexis fills the real approvals (column `approvals_real`) and confirms the open questions in `notes`.
 
 ### T-36 One made-up event per missing event type
 - Owner: tatiana

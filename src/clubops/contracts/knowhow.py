@@ -152,6 +152,9 @@ class Requirement(Contract):
     name: str = Field(max_length=200)
     detail: str | None = Field(default=None, max_length=500)
     lead_time_days: int | None = Field(default=None, ge=0)
+    working_days: bool = Field(
+        default=False, description="lead time counts working days only (no weekends or AUB holidays)"
+    )
 
 
 class RuleDetails(Contract):

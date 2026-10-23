@@ -32,3 +32,6 @@ results/tmp/
 .idea/
 .vscode/
 .DS_Store
+
+# Runtime databases (the app writes here)
+data/app/

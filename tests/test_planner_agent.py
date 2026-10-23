@@ -249,13 +249,33 @@ def test_the_description_is_redacted_and_marked_as_data(memory: KnowHowStore, di
     assert "<user_description>" in prompt
 
 
-def test_calendar_clashes_are_reported(memory: KnowHowStore, directory: Directory) -> None:
+def test_search_memory_also_finds_similar_past_events(memory: KnowHowStore, directory: Directory) -> None:
     directory.put_event(
-        EventRecord(event_id="ev-other", club_id=CLUB, title="Bake sale", on=START.date(), status=EventStatus.APPROVED)
+        EventRecord(
+            event_id="ev-old-run",
+            club_id=CLUB,
+            title="Spring fun run",
+            event_type=EventType.SPORT,
+            on=date(2026, 4, 12),
+            status=EventStatus.CLOSED,
+            outcome="40 runners; 6 to 9 AM worked best",
+        )
     )
-    script = Script(full_plan()[0], step(Tool.CHECK_CALENDAR), *full_plan()[2:])
+    script = Script(full_plan()[0], step(Tool.SEARCH_MEMORY, query="fun run"), *full_plan()[2:])
     state = planner(memory, directory, script).start(request(), "run-n5")
-    assert any("clashes with Bake sale" in n for n in state.notes)
+    found = next(n for n in state.notes if n.startswith("memory 'fun run'"))
+    assert "Spring fun run" in found and "6 to 9 AM worked best" in found
+
+
+def test_a_deadline_on_a_holiday_moves_to_the_day_before(memory: KnowHowStore, directory: Directory) -> None:
+    # guest approval is 14 days before the event; an 8 Jan event puts it on 25 Dec (Christmas)
+    jan = START.replace(year=2027, month=1, day=8)
+    facts = FACTS.model_copy(update={"start": jan, "end": jan.replace(hour=9)})
+    script = Script(step(Tool.UPDATE_EVENT, facts=facts), *full_plan()[2:])
+    state = planner(memory, directory, script).start(request(), "run-q8")
+    assert state.plan is not None
+    assert state.plan.tasks[0].due == date(2026, 12, 23)  # 25 and 24 Dec are both holidays
+    assert any("is Christmas" in n for n in state.notes)
 
 
 def test_a_run_survives_a_restart(tmp_path: Path, memory: KnowHowStore, directory: Directory) -> None:

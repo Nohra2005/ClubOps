@@ -42,22 +42,21 @@ from clubops.contracts.event import (
 from clubops.contracts.knowhow import Kind, KnowHowItem
 from clubops.contracts.planning import Plan, PlanRequest
 from clubops.contracts.rules import Applicability, RuleApplication
+from clubops.holidays import move_off_holidays
 from clubops.knowhow.directory import Directory
 from clubops.knowhow.store import KnowHowStore
 from clubops.model.budget import Budget
 from clubops.model.client import ModelClient, ModelRequest
 from clubops.redaction import redact
 
-PROMPT_VERSION = "planner-v1"
+PROMPT_VERSION = "planner-v2"
 MAX_NOTES = 12
 
 
 class Tool(StrEnum):
     UPDATE_EVENT = "update-event"
     SEARCH_MEMORY = "search-memory"
-    PAST_EVENTS = "past-events"
     CHECK_RULES = "check-rules"
-    CHECK_CALENDAR = "check-calendar"
     PLAN_TASKS = "plan-tasks"
     ASK_USER = "ask-user"
     FINISH = "finish"
@@ -124,10 +123,9 @@ SYSTEM = """You plan events for an AUB student club inside ClubOps. At each turn
 Tools:
 - update-event: record event facts the user gave (date/time with +03:00, venue, audience, prizes, food...).
   Never guess a fact; leave unknown ones out.
-- search-memory: look up the club's approved know-how (rules, contacts, lessons) with a few words.
-- past-events: look at the club's similar past events.
+- search-memory: look up the club's approved know-how (rules, contacts, lessons) and similar past events
+  with a few words.
 - check-rules: check which AUB rules apply to the event as known now.
-- check-calendar: look for clashes with the club's other events on the same day.
 - plan-tasks: compute tasks and due dates backward from the event date (after check-rules).
 - ask-user: ask ONE short question when a fact needed for the rules or dates is missing
   (date, venue, who can come, prizes, food, sales, funding). Prefer asking to guessing.
@@ -154,7 +152,7 @@ class ModelDecider:
 def build_prompt(state: RunState) -> str:
     """Short on purpose (D-43): known facts, what is missing, recent results, the user's words."""
     known = state.spec.model_dump(
-        mode="json", exclude_none=True, exclude={"event_id", "club_id", "revision", "confirmed_by"}
+        mode="json", exclude_none=True, exclude={"event_id", "club_id", "revision", "confirmed_by", "description"}
     )
     known = {k: v for k, v in known.items() if v not in ([], "")}
     missing = [
@@ -193,7 +191,7 @@ class Planner:
         *,
         step_limit: int = 8,
         cost_limit_usd: Decimal = Decimal("0.05"),
-        rules: Callable[[EventSpec, list[KnowHowItem]], RuleApplication] = check_rules,
+        rules: Callable[[EventSpec, list[KnowHowItem], Budget | None], RuleApplication] = check_rules,
     ) -> None:
         self.decide = decide
         self.store = store
@@ -220,7 +218,12 @@ class Planner:
             ),
             description=request.description,
             today=request.today,
-            spec=EventSpec(event_id=event_id, club_id=request.club_id, revision=1),
+            spec=EventSpec(
+                event_id=event_id,
+                club_id=request.club_id,
+                revision=1,
+                description=redact(request.description.content).text[:2000],
+            ),
             answers=[request.answer] if request.answer else [],
         )
         return self._loop(state)
@@ -279,7 +282,8 @@ class Planner:
             try:
                 if call == state.last_call:
                     raise Refused("Already did this step; choosing another")
-                state, note = self._run_tool(state, step)
+                state, note = self._run_tool(state, step, budget)
+                state = self._spent(state, budget)
             except Refused as why:
                 state = self._add_step(state, step.tool, str(why), StepState.FAILED)
                 state = state.model_copy(update={"notes": [*state.notes, f"refused {step.tool}: {why}"]})
@@ -292,7 +296,7 @@ class Planner:
 
     # ------------------------------------------------------------------ tools
 
-    def _run_tool(self, state: RunState, step: NextStep) -> tuple[RunState, str]:
+    def _run_tool(self, state: RunState, step: NextStep, budget: Budget) -> tuple[RunState, str]:
         spec, club = state.spec, state.run.club_id
         match step.tool:
             case Tool.UPDATE_EVENT:
@@ -306,26 +310,11 @@ class Planner:
                 return state.model_copy(update={"spec": new}), f"event updated: {', '.join(sorted(changes))}"
 
             case Tool.SEARCH_MEMORY:
-                found = self.store.search(club, step.query or "", limit=5)
-                if not found:
-                    return state, f"memory '{step.query}': nothing approved found"
-                lines = "; ".join(f"{i.title}: {i.statement[:140]}" for i in found)
-                return state, f"memory '{step.query}': {lines}"
-
-            case Tool.PAST_EVENTS:
-                events = [e for e in self.directory.events() if e.event_id != spec.event_id]
-                if spec.event_type is not None:
-                    events = [e for e in events if e.event_type is spec.event_type] or events
-                if not events:
-                    return state, "past events: none recorded yet"
-                lines = "; ".join(
-                    f"{e.title} ({e.on.isoformat()}){': ' + e.outcome[:120] if e.outcome else ''}" for e in events[:3]
-                )
-                return state, f"past events: {lines}"
+                return state, self._search(spec, step.query or "")
 
             case Tool.CHECK_RULES:
                 rules = self.store.current(club, state.today, kinds=[Kind.RULE])
-                result = self.rules(spec, rules)
+                result = self.rules(spec, rules, budget)
                 applies = sum(v.verdict is Applicability.APPLIES for v in result.verdicts)
                 unsure = [v for v in result.verdicts if v.verdict is Applicability.UNCERTAIN]
                 note = f"rules: {applies} apply, {len(unsure)} not sure, {len(result.requirements)} things needed"
@@ -333,27 +322,16 @@ class Planner:
                     note += " (not sure: " + "; ".join(f"{v.item_id} - {v.reason}" for v in unsure[:3]) + ")"
                 return state.model_copy(update={"rules": result}), note
 
-            case Tool.CHECK_CALENDAR:
-                if spec.start is None:
-                    raise Refused("Need the event date before checking the calendar")
-                day = spec.start.date()
-                clashes = [
-                    e.title
-                    for e in self.directory.events()
-                    if e.on == day and e.event_id != spec.event_id and e.status is not EventStatus.CANCELLED
-                ]
-                return state, (
-                    f"calendar {day}: clashes with {', '.join(clashes)}" if clashes else f"calendar {day}: free"
-                )
-
             case Tool.PLAN_TASKS:
                 if state.rules is None or state.rules.spec_revision != spec.revision:
                     raise Refused("Check the rules for the latest event details first")
                 outcome = plan_backward(PlanRequest(spec=spec, rules=state.rules, today=state.today))
                 if outcome.data is None:
                     raise Refused("Need the event date to set due dates")
-                plan = outcome.data
+                plan, moved = move_off_holidays(outcome.data, state.today)
                 note = f"plan: {len(plan.tasks)} tasks"
+                if moved:
+                    note += "; moved off holidays: " + "; ".join(moved)
                 if not plan.feasible:
                     note += f"; some deadlines already passed (earliest workable date {plan.earliest_feasible_date})"
                 return state.model_copy(update={"plan": plan}), note
@@ -363,6 +341,23 @@ class Planner:
 
             case _:  # pragma: no cover - ask-user is handled by the loop
                 raise Refused("Unknown step")
+
+    def _search(self, spec: EventSpec, query: str) -> str:
+        """Approved know-how plus the club's past events that share a word with the query or the event type."""
+        found = self.store.search(spec.club_id, query, limit=5)
+        words = {w for w in query.lower().split() if len(w) > 2}
+        past = [
+            e
+            for e in self.directory.events()
+            if e.event_id != spec.event_id
+            and (
+                (spec.event_type is not None and e.event_type is spec.event_type)
+                or words & set(f"{e.title} {e.outcome or ''}".lower().split())
+            )
+        ][:3]
+        parts = [f"{i.title}: {i.statement[:140]}" for i in found]
+        parts += [f"past event {e.title} ({e.on}){': ' + e.outcome[:120] if e.outcome else ''}" for e in past]
+        return f"memory '{query}': " + ("; ".join(parts) if parts else "nothing approved found")
 
     def _finish(self, state: RunState) -> tuple[RunState, str]:
         spec = state.spec

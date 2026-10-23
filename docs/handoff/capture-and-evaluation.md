@@ -75,3 +75,23 @@ No entries yet — `capture`'s contract (`CaptureRequest`/`CaptureResult` in `sr
 **Next:** T-15 (model-judged rules, approvals, deadlines) and T-16 (proposal draft as a new tool). Web API endpoints /events/plan, /runs/{id}, /runs/{id}/answer can wrap `Planner.start/answer/keep_going` + `RunStore`.
 
 **Open questions / blockers:** API key for recorded runs.
+
+## 2026-10-23 — Tatiana Nohra, with Claude (feat/planner-tools-v2)
+
+**Did:** Planner tools 8 → 6 (D-64): past events folded into search-memory, check-calendar removed; prompt `planner-v2`. Deadlines on AUB holidays move to the day before (`agent/holidays.py`, 2026-27 list). `ClubProfile.kind` (club/society) and `faculty`; contracts 0.2.1, `draft-proposal` 0.1.1. ASME material (4 proposals, 12 expense forms) summarised privately in `clubops-raw/asme/`.
+
+**State:** `make check` passes (300 tests).
+
+**Next:** T-15 rules; ASME test events (T-36).
+
+**Open questions / blockers:** how event spaces are booked (WebReserve confirmed for West Hall; Green Field unknown); academic calendar (exam weeks).
+
+## 2026-10-23 — Tatiana Nohra, with Claude (feat/planner-tools-v2, continued)
+
+**Did:** T-08 rulebook (25 AUB rules with quoted sources, `scripts/build_rulebook.py`, `scripts/load_rulebook.py`); T-15 rule check: code for facts + one model call for description-only triggers (`agent/rules_judge.py`, prompt `rules-judge-v1`); working-day lead times (`Requirement.working_days`), holidays moved to `clubops/holidays.py`. ASME test events (15) drafted privately. D-65; F-88 to F-92. `apply-rules` 0.1.1, `plan-backward` 0.1.1.
+
+**State:** `make check` passes (315 tests).
+
+**Next:** Tatiana reviews the 25 rules; Alexis fills real approvals for ASME; then T-16 proposal draft (both form versions: 33 and 39 questions).
+
+**Open questions / blockers:** none new.
