@@ -2,8 +2,8 @@
 
   uv run python scripts/load_rulebook.py --data-dir data/app --verified-by m-tatiana-nohra
 
-Only pass --verified-by after a cabinet member has read the rules (TASKS.md T-08). Without it the rules
-load as 'proposed' and the agent does not use them (only verified rules count, D-41).
+The rules in the file are already verified (reviewed by a cabinet member, see build_rulebook.py).
+--verified-by re-marks them with another reviewer, after a new review.
 Loading twice updates a rule only when its text changed (a new version; the old one stays as history).
 """
 

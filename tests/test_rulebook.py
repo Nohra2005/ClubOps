@@ -61,9 +61,9 @@ def test_every_approval_code_has_a_rule() -> None:
     assert set(wanted.split()) <= codes
 
 
-def test_every_rule_quotes_its_source_and_starts_unverified() -> None:
+def test_every_rule_quotes_its_source_and_was_reviewed() -> None:
     for r in read_rulebook():
-        assert r.scope.value == "aub" and r.status is ItemStatus.PROPOSED
+        assert r.scope.value == "aub" and r.status is ItemStatus.VERIFIED and r.verified_by
         assert r.sources and all(s.quote for s in r.sources), r.item_id
 
 
@@ -74,15 +74,19 @@ def test_every_trigger_is_understood_by_code_or_by_the_model() -> None:
             assert t in TRIGGERS or t in MODEL_TRIGGERS, f"{r.item_id}: unknown trigger {t}"
 
 
-def test_loading_twice_adds_nothing_and_a_review_makes_them_verified(tmp_path: Path) -> None:
+def test_loading_twice_adds_nothing_and_a_changed_rule_becomes_a_new_version(tmp_path: Path) -> None:
     assert load(tmp_path, None) == (len(RULES), 0)
     assert load(tmp_path, None) == (0, 0)
-    assert load(tmp_path, "m-reviewer") == (0, len(RULES))  # same text, now verified: a new version
+    changed = tmp_path / "rules.json"
+    rules = json.loads(RULEBOOK.read_text())
+    rules[0]["statement"] = "A reworded rule."
+    changed.write_text(json.dumps(rules))
+    assert load(tmp_path, None, changed) == (0, 1)
     backend = SqliteBackend(tmp_path / "general.db")
     try:
-        latest = backend.versions("kh-aub-proposal")
-        assert [v.status for v in latest] == [ItemStatus.PROPOSED, ItemStatus.VERIFIED]
-        assert latest[-1].verified_by == "m-reviewer"
+        versions = backend.versions("kh-aub-proposal")
+        assert [v.version for v in versions] == [1, 2]  # the old wording stays as history
+        assert all(v.status is ItemStatus.VERIFIED for v in versions)
     finally:
         backend.close()
 

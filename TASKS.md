@@ -80,11 +80,11 @@ Reference documents:
 
 ### T-08 Enter the AUB rules (shared rulebook)
 - Owner: tatiana
-- Status: review
+- Status: done
 - Needs: T-07, T-12
 - What: Turn the OSA rules into rule items in the General store, each with source and authority. Verify each one.
 - Done when: every rule in the approval-code key exists as a verified rule item with its source.
-- Progress (2026-10-23): 25 rules drafted in `data/rulebook/aub-rules.json`. Left: Tatiana reads them and loads them as verified (`uv run python scripts/load_rulebook.py --verified-by m-tatiana-nohra`).
+- Progress (2026-10-23): 25 rules in `data/rulebook/aub-rules.json`, reviewed and approved by Tatiana (D-66).
 
 ### T-09 Seed the Running Club know-how
 - Owner: tatiana

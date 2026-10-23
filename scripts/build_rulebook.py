@@ -1,8 +1,8 @@
 """Build data/rulebook/aub-rules.json: the AUB-wide rules every club and society follows (T-08).
 
 Each rule comes from a public AUB/OSA document (or, where marked, from the Running Club president)
-and quotes the line it rests on. Rules are written as 'proposed': a cabinet member reviews the list
-and loads them as verified with `scripts/load_rulebook.py --verified-by m-...`.
+and quotes the line it rests on. A cabinet member read every rule before it was marked verified; after
+any change here, the reviewer reads the changed rules again and updates REVIEWER / REVIEWED_AT.
 
 Run: uv run python scripts/build_rulebook.py
 """
@@ -15,6 +15,8 @@ from typing import Any
 
 OUT = Path("data/rulebook/aub-rules.json")
 SEEN = "2026-10-12T12:00:00+03:00"
+REVIEWER = "m-tatiana-nohra"  # Running Club president; read all 25 rules on 2026-10-23
+REVIEWED_AT = "2026-10-23T22:49:00+03:00"
 
 FIN = ("document", "osa-financial-policy", "aub.edu.lb/SAO/activities/Documents/Financial Policy.pdf")
 POSTERS = ("document", "osa-poster-policy", "aub.edu.lb/SAO/activities/Documents/poster-policy.pdf")
@@ -63,7 +65,9 @@ def rule(  # noqa: PLR0917 (one row of data per call)
         "tags": [*tags, code.lower()],
         "sources": refs,
         "support": {"events": [], "source_count": len(refs)},
-        "status": "proposed",
+        "status": "verified",
+        "verified_by": REVIEWER,
+        "verified_at": REVIEWED_AT,
         "version": 1,
     }
 
@@ -76,25 +80,15 @@ RULES = [
         "proposal",
         "Every event needs an OSA event proposal",
         "Every club or society event needs the OSA Event Proposal form, at least 2 weeks before the event, "
-        "not counting weekends and holidays. Book the Student Activities Outlook calendar for the date by "
-        "sending a calendar invitation.",
+        "not counting weekends and holidays.",
         ["always"],
-        [
-            req(
-                "osa-proposal",
-                "form",
-                "OSA event proposal + calendar invitation to Student Activities",
-                TWO_WEEKS,
-                True,
-            )
-        ],
+        [req("osa-proposal", "form", "OSA event proposal (online form)", TWO_WEEKS, True)],
         [
             (
                 FIN,
                 "Finalized Expense form + Student Activity/Poster Display Request ... >= 2 weeks before the "
                 "event, excluding weekends/holidays",
             ),
-            (FORM, "Please book the studentactivities@aub.edu.lb Outlook calendar by sending a calendar invitation"),
         ],
         ["proposal"],
     ),
