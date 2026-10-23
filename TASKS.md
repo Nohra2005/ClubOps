@@ -269,11 +269,12 @@ Reference documents:
 
 ### T-35 ASME data (real second club)
 - Owner: tatiana
-- Status: todo
+- Status: doing
 - Needs: none
 - What: Ask Alexis (ASME president) for 3-5 past proposals (ideally a workshop, trip or conference), what each really needed, his OK to use them privately, and a 10-minute setup chat later. Remove phone numbers and IDs.
 - Done when: ASME events and their real approvals are in the private eval folder.
 
+- Progress (2026-10-23): Alexis sent 4 proposals (screen recordings) and 12 expense forms. 15 ASME events drafted privately in `clubops-raw/eval/asme-events.csv` with guessed approvals; personal details removed. Left: Alexis fills the real approvals (column `approvals_real`) and confirms the open questions in `notes`.
 ### T-36 One made-up event per missing event type
 - Owner: tatiana
 - Status: todo
