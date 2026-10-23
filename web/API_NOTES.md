@@ -4,9 +4,44 @@ The supplied 22 October UI PDF is the source for `/api` paths and the example ch
 
 The real transport uses authenticated cookies, encoded path identifiers, abortable requests, a bounded timeout and generic error messages. The backend must enforce authorization, CSRF protection, club isolation, content hashes and spend limits. Hiding a frontend button is not authorization.
 
-## Clarifications required before C-13
+## Contracts 0.2.0 compatibility — 23 October 2026 (C-17)
 
-- The spec defines `GET /runs/{id}` but not detail-confirmation fields. The demo adds `question.kind=details`, `details` and `origins`; confirmation sends the edited object as the specified answer endpoint's `text` JSON string. Tatiana must confirm this representation in T-13.
+The frontend branch includes `main` through `597685d` (T-13). Published contracts and generated schemas were read as interfaces; backend implementation and contract definitions were not modified. `src/api/contract-responses.ts` translates fields consumed by the screens and rejects incompatible responses. Backend schema validation, authorization and the HTTP API remain server responsibilities.
+
+| Published contract                                                              | Frontend handling                                                                                                                                                        | Still needed from T-22                                                                                                              |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `AgentRun.status`: `running`, `waiting_for_user`, `done`, `at_limit`, `failed`  | Map to existing screen states, preserving saved demo work; failed runs show a clear message                                                                              | Confirm HTTP run and answer response envelopes                                                                                      |
+| Decimal costs, `cost_limit_usd`, step `tool` and `failed` state                 | Convert serialized costs, retain tool names and show the declared cost limit and failed steps                                                                            | Server enforcement of step/spend limits                                                                                             |
+| A waiting run ends with a `question` step                                       | Derive the question input from that step; reject inconsistent runs and wrong run IDs                                                                                     | Structured detail confirmation and continue/stop endpoints                                                                          |
+| `Answer.citations` contains `kh-…` item IDs                                     | Link actual IDs to knowledge pages; use the ID as its label until richer metadata is supplied                                                                            | Source labels/quotes and review IDs for disputed answers; currently link to the Review list                                         |
+| Unknown `Answer.ask.role` and `look_in` can be null                             | Preserve the answer and who to ask; omit missing optional suggestions                                                                                                    | The contract allows `known=true, basis=none`; the UI rejects that contradictory support state rather than presenting it as verified |
+| `Draft`: `draft_type`, `body`, `template_version`, `based_on`, `state=draft`    | Translate type/body; retain provenance; reject the wrong event/type and any sent state                                                                                   | Recipient/update time are not in this contract and are not fabricated; confirm nested event-detail and after-event draft envelopes  |
+| Nullable calendar times, reminders, link, member ownership and cancelled status | Accept these fields, display member ownership and hide cancelled items                                                                                                   | Connection/sync metadata and task mutation IDs are HTTP view fields not supplied by `CalendarItems`                                 |
+| Capability `Result[T]` envelope                                                 | Run, run-answer, ask and draft responses accept bare data or a Result envelope; degraded answers stay marked; HTTP-200 failures raise a generic error and preserve edits | Agree one HTTP response convention for all endpoints; a blocking result without usable run data is an explicit error                |
+
+Draft names are translated explicitly. URL parameters still follow the supplied UI spec until Tatiana confirms them in T-22; capability enum values are not silently substituted into routes.
+
+| Capability `draft_type` | Existing UI type / URL parameter |
+| ----------------------- | -------------------------------- |
+| `whatsapp_announcement` | `announcement`                   |
+| `reminder_message`      | `reminder`                       |
+| `sponsor_email`         | `sponsor_email`                  |
+| `instagram_caption`     | `instagram`                      |
+| `poster_text`           | `poster`                         |
+| `expense_form`          | `expense`                        |
+| `volunteer_shifts`      | `volunteers`                     |
+| `impact_report`         | `impact_report`                  |
+
+Other boundaries need an HTTP view model rather than a field rename:
+
+- `EventRecord` is history (`on`, `spec_revision`, participants and outcome). It cannot supply the screen's schedule, venue, fields, approvals, tasks and proposal by itself. Event list/detail and nested run/draft responses still need the UI envelopes agreed in T-22.
+- `Contact` has `contact_id`, `organization` and source references; it is not a `KnowHowItem`. Contacts, assets and document views need explicit server projections and cabinet-only access. No directory or asset endpoints were invented.
+- Backend `Role` includes `member`; the cabinet session model remains limited to cabinet/adviser roles. T-22 must define ordinary-member access and the Google identity-to-actor mapping. Supporting a member as calendar owner does not grant cabinet access.
+- Capability requests include `club_id`, `today`, `Untrusted` descriptions and wrapped draft instructions. UI endpoints accept the PDF's simpler inputs. The server must define how session context and input wrappers are supplied; the frontend does not impersonate an actor or call capabilities directly.
+
+## Clarifications still required before C-13
+
+- The spec defines `GET /runs/{id}` but not detail-confirmation fields. The demo adds `question.kind=details`, `details` and `origins`; confirmation sends the edited object as the specified answer endpoint's `text` JSON string. The published `AgentRun` has no structured detail fields; Tatiana must agree the HTTP representation in T-22.
 - Plan approval includes the revision being approved. The backend must bind approval to its exact content and reject stale revisions.
 - Event summary/detail envelopes, review card variants, calendar/knowledge envelopes, cabinet mutation identifiers and setup response fields are frontend fixtures pending backend agreement.
 - The task example contains a slash in `task_id`. The client URL-encodes identifiers; the backend router must support encoded IDs or agree another identifier.

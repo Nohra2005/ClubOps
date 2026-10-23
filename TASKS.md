@@ -414,7 +414,7 @@ Reference documents:
 
 ### C-17 Sync main and check contracts 0.2.0
 - Owner: christophe
-- Status: doing
+- Status: review
 - Needs: C-12
 - What: Merge the latest main into the frontend branch, preserve both teammates' work, and check frontend models against the published 0.2.0 contracts without inventing API endpoints.
 - Done when: merge conflicts are resolved, confirmed frontend mismatches are fixed and tested, remaining T-22 agreements are documented, and checks pass on the updated PR.

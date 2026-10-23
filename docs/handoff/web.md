@@ -23,3 +23,13 @@ No entries yet.
 **Next:** Continue C-13 when T-22 is ready, using `web/API_NOTES.md` to agree the missing API and Google session contracts with Tatiana.
 
 **Open questions / blockers:** The existing shared workflow runs Python checks and the dependency audit; frontend verification is recorded in `web/VERIFICATION.md` and is not yet a shared CI job. C-13 and deployment remain blocked as previously recorded.
+
+## 2026-10-23 — Christophe, with Codex (C-17, PR #9)
+
+**Did:** Merged main through `597685d` into the frontend branch in `4934469`, preserving backend work and all frontend commits. Resolved append conflicts by retaining main's published IDs and assigning D-55–D-59 / F-61–F-70 to our previously unpublished entries. Checked the 0.2.0 contracts and schemas, then added response adapters for run states/costs/questions, answer citation IDs/nullable fields, draft bodies/types/provenance and Result failure envelopes. Calendar handles nullable times/member ownership and hides cancelled items. Backend source, schemas, contracts and CI definitions were not edited by this task.
+
+**State:** C-17 is in review in existing draft PR #9; this entry accompanies the final handoff commit before the branch update is pushed. Frontend checks pass with 33 unit tests. All 36 demo browser cases were verified (34 initial passes plus two chat rechecks after a duplicate-text fix); 8 isolated HTTP browser cases pass on desktop and 375px phones. Merged Python checks pass: 233 tests, 95.18% coverage, Ruff, mypy, schema and task validation. Implementation, browser coverage and handoff are separate commits. `web/VERIFICATION.md` records reproduction and the Windows test-server cleanup limitation.
+
+**Next:** Verify PR #9's updated remote checks, then have Tatiana review the compatibility matrix in `web/API_NOTES.md` for T-22. C-13 stays blocked until the real HTTP/session endpoints exist; C-14 and C-15 retain their dependencies.
+
+**Open questions / blockers:** Structured detail confirmation; HTTP event/review/knowledge/directory envelopes; draft URL type aliases and nested draft responses; revision-bound approvals; continue/stop, logout and other missing action endpoints; ordinary-member access and Google identity-to-actor mapping. Capability contracts do not provide every HTTP screen field. The shared workflow still has no frontend job; no model or Google calls were made by these tests.

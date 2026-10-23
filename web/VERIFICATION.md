@@ -21,3 +21,17 @@ Visual inspection included the event overview and task workspace at desktop and 
 This is frontend evidence, not evidence that the unimplemented backend agent meets its evaluation targets. C-16 fixes the Python dependency-audit failure reported in the project review: Christophe explicitly authorized updating the locked `certifi` package to 2026.10.19. The local audit uses Windows system certificate trust (`uv --system-certs` and `truststore` for `pip-audit`) to verify the network's certificate; TLS verification and vulnerability checks remain enabled. The shared GitHub workflow does not yet run the new frontend checks.
 
 Both existing GitHub jobs passed on security-fix commit `1043c2f`: dependency vulnerability audit and lint/types/tests/contract drift. See [run 39793167497](https://github.com/Nohra2005/ClubOps/actions/runs/39793167497).
+
+## Contract synchronization — 23 October 2026 (C-17)
+
+Merged main through `597685d`, preserving both teams' changes. Canonical main decision IDs D-50–D-54 and failure IDs F-41–F-60 remain unchanged; conflicting unpublished frontend entries now use D-55–D-59 and F-61–F-70. New compatibility cases are F-71–F-75. The initial 22 October results above are historical; current results follow.
+
+| Check                               | Observed result                                                                                                 | Reproduce                                                                              |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Frontend quality gates              | Passed; 33 unit tests, lint, formatting, strict types and production build                                      | `cd web && npm run check`                                                              |
+| Existing demo browser workflows     | All 36 cases verified: 34 passed initially; the two chat cases passed after removing duplicate uncertainty text | `npm run test:e2e`; targeted recheck: `npm run test:e2e -- e2e/chat.spec.ts`           |
+| HTTP contract browser workflows     | 8 passed, desktop and 375px phone                                                                               | `npm run test:e2e:http`                                                                |
+| Merged Python suite                 | 233 passed; 95.18% coverage                                                                                     | Root `uv run pytest --cov`, with a fresh workspace temporary directory on this machine |
+| Merged lint/types, schema and tasks | Passed; Ruff formatting for 56 files and mypy for 35 source files                                               | Root Make targets / equivalent commands; UTF-8 schema check on Windows                 |
+
+HTTP checks use the actual fetch transport and screen components with intercepted synthetic responses. They do not prove that T-22, Google authentication, calendar sync or deployment are complete. `API_NOTES.md` records the confirmed mappings and remaining response/route agreements. The Windows command-runner account became unavailable during verification; the isolated port-5174 test server needed explicit cleanup before Playwright returned its successful result. The existing demo preview on port 5173 was preserved.

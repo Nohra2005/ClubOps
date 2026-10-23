@@ -37,9 +37,12 @@ Every fixture is synthetic. Fictional policies are marked as examples, and priva
 ```sh
 npm run check       # lint, formatting, unit tests, strict types, production build
 npm run test:e2e    # real Chrome, desktop and 375px phone workflows
+npm run test:e2e:http # HTTP adapter against intercepted contract responses, same two widths
 ```
 
 Browser tests default to installed Google Chrome. To use Playwright's own Chromium, run `npx playwright install chromium` and set `PLAYWRIGHT_CHANNEL=bundled` before the browser tests (PowerShell: `$env:PLAYWRIGHT_CHANNEL = 'bundled'`). The tests start Vite automatically and include WCAG accessibility scans. These tests have not been added to the shared root CI workflow; its owner can run the same commands in a frontend job.
+
+The HTTP suite starts an isolated Vite instance on port 5174 with `VITE_API_MODE=http`; every API response is intercepted and synthetic. It checks published 0.2.0 run states/questions/limits, nullable answers, citation IDs, HTTP-200 failure envelopes, cancelled calendar items and draft rejection/retry. It leaves the demo preview on port 5173 running. These checks do not exercise a real backend, Google session or model. Unit tests also compare supported run, step and draft enums with the checked-in JSON Schemas so upstream enum changes fail visibly.
 
 ## API connection and hosting
 
