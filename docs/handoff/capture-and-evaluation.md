@@ -65,3 +65,13 @@ No entries yet — `capture`'s contract (`CaptureRequest`/`CaptureResult` in `sr
 **Next:** tell Christophe (UI examples updated to the new fields; `schemas/` is the source of truth) and Joey (`schemas/calendar-items.*`, `schemas/draft.*`). Then T-14 planner agent (needs the API key soon) or T-15 rules.
 
 **Open questions / blockers:** none.
+
+## 2026-10-23 — Tatiana Nohra, with Claude (feat/planner-agent)
+
+**Did:** T-14 planner agent in `src/clubops/agent/` (D-63): `planner.py` (loop, tools, guard rails, prompt `planner-v1`), `rules_check.py` (plain-code rule check until T-15), `runs.py` (runs saved in the club file). 19 tests with a scripted model, plus one through the real model client with a fake provider. F-80 to F-86.
+
+**State:** `make check` passes (284 tests). No recordings yet: a real run needs the API key (record once, then replay for free).
+
+**Next:** T-15 (model-judged rules, approvals, deadlines) and T-16 (proposal draft as a new tool). Web API endpoints /events/plan, /runs/{id}, /runs/{id}/answer can wrap `Planner.start/answer/keep_going` + `RunStore`.
+
+**Open questions / blockers:** API key for recorded runs.
