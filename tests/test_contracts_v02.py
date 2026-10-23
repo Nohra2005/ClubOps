@@ -175,3 +175,17 @@ def test_an_image_asset_gives_both_sizes_or_neither() -> None:
     Asset(**common, vector=True)
     with pytest.raises(ValidationError):
         Asset(**common, width_px=1000)
+
+
+# ------------------------------------------------------------ club or society
+
+
+def test_a_profile_is_a_club_unless_it_says_society() -> None:
+    from clubops.contracts.club import ClubProfile, GroupKind, Person
+
+    adviser = Person(first_name="Test", last_name="Adviser", aub_email="ta00@aub.edu.lb")
+    base: dict[str, Any] = {"club_id": "asme", "form_name": "ASME", "adviser": adviser, "cabinet": [], "version": 1}
+    assert ClubProfile(**base).kind is GroupKind.CLUB
+    ClubProfile(**base, kind=GroupKind.SOCIETY, faculty="MSFEA")
+    with pytest.raises(ValidationError):
+        ClubProfile(**base, faculty="MSFEA")  # a club has no faculty

@@ -172,7 +172,7 @@ CAPABILITIES: tuple[CapabilitySpec, ...] = (
     ),
     CapabilitySpec(
         name="draft-proposal",
-        version="0.1.0",
+        version="0.1.1",
         control=Control.AGENTIC,
         stability=Stability.FROZEN,
         request=forms.DraftProposalRequest,

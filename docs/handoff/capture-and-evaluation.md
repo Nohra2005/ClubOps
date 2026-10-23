@@ -75,3 +75,13 @@ No entries yet — `capture`'s contract (`CaptureRequest`/`CaptureResult` in `sr
 **Next:** T-15 (model-judged rules, approvals, deadlines) and T-16 (proposal draft as a new tool). Web API endpoints /events/plan, /runs/{id}, /runs/{id}/answer can wrap `Planner.start/answer/keep_going` + `RunStore`.
 
 **Open questions / blockers:** API key for recorded runs.
+
+## 2026-10-23 — Tatiana Nohra, with Claude (feat/planner-tools-v2)
+
+**Did:** Planner tools 8 → 6 (D-64): past events folded into search-memory, check-calendar removed; prompt `planner-v2`. Deadlines on AUB holidays move to the day before (`agent/holidays.py`, 2026-27 list). `ClubProfile.kind` (club/society) and `faculty`; contracts 0.2.1, `draft-proposal` 0.1.1. ASME material (4 proposals, 12 expense forms) summarised privately in `clubops-raw/asme/`.
+
+**State:** `make check` passes (300 tests).
+
+**Next:** T-15 rules; ASME test events (T-36).
+
+**Open questions / blockers:** how event spaces are booked (WebReserve confirmed for West Hall; Green Field unknown); academic calendar (exam weeks).

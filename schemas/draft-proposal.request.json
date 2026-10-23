@@ -1,5 +1,5 @@
 {
-  "$comment": "clubops 0.2.0 \u00b7 capability draft-proposal 0.1.0 \u00b7 generated",
+  "$comment": "clubops 0.2.1 \u00b7 capability draft-proposal 0.1.1 \u00b7 generated",
   "$defs": {
     "Admission": {
       "enum": [
@@ -95,11 +95,29 @@
           "title": "Club Id",
           "type": "string"
         },
+        "faculty": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "societies only, e.g. 'MSFEA'",
+          "title": "Faculty"
+        },
         "form_name": {
           "description": "the club's name as listed on the OSA form",
           "maxLength": 120,
           "title": "Form Name",
           "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/GroupKind",
+          "default": "club"
         },
         "version": {
           "minimum": 1,
@@ -582,6 +600,15 @@
         "no_expenses"
       ],
       "title": "Funding",
+      "type": "string"
+    },
+    "GroupKind": {
+      "description": "Clubs and faculty societies follow the same OSA process, but societies (e.g. ASME, MSFEA) use\ntheir faculty's rooms first, run bigger gatherings and more events with other universities.",
+      "enum": [
+        "club",
+        "society"
+      ],
+      "title": "GroupKind",
       "type": "string"
     },
     "Money": {
