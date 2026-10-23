@@ -140,7 +140,10 @@ export interface Draft {
   text: string;
   recipient?: string;
   subject?: string;
-  updated_at: string;
+  updated_at?: string;
+  template_version?: string;
+  based_on?: string[];
+  state?: 'draft';
 }
 export interface Tip {
   item_id: string;
@@ -171,8 +174,9 @@ export interface EventDetail extends EventSummary {
 }
 export interface AgentStep {
   n: number;
+  tool?: string;
   text: string;
-  state: 'done' | 'running' | 'question' | 'not_done';
+  state: 'done' | 'running' | 'question' | 'not_done' | 'failed';
 }
 export interface AgentRun {
   run_id: string;
@@ -181,6 +185,7 @@ export interface AgentRun {
   steps_used: number;
   step_limit: number;
   cost_usd: number;
+  cost_limit_usd?: number;
   event_id?: string;
   question?: { text: string; kind: 'details' | 'text' };
   details?: EventFields;
@@ -203,8 +208,8 @@ export type ChatReply =
       known: false;
       text: string;
       basis: 'none';
-      ask: { who: string; role: string };
-      look_in: string;
+      ask: { who: string; role?: string | null };
+      look_in?: string | null;
       fallback?: boolean;
     }
   | { kind: 'learned'; text: string; review_id: string };
@@ -240,14 +245,22 @@ export interface ReviewDecision {
 }
 export interface CalendarItem {
   item_id: string;
+  club_id?: string;
   event_id: string | null;
   task_id?: string;
   kind: 'event' | 'task';
   title: string;
   date: string;
-  start?: string;
-  end?: string;
-  owner_role: Role | 'all_cabinet';
+  start?: string | null;
+  end?: string | null;
+  owner_role: Role | 'member' | 'all_cabinet';
+  reminders?: {
+    before_days?: number | null;
+    on_day_at?: string | null;
+    after_days?: number | null;
+  }[];
+  repeat_until_done?: boolean;
+  link?: string | null;
   status: 'open' | 'done' | 'cancelled';
 }
 export interface CalendarData {

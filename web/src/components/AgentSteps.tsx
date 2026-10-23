@@ -37,7 +37,8 @@ export function AgentSteps({
           run.status === 'working' ||
           run.status === 'waiting_for_user' ||
           run.status === 'limit_reached' ||
-          run.status === 'stopped'
+          run.status === 'stopped' ||
+          run.status === 'failed'
         }
       >
         <summary>
@@ -47,7 +48,8 @@ export function AgentSteps({
           <span>
             {run.status === 'working' ? 'Building your plan' : 'How this plan was made'}
             <small>
-              {run.steps_used} of {run.step_limit} steps · ${run.cost_usd.toFixed(3)} of $0.05
+              {run.steps_used} of {run.step_limit} steps · ${run.cost_usd.toFixed(3)} of $
+              {run.cost_limit_usd ?? 0.05}
             </small>
           </span>
           <ChevronDown size={16} />
@@ -69,6 +71,7 @@ export function AgentSteps({
                 </span>
                 <div>{step.text}</div>
                 {step.state === 'not_done' && <small>Not done</small>}
+                {step.state === 'failed' && <small>Failed</small>}
               </li>
             ))}
           </ol>
@@ -121,6 +124,9 @@ export function AgentSteps({
           )}
           {run.status === 'stopped' && (
             <p className="inline-note">Stopped here. Your partial plan is saved as a draft.</p>
+          )}
+          {run.status === 'failed' && (
+            <ErrorNotice message="This run failed. Your partial plan has not been approved. Go back to Events to try again." />
           )}
           {run.fallback && <FallbackNotice />}
           <ErrorNotice message={error} />

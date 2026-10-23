@@ -38,8 +38,9 @@ export default function Calendar() {
   const slots = Math.ceil((offset + length) / 7) * 7;
   const items = (data.value?.items ?? []).filter(
     (item) =>
-      filter === 'all' ||
-      (item.kind === 'task' && [me.role, 'all_cabinet'].includes(item.owner_role)),
+      item.status !== 'cancelled' &&
+      (filter === 'all' ||
+        (item.kind === 'task' && [me.role, 'all_cabinet'].includes(item.owner_role))),
   );
   const move = (amount: number) => {
     const next = new Date(year, monthNumber - 1 + amount, 1);
@@ -167,10 +168,12 @@ export default function Calendar() {
                 <strong>
                   {selected.owner_role === 'all_cabinet'
                     ? 'All cabinet'
-                    : roleLabels[selected.owner_role]}
+                    : selected.owner_role === 'member'
+                      ? 'Member'
+                      : roleLabels[selected.owner_role]}
                 </strong>
               </p>
-              <StatusBadge status={selected.status === 'done' ? 'done' : 'todo'} />
+              <StatusBadge status={selected.status === 'open' ? 'todo' : selected.status} />
               {!selected.event_id && (
                 <p className="inline-note">A club-wide reminder. It is not attached to an event.</p>
               )}

@@ -19,7 +19,7 @@ function Reply({ reply, id }: { reply: ChatReply; id: string }) {
   return (
     <div className="reply-content">
       {reply.kind === 'unknown' ? (
-        <NotSure ask={reply.ask} lookIn={reply.look_in} />
+        <NotSure ask={reply.ask} lookIn={reply.look_in} explanation={reply.text} />
       ) : reply.kind === 'learned' ? (
         <div className="learned-card">
           <CheckCheck size={18} />
@@ -38,8 +38,16 @@ function Reply({ reply, id }: { reply: ChatReply; id: string }) {
             <div className="notice warning">
               <span>
                 These sources disagree.{' '}
-                <Link to={`/review?item=${reply.review_id}`}>Review the disagreement</Link> before
-                relying on this answer.
+                <Link
+                  to={
+                    reply.review_id
+                      ? `/review?item=${encodeURIComponent(reply.review_id)}`
+                      : '/review'
+                  }
+                >
+                  Review the disagreement
+                </Link>{' '}
+                before relying on this answer.
               </span>
             </div>
           )}

@@ -75,19 +75,30 @@ export function SourceChip({ source }: { source: Source }) {
     </Link>
   );
 }
-export function NotSure({ ask, lookIn }: { ask: { who: string; role?: string }; lookIn: string }) {
+export function NotSure({
+  ask,
+  lookIn,
+  explanation,
+}: {
+  ask: { who: string; role?: string | null };
+  lookIn?: string | null;
+  explanation?: string;
+}) {
   return (
     <div className="not-sure">
       <CircleHelp size={21} />
       <div>
         <strong>I don't know this yet.</strong>
+        {explanation && explanation !== "I don't know this yet." && <p>{explanation}</p>}
         <p>
           <span>Ask</span> {ask.who}
           {ask.role && <small> · {ask.role}</small>}
         </p>
-        <p>
-          <span>Look in</span> {lookIn}
-        </p>
+        {lookIn && (
+          <p>
+            <span>Look in</span> {lookIn}
+          </p>
+        )}
       </div>
     </div>
   );

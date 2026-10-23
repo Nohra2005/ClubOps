@@ -21,14 +21,9 @@ import type {
   Usage,
 } from './types';
 
-export class ApiError extends Error {
-  status: number;
-  constructor(message: string, status = 0) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-  }
-}
+import { ApiError } from './errors';
+import { readAgentRun, readAnswer, readDraft } from './contract-responses';
+export { ApiError } from './errors';
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
@@ -66,11 +61,13 @@ export class ApiClient {
   plan(description: string) {
     return this.post<{ run_id: string }>('/events/plan', { description });
   }
-  run(id: string, signal?: AbortSignal) {
-    return this.request<AgentRun>(`/runs/${encodeURIComponent(id)}`, { signal });
+  async run(id: string, signal?: AbortSignal) {
+    const value = await this.request<unknown>(`/runs/${encodeURIComponent(id)}`, { signal });
+    return this.mode === 'http' ? readAgentRun(value, id) : (value as AgentRun);
   }
-  answerRun(id: string, text: string) {
-    return this.post<AgentRun>(`/runs/${encodeURIComponent(id)}/answer`, { text });
+  async answerRun(id: string, text: string) {
+    const value = await this.post<unknown>(`/runs/${encodeURIComponent(id)}/answer`, { text });
+    return this.mode === 'http' ? readAgentRun(value, id) : (value as AgentRun);
   }
   editEvent(id: string, fields: Partial<EventFields>) {
     return this.request<EventDetail>(`/events/${encodeURIComponent(id)}`, {
@@ -90,8 +87,11 @@ export class ApiClient {
       body: fields,
     });
   }
-  draft(id: string, type: DraftType, instruction?: string) {
-    return this.post<Draft>(`/events/${encodeURIComponent(id)}/drafts/${type}`, { instruction });
+  async draft(id: string, type: DraftType, instruction?: string) {
+    const value = await this.post<unknown>(`/events/${encodeURIComponent(id)}/drafts/${type}`, {
+      instruction,
+    });
+    return this.mode === 'http' ? readDraft(value, id, type) : (value as Draft);
   }
   afterEvent(id: string, answers: Record<string, string>) {
     return this.post<{ draft: Draft; review_count: number }>(
@@ -99,8 +99,9 @@ export class ApiClient {
       { answers },
     );
   }
-  ask(text: string) {
-    return this.post<ChatReply>('/chat/ask', { text });
+  async ask(text: string) {
+    const value = await this.post<unknown>('/chat/ask', { text });
+    return this.mode === 'http' ? readAnswer(value) : (value as ChatReply);
   }
   teach(text: string) {
     return this.post<ChatReply>('/chat/teach', { text });
