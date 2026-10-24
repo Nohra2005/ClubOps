@@ -37,7 +37,7 @@ Cabinet ──> Web app (Christophe) ──API──> Backend (Tatiana)
 
 1. **Before building the agent:** test data written and frozen (T-01 to T-05). Christophe and Joey start in parallel against fake data and the calendar contract.
 2. **Core:** model client, redaction, storage, contracts (T-10 to T-13), then planner, rules, proposal, chatbot, learning (T-14 to T-18).
-3. **Complete the loop:** handover, new-club setup, daily check, API, deploy (T-19 to T-25); frontend connects (C-13, C-14); calendar on the server (J-09).
+3. **Complete the loop:** handover (C-19), new-club setup (T-20), daily check (J-11), API (T-22), deploy (C-18); frontend connects (C-13, C-14); calendar on the server (J-09).
 4. **Prove it:** pilot event (T-32), final evaluation (T-26), evaluation in CI (T-30), docs, poster, demo, grader check (T-27, T-31, T-34).
 
 ## Rubric coverage (target 100/100 + bonus)
@@ -68,8 +68,8 @@ Each row says what the grader must find, where it will be, and which tasks produ
 | Grader looks for | Evidence | Tasks |
 |---|---|---|
 | Traces across model and tool calls | One trace per call, including each agent step | T-10, T-14 |
-| Latency, tokens, cost, retries, failures | Report in `results/`; Settings shows monthly cost | T-23 |
-| Cost per successful task | Cost per successful plan in the results | T-23, T-26 |
+| Latency, tokens, cost, retries, failures | Report in `results/`; Settings shows monthly cost | C-20 |
+| Cost per successful task | Cost per successful plan in the results | C-20, T-26 |
 | Limits enforced | Step and cost limits tested | T-14 |
 
 ### 4. Reliability, QA and security (15)
@@ -78,7 +78,7 @@ Each row says what the grader must find, where it will be, and which tasks produ
 |---|---|---|
 | Retries, timeouts, fallbacks, schema validation | Runner policy per capability (in place); fallbacks shown in the UI | T-10, C-12 |
 | Authorization and least privilege | Roles, adviser read-only, club scoping, approval gate | T-18, T-22, C-02 |
-| Secrets and personal data protected | Redaction before the model; secrets only on the host; metadata-only traces | T-11, T-25 |
+| Secrets and personal data protected | Redaction before the model; secrets only on the host; metadata-only traces | T-11, C-18 |
 | Prompt injection defended | Untrusted inputs, propose-only learning, adversarial test set | T-18, T-24 |
 | Failure Matrix and threat model current | Updated to the new scope | T-24, T-31, J-06 |
 

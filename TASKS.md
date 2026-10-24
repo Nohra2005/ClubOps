@@ -156,13 +156,7 @@ Reference documents:
 - What: Turn chat teaching, the after-event form, forwarded OSA emails and uploaded documents (including past expense forms, kept as a price list) into proposed facts; merge repeats; detect contradictions; flag outdated documents. Nothing is saved until approved in Review.
 - Done when: each input type produces Review cards; approve / reject / merge work.
 
-### T-19 Handover pack and role guides
-- Owner: tatiana
-- Status: todo
-- Needs: T-12
-- What: Per-role guide from approved facts, with gaps and who to ask (plain code, no AI).
-- Done when: the Handover screen's data is served.
-
+<!-- T-19 moved to C-19 on 2026-10-24: it fits Christophe's part and lightens Tatiana's load. -->
 ### T-20 New-club setup and ASME
 - Owner: tatiana
 - Status: todo
@@ -170,13 +164,7 @@ Reference documents:
 - What: The setup chat for a new club (about 10 questions) and ASME seeded as the second club.
 - Done when: ASME can go through setup in the demo.
 
-### T-21 Daily check and OSA rule check
-- Owner: tatiana
-- Status: todo
-- Needs: T-15
-- What: Daily plain-code check of upcoming events (calls the AI only when it finds a real problem). Monthly OSA website check from September until the new rules are in (D-30, D-31).
-- Done when: both run on a schedule on the server, with tests.
-
+<!-- T-21 moved to J-11 on 2026-10-24: it fits Joey's part and lightens Tatiana's load. -->
 ### T-22 Backend API for the UI
 - Owner: tatiana
 - Status: review
@@ -185,13 +173,7 @@ Reference documents:
 - Done when: Christophe can switch from fake data to the real API (C-13).
 - Progress (2026-10-24): part 1 live (sign-in, events, runs, approve, tasks, calendar, knowledge, review, cabinet, usage); see `docs/api.md`. Part 2 (drafts, after-event, teach, handover, documents, setup) answers 501 until those tasks are built.
 
-### T-23 Cost and trace report
-- Owner: tatiana
-- Status: todo
-- Needs: T-10
-- What: Cost, tokens, latency, retries per feature; cost per successful plan; the `/usage` endpoint for Settings.
-- Done when: a report in `results/` and the Settings number are real.
-
+<!-- T-23 moved to C-20 on 2026-10-24: it fits Christophe's part and lightens Tatiana's load. -->
 ### T-24 Security tests
 - Owner: tatiana
 - Status: todo
@@ -199,13 +181,7 @@ Reference documents:
 - What: Injection attempts, fake "OSA" rules, unauthorized actions; each failure gets a Failure Matrix row and a test.
 - Done when: the adversarial set runs in `make check` or `make eval`.
 
-### T-25 Deploy the backend
-- Owner: tatiana
-- Status: todo
-- Needs: T-22
-- What: Free hosting (e.g. Render); secrets in the host's settings, never in the repo.
-- Done when: the cabinet can use the deployed app.
-
+<!-- T-25 moved to C-18 on 2026-10-24: it fits Christophe's part and lightens Tatiana's load. -->
 ### T-26 Run the final evaluation
 - Owner: tatiana
 - Status: todo
@@ -251,14 +227,14 @@ Reference documents:
 ### T-32 Real pilot event
 - Owner: tatiana
 - Status: todo
-- Needs: T-25, C-14
+- Needs: C-18, C-14
 - What: Plan one real Running Club event in November with ClubOps on the deployed app. Record the cabinet's time, what ClubOps caught or missed, and their feedback.
 - Done when: a short pilot write-up in `results/`, used in the report and poster.
 
 ### T-33 Handover test (decide: keep or drop)
 - Owner: tatiana
 - Status: todo
-- Needs: T-19
+- Needs: C-19
 - What: The planned headline result: new officers answer 10 standard questions with old chats only vs. the handover pack. Decide by 8 November whether there is time; if dropped, remove the claim from `docs/evidence.md`.
 - Done when: either run with results in `results/`, or dropped and recorded in the design log.
 
@@ -404,7 +380,7 @@ Reference documents:
 ### C-14 Deploy the frontend
 - Owner: christophe
 - Status: todo
-- Needs: C-13, T-25
+- Needs: C-13, C-18
 - What: Deploy on the same free host as the backend.
 - Done when: the cabinet opens the app from a link on their phones.
 
@@ -429,6 +405,27 @@ Reference documents:
 - What: Merge the latest main into the frontend branch, preserve both teammates' work, and check frontend models against the published 0.2.0 contracts without inventing API endpoints.
 - Done when: merge conflicts are resolved, confirmed frontend mismatches are fixed and tested, remaining T-22 agreements are documented, and checks pass on the updated PR.
 
+
+### C-18 Deploy the backend (was T-25)
+- Owner: christophe
+- Status: todo
+- Needs: none
+- What: Put the backend (`uvicorn clubops.api.app:build --factory`) on the same free host as the frontend (Render, D-47), with a persistent disk for `CLUBOPS_DATA_DIR` and the secrets from `.env.example` in the host's settings, never in the repo. Load the rulebook and add the president (`scripts/load_rulebook.py`, `scripts/add_member.py`). Deployment files (`render.yaml`, `Dockerfile`) are yours; ask Tatiana before changing Python code.
+- Done when: the cabinet signs in on the deployed app and plans an event.
+
+### C-19 Handover endpoint (was T-19)
+- Owner: christophe
+- Status: todo
+- Needs: none
+- What: Serve the Handover screen from the club's approved facts. The assembly already exists in `src/clubops/knowhow/handover.py` (plain code, no AI); write `src/clubops/api/handover.py` that turns its `HandoverPack` into the screen's `HandoverGuide` (sections, entries with sources, gaps with who to ask and where to look) and register it in `api/app.py` in place of the 501 route (one line; tell Tatiana). Synthetic data in tests.
+- Done when: `GET /api/handover/{role}` returns the guide for each role, with tests for an empty club and a club with gaps.
+
+### C-20 Cost and trace report (was T-23)
+- Owner: christophe
+- Status: todo
+- Needs: none
+- What: Cost, tokens, latency, retries and failures per feature from the traces (`clubops.tracing`, metadata only) and the agent runs; cost per successful plan. A script writes the report to `results/`; `GET /api/usage` shows the real numbers per feature for the Settings screen. Code in `src/clubops/reports/` (yours) plus the usage route (tell Tatiana).
+- Done when: the report in `results/` and the Settings numbers come from real runs.
 ---
 
 ## Joey: calendar, reminders, drafts
@@ -493,7 +490,7 @@ Reference documents:
 ### J-09 Calendar on the deployed app
 - Owner: joey
 - Status: todo
-- Needs: J-06, T-25
+- Needs: J-06, C-18
 - What: Google secrets set on the host; sync runs on the deployed backend.
 - Done when: approving a plan on the deployed app puts items in the shared calendar.
 
@@ -503,3 +500,10 @@ Reference documents:
 - Needs: T-39, T-18
 - What: Read the ClubOps inbox (Gmail API) and turn each forwarded e-mail into input for learning. One inbox for all clubs: each club forwards to its own address with a "+" tag (`clubops.inbox+running-club@gmail.com`), and the tag says the club. Drop e-mails whose sender is not on that club's cabinet list, and e-mails with an unknown tag. Pass the rest as `Untrusted` text (sender, date, subject, body; attachments listed by name only) to T-18's capture step, so every fact waits in Review. Never auto-approve; never reply to the sender. Code in `src/clubops/inbox/`.
 - Done when: forwarding a real OSA e-mail puts a proposed fact in that club's Review, and tests (with made-up e-mails) cover: wrong tag, sender not on the list, the same e-mail twice (no duplicate), and an e-mail with instructions inside ("ignore the rules...") treated as data. Each case has a failure-matrix row.
+
+### J-11 Daily check and OSA rule check (was T-21)
+- Owner: joey
+- Status: todo
+- Needs: J-04
+- What: A daily plain-code check of each club's upcoming events (overdue tasks, deadlines inside 2 days, plans outdated by edits) that calls the AI only when it finds a real problem; and the monthly OSA website check from September until the president marks the new rules as in (D-30, D-31). Both run on a schedule on the server and write reminders, never send messages. Code in `src/clubops/checks/`.
+- Done when: both run on a schedule on the deployed app, with tests (made-up events) and failure-matrix rows.

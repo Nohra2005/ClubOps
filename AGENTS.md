@@ -14,8 +14,8 @@ Three people build ClubOps, each with their own AI assistant. This file is how t
 | Owner | Part | Folders you may change | Your contract with the others |
 |---|---|---|---|
 | Tatiana | Backend, agent, memory, evaluation | `src/clubops/` (except the two folders below), `eval/`, `results/`, `docs/` | Contracts in `src/clubops/contracts/` and the API table in the UI spec |
-| Christophe | Web app | `web/` | API table in the UI spec (https://claude.ai/artifact/XYRMvB5SZMxNSTv7jKvJam) |
-| Joey | Calendar sync, reminders, draft templates, OSA e-mail inbox | `src/clubops/calendar/`, `src/clubops/drafts/`, `src/clubops/inbox/` | [`docs/calendar-contract.md`](docs/calendar-contract.md) and the `Draft` contract |
+| Christophe | Web app, deployment, handover endpoint, cost report | `web/`, `render.yaml`, `Dockerfile`, `src/clubops/api/handover.py`, `src/clubops/reports/` | API table in the UI spec (https://claude.ai/artifact/XYRMvB5SZMxNSTv7jKvJam) |
+| Joey | Calendar sync, reminders, draft templates, OSA e-mail inbox, daily checks | `src/clubops/calendar/`, `src/clubops/drafts/`, `src/clubops/inbox/`, `src/clubops/checks/` | [`docs/calendar-contract.md`](docs/calendar-contract.md) and the `Draft` contract |
 
 Shared by everyone: `TASKS.md`, `docs/design-log.md`, `docs/failure-matrix.md`, `tests/` for your own part.
 
