@@ -3,7 +3,8 @@
 - A session is a cookie holding (member_id, club_id, expiry), signed with HMAC-SHA256. No server session table.
 - Members (name, AUB e-mail, role) live in the shared ``general.db`` so sign-in can find a person's club.
 - Sign-in is Google (D-56) with any Google account (D-68): the browser sends Google's ID token; we check it
-  with Google, then match the e-mail to a member. The president vouches for each e-mail on the list. A local "dev" sign-in exists only when CLUBOPS_DEV_LOGIN=1 (tests and local runs).
+  with Google, then match the e-mail to a member. The president vouches for each e-mail on the list.
+  A local "dev" sign-in exists only when CLUBOPS_DEV_LOGIN=1 (tests and local runs).
 - Every request that changes something must carry ``X-Requested-With: ClubOps`` (a simple CSRF guard on
   top of SameSite cookies).
 """
