@@ -15,7 +15,7 @@ Three people build ClubOps, each with their own AI assistant. This file is how t
 |---|---|---|---|
 | Tatiana | Backend, agent, memory, evaluation | `src/clubops/` (except the two folders below), `eval/`, `results/`, `docs/` | Contracts in `src/clubops/contracts/` and the API table in the UI spec |
 | Christophe | Web app | `web/` | API table in the UI spec (https://claude.ai/artifact/XYRMvB5SZMxNSTv7jKvJam) |
-| Joey | Calendar sync, reminders, draft templates | `src/clubops/calendar/`, `src/clubops/drafts/` | [`docs/calendar-contract.md`](docs/calendar-contract.md) and the `Draft` contract |
+| Joey | Calendar sync, reminders, draft templates, OSA e-mail inbox | `src/clubops/calendar/`, `src/clubops/drafts/`, `src/clubops/inbox/` | [`docs/calendar-contract.md`](docs/calendar-contract.md) and the `Draft` contract |
 
 Shared by everyone: `TASKS.md`, `docs/design-log.md`, `docs/failure-matrix.md`, `tests/` for your own part.
 
@@ -26,6 +26,7 @@ Shared by everyone: `TASKS.md`, `docs/design-log.md`, `docs/failure-matrix.md`, 
 | Web app ↔ backend | The API table and example JSON in the UI spec; field names match the backend's contracts | Tatiana, after telling Christophe |
 | Planner ↔ calendar | `docs/calendar-contract.md` (calendar items, reminders, sync rules) | Tatiana and Joey together |
 | Planner ↔ drafts | `Draft` contract in `src/clubops/contracts/` (added in T-13) | Tatiana and Joey together |
+| Inbox ↔ learning | `CaptureRequest` (`Untrusted` sources) in `src/clubops/contracts/knowhow.py`; facts only reach Review | Tatiana and Joey together |
 | All capabilities | `src/clubops/contracts/`, `capabilities/registry.py` | Contract owner (Tatiana); see "Changing a contract" |
 
 **Code against the contract, not against someone else's code.** Never import from another person's folder except through `clubops.contracts`. Christophe never reads backend code; he reads the API table.
