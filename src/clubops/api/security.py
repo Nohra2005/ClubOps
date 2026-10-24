@@ -2,8 +2,8 @@
 
 - A session is a cookie holding (member_id, club_id, expiry), signed with HMAC-SHA256. No server session table.
 - Members (name, AUB e-mail, role) live in the shared ``general.db`` so sign-in can find a person's club.
-- Sign-in is Google (D-56): the browser sends Google's ID token; we check it with Google, then match the
-  e-mail to a member. A local "dev" sign-in exists only when CLUBOPS_DEV_LOGIN=1 (tests and local runs).
+- Sign-in is Google (D-56) with any Google account (D-68): the browser sends Google's ID token; we check it
+  with Google, then match the e-mail to a member. The president vouches for each e-mail on the list. A local "dev" sign-in exists only when CLUBOPS_DEV_LOGIN=1 (tests and local runs).
 - Every request that changes something must carry ``X-Requested-With: ClubOps`` (a simple CSRF guard on
   top of SameSite cookies).
 """
@@ -87,7 +87,7 @@ def read_session(secret: str, token: str | None, now: float | None = None) -> tu
 
 # ----------------------------------------------------------------- members
 
-_EMAIL = re.compile(r"^[^@\s]+@(mail\.)?aub\.edu(\.lb)?$")
+_EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[a-z]{2,}$")
 
 
 class MemberStore:
@@ -120,7 +120,7 @@ class MemberStore:
     def add(self, club_id: str, name: str, email: str, role: Role) -> Member:
         email = email.strip().lower()
         if not _EMAIL.match(email):
-            raise ValueError("use an AUB e-mail address")
+            raise ValueError("this is not an e-mail address")
         if role is Role.MEMBER:
             raise ValueError("only cabinet members and the adviser have accounts")
         slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:40] or "member"

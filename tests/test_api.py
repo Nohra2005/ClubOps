@@ -257,7 +257,9 @@ def test_only_the_president_changes_the_cabinet(client: TestClient) -> None:
     me = client.get("/api/me").json()["user"]["member_id"]
     gone = client.request("DELETE", "/api/cabinet", json={"member_id": me}, headers=HEADERS)
     assert gone.status_code == 422  # not yourself
-    assert client.post("/api/cabinet", json={**new, "email": "x@gmail.com"}, headers=HEADERS).status_code in (409, 422)
+    gmail = client.post("/api/cabinet", json={**new, "email": "someone@gmail.com"}, headers=HEADERS)
+    assert gmail.status_code == 201  # any Google account the president vouches for (D-68)
+    assert client.post("/api/cabinet", json={**new, "email": "not-an-email"}, headers=HEADERS).status_code == 422
 
 
 # ------------------------------------------------------- knowledge, review

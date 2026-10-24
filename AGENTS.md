@@ -40,6 +40,7 @@ Shared by everyone: `TASKS.md`, `docs/design-log.md`, `docs/failure-matrix.md`, 
 6. Append an entry to your handoff log, then open a PR that names the task (`Task: T-14`) and fill in the template.
 7. Numbers in `docs/design-log.md` (D-…) and `docs/failure-matrix.md` (F-…) are shared by the whole team. Right before opening or updating a PR: get the latest `main` (`git fetch origin && git merge origin/main`), then give your new rows the next free numbers after the highest one on `main` and on any open PR. `make check` fails if a number is used twice.
 8. A PR built on another person's branch (not on `main`) is merged into that branch first; only then is that branch merged into `main`.
+9. A question only the professor can settle (grading, scope, course rules) goes in [`docs/office-hours.md`](docs/office-hours.md): concrete, with the options and what we lean towards. Don't block on it; carry on with the lean and note it.
 
 ## Changing a contract
 
