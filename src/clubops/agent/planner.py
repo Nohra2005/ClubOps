@@ -192,6 +192,7 @@ class Planner:
         step_limit: int = 8,
         cost_limit_usd: Decimal = Decimal("0.05"),
         rules: Callable[[EventSpec, list[KnowHowItem], Budget | None], RuleApplication] = check_rules,
+        on_step: Callable[[RunState], None] | None = None,
     ) -> None:
         self.decide = decide
         self.store = store
@@ -199,11 +200,13 @@ class Planner:
         self.step_limit = step_limit
         self.cost_limit_usd = cost_limit_usd
         self.rules = rules
+        self.on_step = on_step  # e.g. save the run so the steps panel can show progress
 
     # ------------------------------------------------------------------ public
 
-    def start(self, request: PlanEventRequest, run_id: str) -> RunState:
-        event_id = request.event_id or f"ev-{run_id.removeprefix('run-')}"
+    def start(self, request: PlanEventRequest, run_id: str, spec: EventSpec | None = None) -> RunState:
+        """Plan a new event, or re-plan ``spec`` (an existing event's latest details)."""
+        event_id = spec.event_id if spec else request.event_id or f"ev-{run_id.removeprefix('run-')}"
         state = RunState(
             run=AgentRun(
                 run_id=run_id,
@@ -218,7 +221,8 @@ class Planner:
             ),
             description=request.description,
             today=request.today,
-            spec=EventSpec(
+            spec=spec
+            or EventSpec(
                 event_id=event_id,
                 club_id=request.club_id,
                 revision=1,
@@ -266,16 +270,16 @@ class Planner:
                 if err.code is ErrorCode.BUDGET_EXCEEDED:
                     return self._with_run(state, status=RunStatus.AT_LIMIT)
                 if err.code is ErrorCode.MALFORMED_MODEL_OUTPUT:
-                    state = self._add_step(
+                    state = self._step(
                         state, "think", "Couldn't read the model's answer; trying again", StepState.FAILED
                     )
                     continue
-                state = self._add_step(state, "think", "ClubOps couldn't reach the model", StepState.FAILED)
+                state = self._step(state, "think", "ClubOps couldn't reach the model", StepState.FAILED)
                 return self._with_run(state, status=RunStatus.FAILED)
             state = self._spent(state, budget)
 
             if step.tool is Tool.ASK_USER:
-                state = self._add_step(state, step.tool, step.question or step.say, StepState.QUESTION)
+                state = self._step(state, step.tool, step.question or step.say, StepState.QUESTION)
                 return self._with_run(state, status=RunStatus.WAITING_FOR_USER, last_call=None)
 
             call = step.model_dump_json(include={"tool", "query", "facts"})
@@ -285,10 +289,10 @@ class Planner:
                 state, note = self._run_tool(state, step, budget)
                 state = self._spent(state, budget)
             except Refused as why:
-                state = self._add_step(state, step.tool, str(why), StepState.FAILED)
+                state = self._step(state, step.tool, str(why), StepState.FAILED)
                 state = state.model_copy(update={"notes": [*state.notes, f"refused {step.tool}: {why}"]})
                 continue
-            state = self._add_step(state, step.tool, step.say, StepState.DONE)
+            state = self._step(state, step.tool, step.say, StepState.DONE)
             state = state.model_copy(update={"notes": [*state.notes, note], "last_call": call})
 
             if step.tool is Tool.FINISH:
@@ -377,6 +381,12 @@ class Planner:
         return state, "finished: plan waiting for a cabinet member's approval"
 
     # ---------------------------------------------------------------- helpers
+
+    def _step(self, state: RunState, tool: str, text: str, s: StepState) -> RunState:
+        state = self._add_step(state, tool, text, s)
+        if self.on_step is not None:
+            self.on_step(state)
+        return state
 
     @staticmethod
     def _add_step(state: RunState, tool: str, text: str, s: StepState) -> RunState:

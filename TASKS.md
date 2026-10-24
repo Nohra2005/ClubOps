@@ -95,42 +95,42 @@ Reference documents:
 
 ### T-10 Model client
 - Owner: tatiana
-- Status: review
+- Status: done
 - Needs: none
 - What: One OpenAI-compatible client with replay / record / live modes, a cost budget per call and per plan, and validation of the output against the contracts. Branch `feat/model-client-and-redaction`.
 - Done when: merged, with tests; `make check` passes without API keys.
 
 ### T-11 Redaction
 - Owner: tatiana
-- Status: review
+- Status: done
 - Needs: none
 - What: Replace phones, AUB IDs, emails and links before any text reaches the model (D-09, D-36). Don't redact money ranges like "1500-3000".
 - Done when: merged with tests, including false-positive cases.
 
 ### T-12 Storage (SQLite)
 - Owner: tatiana
-- Status: review
+- Status: done
 - Needs: none
 - What: General store (AUB-wide), one store per club, with full-text search (D-35). Contacts, assets and event history get their tables in T-13, once their contracts exist.
 - Done when: the existing store tests pass on SQLite.
 
 ### T-13 Contract changes for the new scope
 - Owner: tatiana
-- Status: review
+- Status: done
 - Needs: none
 - What: Add to the contracts: "not sure" answers with `ask` and `look_in`; agent runs (steps, questions, step and cost limits); event status; calendar items (see `docs/calendar-contract.md`); drafts (`DraftRequest` → `Draft`, used by Joey's templates); contacts (D-10), assets (D-12) and event history (D-21), with their SQLite tables. Bump versions, run `make schemas`.
 - Done when: merged; Christophe and Joey told what changed.
 
 ### T-14 Event planner agent
 - Owner: tatiana
-- Status: review
+- Status: done
 - Needs: T-04, T-10, T-12, T-13
 - What: The agent loop: it chooses its own steps (search memory, look at similar past events, check rules, check calendar clashes, fill the proposal), asks the user when information is missing, and stops at 8 steps or $0.05.
 - Done when: it plans an event end to end and shows its steps; tests cover the limits and a missing-info question.
 
 ### T-15 Rules, approvals list and deadlines
 - Owner: tatiana
-- Status: review
+- Status: done
 - Needs: T-08, T-13
 - What: Apply the rules to an event (`apply-rules`), list the approvals, compute task due dates backward (`plan-backward`), warn when a lead time has passed.
 - Done when: works on the test events with uncertain rules marked, never silently skipped.
@@ -179,10 +179,11 @@ Reference documents:
 
 ### T-22 Backend API for the UI
 - Owner: tatiana
-- Status: todo
+- Status: review
 - Needs: T-13
 - What: Every endpoint in the UI spec's API table, same field names; sign-in (decide the method with Christophe, see C-01).
 - Done when: Christophe can switch from fake data to the real API (C-13).
+- Progress (2026-10-24): part 1 live (sign-in, events, runs, approve, tasks, calendar, knowledge, review, cabinet, usage); see `docs/api.md`. Part 2 (drafts, after-event, teach, handover, documents, setup) answers 501 until those tasks are built.
 
 ### T-23 Cost and trace report
 - Owner: tatiana
@@ -387,11 +388,11 @@ Reference documents:
 
 ### C-13 Connect to the real backend
 - Owner: christophe
-- Status: blocked
+- Status: todo
 - Needs: C-12, T-22
 - What: Switch from fake data to the real API; fix mismatches with Tatiana.
 - Done when: every screen works on the deployed backend.
-- Blocker: T-22 is not done. Demo and HTTP adapters are ready; `web/API_NOTES.md` lists the response, action and Google session contracts to agree with Tatiana.
+- Unblocked (2026-10-24): T-22 part 1 is live. `docs/api.md` answers `web/API_NOTES.md` (conventions, sign-in, what is live and what answers 501). Always send `X-Requested-With: ClubOps` on changes, also without a body.
 
 ### C-14 Deploy the frontend
 - Owner: christophe

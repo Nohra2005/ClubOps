@@ -95,3 +95,13 @@ No entries yet — `capture`'s contract (`CaptureRequest`/`CaptureResult` in `sr
 **Next:** Tatiana reviews the 25 rules; Alexis fills real approvals for ASME; then T-16 proposal draft (both form versions: 33 and 39 questions).
 
 **Open questions / blockers:** none new.
+
+## 2026-10-24 — Tatiana Nohra, with Claude (feat/backend-api)
+
+**Did:** T-22 part 1: FastAPI app (`src/clubops/api/`: `app.py` routes, `security.py` sessions + members + Google sign-in, `store.py`, `views.py`), `docs/api.md` for Christophe, `scripts/add_member.py`. Planner gained `on_step` (progress saving) and re-planning an existing event. D-67; F-93 to F-98. T-10 to T-15 marked done (merged).
+
+**State:** `make check` passes (331 tests). C-13 unblocked.
+
+**Next:** T-17 chatbot (replaces the placeholder `/api/chat/ask`), T-16 proposal, T-18 learning; deploy (T-25) needs `CLUBOPS_SESSION_SECRET` and the Google client id.
+
+**Open questions / blockers:** Google client id (Christophe + Tatiana); API key for real runs.
