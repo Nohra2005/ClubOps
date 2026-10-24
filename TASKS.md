@@ -298,6 +298,13 @@ Reference documents:
 - What: Same as T-04 for the ASME events and the made-up events: held-out split, hashes in `eval/FROZEN.md` (Freeze 2).
 - Done when: Freeze 2 is filled in, before the generalization run in T-26.
 
+
+### T-39 Create the ClubOps Gmail inbox
+- Owner: tatiana
+- Status: todo
+- Needs: none
+- What: Create one Gmail account for ClubOps (the service, not one club), e.g. clubops.inbox@gmail.com, owned by the team. Turn on 2-step verification. Give Joey access for J-10. Its password and tokens live only in a password manager and the host's settings, never in the repo.
+- Done when: the account exists and Joey can open it.
 ---
 
 ## Christophe: frontend
@@ -489,3 +496,10 @@ Reference documents:
 - Needs: J-06, T-25
 - What: Google secrets set on the host; sync runs on the deployed backend.
 - Done when: approving a plan on the deployed app puts items in the shared calendar.
+
+### J-10 OSA e-mail inbox
+- Owner: joey
+- Status: todo
+- Needs: T-39, T-18
+- What: Read the ClubOps inbox (Gmail API) and turn each forwarded e-mail into input for learning. One inbox for all clubs: each club forwards to its own address with a "+" tag (`clubops.inbox+running-club@gmail.com`), and the tag says the club. Drop e-mails whose sender is not on that club's cabinet list, and e-mails with an unknown tag. Pass the rest as `Untrusted` text (sender, date, subject, body; attachments listed by name only) to T-18's capture step, so every fact waits in Review. Never auto-approve; never reply to the sender. Code in `src/clubops/inbox/`.
+- Done when: forwarding a real OSA e-mail puts a proposed fact in that club's Review, and tests (with made-up e-mails) cover: wrong tag, sender not on the list, the same e-mail twice (no duplicate), and an e-mail with instructions inside ("ignore the rules...") treated as data. Each case has a failure-matrix row.
