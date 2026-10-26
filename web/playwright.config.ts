@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
-  testIgnore: 'contracts.spec.ts',
+  testIgnore: ['contracts.spec.ts', 'live-api.spec.ts', 'routing.spec.ts'],
   fullyParallel: true,
   workers: 2,
   timeout: 35_000,

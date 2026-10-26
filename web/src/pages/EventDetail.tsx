@@ -768,7 +768,10 @@ export default function EventDetail() {
               <ApproveBar
                 title=""
                 description={`${formatDate(data.approved_at, true)} · this revision is approved.`}
-                approvedBy={data.approved_by}
+                approvedBy={
+                  members.value?.find((member) => member.member_id === data.approved_by)?.name ??
+                  data.approved_by
+                }
               />
             )}
             {editing && (
