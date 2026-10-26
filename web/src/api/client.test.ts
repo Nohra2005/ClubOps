@@ -3,6 +3,22 @@ import { ApiClient, httpTransport } from './client';
 
 afterEach(() => vi.unstubAllGlobals());
 describe('real API boundary', () => {
+  it('exchanges a Google credential and logs out using the protected cookie-session endpoints', async () => {
+    const fetcher = vi.fn().mockImplementation(async () => new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', fetcher);
+    const api = new ApiClient(httpTransport(), 'http');
+    await expect(api.signInGoogle('')).rejects.toMatchObject({ status: 422 });
+    expect(fetcher).not.toHaveBeenCalled();
+    await api.signInGoogle('synthetic-token');
+    await api.logout();
+    expect(fetcher.mock.calls[0][0]).toBe('/api/auth/google');
+    expect(fetcher.mock.calls[0][1].body).toBe('{"credential":"synthetic-token"}');
+    expect(fetcher.mock.calls[1][0]).toBe('/api/auth/logout');
+    for (const [, request] of fetcher.mock.calls) {
+      expect(request.credentials).toBe('include');
+      expect(new Headers(request.headers).get('X-Requested-With')).toBe('ClubOps');
+    }
+  });
   it('explains unimplemented server features without claiming a successful save', async () => {
     vi.stubGlobal(
       'fetch',

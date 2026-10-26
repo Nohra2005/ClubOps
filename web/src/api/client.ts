@@ -52,6 +52,17 @@ export class ApiClient {
   me() {
     return this.request<Me>('/me');
   }
+  signInGoogle(credential: string) {
+    if (this.mode !== 'http')
+      return Promise.reject(new ApiError('Use the demo workspace to preview ClubOps.', 501));
+    if (!credential.trim())
+      return Promise.reject(new ApiError('Please choose a Google account to continue.', 422));
+    return this.post<unknown>('/auth/google', { credential });
+  }
+  logout() {
+    if (this.mode !== 'http') return Promise.resolve();
+    return this.post<unknown>('/auth/logout');
+  }
   events() {
     return this.request<EventSummary[]>('/events');
   }
