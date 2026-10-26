@@ -174,7 +174,11 @@ export class ApiClient {
   changeRole(member_id: string, role: Role) {
     return this.extension('member-role', { member_id, role });
   }
-  continueRun(run_id: string) {
+  async continueRun(run_id: string) {
+    if (this.mode === 'http') {
+      const value = await this.post<unknown>(`/runs/${encodeURIComponent(run_id)}/continue`);
+      return { run_id: readAgentRun(value, run_id).run_id };
+    }
     return this.extension<{ run_id: string }>('run-continue', { run_id });
   }
   stopRun(run_id: string) {

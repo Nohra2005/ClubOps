@@ -3,6 +3,31 @@ import { ApiClient, httpTransport } from './client';
 
 afterEach(() => vi.unstubAllGlobals());
 describe('real API boundary', () => {
+  it('continues the existing backend run through its published endpoint', async () => {
+    const fetcher = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          run_id: 'run-example',
+          club_id: 'running-club',
+          event_id: null,
+          status: 'running',
+          steps: [],
+          steps_used: 0,
+          step_limit: 8,
+          cost_usd: '0',
+          cost_limit_usd: '0.05',
+        }),
+        { headers: { 'Content-Type': 'application/json' } },
+      ),
+    );
+    vi.stubGlobal('fetch', fetcher);
+    const api = new ApiClient(httpTransport(), 'http');
+    await expect(api.continueRun('run-example')).resolves.toEqual({ run_id: 'run-example' });
+    expect(fetcher.mock.calls[0][0]).toBe('/api/runs/run-example/continue');
+    expect(fetcher.mock.calls[0][1].method).toBe('POST');
+    await expect(api.stopRun('run-example')).rejects.toMatchObject({ status: 501 });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
   it('sends CSRF headers on bodiless changes and uploads while the browser sets multipart boundaries', async () => {
     const fetcher = vi.fn().mockImplementation(async () => new Response(null, { status: 204 }));
     vi.stubGlobal('fetch', fetcher);

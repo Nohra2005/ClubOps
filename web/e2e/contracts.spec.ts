@@ -22,6 +22,7 @@ test('HTTP planner polls running, shows the published question and handles at_li
 }) => {
   let polls = 0;
   let answered = false;
+  let continued = false;
   const wireRun = {
     run_id: 'run-wire-example',
     club_id: 'running-club',
@@ -33,16 +34,20 @@ test('HTTP planner polls running, shows the published question and handles at_li
   };
   await page.route('**/api/runs/run-wire-example', (route) => {
     polls++;
-    const question = !answered && polls > 1;
+    const question = continued || (!answered && polls > 1);
     return route.fulfill({
       json: {
         ...wireRun,
-        status: answered ? 'at_limit' : question ? 'waiting_for_user' : 'running',
+        status: question ? 'waiting_for_user' : answered ? 'at_limit' : 'running',
         steps: [
           {
             n: 1,
             tool: question ? 'ask-user' : 'search-memory',
-            text: question ? 'Will there be prizes?' : 'Read the approved notes',
+            text: question
+              ? continued
+                ? 'Which venue should we use?'
+                : 'Will there be prizes?'
+              : 'Read the approved notes',
             state: question ? 'question' : 'done',
           },
         ],
@@ -60,6 +65,12 @@ test('HTTP planner polls running, shows the published question and handles at_li
       },
     });
   });
+  await page.route('**/api/runs/run-wire-example/continue', (route) => {
+    expect(route.request().method()).toBe('POST');
+    expect(route.request().headers()['x-requested-with']).toBe('ClubOps');
+    continued = true;
+    return route.fulfill({ json: { ...wireRun, status: 'running', steps: [] } });
+  });
   await page.goto('/events/new?run=run-wire-example');
   await expect(page.getByPlaceholder('Your answer')).toBeVisible();
   await expect(page.locator('.agent-panel')).toContainText('Will there be prizes?');
@@ -69,6 +80,38 @@ test('HTTP planner polls running, shows the published question and handles at_li
   await expect(page.getByText('This run reached its limit.', { exact: true })).toBeVisible();
   expect(polls).toBeGreaterThanOrEqual(2);
   await expect(page.getByRole('button', { name: 'Approve plan', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Continue planning', exact: true }).click();
+  await expect(page.getByPlaceholder('Your answer')).toBeVisible();
+  await expect(page.locator('.agent-question')).toContainText('Which venue should we use?');
+});
+
+test('HTTP stop leaves a limited run paused without sending an unsupported action', async ({
+  page,
+}) => {
+  let writes = 0;
+  page.on('request', (request) => {
+    if (request.url().includes('/api/') && request.method() !== 'GET') writes++;
+  });
+  await page.route('**/api/runs/run-paused-example', (route) =>
+    route.fulfill({
+      json: {
+        run_id: 'run-paused-example',
+        club_id: 'running-club',
+        event_id: null,
+        status: 'at_limit',
+        steps: [],
+        steps_used: 8,
+        step_limit: 8,
+        cost_usd: '0.05',
+        cost_limit_usd: '0.05',
+      },
+    }),
+  );
+  await page.route('**/api/events', (route) => route.fulfill({ json: [] }));
+  await page.goto('/events/new?run=run-paused-example');
+  await page.getByRole('button', { name: 'Stop here', exact: true }).click();
+  await expect(page).toHaveURL(/\/events$/);
+  expect(writes).toBe(0);
 });
 
 test('HTTP chat handles nullable uncertainty, citation IDs and HTTP-200 failures', async ({

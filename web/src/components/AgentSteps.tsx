@@ -19,6 +19,7 @@ export function AgentSteps({
   onContinue,
   onStop,
   folded = false,
+  resumeSameRun = false,
 }: {
   run: AgentRun;
   pending?: boolean;
@@ -27,6 +28,7 @@ export function AgentSteps({
   onContinue?: () => void;
   onStop?: () => void;
   folded?: boolean;
+  resumeSameRun?: boolean;
 }) {
   const [answer, setAnswer] = useState('');
   return (
@@ -104,13 +106,14 @@ export function AgentSteps({
               <div>
                 <strong>This run reached its limit.</strong>
                 <p>
-                  Your partial plan is here. Continue starts a new run with another allowance of up
-                  to 8 steps / $0.05.
+                  {resumeSameRun
+                    ? 'Your partial plan is here. Continue gives this run another allowance of up to 8 steps / $0.05. Stop here leaves the run paused.'
+                    : 'Your partial plan is here. Continue starts a new run with another allowance of up to 8 steps / $0.05.'}
                 </p>
                 <div className="form-actions">
                   {onContinue && (
                     <button className="button primary" onClick={onContinue} disabled={pending}>
-                      Continue · new run
+                      {resumeSameRun ? 'Continue planning' : 'Continue · new run'}
                     </button>
                   )}
                   {onStop && (

@@ -191,15 +191,23 @@ export default function NewEvent() {
               pending={action.pending}
               error={action.error}
               onAnswer={answer}
+              resumeSameRun={api.mode === 'http'}
               onContinue={async () => {
                 const result = await action.run(() => api.continueRun(runId));
                 if (result.ok) {
                   setRunId(result.value.run_id);
                   setSearch({ run: result.value.run_id });
                   setRun(undefined);
+                  setPollRevision((n) => n + 1);
                 }
               }}
               onStop={async () => {
+                if (api.mode === 'http') {
+                  navigate(
+                    run.event_id ? `/events/${encodeURIComponent(run.event_id)}` : '/events',
+                  );
+                  return;
+                }
                 const result = await action.run(() => api.stopRun(runId));
                 if (result.ok && run.event_id)
                   navigate(`/events/${encodeURIComponent(run.event_id)}`);
