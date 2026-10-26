@@ -205,6 +205,9 @@ def test_a_run_waits_for_an_answer_then_carries_on(client: TestClient, scripts: 
     after = client.post(f"/api/runs/{run_id}/answer", json={"text": "20 November"}, headers=HEADERS).json()
     assert after["status"] == "done"
     assert len(client.get("/api/events").json()) == 1
+    metrics = client.get("/api/usage").json()["run_metrics"]
+    assert metrics["successful_plans"] == 1 and metrics["planner_steps"] == 5
+    assert metrics["cost_usd"] == pytest.approx(0.005)
 
 
 def test_editing_the_event_makes_the_plan_outdated(client: TestClient, scripts: Scripts) -> None:
@@ -299,6 +302,9 @@ def test_usage_adds_up_the_agent_runs(client: TestClient, scripts: Scripts) -> N
     plan(client, scripts)
     usage = client.get("/api/usage").json()
     assert usage["month"] == "2026-10" and usage["calls"] == 4 and usage["cost_usd"] == pytest.approx(0.004)
+    assert usage["run_metrics"]["successful_plans"] == 1
+    assert usage["run_metrics"]["cost_per_successful_plan"] == pytest.approx(0.004)
+    assert usage["trace_metrics_available"] is False
 
 
 def test_parts_not_built_yet_say_so(client: TestClient) -> None:

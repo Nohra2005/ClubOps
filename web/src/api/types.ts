@@ -300,6 +300,25 @@ export interface Usage {
   month: string;
   cost_usd: number;
   calls: number;
+  calls_label?: string;
+  run_metrics?: {
+    recorded_runs: number;
+    successful_plans: number;
+    failed_runs: number;
+    cost_per_successful_plan: number | null;
+  };
+  trace_metrics_available?: boolean;
+  trace_metrics?: {
+    name: string;
+    calls: number;
+    tokens_in: number;
+    tokens_out: number;
+    latency_ms: number;
+    retries: number;
+    failures: number;
+    cost_usd: number;
+  }[];
+  metrics_note?: string;
   most_expensive_feature: string;
   by_feature: { name: string; calls: number; cost_usd: number }[];
 }

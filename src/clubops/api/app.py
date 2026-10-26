@@ -58,6 +58,8 @@ from clubops.knowhow.directory import Directory
 from clubops.knowhow.handover import build_handover
 from clubops.knowhow.store import KnowHowStore
 from clubops.model.client import ModelClient
+from clubops.reports.runs import record_run
+from clubops.reports.usage import usage_details
 
 # ------------------------------------------------------------------ settings
 
@@ -320,6 +322,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             def save(state: RunState) -> None:
                 runs.save(state)
                 api.record_usage(state.run.run_id, clock(), state.run.steps_used, state.run.cost_usd)
+                record_run(config.data_dir, club_id, state.run, clock())
 
             planner = planner_factory(store, directory, save)
             words = Untrusted(
@@ -337,6 +340,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
     def finish(state: RunState, runs: RunStore, api: ApiStore) -> None:
         runs.save(state)
         api.record_usage(state.run.run_id, clock(), state.run.steps_used, state.run.cost_usd)
+        record_run(config.data_dir, state.run.club_id, state.run, clock())
         if state.run.status is RunStatus.DONE:
             old = api.event(state.spec.event_id)
             api.save_event(
@@ -403,6 +407,8 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
 
             def save(s: RunState) -> None:
                 runs.save(s)
+                api.record_usage(s.run.run_id, clock(), s.run.steps_used, s.run.cost_usd)
+                record_run(config.data_dir, member.club_id, s.run, clock())
 
             planner = planner_factory(store, directory, save)
             new = how(planner, state)
@@ -581,8 +587,10 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             "month": month,
             "cost_usd": float(cost),
             "calls": calls,
+            "calls_label": "Planner steps",
             "most_expensive_feature": feature["name"] if calls else "",
             "by_feature": [feature] if calls else [],
+            **usage_details(config.data_dir, member.club_id, month),
         }
 
     # -------------------------------------------------- not built yet (501)

@@ -422,10 +422,11 @@ Reference documents:
 
 ### C-20 Cost and trace report (was T-23)
 - Owner: christophe
-- Status: doing
+- Status: done
 - Needs: none
 - What: Cost, tokens, latency, retries and failures per feature from the traces (`clubops.tracing`, metadata only) and the agent runs; cost per successful plan. A script writes the report to `results/`; `GET /api/usage` shows the real numbers per feature for the Settings screen. Code in `src/clubops/reports/` (yours) plus the usage route (tell Tatiana).
 - Done when: the report in `results/` and the Settings numbers come from real runs.
+- Implementation: `python -m clubops.reports --club <club> --month YYYY-MM --output results/usage.json`; API run metadata is collected automatically. Trace metrics are club-scoped and explicitly unavailable until the relevant feature writes them; legacy monthly planning spend remains available.
 ---
 
 ## Joey: calendar, reminders, drafts

@@ -336,7 +336,7 @@ export default function Settings() {
                       </small>
                     </div>
                     <div>
-                      <span>AI calls</span>
+                      <span>{cost.calls_label ?? 'AI calls'}</span>
                       <strong>{cost.calls}</strong>
                       <small>Explicit actions only</small>
                     </div>
@@ -351,7 +351,9 @@ export default function Settings() {
                       <div key={feature.name}>
                         <span>
                           {feature.name}
-                          <small>{feature.calls} calls</small>
+                          <small>
+                            {feature.calls} {cost.calls_label ? 'steps' : 'calls'}
+                          </small>
                         </span>
                         <div className="progress-track">
                           <span
@@ -364,6 +366,37 @@ export default function Settings() {
                       </div>
                     ))}
                   </div>
+                  {cost.run_metrics && (
+                    <div className="usage-summary">
+                      <div>
+                        <span>Recorded plans completed</span>
+                        <strong>{cost.run_metrics.successful_plans}</strong>
+                        <small>{cost.run_metrics.failed_runs} failed runs</small>
+                      </div>
+                      <div>
+                        <span>Cost per successful recorded plan</span>
+                        <strong>
+                          {cost.run_metrics.cost_per_successful_plan == null
+                            ? 'Not available'
+                            : `$${cost.run_metrics.cost_per_successful_plan.toFixed(3)}`}
+                        </strong>
+                        <small>Includes failed spend in recorded runs</small>
+                      </div>
+                    </div>
+                  )}
+                  {cost.metrics_note && <p className="inline-note">{cost.metrics_note}</p>}
+                  {cost.trace_metrics_available === false && (
+                    <p className="inline-note">
+                      Token, latency and retry metrics have not been recorded yet.
+                    </p>
+                  )}
+                  {cost.trace_metrics?.map((feature) => (
+                    <div className="inline-note" key={feature.name}>
+                      <strong>{feature.name}</strong>: {feature.tokens_in} input /{' '}
+                      {feature.tokens_out} output tokens · {feature.latency_ms} ms ·{' '}
+                      {feature.retries} retries · {feature.failures} failures
+                    </div>
+                  ))}
                 </>
               )}
             </Resource>

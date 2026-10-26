@@ -103,6 +103,45 @@ test('sign-out stays in the workspace on failure and redirects only after the se
   expect(calls).toBe(2);
 });
 
+test('usage labels planner steps accurately and leaves unavailable model metrics explicit', async ({
+  page,
+}) => {
+  await page.route('**/api/cabinet', (route) =>
+    route.fulfill({ json: createWorkspace('running-club').members }),
+  );
+  await page.route('**/api/knowledge?*', (route) => route.fulfill({ json: [] }));
+  await page.route('**/api/calendar?*', (route) =>
+    route.fulfill({ json: { items: [], connected: false } }),
+  );
+  await page.route('**/api/usage', (route) =>
+    route.fulfill({
+      json: {
+        month: '2026-10',
+        cost_usd: 0.02,
+        calls: 4,
+        calls_label: 'Planner steps',
+        most_expensive_feature: 'Event planning',
+        by_feature: [{ name: 'Event planning', calls: 4, cost_usd: 0.02 }],
+        run_metrics: {
+          recorded_runs: 1,
+          successful_plans: 0,
+          failed_runs: 1,
+          cost_per_successful_plan: null,
+        },
+        trace_metrics: [],
+        trace_metrics_available: false,
+      },
+    }),
+  );
+  await page.goto('/settings');
+  await expect(page.getByText('Planner steps', { exact: true })).toBeVisible();
+  await expect(page.getByText('Not available', { exact: true })).toBeVisible();
+  await expect(
+    page.getByText('Token, latency and retry metrics have not been recorded yet.'),
+  ).toBeVisible();
+  await expect(page.getByText('1 failed runs', { exact: true })).toBeVisible();
+});
+
 test('HTTP planner polls running, shows the published question and handles at_limit', async ({
   page,
 }) => {
