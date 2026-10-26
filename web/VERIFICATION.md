@@ -35,3 +35,37 @@ Merged main through `597685d`, preserving both teams' changes. Canonical main de
 | Merged lint/types, schema and tasks | Passed; Ruff formatting for 56 files and mypy for 35 source files                                               | Root Make targets / equivalent commands; UTF-8 schema check on Windows                 |
 
 HTTP checks use the actual fetch transport and screen components with intercepted synthetic responses. They do not prove that T-22, Google authentication, calendar sync or deployment are complete. `API_NOTES.md` records the confirmed mappings and remaining response/route agreements. The Windows command-runner account became unavailable during verification; the isolated port-5174 test server needed explicit cleanup before Playwright returned its successful result. The existing demo preview on port 5173 was preserved.
+
+## Available API integration — 26 October 2026 (C-13 / C-19 / C-20 / C-18)
+
+The earlier sections are historical. Current checks use T-22 part 1 and the assigned
+handover/report endpoints. No real club data, Google account, paid model or hosting
+service was used.
+
+| Check                         | Observed result                                                                                                         | Reproduce                                                                                                                                   |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend quality gates        | Passed; 38 unit tests, lint, formatting, strict types and static build                                                  | `npm run check`                                                                                                                             |
+| Existing demo browser suite   | 36 passed on desktop and 375px phone, including accessibility                                                           | `npm run test:e2e`                                                                                                                          |
+| Isolated HTTP browser suite   | 18 passed; synthetic intercepted responses, including GIS exchange/failure, logout, continuation and missing telemetry  | `npm run test:e2e:http`                                                                                                                     |
+| Real local API flow           | 2 passed; cookie login, planning, approval, calendar, reload, handover, usage, logout                                   | `npm run test:e2e:live`                                                                                                                     |
+| Production static/router flow | 4 passed using built HTTP-mode assets, Caddy and real local API; includes deep links, JSON errors and missing assets    | Set `VITE_API_MODE=http`, build, then `npm run test:e2e:production`                                                                         |
+| Root Python tests             | 343 passed; 93.33% coverage                                                                                             | `uv run pytest --cov --cov-report=term-missing`                                                                                             |
+| Root quality gates            | Ruff check/format passed (96 files), strict mypy passed (58 source files), schemas/tasks passed                         | `make check` equivalents; `python -X utf8 scripts/export_schemas.py --check` on Windows                                                     |
+| Deployment configuration      | Caddy validation and Bash syntax passed; `render.yaml` validates against Render's official JSON Schema                  | `caddy validate --config web/Caddyfile --adapter caddyfile`; `bash -n web/start.sh`; schema at `https://render.com/schema/render.yaml.json` |
+| Report CLI                    | Exported two actual scripted browser runs: 8 planner steps and $0.008 **synthetic charged cost**, no trace measurements | `python -m clubops.reports --data-dir <temporary-fixture-store> --club running-club --month 2026-10 --output output/usage.synthetic.json`   |
+
+Live suites use a new temporary SQLite store under root `output/`, synthetic cabinet
+members, dev-only login and the API owner's scripted planner. They make no model calls.
+Production routing tests use the same Caddyfile as the image; Caddy 2.11.7's downloaded
+Windows binary was checked against the official release SHA-512 checksum. The full Docker
+image has **not** been built because the local Docker engine is stopped. These checks do
+not establish Render persistence, provider latency/token measurements or real OAuth login.
+
+One intermediate root run failed because a browser evidence row used the Python-only
+`covered` classification. Commit `f011231` applies the existing `frontend covered`
+convention; the complete root suite then passed. GitHub checks for the subsequent
+packaging and hosting-preparation commits passed. Shared CI still has no frontend job;
+the browser results above were run locally.
+
+The demo on `http://127.0.0.1:5173` remains available. Current task status and external
+blockers are in `TASKS.md`, `API_NOTES.md` and `DEPLOYMENT.md`.
