@@ -2,24 +2,13 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { ArrowRight } from 'lucide-react';
 import { apiMode } from '../api';
+import { GoogleSignIn } from '../components/GoogleSignIn';
 
 /** Public route: it must remain reachable when /me is unauthorized or the server is down. */
 export default function Login() {
   const [message, setMessage] = useState('');
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
   function google() {
-    const configured = import.meta.env.VITE_AUTH_LOGIN_URL;
-    if (apiMode === 'http' && configured) {
-      try {
-        const url = new URL(configured, window.location.origin);
-        if (url.origin !== window.location.origin && url.protocol !== 'https:')
-          throw new Error('invalid');
-        window.location.assign(url.href);
-        return;
-      } catch {
-        setMessage('The sign-in connection is unavailable. Please ask your club administrator.');
-        return;
-      }
-    }
     setMessage(
       'Google sign-in will open when your club server is connected. You can explore the sample workspace below.',
     );
@@ -47,9 +36,19 @@ export default function Login() {
         <span className="eyebrow">WELCOME TO CLUBOPS</span>
         <h2>Your club starts here.</h2>
         <p>Sign in to your cabinet workspace.</p>
-        <button className="button google-button" onClick={google}>
-          <span className="google-g">G</span> Continue with Google
-        </button>
+        {apiMode === 'http' ? (
+          clientId ? (
+            <GoogleSignIn clientId={clientId} />
+          ) : (
+            <p role="status" className="inline-note">
+              Google sign-in needs to be configured by your club administrator.
+            </p>
+          )
+        ) : (
+          <button className="button google-button" onClick={google}>
+            <span className="google-g">G</span> Continue with Google
+          </button>
+        )}
         {message && (
           <p role="status" className="inline-note">
             {message}

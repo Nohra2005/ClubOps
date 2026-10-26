@@ -9,7 +9,11 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev -- --port 5174 --strictPort',
     url: 'http://127.0.0.1:5174',
-    env: { VITE_API_MODE: 'http', VITE_API_BASE: '/api' },
+    env: {
+      VITE_API_MODE: 'http',
+      VITE_API_BASE: '/api',
+      VITE_GOOGLE_CLIENT_ID: 'synthetic.apps.googleusercontent.com',
+    },
     reuseExistingServer: false,
   },
 });

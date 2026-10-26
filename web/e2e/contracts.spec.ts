@@ -17,6 +17,64 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
+test('Google sign-in exchanges the credential without persisting it in browser storage', async ({
+  page,
+  context,
+}) => {
+  await page.addInitScript(() => {
+    let accept: (value: { credential: string }) => void;
+    window.google = {
+      accounts: {
+        id: {
+          initialize(options) {
+            accept = options.callback;
+          },
+          renderButton(element) {
+            const button = document.createElement('button');
+            button.textContent = 'Sign in with Google';
+            button.onclick = () => {
+              accept({ credential: 'synthetic-id-token' });
+              accept({ credential: 'synthetic-id-token' });
+            };
+            element.append(button);
+          },
+          disableAutoSelect() {},
+        },
+      },
+    };
+  });
+  let exchanges = 0;
+  await page.route('**/api/auth/google', async (route) => {
+    exchanges++;
+    expect(route.request().postDataJSON()).toEqual({ credential: 'synthetic-id-token' });
+    expect(route.request().headers()['x-requested-with']).toBe('ClubOps');
+    await route.fulfill({
+      json: { ok: true },
+      headers: { 'Set-Cookie': 'clubops-test=synthetic-session; Path=/; HttpOnly; SameSite=Lax' },
+    });
+  });
+  await page.route('**/api/events', (route) => route.fulfill({ json: [] }));
+  await page.goto('/login');
+  await page.getByRole('button', { name: 'Sign in with Google' }).click();
+  await expect(page).toHaveURL(/\/events$/);
+  expect(exchanges).toBe(1);
+  expect(JSON.stringify(await page.evaluate(() => Object.entries(localStorage)))).not.toContain(
+    'synthetic-id-token',
+  );
+  expect((await context.cookies()).find((cookie) => cookie.name === 'clubops-test')?.httpOnly).toBe(
+    true,
+  );
+});
+
+test('Google library failures stay on the public sign-in page with an explicit retry', async ({
+  page,
+}) => {
+  await page.route('https://accounts.google.com/gsi/client', (route) => route.abort());
+  await page.goto('/login');
+  await expect(page.getByRole('alert')).toContainText('Google sign-in could not load');
+  await expect(page.getByRole('button', { name: 'Try Google again' })).toBeVisible();
+});
+
 test('HTTP planner polls running, shows the published question and handles at_limit', async ({
   page,
 }) => {
