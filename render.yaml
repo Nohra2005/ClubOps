@@ -1,0 +1,51 @@
+# Preparation only: creating this service and its disk incurs hosting charges.
+# Review web/DEPLOYMENT.md before provisioning. No service has been created.
+services:
+  - type: web
+    name: clubops
+    runtime: docker
+    branch: main
+    region: frankfurt
+    plan: 0.5c-512mb
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    autoDeployTrigger: "off"
+    healthCheckPath: /api/docs
+    maxShutdownDelaySeconds: 60
+    disk:
+      name: clubops-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: CLUBOPS_SESSION_SECRET
+        generateValue: true
+      - key: CLUBOPS_DATA_DIR
+        value: /var/data/clubops
+      - key: CLUBOPS_GOOGLE_CLIENT_ID
+        sync: false
+      - key: VITE_GOOGLE_CLIENT_ID
+        sync: false
+      - key: CLUBOPS_DEV_LOGIN
+        value: "0"
+      - key: CLUBOPS_COOKIE_SECURE
+        value: "1"
+      - key: CLUBOPS_MODEL_MODE
+        value: live
+      - key: CLUBOPS_BASE_URL
+        sync: false
+      - key: CLUBOPS_API_KEY
+        sync: false
+      - key: CLUBOPS_MODEL
+        sync: false
+      - key: CLUBOPS_PRICE_IN_PER_MTOK
+        sync: false
+      - key: CLUBOPS_PRICE_OUT_PER_MTOK
+        sync: false
+      - key: CLUBOPS_BUDGET_USD_PER_PACKET
+        value: "0.05"
+      - key: CLUBOPS_MAX_STEPS_PER_PLAN
+        value: "8"
+      - key: CLUBOPS_RECORDINGS_DIR
+        value: /var/data/private/recordings
+      - key: CLUBOPS_TRACE_PATH
+        value: /var/data/private/traces/clubops.jsonl

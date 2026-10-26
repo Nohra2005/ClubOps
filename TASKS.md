@@ -376,6 +376,7 @@ Reference documents:
 - What: Switch from fake data to the real API; fix mismatches with Tatiana.
 - Done when: every screen works on the deployed backend.
 - Unblocked (2026-10-24): T-22 part 1 is live. `docs/api.md` answers `web/API_NOTES.md` (conventions, sign-in, what is live and what answers 501). Always send `X-Requested-With: ClubOps` on changes, also without a body.
+- Progress (2026-10-26): available planning, approval, calendar, handover, usage and session flows pass against the local API and production router. Google credential exchange is implemented; real Google/deployed verification needs configuration. Remaining 501 features depend on T-17/T-18/T-20/J-07 and the API owner.
 
 ### C-14 Deploy the frontend
 - Owner: christophe
@@ -383,6 +384,7 @@ Reference documents:
 - Needs: C-13, C-18
 - What: Deploy on the same free host as the backend.
 - Done when: the cabinet opens the app from a link on their phones.
+- Preparation: the shared Docker image and Caddy router are ready for a container build; see `web/DEPLOYMENT.md`. No deployed URL yet.
 
 ### C-15 Demo support
 - Owner: christophe
@@ -408,10 +410,11 @@ Reference documents:
 
 ### C-18 Deploy the backend (was T-25)
 - Owner: christophe
-- Status: todo
+- Status: doing
 - Needs: none
 - What: Put the backend (`uvicorn clubops.api.app:build --factory`) on the same free host as the frontend (Render, D-47), with a persistent disk for `CLUBOPS_DATA_DIR` and the secrets from `.env.example` in the host's settings, never in the repo. Load the rulebook and add the president (`scripts/load_rulebook.py`, `scripts/add_member.py`). Deployment files (`render.yaml`, `Dockerfile`) are yours; ask Tatiana before changing Python code.
 - Done when: the cabinet signs in on the deployed app and plans an event.
+- Progress (2026-10-26): Dockerfile, same-origin router and schema-validated Render Blueprint prepared; local production-routing tests pass. Docker engine is stopped, so image construction is not verified. Google client ID, hosting account/budget and provider configuration are unknown. Render Free cannot attach a disk; the prepared paid service must be reviewed before provisioning (`web/DEPLOYMENT.md`).
 
 ### C-19 Handover endpoint (was T-19)
 - Owner: christophe
@@ -422,11 +425,12 @@ Reference documents:
 
 ### C-20 Cost and trace report (was T-23)
 - Owner: christophe
-- Status: done
+- Status: doing
 - Needs: none
 - What: Cost, tokens, latency, retries and failures per feature from the traces (`clubops.tracing`, metadata only) and the agent runs; cost per successful plan. A script writes the report to `results/`; `GET /api/usage` shows the real numbers per feature for the Settings screen. Code in `src/clubops/reports/` (yours) plus the usage route (tell Tatiana).
 - Done when: the report in `results/` and the Settings numbers come from real runs.
 - Implementation: `python -m clubops.reports --club <club> --month YYYY-MM --output results/usage.json`; API run metadata is collected automatically. Trace metrics are club-scoped and explicitly unavailable until the relevant feature writes them; legacy monthly planning spend remains available.
+- Validation remaining: generate the report from real provider activity during the pilot and have feature owners supply club-scoped token/latency/retry traces. Scripted local runs prove the reporting path, not production cost measurements.
 ---
 
 ## Joey: calendar, reminders, drafts
