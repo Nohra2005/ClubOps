@@ -422,7 +422,7 @@ Reference documents:
 
 ### C-20 Cost and trace report (was T-23)
 - Owner: christophe
-- Status: todo
+- Status: doing
 - Needs: none
 - What: Cost, tokens, latency, retries and failures per feature from the traces (`clubops.tracing`, metadata only) and the agent runs; cost per successful plan. A script writes the report to `results/`; `GET /api/usage` shows the real numbers per feature for the Settings screen. Code in `src/clubops/reports/` (yours) plus the usage route (tell Tatiana).
 - Done when: the report in `results/` and the Settings numbers come from real runs.
