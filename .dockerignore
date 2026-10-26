@@ -1,0 +1,28 @@
+# Only build inputs enter the context. In particular, no .env, databases,
+# recordings, traces, output, git metadata or browser-test artifacts.
+**
+!pyproject.toml
+!uv.lock
+!README.md
+!src/
+!src/**
+!scripts/
+!scripts/load_rulebook.py
+!scripts/add_member.py
+!data/
+!data/rulebook/
+!data/rulebook/aub-rules.json
+!web/
+!web/package.json
+!web/package-lock.json
+!web/index.html
+!web/tsconfig.json
+!web/vite.config.ts
+!web/src/
+!web/src/**
+!web/public/
+!web/public/**
+!web/Caddyfile
+!web/start.sh
+**/*.test.ts
+**/*.test.tsx
