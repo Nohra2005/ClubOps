@@ -1,6 +1,6 @@
 /** Published capability contracts -> screen models. HTTP endpoint envelopes remain part of T-22. */
 import { ApiError } from './errors';
-import type { AgentRun, AgentStep, ChatReply, Draft, DraftType } from './types';
+import type { AgentRun, AgentStep, ChatReply, Draft, DraftType, Source } from './types';
 
 const incompatible = () =>
   new ApiError(
@@ -142,9 +142,33 @@ export function readAgentRun(value: unknown, expectedId: string): AgentRun {
 }
 
 export function readAnswer(value: unknown): ChatReply {
-  const { data, fallback } = payload(value);
+  const { data, fallback: degraded } = payload(value);
+  const fallback = degraded || data.fallback === true;
   const answer = text(data.text, 1500);
-  const citations = itemIds(data.citations);
+  if (data.kind === 'learned')
+    return { kind: 'learned', text: answer, review_id: text(data.review_id, 200, 1) };
+  if (data.kind !== undefined && data.kind !== (data.known ? 'answer' : 'unknown'))
+    throw incompatible();
+  const citations: Source[] =
+    data.kind === 'answer' && Array.isArray(data.citations)
+      ? data.citations.map((value) => {
+          const source = object(value);
+          const item_id = itemIds([source.item_id])[0];
+          return {
+            item_id,
+            label: text(source.label, 300, 1),
+            ...(source.quote == null ? {} : { quote: text(source.quote, 5000) }),
+            kind: ['document', 'email', 'note', 'debrief'].includes(String(source.kind))
+              ? (source.kind as Source['kind'])
+              : undefined,
+            authority: ['official_document', 'office_email', 'stated_by_president'].includes(
+              String(source.authority),
+            )
+              ? (source.authority as Source['authority'])
+              : undefined,
+          };
+        })
+      : itemIds(data.citations).map((item_id) => ({ item_id, label: item_id }));
   if (data.known === true) {
     if (
       !citations.length ||
@@ -156,7 +180,8 @@ export function readAnswer(value: unknown): ChatReply {
       known: true,
       text: answer,
       basis: data.basis as 'verified' | 'single_source' | 'disputed',
-      citations: citations.map((item_id) => ({ item_id, label: item_id })),
+      citations,
+      ...(data.review_id == null ? {} : { review_id: text(data.review_id, 200, 1) }),
       fallback,
     };
   }

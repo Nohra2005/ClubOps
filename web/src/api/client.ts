@@ -103,8 +103,9 @@ export class ApiClient {
     const value = await this.post<unknown>('/chat/ask', { text });
     return this.mode === 'http' ? readAnswer(value) : (value as ChatReply);
   }
-  teach(text: string) {
-    return this.post<ChatReply>('/chat/teach', { text });
+  async teach(text: string) {
+    const value = await this.post<unknown>('/chat/teach', { text });
+    return this.mode === 'http' ? readAnswer(value) : (value as ChatReply);
   }
   review(filter: ReviewFilter = 'all') {
     return this.request<ReviewCard[]>(`/review?filter=${filter}`);
@@ -218,7 +219,9 @@ export function httpTransport(base = '/api'): Transport {
               ? "You don't have permission for this action."
               : response.status === 409
                 ? 'This item changed. Reload it before approving.'
-                : "ClubOps couldn't finish this. Your edits are still on this page.",
+                : response.status === 501
+                  ? 'This feature is not connected to the server yet. Your edits are still here.'
+                  : "ClubOps couldn't finish this. Your edits are still on this page.",
           response.status,
         );
       if (response.status === 204) return undefined;

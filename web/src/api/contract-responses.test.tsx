@@ -44,6 +44,49 @@ const draft = {
 };
 
 describe('published 0.2.0 contract responses', () => {
+  it('preserves the published HTTP chat view model with expanded citations and review links', () => {
+    const reply = readAnswer({
+      kind: 'answer',
+      known: true,
+      text: 'A disputed synthetic answer.',
+      basis: 'disputed',
+      review_id: 'review-example',
+      fallback: true,
+      citations: [
+        {
+          item_id: 'kh-example-note',
+          label: 'Synthetic cabinet note',
+          quote: 'A fictional excerpt.',
+          kind: 'note',
+        },
+      ],
+    });
+    expect(reply).toMatchObject({
+      kind: 'answer',
+      review_id: 'review-example',
+      fallback: true,
+      citations: [
+        {
+          item_id: 'kh-example-note',
+          label: 'Synthetic cabinet note',
+          quote: 'A fictional excerpt.',
+          kind: 'note',
+        },
+      ],
+    });
+    expect(
+      readAnswer({ kind: 'learned', text: 'Proposed for review.', review_id: 'review-example' }),
+    ).toEqual({ kind: 'learned', text: 'Proposed for review.', review_id: 'review-example' });
+    expect(() =>
+      readAnswer({
+        kind: 'answer',
+        known: true,
+        text: 'Unusable source',
+        basis: 'verified',
+        citations: [{ label: 'No item ID' }],
+      }),
+    ).toThrow('incompatible data');
+  });
   it('tracks every published run, step and draft enum instead of drifting silently', () => {
     expect(Object.keys(runStatuses)).toEqual(planSchema.$defs.RunStatus.enum);
     expect([...stepStates]).toEqual(planSchema.$defs.StepState.enum);

@@ -3,6 +3,18 @@ import { ApiClient, httpTransport } from './client';
 
 afterEach(() => vi.unstubAllGlobals());
 describe('real API boundary', () => {
+  it('explains unimplemented server features without claiming a successful save', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('Not implemented', { status: 501 })),
+    );
+    await expect(
+      new ApiClient(httpTransport(), 'http').teach('A synthetic proposed fact'),
+    ).rejects.toMatchObject({
+      status: 501,
+      message: expect.stringContaining('not connected to the server yet'),
+    });
+  });
   it('continues the existing backend run through its published endpoint', async () => {
     const fetcher = vi.fn().mockResolvedValue(
       new Response(
