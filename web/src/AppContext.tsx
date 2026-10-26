@@ -1,4 +1,12 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { createApi, getDemoSession, setDemoSession } from './api';
 import type { ApiClient } from './api/client';
 import type { DemoSession } from './api/mock';
@@ -15,7 +23,8 @@ interface Context {
   switchDemo: (session: DemoSession) => void;
   offline: boolean;
   signedOut: boolean;
-  signOut: () => void;
+  signOut: () => Promise<void>;
+  signingOut: boolean;
   signIn: () => void;
 }
 const AppContext = createContext<Context | null>(null);
@@ -32,6 +41,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState('');
   const [offline, setOffline] = useState(false);
   const [signedOut, setSignedOut] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const signOutLock = useRef(false);
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(''), 4500);
@@ -99,9 +110,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
         },
         offline,
         signedOut,
-        signOut: () => {
-          if (api.mode === 'demo') setSignedOut(true);
-          else setToast('Sign-out is not connected yet. Close this workspace to leave it.');
+        signingOut,
+        signOut: async () => {
+          if (signOutLock.current) return;
+          if (api.mode === 'demo') {
+            setSignedOut(true);
+            return;
+          }
+          signOutLock.current = true;
+          setSigningOut(true);
+          try {
+            await api.logout();
+            setSignedOut(true);
+            window.location.assign('/login');
+          } catch (cause) {
+            setToast(
+              cause instanceof Error
+                ? cause.message
+                : 'Sign-out could not finish. Please try again.',
+            );
+          } finally {
+            signOutLock.current = false;
+            setSigningOut(false);
+          }
         },
         signIn: () => setSignedOut(false),
       }}

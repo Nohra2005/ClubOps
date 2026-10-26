@@ -52,7 +52,7 @@ const navigation = [
 ];
 
 function Shell() {
-  const { me, api, switchDemo, signOut, signedOut, offline, isPresident } = useApp();
+  const { me, api, switchDemo, signOut, signingOut, signedOut, offline, isPresident } = useApp();
   const location = useLocation();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
@@ -224,8 +224,8 @@ function Shell() {
                     </select>
                   </label>
                 )}
-                <button className="text-button" onClick={signOut}>
-                  <LogOut size={15} /> Sign out
+                <button className="text-button" onClick={signOut} disabled={signingOut}>
+                  <LogOut size={15} /> {signingOut ? 'Signing out…' : 'Sign out'}
                 </button>
               </div>
             </details>

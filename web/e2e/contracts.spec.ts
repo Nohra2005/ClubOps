@@ -75,6 +75,34 @@ test('Google library failures stay on the public sign-in page with an explicit r
   await expect(page.getByRole('button', { name: 'Try Google again' })).toBeVisible();
 });
 
+test('sign-out stays in the workspace on failure and redirects only after the server ends the session', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    window.google = {
+      accounts: { id: { initialize() {}, renderButton() {}, disableAutoSelect() {} } },
+    };
+  });
+  let calls = 0;
+  await page.route('**/api/events', (route) => route.fulfill({ json: [] }));
+  await page.route('**/api/auth/logout', (route) => {
+    calls++;
+    expect(route.request().headers()['x-requested-with']).toBe('ClubOps');
+    return calls === 1 ? route.fulfill({ status: 503 }) : route.fulfill({ status: 204 });
+  });
+  await page.goto('/events');
+  await page.getByLabel('Your account', { exact: true }).click();
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText("ClubOps couldn't finish this.");
+  await expect(page).toHaveURL(/\/events$/);
+  await page.getByRole('button', { name: 'Sign out', exact: true }).evaluate((button) => {
+    (button as HTMLButtonElement).click();
+    (button as HTMLButtonElement).click();
+  });
+  await expect(page).toHaveURL(/\/login$/);
+  expect(calls).toBe(2);
+});
+
 test('HTTP planner polls running, shows the published question and handles at_limit', async ({
   page,
 }) => {
