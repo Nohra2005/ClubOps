@@ -50,7 +50,7 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Calendar | `GET /api/calendar?month=2026-11` | live; `connected` is false until Joey's Google sync is wired |
 | Knowledge | `GET /api/knowledge?tab=&q=` | live (tabs rules, tips, contacts, sponsors; `documents` empty) |
 | Knowledge | `GET /api/knowledge/{item_id}` | live |
-| Handover | `GET /api/handover/{role}` | 501 until C-19 |
+| Handover | `GET /api/handover/{role}` | live (C-19): current approved knowledge, all citations and explicit gaps; deterministic, no model call |
 | Settings | `GET /api/cabinet`, `POST /api/cabinet`, `DELETE /api/cabinet {member_id}` | live |
 | Settings | `POST /api/documents` | 501 until T-18 |
 | Settings | `GET /api/usage` | live (agent planning cost this month) |

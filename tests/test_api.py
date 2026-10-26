@@ -304,6 +304,6 @@ def test_usage_adds_up_the_agent_runs(client: TestClient, scripts: Scripts) -> N
 def test_parts_not_built_yet_say_so(client: TestClient) -> None:
     sign_in(client)
     assert client.post("/api/chat/teach", json={"text": "x"}, headers=HEADERS).status_code == 501
-    assert client.get("/api/handover/president").status_code == 501
+    assert client.get("/api/handover/president").status_code == 200
     answer = client.post("/api/chat/ask", json={"text": "Who books Hostler?"}, headers=HEADERS).json()
     assert answer["known"] is False and answer["ask"]["who"]  # never a made-up answer (D-49)

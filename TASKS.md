@@ -415,7 +415,7 @@ Reference documents:
 
 ### C-19 Handover endpoint (was T-19)
 - Owner: christophe
-- Status: doing
+- Status: done
 - Needs: none
 - What: Serve the Handover screen from the club's approved facts. The assembly already exists in `src/clubops/knowhow/handover.py` (plain code, no AI); write `src/clubops/api/handover.py` that turns its `HandoverPack` into the screen's `HandoverGuide` (sections, entries with sources, gaps with who to ask and where to look) and register it in `api/app.py` in place of the 501 route (one line; tell Tatiana). Synthetic data in tests.
 - Done when: `GET /api/handover/{role}` returns the guide for each role, with tests for an empty club and a club with gaps.

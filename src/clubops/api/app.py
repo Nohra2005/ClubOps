@@ -32,6 +32,7 @@ from clubops.agent.planner import ModelDecider, Planner, RunState
 from clubops.agent.rules_judge import RuleJudge
 from clubops.agent.runs import RunStore
 from clubops.api import views
+from clubops.api.handover import guide_view
 from clubops.api.security import (
     CSRF_HEADER,
     CSRF_VALUE,
@@ -50,9 +51,11 @@ from clubops.config import _read_dotenv, load_settings
 from clubops.contracts.agent import AgentRun, PlanEventRequest, RunStatus
 from clubops.contracts.common import ErrorCode, Role, SourceKind, SourceRef, Untrusted
 from clubops.contracts.event import Audience, EventSpec, EventStatus, Venue, VenueKind
+from clubops.contracts.handover import HandoverRequest
 from clubops.contracts.knowhow import ItemStatus, Kind, KnowHowItem, VerifyDecision, VerifyRequest
 from clubops.knowhow.backends import open_club_store_backend
 from clubops.knowhow.directory import Directory
+from clubops.knowhow.handover import build_handover
 from clubops.knowhow.store import KnowHowStore
 from clubops.model.client import ModelClient
 
@@ -560,6 +563,12 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         if not members.remove(member.club_id, body.member_id):
             raise HTTPException(404, "No such member in your club.")
 
+    @app.get("/api/handover/{role}")
+    def handover(role: Role, member: Member = Depends(signed_in)) -> dict[str, Any]:  # noqa: B008
+        with club(member.club_id) as (store, _, _, _):
+            request = HandoverRequest(club_id=member.club_id, role=role, outgoing=member.member_id, as_of=today())
+            return dict(guide_view(build_handover(store, request), store.current(member.club_id, today())))
+
     # --------------------------------------------------------------- usage
 
     @app.get("/api/usage")
@@ -600,7 +609,6 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         ("POST", "/api/chat/teach", "T-18"),
         ("POST", "/api/events/{event_id}/drafts/{draft_type}", "J-07"),
         ("POST", "/api/events/{event_id}/after-event", "T-18"),
-        ("GET", "/api/handover/{role}", "T-19"),
         ("POST", "/api/documents", "T-18"),
         ("POST", "/api/setup/next", "T-20"),
     ):
