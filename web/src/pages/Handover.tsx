@@ -21,11 +21,14 @@ export default function Handover() {
         `\n${section.title.toUpperCase()}`,
         ...section.entries.map(
           (entry) =>
-            `${entry.text}\nSource: ${entry.source.label}${entry.source.quote ? `\nExcerpt: ${entry.source.quote}` : ''}`,
+            `${entry.text}\n${(entry.sources ?? [entry.source]).map((source) => `Source: ${source.label}${source.quote ? `\nExcerpt: ${source.quote}` : ''}`).join('\n')}`,
         ),
       ]),
       '\nOPEN QUESTIONS',
-      ...guide.value.gaps.map((gap) => `${gap.topic}\nAsk: ${gap.ask}\nLook in: ${gap.look_in}`),
+      ...guide.value.gaps.map(
+        (gap) =>
+          `${gap.topic}${gap.question ? `\n${gap.question}` : ''}\nAsk: ${gap.ask}\nLook in: ${gap.look_in}`,
+      ),
     ].join('\n\n');
     downloadText(`${me.club.id}-${role}-handover.txt`, text);
   };
@@ -86,7 +89,9 @@ export default function Handover() {
                       section.entries.map((entry, j) => (
                         <div className="guide-entry" key={j}>
                           <p>{entry.text}</p>
-                          <SourceChip source={entry.source} />
+                          {(entry.sources ?? [entry.source]).map((source) => (
+                            <SourceChip key={source.item_id} source={source} />
+                          ))}
                         </div>
                       ))
                     ) : (
@@ -105,7 +110,11 @@ export default function Handover() {
                   {guide.value.gaps.map((gap) => (
                     <div key={gap.topic}>
                       <h3>{gap.topic}</h3>
-                      <NotSure ask={{ who: gap.ask }} lookIn={gap.look_in} />
+                      <NotSure
+                        ask={{ who: gap.ask }}
+                        lookIn={gap.look_in}
+                        explanation={gap.question}
+                      />
                     </div>
                   ))}
                   <Link className="button" to={`/chat?role=${role}`}>

@@ -291,8 +291,8 @@ export interface KnowledgeItem {
 }
 export interface HandoverGuide {
   role: Role;
-  sections: { title: string; entries: { text: string; source: Source }[] }[];
-  gaps: { topic: string; ask: string; look_in: string }[];
+  sections: { title: string; entries: { text: string; source: Source; sources?: Source[] }[] }[];
+  gaps: { topic: string; ask: string; look_in: string; question?: string }[];
   signed_off_at?: string;
   signed_off_by?: string;
 }
