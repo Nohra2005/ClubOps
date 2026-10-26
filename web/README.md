@@ -14,7 +14,7 @@ npm run dev
 
 Open the local URL printed by Vite. `npm run build` type-checks and builds a static application in `web/dist/`. A production host must rewrite application routes such as `/events/ev-example` to `index.html`, while routing `/api/*` to the backend.
 
-The frontend defaults to a synthetic demo API until T-22 exists. Christophe chose Google sign-in for now, with an adapter that can later support university email access. Production sign-in still needs backend integration in C-13; demo role switching does not authenticate anyone.
+The frontend defaults to a synthetic demo API. T-22 part 1 is available; set HTTP mode to connect it. Google sign-in now uses the published credential/session exchange. A real OAuth client ID and deployed verification are still pending; demo role switching does not authenticate anyone.
 
 ## What is ready
 
@@ -38,19 +38,20 @@ Every fixture is synthetic. Fictional policies are marked as examples, and priva
 npm run check       # lint, formatting, unit tests, strict types, production build
 npm run test:e2e    # real Chrome, desktop and 375px phone workflows
 npm run test:e2e:http # HTTP adapter against intercepted contract responses, same two widths
+npm run test:e2e:live # real local API + SQLite + scripted model (requires root uv setup)
 ```
 
 Browser tests default to installed Google Chrome. To use Playwright's own Chromium, run `npx playwright install chromium` and set `PLAYWRIGHT_CHANNEL=bundled` before the browser tests (PowerShell: `$env:PLAYWRIGHT_CHANNEL = 'bundled'`). The tests start Vite automatically and include WCAG accessibility scans. These tests have not been added to the shared root CI workflow; its owner can run the same commands in a frontend job.
 
-The HTTP suite starts an isolated Vite instance on port 5174 with `VITE_API_MODE=http`; every API response is intercepted and synthetic. It checks published 0.2.0 run states/questions/limits, nullable answers, citation IDs, HTTP-200 failure envelopes, cancelled calendar items and draft rejection/retry. It leaves the demo preview on port 5173 running. These checks do not exercise a real backend, Google session or model. Unit tests also compare supported run, step and draft enums with the checked-in JSON Schemas so upstream enum changes fail visibly.
+The HTTP suite starts an isolated Vite instance on port 5174 with `VITE_API_MODE=http`; responses are intercepted and synthetic. It covers runs/questions/limits, Google exchange and logout failures, usage coverage, answers, calendar items and draft rejection/retry. The live suite uses ports 8001/5175, a fresh temporary store under root `output/`, a dev-only synthetic account and a scripted planner. It verifies cookie sessions, planning, explicit approval, calendar items, handover, usage and logout without interception or model charges. Neither suite verifies a real Google account or provider. Both leave the demo preview on port 5173 running.
 
 ## API connection and hosting
 
-Copy `.env.example` to `.env.local`. Change `VITE_API_MODE` to `http` to use the real transport; `VITE_API_BASE` defaults to `/api`. Vite proxies local `/api` requests to port 8000. Set `VITE_AUTH_LOGIN_URL` only after Tatiana provides the backend Google OAuth/session redirect. Never put API keys, OAuth client secrets or other secrets in `VITE_*` variables: they are public build-time configuration.
+Copy `.env.example` to `.env.local`. Set `VITE_API_MODE=http`; `VITE_API_BASE` defaults to `/api`. Vite proxies local requests to port 8000 (override with server-only `CLUBOPS_API_PROXY`). Set public `VITE_GOOGLE_CLIENT_ID` to match the backend's `CLUBOPS_GOOGLE_CLIENT_ID`. Never put API keys, OAuth client secrets or other secrets in `VITE_*`: they are public build-time configuration. See [the published API](../docs/api.md) for backend startup and cabinet setup.
 
-See [API_NOTES.md](API_NOTES.md) for the response and endpoint questions blocking C-13. Actions without an agreed endpoint work only in the demo and return an unavailable-action error in HTTP mode. Production chat history must be supplied by the backend; it does not use the demo cache.
+See [API_NOTES.md](API_NOTES.md) for current integration coverage and remaining server features. Actions without an agreed endpoint work only in the demo and return an unavailable-action error in HTTP mode. Production chat history must be supplied by the backend; it does not use the demo cache.
 
-For shared hosting, build with `npm ci && npm run build` in `web/`, serve `web/dist/` as static files, route `/api/*` to the backend, and rewrite other unknown routes to `index.html`. Use the same origin for authenticated cookies. `npm run preview` is a local build check, not the production server. Real Google OAuth, calendar access, forwarding email, agent calls and deployment remain backend/integration work.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the prepared Docker/Caddy image, persistent Render configuration, Google setup and production-router tests. No service or paid resource has been created. Render Free cannot attach the required disk; hosting needs an account-owner decision. `npm run preview` is a local build check, not the production server.
 
 ## Failure-state previews
 
@@ -58,4 +59,4 @@ In demo mode, open a page with `?scenario=empty`, `loading`, `offline`, `ai-erro
 
 ## Scope
 
-C-01 to C-12 cover the frontend against fake data. C-13 requires the backend API; C-14 requires deployment access and T-25. A local demo must never imply that anything was sent to OSA, Google or another person.
+C-01 to C-12 cover the frontend against fake data. C-13 is integrated with the available API; unfinished server capabilities and deployed Google verification remain pending. C-14 depends on C-13 and C-18. A local demo must never imply that anything was sent to OSA, Google or another person.

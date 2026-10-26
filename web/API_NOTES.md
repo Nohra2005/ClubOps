@@ -4,7 +4,39 @@ The supplied 22 October UI PDF is the source for `/api` paths and the example ch
 
 The real transport uses authenticated cookies, encoded path identifiers, abortable requests, a bounded timeout and generic error messages. The backend must enforce authorization, CSRF protection, club isolation, content hashes and spend limits. Hiding a frontend button is not authorization.
 
-## Contracts 0.2.0 compatibility — 23 October 2026 (C-17)
+## Current integration — 26 October 2026 (C-13 / C-19 / C-20)
+
+The published [API table](../docs/api.md) now resolves the earlier T-22 questions.
+The historical C-17 notes below describe the earlier contract review, not current blockers.
+
+| Boundary        | Current handling                                                                                                                                                                                      |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP convention | Bare UI views except canonical `AgentRun`; every changing request has `X-Requested-With: ClubOps`, including FormData and bodiless POSTs                                                              |
+| Google / logout | Official GIS button, `POST /auth/google {credential}`, HttpOnly session; protected `POST /auth/logout` must succeed before redirect. No token storage. Public client ID and real account test pending |
+| Planning        | Poll canonical run; questions are plain text; explicit `/continue` resumes the same ID and polling; leaving a limited run sends no invented stop action                                               |
+| Approval        | Revision sent to the server; local real-API test confirms no calendar items before approval and persistence after approval/reload. Approver IDs resolve through the cabinet list                      |
+| Chat            | Accept richer UI source objects and canonical citation IDs. Current server ask is an uncertainty placeholder until T-17; teaching is 501 until T-18                                                   |
+| Handover        | Live C-19 deterministic endpoint; UI/export preserves all supplied sources and gap questions. Sign-off remains demo-only                                                                              |
+| Usage           | Existing monthly planning totals plus recorded outcomes/cost-per-success; steps labelled accurately. Trace metrics remain unavailable until club-scoped traces are supplied                           |
+| Calendar        | Internal approved items work; Google sync is not connected in the API                                                                                                                                 |
+
+Verified locally with real HTTP/SQLite on desktop and 375px phone: plan → approve →
+calendar, handover, usage and cookie logout. Google SDK/credential behavior and failure
+states use intercepted tests. See `VERIFICATION.md` for conditions and limitations.
+
+Remaining server work: T-17 answers, T-18 teaching/documents/after-event learning,
+T-20 setup, J-07 draft wiring, Google Calendar wiring, and uncontracted `__ui` actions.
+These produce explicit unavailable responses; HTTP mode never saves them in demo storage.
+C-13's deployed/every-screen completion criterion is still open.
+
+For Tatiana: the assigned C-19 route calls the existing handover assembly then the new
+view adapter; no frozen contracts changed. C-20 records only run metadata in the existing
+save/finish callbacks (including continued runs) and extends `/usage`. Feature producers
+can call `clubops.reports.traces.record_trace(data_dir, club_id, meta, status, error)`
+with a known club context. The report never reads a global trace file, whose records lack
+club ownership. Existing legacy monthly planning spend remains intact.
+
+## Historical contracts 0.2.0 review — 23 October 2026 (C-17)
 
 The frontend branch includes `main` through `597685d` (T-13). Published contracts and generated schemas were read as interfaces; backend implementation and contract definitions were not modified. `src/api/contract-responses.ts` translates fields consumed by the screens and rejects incompatible responses. Backend schema validation, authorization and the HTTP API remain server responsibilities.
 
@@ -39,7 +71,7 @@ Other boundaries need an HTTP view model rather than a field rename:
 - Backend `Role` includes `member`; the cabinet session model remains limited to cabinet/adviser roles. T-22 must define ordinary-member access and the Google identity-to-actor mapping. Supporting a member as calendar owner does not grant cabinet access.
 - Capability requests include `club_id`, `today`, `Untrusted` descriptions and wrapped draft instructions. UI endpoints accept the PDF's simpler inputs. The server must define how session context and input wrappers are supplied; the frontend does not impersonate an actor or call capabilities directly.
 
-## Clarifications still required before C-13
+## Historical questions before T-22 (resolved or deferred in the current table above)
 
 - The spec defines `GET /runs/{id}` but not detail-confirmation fields. The demo adds `question.kind=details`, `details` and `origins`; confirmation sends the edited object as the specified answer endpoint's `text` JSON string. The published `AgentRun` has no structured detail fields; Tatiana must agree the HTTP representation in T-22.
 - Plan approval includes the revision being approved. The backend must bind approval to its exact content and reject stale revisions.

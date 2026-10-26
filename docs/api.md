@@ -16,7 +16,7 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 |---|---|
 | Response shape | Bare JSON, no `Result` envelope. Screens get the view models of `web/src/api/types.ts`; `/api/runs/*` returns the `AgentRun` contract as is (`schemas/plan-event.response.json`). |
 | Errors | HTTP status + `{"detail": "<plain sentence>"}`: 401 not signed in, 403 not allowed (or missing header), 404 not found (also another club's data), 409 changed since loaded, 422 bad input, 501 not built yet. |
-| CSRF | **Every** POST, PATCH and DELETE needs `X-Requested-With: ClubOps`, including bodiless POSTs (`rebuild`, `continue`) and the file upload. `httpTransport` currently skips the header when there is no body or the body is FormData: please always send it. |
+| CSRF | **Every** POST, PATCH and DELETE needs `X-Requested-With: ClubOps`, including bodiless POSTs (`rebuild`, `continue`) and file uploads. The frontend now sends it in all these cases; the browser sets multipart boundaries. |
 | Sign-in | Google (D-56), any Google account: AUB accounts are Microsoft, and Microsoft sign-in would need AUB IT's approval, so the president puts each member's Google e-mail on the cabinet list (D-68). The browser gets Google's ID token (Google Identity Services, client id from `CLUBOPS_GOOGLE_CLIENT_ID`) and posts it to `POST /api/auth/google {credential}`. The server checks it with Google and matches the e-mail to the cabinet list. Session = HttpOnly, SameSite=Lax cookie, 7 days. `POST /api/auth/logout` ends it. `POST /api/auth/dev {email}` exists only when `CLUBOPS_DEV_LOGIN=1`. |
 | Who may do what | Any signed-in member of the club can read. Cabinet roles can plan, answer, edit, approve and decide reviews. The adviser reads only. Only the president changes the cabinet list. Ordinary members have no account. |
 | Club | Always from the session, never from the URL. Another club's ids return 404. |
@@ -53,7 +53,30 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Handover | `GET /api/handover/{role}` | live (C-19): current approved knowledge, all citations and explicit gaps; deterministic, no model call |
 | Settings | `GET /api/cabinet`, `POST /api/cabinet`, `DELETE /api/cabinet {member_id}` | live |
 | Settings | `POST /api/documents` | 501 until T-18 |
-| Settings | `GET /api/usage` | live (agent planning cost this month) |
+| Settings | `GET /api/usage` | live (monthly planning cost; `calls_label` identifies planner steps; optional `run_metrics`, `trace_metrics`, `trace_metrics_available`, `metrics_note` explain C-20 outcomes and recorded coverage) |
 | Setup | `POST /api/setup/next` | 501 until T-20 |
 
 The demo-only actions in `client.ts` (`/__ui/*`) stay demo-only for now.
+
+## Usage reporting (C-20)
+
+Planning save/finish callbacks record cumulative run metadata under
+`<data-dir>/reports/<club>/runs.jsonl`, including continued runs. No prompts, questions,
+answers or step text are stored there. Old monthly API totals are retained; detailed
+run outcomes cover activity recorded since C-20 was added. `calls` in that legacy view
+counts planner steps, so the UI uses `calls_label: "Planner steps"`.
+
+`run_metrics` includes recorded run, successful-plan and failure counts, planner steps,
+cost, and cost per successful plan (including failed spend). Without a successful plan,
+the last metric is null, not zero. Recorded metrics use Asia/Beirut months. Producers
+with known club context can call `clubops.reports.traces.record_trace` for metadata-only
+token, latency, retry and failure metrics; reports never consume the unscoped global
+trace file. No trace rows means `trace_metrics_available: false`. Trace cost and run
+cost overlap and must not be added together.
+
+```sh
+python -m clubops.reports --data-dir data/app --club running-club --month 2026-10 --output results/tmp/usage.json
+```
+
+Keep real reports private. Current regression and browser runs use scripted/synthetic
+activity; a real-provider pilot report remains part of C-20 validation.
