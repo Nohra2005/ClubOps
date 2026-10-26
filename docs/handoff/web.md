@@ -33,3 +33,13 @@ No entries yet.
 **Next:** Verify PR #9's updated remote checks, then have Tatiana review the compatibility matrix in `web/API_NOTES.md` for T-22. C-13 stays blocked until the real HTTP/session endpoints exist; C-14 and C-15 retain their dependencies.
 
 **Open questions / blockers:** Structured detail confirmation; HTTP event/review/knowledge/directory envelopes; draft URL type aliases and nested draft responses; revision-bound approvals; continue/stop, logout and other missing action endpoints; ordinary-member access and Google identity-to-actor mapping. Capability contracts do not provide every HTTP screen field. The shared workflow still has no frontend job; no model or Google calls were made by these tests.
+
+## 2026-10-26 — Christophe, with Codex (C-13, direct-main work)
+
+**Did:** Read the now-published `docs/api.md` and started C-13. Every changing HTTP request now includes the CSRF header, including uploads and bodiless rebuild/continue requests. The browser still sets multipart boundaries. Marked the merged C-17 complete.
+
+**State:** Work proceeds in small commits directly on main at Christophe's explicit instruction, overriding the earlier PR/squash workflow for this work. Each completed portion is verified and pushed separately. After the first three commits, verify that GitHub main lists all three individually before continuing.
+
+**Next:** Connect the published continue, sign-in/logout and bare UI response conventions; then C-19, C-20 and deployment preparation. Account configuration for Google and hosting is not known yet; do not claim external deployment or sign-in verification.
+
+**Open questions / blockers:** T-22 part 1 documents working endpoints and explicit 501 placeholders; integration cannot make unfinished backend capabilities work. Persistent hosting and the public Google OAuth client ID still need setup.

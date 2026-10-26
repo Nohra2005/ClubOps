@@ -3,6 +3,28 @@ import { ApiClient, httpTransport } from './client';
 
 afterEach(() => vi.unstubAllGlobals());
 describe('real API boundary', () => {
+  it('sends CSRF headers on bodiless changes and uploads while the browser sets multipart boundaries', async () => {
+    const fetcher = vi.fn().mockImplementation(async () => new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', fetcher);
+    const transport = httpTransport();
+    await transport('/events/ev-example/rebuild', { method: 'POST' });
+    const upload = new FormData();
+    upload.append('file', new File(['Synthetic document'], 'example.txt'));
+    await transport('/documents', { method: 'POST', body: upload });
+    await transport('/cabinet', { method: 'DELETE', body: { member_id: 'm-example' } });
+    await transport('/events');
+    for (const [, request] of fetcher.mock.calls.slice(0, 3)) {
+      expect(new Headers(request.headers).get('X-Requested-With')).toBe('ClubOps');
+      expect(request.credentials).toBe('include');
+    }
+    expect(new Headers(fetcher.mock.calls[0][1].headers).has('Content-Type')).toBe(false);
+    expect(new Headers(fetcher.mock.calls[1][1].headers).has('Content-Type')).toBe(false);
+    expect(fetcher.mock.calls[1][1].body).toBe(upload);
+    expect(new Headers(fetcher.mock.calls[2][1].headers).get('Content-Type')).toBe(
+      'application/json',
+    );
+    expect(new Headers(fetcher.mock.calls[3][1].headers).has('X-Requested-With')).toBe(false);
+  });
   it('uses credentials and encodes identifiers without simulating production writes', async () => {
     const fetcher = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ task_id: 'ev-example/task' }), {

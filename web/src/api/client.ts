@@ -191,13 +191,14 @@ export function httpTransport(base = '/api'): Transport {
     if (options.signal?.aborted) controller.abort();
     try {
       const form = options.body instanceof FormData;
+      const method = options.method ?? 'GET';
       const response = await fetch(`${base.replace(/\/$/, '')}${path}`, {
-        method: options.method ?? 'GET',
+        method,
         credentials: 'include',
-        headers:
-          options.body && !form
-            ? { 'Content-Type': 'application/json', 'X-Requested-With': 'ClubOps' }
-            : undefined,
+        headers: {
+          ...(method !== 'GET' ? { 'X-Requested-With': 'ClubOps' } : {}),
+          ...(options.body && !form ? { 'Content-Type': 'application/json' } : {}),
+        },
         body: options.body
           ? form
             ? (options.body as FormData)
