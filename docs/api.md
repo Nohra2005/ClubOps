@@ -42,17 +42,17 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Events | `POST /api/events/{id}/approve-plan {revision}` | live |
 | Events | `PATCH /api/tasks/{task_id} {state, owner_role}` | live |
 | Events | `POST /api/events/{id}/drafts/{type}` | 501 until J-07 is wired |
-| Events | `POST /api/events/{id}/after-event {answers}` | 501 until T-18 |
+| Events | `POST /api/events/{id}/after-event {answers}` | live: closes the event, sends the facts to Review, returns `{draft, review_count}` (a plain impact-report draft until J-07) |
 | Chat | `POST /api/chat/ask {text}` | placeholder: always "not known, ask the club president" until T-17 |
-| Chat | `POST /api/chat/teach {text}` | 501 until T-18 |
-| Review | `GET /api/review?filter=` | live (facts and rules; `documents` and `plans` are empty for now) |
+| Chat | `POST /api/chat/teach {text}` | live: returns `{kind: "learned", text, review_id}`; `review_id` is empty when no fact was found |
+| Review | `GET /api/review?filter=` | live; card types `fact`, `rule`, `merge` (same or newer version of a known fact) and `disagreement`, with `alternative` = the known fact; optional `warning` (the source had hidden instructions) and `outdated` |
 | Review | `POST /api/review/{id} {decision: approve|reject|edit, edited_text?, reason?}` | live |
 | Calendar | `GET /api/calendar?month=2026-11` | live; `connected` is false until Joey's Google sync is wired |
 | Knowledge | `GET /api/knowledge?tab=&q=` | live (tabs rules, tips, contacts, sponsors; `documents` empty) |
 | Knowledge | `GET /api/knowledge/{item_id}` | live |
 | Handover | `GET /api/handover/{role}` | live (C-19): current approved knowledge, all citations and explicit gaps; deterministic, no model call |
 | Settings | `GET /api/cabinet`, `POST /api/cabinet`, `DELETE /api/cabinet {member_id}` | live |
-| Settings | `POST /api/documents` | 501 until T-18 |
+| Settings | `POST /api/documents` (multipart `file`) | live: .txt, .md, .csv, .eml, .xlsx up to 2 MB; past expense forms become a price list without AI; returns a `documents` knowledge item saying how many facts went to Review |
 | Settings | `GET /api/usage` | live (monthly planning cost; `calls_label` identifies planner steps; optional `run_metrics`, `trace_metrics`, `trace_metrics_available`, `metrics_note` explain C-20 outcomes and recorded coverage) |
 | Setup | `POST /api/setup/next` | 501 until T-20 |
 

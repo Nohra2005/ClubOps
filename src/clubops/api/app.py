@@ -12,6 +12,7 @@ Conventions (agreed for C-13):
 
 from __future__ import annotations
 
+import io
 import os
 import re
 import uuid
@@ -24,7 +25,8 @@ from pathlib import Path
 from typing import Any, Literal
 
 import httpx
-from fastapi import BackgroundTasks, Body, Depends, FastAPI, HTTPException, Request, Response
+import openpyxl
+from fastapi import BackgroundTasks, Body, Depends, FastAPI, HTTPException, Request, Response, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
@@ -52,11 +54,12 @@ from clubops.contracts.agent import AgentRun, PlanEventRequest, RunStatus
 from clubops.contracts.common import ErrorCode, Role, SourceKind, SourceRef, Untrusted
 from clubops.contracts.event import Audience, EventSpec, EventStatus, Venue, VenueKind
 from clubops.contracts.handover import HandoverRequest
-from clubops.contracts.knowhow import ItemStatus, Kind, KnowHowItem, VerifyDecision, VerifyRequest
+from clubops.contracts.knowhow import CaptureRequest, ItemStatus, Kind, KnowHowItem, VerifyDecision, VerifyRequest
 from clubops.knowhow.backends import open_club_store_backend
 from clubops.knowhow.directory import Directory
 from clubops.knowhow.handover import build_handover
 from clubops.knowhow.store import KnowHowStore
+from clubops.learning.capture import Candidate, Learner, price_list, rows_to_text
 from clubops.model.client import ModelClient
 from clubops.reports.runs import record_run
 from clubops.reports.usage import usage_details
@@ -167,6 +170,8 @@ _HTTP = {
 }
 
 
+MAX_UPLOAD = 2 * 1024 * 1024
+
 # ---------------------------------------------------------------------- app
 
 
@@ -175,6 +180,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
     planner_factory: PlannerFactory = model_planner,
     clock: Callable[[], datetime] = lambda: datetime.now(UTC),
     google_transport: httpx.BaseTransport | None = None,
+    model_client: Callable[[], ModelClient] = lambda: ModelClient(load_settings()),
 ) -> FastAPI:
     app = FastAPI(title="ClubOps API", docs_url="/api/docs", openapi_url="/api/openapi.json")
     members = MemberStore(config.data_dir)
@@ -506,7 +512,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
     # ------------------------------------------------------------- review
 
     _FILTER = {
-        "facts": {"fact", "rule"},
+        "facts": {"fact", "rule", "merge"},
         "disagreements": {"disagreement"},
         "documents": {"document"},
         "plans": {"plan"},
@@ -515,7 +521,10 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
     @app.get("/api/review")
     def review(filter: str = "all", member: Member = Depends(signed_in)) -> list[dict[str, Any]]:  # noqa: B008
         with club(member.club_id) as (store, _, _, _):
-            cards = [views.review_card(p) for p in store.pending.values()]
+            cards = [
+                views.review_card(p, store.latest(p.target_item) if p.target_item else None)
+                for p in store.pending.values()
+            ]
         wanted = _FILTER.get(filter)
         return [c for c in cards if wanted is None or c["type"] in wanted]
 
@@ -593,6 +602,119 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             **usage_details(config.data_dir, member.club_id, month),
         }
 
+    # ---------------------------------------------------- learning (T-18)
+
+    def learn(
+        member: Member, sources: list[Untrusted], event_id: str | None = None, extra: list[Candidate] | None = None
+    ) -> list[str]:
+        """Proposed facts go to Review; nothing is saved as known until a person approves (D-41)."""
+        with club(member.club_id) as (store, _, _, _):
+            learner = Learner(model_client(), store)
+            result = learner.learn(
+                CaptureRequest(club_id=member.club_id, sources=sources, context_event=event_id),
+                today(),
+                load_settings().new_budget(),
+                extra,
+            )
+        return [p.proposal_id for p in result.proposals]
+
+    def untrusted(text: str, kind: SourceKind, source_id: str, locator: str | None = None) -> Untrusted:
+        return Untrusted(
+            content=text,
+            source=SourceRef(kind=kind, source_id=source_id[:200], locator=locator, observed_at=clock()),
+        )
+
+    @app.post("/api/chat/teach")
+    def teach(body: AnswerBody, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+        ids = learn(
+            member, [untrusted(body.text, SourceKind.USER_INPUT, f"chat/{member.member_id}/{clock():%Y%m%d%H%M%S}")]
+        )
+        if not ids:
+            return {"kind": "learned", "text": "I didn't find a fact to keep in that message.", "review_id": ""}
+        with club(member.club_id) as (store, _, _, _):
+            first = store.pending[ids[0]].candidate.statement
+        more = f" (+{len(ids) - 1} more)" if len(ids) > 1 else ""
+        return {"kind": "learned", "text": f"New fact sent for review: {first}{more}", "review_id": ids[0]}
+
+    class AfterEventBody(BaseModel):
+        answers: dict[str, str]
+
+    @app.post("/api/events/{event_id}/after-event")
+    def after_event(event_id: str, body: AfterEventBody, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+        with club(member.club_id) as (_, directory, _, api):
+            event = api.event(event_id)
+            if event is None:
+                raise HTTPException(404, "No such event.")
+            answers = {k.strip()[:200]: v.strip()[:2000] for k, v in body.answers.items() if v.strip()}
+            if not answers:
+                raise HTTPException(422, "Answer at least one question.")
+            text = "\n".join(f"{q}: {a}" for q, a in answers.items())
+            record = directory.event(event_id)
+            if record is not None:
+                directory.put_event(record.model_copy(update={"status": EventStatus.CLOSED, "outcome": text[:1000]}))
+        ids = learn(member, [untrusted(text, SourceKind.RETROSPECTIVE, f"after-event/{event_id}")], event_id)
+        draft = {
+            "type": "impact_report",
+            "text": f"Impact report: {event.spec.title or event_id}\n\n{text}",
+            "template_version": "plain-v1",
+            "based_on": [],
+            "state": "draft",
+        }
+        return {"draft": draft, "review_count": len(ids)}
+
+    @app.post("/api/documents")
+    async def upload(file: UploadFile, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+        data = await file.read(MAX_UPLOAD + 1)
+        if len(data) > MAX_UPLOAD:
+            raise HTTPException(413, "The file is too big (2 MB at most).")
+        name = (file.filename or "document")[:120]
+        kind = name.lower().rsplit(".", 1)[-1]
+        extra: list[Candidate] = []
+        if kind == "xlsx":
+            try:
+                book = openpyxl.load_workbook(io.BytesIO(data), read_only=True, data_only=True)
+            except Exception:
+                raise HTTPException(422, "This spreadsheet can't be opened.") from None
+            rows: list[list[object]] = [list(r) for ws in book.worksheets[:3] for r in ws.iter_rows(values_only=True)]
+            extra = price_list(rows, member.club_id, name, clock())
+            text = "" if extra else rows_to_text(rows)
+        elif kind in {"txt", "md", "csv", "eml"}:
+            text = data.decode("utf-8", errors="replace")
+        else:
+            raise HTTPException(422, "Upload a .txt, .md, .csv, .eml or .xlsx file (save PDFs and Word files as text).")
+        sources = [untrusted(text, SourceKind.DOCUMENT, f"upload/{name}", name)] if text.strip() else []
+        if not sources and not extra:
+            return document_view(name, 0)
+        if not sources:
+            with club(member.club_id) as (store, _, _, _):
+                result = Learner(None, store).learn(
+                    CaptureRequest(
+                        club_id=member.club_id, sources=[untrusted(name, SourceKind.DOCUMENT, f"upload/{name}")]
+                    ),
+                    today(),
+                    None,
+                    extra,
+                )
+            return document_view(name, len(result.proposals))
+        return document_view(name, len(learn(member, sources, extra=extra)))
+
+    def document_view(name: str, count: int) -> dict[str, Any]:
+        return {
+            "item_id": f"doc-{uuid.uuid4().hex[:8]}",
+            "title": name,
+            "statement": f"{count} fact{'s' if count != 1 else ''} sent for review"
+            if count
+            else "No facts found in this file.",
+            "tab": "documents",
+            "kind": "document",
+            "scope": "club",
+            "sources": [],
+            "last_checked": today().isoformat(),
+            "status": "current",
+            "history": [],
+            "used_in": [],
+        }
+
     # -------------------------------------------------- not built yet (501)
 
     @app.post("/api/chat/ask")
@@ -614,10 +736,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         return handler
 
     for method, path, task in (
-        ("POST", "/api/chat/teach", "T-18"),
         ("POST", "/api/events/{event_id}/drafts/{draft_type}", "J-07"),
-        ("POST", "/api/events/{event_id}/after-event", "T-18"),
-        ("POST", "/api/documents", "T-18"),
         ("POST", "/api/setup/next", "T-20"),
     ):
         app.add_api_route(path, not_yet(task), methods=[method])

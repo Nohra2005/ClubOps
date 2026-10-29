@@ -151,10 +151,11 @@ Reference documents:
 
 ### T-18 Learning inputs and the approval gate
 - Owner: tatiana
-- Status: todo
+- Status: review
 - Needs: T-11, T-12
 - What: Turn chat teaching, the after-event form, forwarded OSA emails and uploaded documents (including past expense forms, kept as a price list) into proposed facts; merge repeats; detect contradictions; flag outdated documents. Nothing is saved until approved in Review.
 - Done when: each input type produces Review cards; approve / reject / merge work.
+- Progress (2026-10-29): chat teaching, after-event form and document upload (text and .xlsx; expense forms -> price list) live in the app; `Learner.learn` is ready for J-10's forwarded e-mails (pass a `CaptureRequest`). Real-model quality is checked in T-26 once the key arrives.
 
 <!-- T-19 moved to C-19 on 2026-10-24: it fits Christophe's part and lightens Tatiana's load. -->
 ### T-20 New-club setup and ASME

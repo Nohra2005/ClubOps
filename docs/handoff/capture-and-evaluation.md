@@ -105,3 +105,13 @@ No entries yet — `capture`'s contract (`CaptureRequest`/`CaptureResult` in `sr
 **Next:** T-17 chatbot (replaces the placeholder `/api/chat/ask`), T-16 proposal, T-18 learning; deploy (T-25) needs `CLUBOPS_SESSION_SECRET` and the Google client id.
 
 **Open questions / blockers:** Google client id (Christophe + Tatiana); API key for real runs.
+
+## 2026-10-29 — Tatiana Nohra, with Claude (feat/learning)
+
+**Did:** T-18 learning: `src/clubops/learning/capture.py` (extract with quote check, match with known facts, injection flags, outdated-document flag, expense-form price list); API routes `/api/chat/teach`, `/api/events/{id}/after-event`, `/api/documents`; Review cards show merges and disagreements with the known fact. D-73; F-109 to F-115. Added python-multipart and openpyxl.
+
+**State:** `make check` passes (376 tests).
+
+**Next:** T-09 seed the Running Club know-how through these inputs; Joey's J-10 calls `Learner.learn` for e-mails; J-15 chatbot answers from what is approved.
+
+**Open questions / blockers:** the API key, to measure extraction quality on real material.
