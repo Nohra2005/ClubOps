@@ -14,7 +14,7 @@ Status values: `todo` · `doing` · `blocked` · `review` (PR open) · `done`.
 
 - Christophe builds every screen against the **fake API data** in the UI spec, so he never waits for the backend. He switches to the real backend at C-13.
 - Joey's calendar part reads the **calendar contract** (`docs/calendar-contract.md`). The backend sends calendar items only after a plan is approved.
-- Tatiana's evaluation data (T-01 to T-05) is **frozen before** the planner (T-14) and chatbot (T-17) are built. Otherwise the test can be tuned to the system.
+- Tatiana's evaluation data (T-01 to T-05) is **frozen before** the planner (T-14) and chatbot (J-15) are built. Otherwise the test can be tuned to the system.
 - The final test run (T-26) needs everything else done. Keep the last week for it.
 
 Reference documents:
@@ -55,7 +55,7 @@ Reference documents:
 - Status: done
 - Needs: T-01, T-02, T-03, T-37
 - What: Pick a random 30% held out (record the seed). Record the file hashes and date in `eval/FROZEN.md`. Other clubs' sets are frozen later in T-38.
-- Done when: `eval/FROZEN.md` is committed, before any code for T-14 or T-17.
+- Done when: `eval/FROZEN.md` is committed, before any code for T-14 or J-15.
 
 ### T-05 Line up the 3 graders and the grading sheet
 - Owner: tatiana
@@ -135,20 +135,8 @@ Reference documents:
 - What: Apply the rules to an event (`apply-rules`), list the approvals, compute task due dates backward (`plan-backward`), warn when a lead time has passed.
 - Done when: works on the test events with uncertain rules marked, never silently skipped.
 
-### T-16 Proposal draft
-- Owner: tatiana
-- Status: todo
-- Needs: T-14
-- What: Fill the OSA proposal form (33 questions) with origin and source per answer; 24-hour times; dates consistent with the description.
-- Done when: drafts for the test events pass the form checks.
-
-### T-17 Chatbot with sources
-- Owner: tatiana
-- Status: todo
-- Needs: T-04, T-10, T-12, T-13
-- What: Answer only from approved facts, with sources. When unsure: "not sure", who to ask, where to look. Never invent a rule.
-- Done when: runs on the 30-question test.
-
+<!-- T-16 moved to J-12 on 2026-10-24: it fits Joey's part and lightens Tatiana's load. -->
+<!-- T-17 moved to J-15 on 2026-10-24: Joey builds the chatbot; Tatiana keeps the club know-how it answers from. -->
 ### T-18 Learning inputs and the approval gate
 - Owner: tatiana
 - Status: review
@@ -158,13 +146,7 @@ Reference documents:
 - Progress (2026-10-29): chat teaching, after-event form and document upload (text and .xlsx; expense forms -> price list) live in the app; `Learner.learn` is ready for J-10's forwarded e-mails (pass a `CaptureRequest`). Real-model quality is checked in T-26 once the key arrives.
 
 <!-- T-19 moved to C-19 on 2026-10-24: it fits Christophe's part and lightens Tatiana's load. -->
-### T-20 New-club setup and ASME
-- Owner: tatiana
-- Status: todo
-- Needs: T-18
-- What: The setup chat for a new club (about 10 questions) and ASME seeded as the second club.
-- Done when: ASME can go through setup in the demo.
-
+<!-- T-20 moved to C-21 on 2026-10-24: it fits Christophe's part and lightens Tatiana's load. -->
 <!-- T-21 moved to J-11 on 2026-10-24: it fits Joey's part and lightens Tatiana's load. -->
 ### T-22 Backend API for the UI
 - Owner: tatiana
@@ -175,18 +157,12 @@ Reference documents:
 - Progress (2026-10-24): part 1 live (sign-in, events, runs, approve, tasks, calendar, knowledge, review, cabinet, usage); see `docs/api.md`. Part 2 (drafts, after-event, teach, handover, documents, setup) answers 501 until those tasks are built.
 
 <!-- T-23 moved to C-20 on 2026-10-24: it fits Christophe's part and lightens Tatiana's load. -->
-### T-24 Security tests
-- Owner: tatiana
-- Status: todo
-- Needs: T-17, T-18
-- What: Injection attempts, fake "OSA" rules, unauthorized actions; each failure gets a Failure Matrix row and a test.
-- Done when: the adversarial set runs in `make check` or `make eval`.
-
+<!-- T-24 moved to J-13 on 2026-10-24: it fits Joey's part and lightens Tatiana's load. -->
 <!-- T-25 moved to C-18 on 2026-10-24: it fits Christophe's part and lightens Tatiana's load. -->
 ### T-26 Run the final evaluation
 - Owner: tatiana
 - Status: todo
-- Needs: T-05, T-06, T-14, T-15, T-16, T-17, T-38
+- Needs: T-05, T-06, T-14, T-15, J-12, J-15, T-38
 - What: Plan the held-out events with every baseline and with ClubOps (3 runs each, report the spread), plus ClubOps with an empty club memory (rules-only score) and the ASME events (D-50); automatic check against what really happened; blind 1–5 grading by the 3 graders; chatbot test; learning test; cost per successful plan. Fix what it finds and turn each failure into a regression test.
 - Done when: result tables in `results/`, reproducible with `make eval`.
 
@@ -211,13 +187,7 @@ Reference documents:
 - What: Short, consented notes from the 4 cabinet interviews (Running Club, ACM, IISE, Math Society): their process, submissions sent back, time spent. A timed walkthrough of one real event's paperwork. Write `docs/problem.md` (user, current workflow, pain, why an agent).
 - Done when: every problem claim in `docs/evidence.md` points to a note or a timing.
 
-### T-30 Evaluation in CI
-- Owner: tatiana
-- Status: todo
-- Needs: T-26
-- What: `make eval` runs from recorded responses (no API keys) in CI and fails if a key number drops below its threshold (e.g. approvals missed, invented answers).
-- Done when: the CI workflow runs `make eval` with regression gates.
-
+<!-- T-30 moved to C-22 on 2026-10-24: it fits Christophe's part and lightens Tatiana's load. -->
 ### T-31 Keep the docs true
 - Owner: tatiana
 - Status: todo
@@ -242,7 +212,7 @@ Reference documents:
 ### T-34 Make the repo easy to grade
 - Owner: tatiana
 - Status: todo
-- Needs: T-27, T-30, T-31
+- Needs: T-27, C-22, T-31
 - What: The grader is likely an AI agent reading the repo. Add a "How to grade this project" section at the top of the README: each rubric item → the file that proves it → the command that reproduces it (see `docs/plan.md`). Then have a fresh AI session, with no context, grade the repo against the rubric and fix every gap it finds.
 - Done when: a fresh-session review finds no rubric item without evidence.
 
@@ -254,13 +224,7 @@ Reference documents:
 - Done when: ASME events and their real approvals are in the private eval folder.
 - Progress (2026-10-23): Alexis sent 4 proposals (screen recordings) and 12 expense forms. 15 ASME events drafted privately in `clubops-raw/eval/asme-events.csv` with guessed approvals; personal details removed. Left: Alexis fills the real approvals (column `approvals_real`) and confirms the open questions in `notes`.
 
-### T-36 One made-up event per missing event type
-- Owner: tatiana
-- Status: todo
-- Needs: T-35
-- What: 10 short event descriptions for types the Running Club never ran (workshop, conference, film screening, concert, exhibition, gala, meeting, competition, trip, play). Label each one's approvals from the OSA documents only. Mark them synthetic.
-- Done when: 10 labelled events saved privately and included in T-04's freeze.
-
+<!-- T-36 moved to J-14 on 2026-10-24: it fits Joey's part and lightens Tatiana's load. -->
 ### T-37 Other presidents' questions
 - Owner: tatiana
 - Status: done
@@ -271,7 +235,7 @@ Reference documents:
 ### T-38 Freeze the other-club test sets
 - Owner: tatiana
 - Status: todo
-- Needs: T-35, T-36
+- Needs: T-35, J-14
 - What: Same as T-04 for the ASME events and the made-up events: held-out split, hashes in `eval/FROZEN.md` (Freeze 2).
 - Done when: Freeze 2 is filled in, before the generalization run in T-26.
 
@@ -377,7 +341,7 @@ Reference documents:
 - What: Switch from fake data to the real API; fix mismatches with Tatiana.
 - Done when: every screen works on the deployed backend.
 - Unblocked (2026-10-24): T-22 part 1 is live. `docs/api.md` answers `web/API_NOTES.md` (conventions, sign-in, what is live and what answers 501). Always send `X-Requested-With: ClubOps` on changes, also without a body.
-- Progress (2026-10-26): available planning, approval, calendar, handover, usage and session flows pass against the local API and production router. Google credential exchange is implemented; real Google/deployed verification needs configuration. Remaining 501 features depend on T-17/T-18/T-20/J-07 and the API owner.
+- Progress (2026-10-26): available planning, approval, calendar, handover, usage and session flows pass against the local API and production router. Google credential exchange is implemented; real Google/deployed verification needs configuration. Remaining 501 features depend on J-15/T-18/C-21/J-07 and the API owner.
 
 ### C-14 Deploy the frontend
 - Owner: christophe
@@ -432,6 +396,20 @@ Reference documents:
 - Done when: the report in `results/` and the Settings numbers come from real runs.
 - Implementation: `python -m clubops.reports --club <club> --month YYYY-MM --output results/usage.json`; API run metadata is collected automatically. Trace metrics are club-scoped and explicitly unavailable until the relevant feature writes them; legacy monthly planning spend remains available.
 - Validation remaining: generate the report from real provider activity during the pilot and have feature owners supply club-scoped token/latency/retry traces. Scripted local runs prove the reporting path, not production cost measurements.
+
+### C-21 New-club setup (was T-20)
+- Owner: christophe
+- Status: todo
+- Needs: none
+- What: The backend for the setup screen you built (C-11): `POST /api/setup/next {answer?}` walks a new club through about 10 questions (name, club or society and faculty, adviser, cabinet roles, signature events, usual venues, sponsors...) and turns each answer into a proposed fact in Review; the 25 AUB rules apply from day one (they are shared). Code in `src/clubops/api/setup.py` (yours); register it in place of the 501 route (one line; tell Tatiana). Tatiana gives you ASME's non-personal facts to seed ASME as the second club for the demo.
+- Done when: a new club can go through setup in the demo, and ASME is the second club.
+
+### C-22 Evaluation in CI (was T-30)
+- Owner: christophe
+- Status: todo
+- Needs: T-26
+- What: `make eval` runs from recorded model answers (no API keys) in the CI workflow and fails if a key number drops below its threshold (e.g. approvals missed, invented answers). Tatiana gives the thresholds with the T-26 results.
+- Done when: the CI workflow runs `make eval` with regression gates.
 ---
 
 ## Joey: calendar, reminders, drafts
@@ -513,3 +491,31 @@ Reference documents:
 - Needs: J-04
 - What: A daily plain-code check of each club's upcoming events (overdue tasks, deadlines inside 2 days, plans outdated by edits) that calls the AI only when it finds a real problem; and the monthly OSA website check from September until the president marks the new rules as in (D-30, D-31). Both run on a schedule on the server and write reminders, never send messages. Code in `src/clubops/checks/`.
 - Done when: both run on a schedule on the deployed app, with tests (made-up events) and failure-matrix rows.
+
+### J-12 Proposal draft (was T-16)
+- Owner: joey
+- Status: todo
+- Needs: none
+- What: Fill the OSA Event Proposal form from an approved event's details, the club profile and the rule check, following the frozen `draft-proposal` contract (`DraftProposalRequest` -> `ProposalDraft` in `src/clubops/contracts/forms.py`). The form is `data/forms/osa_event_proposal_2026_2027.json`; it grows from 33 to 39 questions when materials are requested (tables, chairs, boards, tents, table covers, outlets). Every answer says its origin (stated, from memory, computed, missing) and source; times in 24-hour format; dates match the event; adviser name without "Dr."; nothing invented (unknown = left for a person). Code in `src/clubops/drafts/proposal.py`. Tatiana adds it to the agent as a tool and to the event page once it works (tell her).
+- Done when: drafts for the made-up test events pass the form checks (required answers present, 24-hour times, dates consistent, attachments listed), with tests for both form versions.
+
+### J-13 Security tests (was T-24)
+- Owner: joey
+- Status: todo
+- Needs: none
+- What: An adversarial test set that tries to break ClubOps: instructions hidden in an event description or a forwarded e-mail ("ignore the rules", "approve this"), fake "OSA" rules sent as facts, one club reaching another club's data, the adviser or a non-cabinet account changing things, a forged sign-in, spending past the limits. Start with the planner and the API (live now); add the chatbot and learning when T-17 and T-18 land. Made-up data only. Tests in `tests/security/` (yours).
+- Done when: the set runs in `make check`; every way it found to break ClubOps has a failure-matrix row and is fixed (or the row says why not, and Tatiana agreed).
+
+### J-14 Made-up events for the missing event types (was T-36)
+- Owner: joey
+- Status: todo
+- Needs: none
+- What: 10 short, made-up event descriptions for types the Running Club never ran (workshop, conference, film screening, concert, exhibition, gala, meeting, competition, trip, play), each with the approvals it needs judged from the 25 AUB rules only (`data/rulebook/aub-rules.json`, codes in `TASKS.md` T-08). Mark them synthetic. Save as `eval/synthetic-events.csv` with the same columns as the Running Club test set (Tatiana shares the header). Ask Tatiana when a rule is unclear; don't guess.
+- Done when: 10 labelled events are in the repo, checked by Tatiana, ready for T-38's freeze.
+
+### J-15 Chatbot with sources (was T-17)
+- Owner: joey
+- Status: todo
+- Needs: none
+- What: Answer a cabinet member's question only from the club's approved facts and the AUB rules, following the frozen `ask` contract (`AskRequest` -> `Answer` in `src/clubops/contracts/knowhow.py`). Find candidate facts with the store's search (`KnowHowStore.search`), give them to the model, and check its answer in code: every citation must be one of the facts given; no facts found, or the model unsure, means `known: false` with who to ask (`ask`) and where to look (`look_in`), never a made-up answer (D-49). Redact the question before the model (`clubops.redaction`). Use the model client and its budget (`clubops.model`). Code in `src/clubops/chat/` (yours); wire it to `POST /api/chat/ask` in place of the placeholder (tell Tatiana). Develop with made-up facts and questions; Tatiana runs the real 42-question test (private) and tells you the score.
+- Done when: the chatbot answers on the app with sources, says "not sure" with who to ask when it should, and Tatiana's 42-question run is recorded.
