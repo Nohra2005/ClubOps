@@ -30,20 +30,20 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 
 | Screen | Method and path | Status |
 |---|---|---|
-| All | `GET /api/me` | live (`setup_complete` is always true until T-20) |
+| All | `GET /api/me` | live (`setup_complete` is always true until C-21) |
 | Events | `GET /api/events` | live |
 | Events | `POST /api/events/plan {description}` | live (202, background) |
 | Events | `GET /api/runs/{run_id}` | live |
 | Events | `POST /api/runs/{run_id}/answer {text}` | live |
 | Events | `POST /api/runs/{run_id}/continue` | live (new path, not in the UI spec) |
-| Events | `GET /api/events/{id}` | live; `proposal`, `drafts`, `tips`, `leaders`, `route` are empty until T-16 / J-07; no nested `agent_run` (use the run endpoint) |
+| Events | `GET /api/events/{id}` | live; `proposal`, `drafts`, `tips`, `leaders`, `route` are empty until J-12 / J-07; no nested `agent_run` (use the run endpoint) |
 | Events | `PATCH /api/events/{id} {fields}` | live for title, date, time, end_time, venue, audience (`AUB students only` / `AUB and outside guests`), has_prizes, catering (`yes`/`no`), description |
 | Events | `POST /api/events/{id}/rebuild` | live (202, background) |
 | Events | `POST /api/events/{id}/approve-plan {revision}` | live |
 | Events | `PATCH /api/tasks/{task_id} {state, owner_role}` | live |
 | Events | `POST /api/events/{id}/drafts/{type}` | 501 until J-07 is wired |
 | Events | `POST /api/events/{id}/after-event {answers}` | 501 until T-18 |
-| Chat | `POST /api/chat/ask {text}` | placeholder: always "not known, ask the club president" until T-17 |
+| Chat | `POST /api/chat/ask {text}` | placeholder: always "not known, ask the club president" until J-15 |
 | Chat | `POST /api/chat/teach {text}` | 501 until T-18 |
 | Review | `GET /api/review?filter=` | live (facts and rules; `documents` and `plans` are empty for now) |
 | Review | `POST /api/review/{id} {decision: approve|reject|edit, edited_text?, reason?}` | live |
@@ -54,7 +54,7 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Settings | `GET /api/cabinet`, `POST /api/cabinet`, `DELETE /api/cabinet {member_id}` | live |
 | Settings | `POST /api/documents` | 501 until T-18 |
 | Settings | `GET /api/usage` | live (monthly planning cost; `calls_label` identifies planner steps; optional `run_metrics`, `trace_metrics`, `trace_metrics_available`, `metrics_note` explain C-20 outcomes and recorded coverage) |
-| Setup | `POST /api/setup/next` | 501 until T-20 |
+| Setup | `POST /api/setup/next` | 501 until C-21 |
 
 The demo-only actions in `client.ts` (`/__ui/*`) stay demo-only for now.
 
