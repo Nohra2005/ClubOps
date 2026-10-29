@@ -115,7 +115,23 @@ The brief asks for "evidence of use", not tool logos: a few practices done in de
 | DevSecOps | Dependabot and pip-audit (in place); gitleaks and a security linter in CI (GitHub secret scanning and CodeQL need a public repo or a paid plan) | J-16 |
 | Observability tooling | OpenTelemetry traces of each agent run (viewable in Jaeger or Langfuse), metadata only | C-25 |
 | Reproducible environment | Docker Compose for the whole app; Dockerfile and Render config (in place) | C-24, C-18 |
-| Prompt and model versions | recorded in every trace and result (in place) | T-10 |
+| Production monitoring | Error monitoring on the deployed app (e.g. Sentry free plan), personal data scrubbed, one real caught error shown | C-26 |
+| Controlled evolution | Prompt and model versions in every trace; cheap vs stronger model compared with measured quality, latency and cost | T-26 |
+| Advanced testing | API contract tests (in place), red-team set with a measured attack success rate | J-13, C-13 |
+
+## Brief checklist (from the course announcement)
+
+| The brief asks | Where we answer it |
+|---|---|
+| Problem before technology; real user; current workflow | `docs/problem.md`, interview notes (T-29) |
+| What stays deterministic or human-controlled | `docs/architecture.md`; approval gate; plain-code rule check and safety rules (T-31) |
+| At least one real-world constraint, evaluated | Cost (cheap vs stronger model, cost per plan) and human approval (T-26) |
+| Tests beyond the happy path: invalid, ambiguous, tool failure, malformed, rate limit, malicious, unauthorized | `docs/failure-matrix.md` + tests; red-team set (J-13) |
+| Memory: scope, lifetime, retrieval, privacy | `docs/knowledge-base.md` (T-31) |
+| UI designed around the user, not chat by default | Events, Review, Calendar, Knowledge, Handover screens (done) |
+| Final submission: demo + poster, repo, evaluation, traces and metrics, failure and threat analysis, architecture/API docs, technical report | T-26, T-27, T-31, T-34; `traces/samples/`; `docs/api.md` |
+| Demo shows edge cases, failures, invalid input and security challenges | `docs/demo-script.md` (T-27) |
+| "Not the most features": strong idea, justified choices, credible evidence, known limits | Limitations section in the report and README (T-27) |
 
 ## Risks
 
