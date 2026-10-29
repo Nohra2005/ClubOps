@@ -139,7 +139,7 @@ Reference documents:
 <!-- T-17 moved to J-15 on 2026-10-24: Joey builds the chatbot; Tatiana keeps the club know-how it answers from. -->
 ### T-18 Learning inputs and the approval gate
 - Owner: tatiana
-- Status: review
+- Status: done
 - Needs: T-11, T-12
 - What: Turn chat teaching, the after-event form, forwarded OSA emails and uploaded documents (including past expense forms, kept as a price list) into proposed facts; merge repeats; detect contradictions; flag outdated documents. Nothing is saved until approved in Review.
 - Done when: each input type produces Review cards; approve / reject / merge work.
@@ -150,7 +150,7 @@ Reference documents:
 <!-- T-21 moved to J-11 on 2026-10-24: it fits Joey's part and lightens Tatiana's load. -->
 ### T-22 Backend API for the UI
 - Owner: tatiana
-- Status: review
+- Status: done
 - Needs: T-13
 - What: Every endpoint in the UI spec's API table, same field names; sign-in (decide the method with Christophe, see C-01).
 - Done when: Christophe can switch from fake data to the real API (C-13).

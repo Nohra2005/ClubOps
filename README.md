@@ -31,12 +31,38 @@ make check     # lint, strict types, tests + coverage, contract drift
 
 ## Status
 
-| Phase | Dates | Scope | State |
-|---|---|---|---|
-| 1. Foundations | Oct 5–18 | Contracts, knowledge store with verified writes, validators, planner, approval gate, handover assembly, tracing; capture and intake; evaluation sets labelled and frozen | contracts and deterministic core done |
-| 2. Core agent | Oct 19–Nov 1 | apply-rules, draft-proposal, surface, ask, find-gaps, handover interview; replayable evaluation; first results | |
-| 3. Continuity & pilot | Nov 2–15 | Simulated turnover and three-way handover test on real Running Club history; sponsor replacement; feature freeze Nov 15 | |
-| 4. Hardening | Nov 16–30 | Red-team, Failure Matrix regression suite, held-out evaluation, report, demo (Nov 30) | |
+Updated 29 October 2026. Deadline: 30 November 2026. Live task list: [`TASKS.md`](TASKS.md) (`make tasks`).
+
+**Built and tested** (`make check`: lint, strict types, 376 tests, contract drift, dependency audit)
+
+| Part | What works | Where |
+|---|---|---|
+| Contracts | Shared data shapes for every part, exported as JSON schemas (version 0.2.1) | `src/clubops/contracts/`, `schemas/` |
+| Model client | Any OpenAI-compatible provider (the course's OpenRouter key); replay, record and live modes; cost limit per plan | `src/clubops/model/` |
+| Privacy | Phone numbers, AUB IDs, e-mails and links hidden before any text reaches the model | `src/clubops/redaction.py` |
+| Club memory | Shared AUB file + one file per club (SQLite, full-text search); every fact versioned, nothing saved without a cabinet member's approval | `src/clubops/knowhow/` |
+| AUB rulebook | 25 rules from the OSA and AUB documents, each quoting its source, reviewed by the Running Club president | `data/rulebook/aub-rules.json` |
+| Planning agent | The model picks its next step from 6 tools; code refuses unsafe steps; asks when facts are missing; stops at 8 steps or $0.05 | `src/clubops/agent/` |
+| Rule check and deadlines | Plain code for the facts, one model call for what only the description says; deadlines in working days, moved off AUB holidays | `src/clubops/agent/`, `src/clubops/holidays.py` |
+| Learning | Chat teaching, the after-event form and uploaded documents become proposed facts in Review; invented quotes dropped; hidden instructions flagged; old documents flagged; expense forms become a price list | `src/clubops/learning/` |
+| Backend API | Google sign-in, events, agent runs, plan approval, tasks, calendar items, knowledge, review, cabinet, handover, usage | `src/clubops/api/`, [`docs/api.md`](docs/api.md) |
+| Web app | Every screen of the UI spec, connected to the API | `web/` |
+| Handover and cost report | Role guides from approved facts with gaps and who to ask; cost and trace report | `src/clubops/api/handover.py`, `src/clubops/reports/` |
+| Calendar and drafts (first version) | Calendar items from an approved plan, Google sync with retries, WhatsApp drafts | `src/clubops/calendar/`, `src/clubops/drafts/` |
+
+**In progress**
+
+| Part | Owner | Task |
+|---|---|---|
+| Deployment (one free host for app and API) | Christophe | C-18, C-14 |
+| Google Calendar on the deployed app, reminders, draft templates | Joey | J-01 to J-09 |
+| Chatbot with sources | Joey | J-15 |
+| Proposal form draft | Joey | J-12 |
+| New-club setup, ASME as the second club | Christophe | C-21 |
+| OSA e-mail inbox, daily checks, security tests | Joey | J-10, J-11, J-13 |
+| ASME test events (waiting for the real approvals) | Tatiana | T-35 |
+
+**Still to do:** seed the Running Club's know-how (T-09); graders and baselines (T-05, T-06); the final evaluation on past Running Club and ASME events, with the course key (T-26); real pilot event (T-32); poster, demo and report (T-27).
 
 ## Documentation
 
@@ -53,4 +79,4 @@ make check     # lint, strict types, tests + coverage, contract drift
 
 ## Limitations
 
-All real data comes from one club, the AUB Running Club. The agentic capabilities are specified and contract-tested, but not yet implemented.
+Most real data comes from one club, the AUB Running Club; ASME (an engineering society) is the second, with less data. Model answers are tested with scripted and recorded answers; quality with a real model is measured in the final evaluation (T-26).
