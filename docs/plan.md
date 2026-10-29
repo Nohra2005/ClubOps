@@ -115,7 +115,7 @@ The brief asks for "evidence of use", not tool logos: a few practices done in de
 | DevSecOps | Dependabot and pip-audit (in place); gitleaks and a security linter in CI (GitHub secret scanning and CodeQL need a public repo or a paid plan) | J-16 |
 | Observability tooling | OpenTelemetry traces of each agent run (viewable in Jaeger or Langfuse), metadata only | C-25 |
 | Reproducible environment | Docker Compose for the whole app; Dockerfile and Render config (in place) | C-24, C-18 |
-| Production monitoring | Prometheus metrics + Grafana dashboard and an alert rule (latency, cost per plan, errors, runs at their limit), metadata only | C-26 |
+| Production monitoring | Live on the deployed app: Grafana Cloud (hosted Prometheus + Grafana, fed by OpenTelemetry) or Sentry, Christophe's choice; dashboard or alerts, metadata only | C-26 |
 | Controlled evolution | Prompt and model versions in every trace; cheap vs stronger model compared with measured quality, latency and cost | T-26 |
 | Advanced testing | API contract tests (in place), red-team set with a measured attack success rate | J-13, C-13 |
 

@@ -439,12 +439,12 @@ Reference documents:
 - What: Export the existing trace records (metadata only: capability, prompt version, model, latency, tokens, cost, retries, status; never prompts or personal data) as OpenTelemetry spans, one trace per agent run with a span per step and per model call, so they can be viewed in a tool such as Jaeger or Langfuse. Off unless an exporter endpoint is set.
 - Done when: a local run shows one agent run as a trace with its steps, and a test checks no prompt text or personal data is exported.
 
-### C-26 Metrics dashboard: Prometheus and Grafana (bonus)
+### C-26 Live monitoring of the deployed app (bonus)
 - Owner: christophe
 - Status: todo
-- Needs: C-24
-- What: Expose a `/metrics` endpoint on the API (Prometheus format, metadata only: request count and latency per endpoint; model calls, tokens, cost, retries and failures per feature; agent runs by outcome and steps used). Add Prometheus and Grafana to the Docker Compose file, with a ready-made Grafana dashboard saved in the repo (latency, cost per plan, error rate, runs at their limit) and one alert rule (e.g. error rate or spend too high). No names, e-mails, prompts or event text in any metric label.
-- Done when: `docker compose up` shows the dashboard filling with real numbers after a few planned events; a test checks the metric labels hold no personal data; a screenshot goes in the report.
+- Needs: C-18
+- What: Monitoring that works on the deployed app itself, not only locally. Christophe picks one, both have a free plan and need no extra server: **(a) Grafana Cloud** (hosted Prometheus + Grafana): the app pushes its metrics and traces with OpenTelemetry (this also delivers C-25) — request count and latency per endpoint; model calls, tokens, cost, retries and failures per feature; agent runs by outcome and steps used — with a dashboard (latency, cost per plan, error rate, runs at their limit) and one alert rule; or **(b) Sentry**: errors and slow requests from the API and the web app, with an e-mail alert. Either way: no names, e-mails, prompts or event text in any label or event (scrubbed before sending), keys only in the host's settings, and the dashboard or alert setup exported into the repo.
+- Done when: using the deployed app makes numbers or errors appear in the tool within a minute; a test checks nothing personal is sent; a screenshot goes in the report.
 ---
 
 ## Joey: calendar, reminders, drafts
