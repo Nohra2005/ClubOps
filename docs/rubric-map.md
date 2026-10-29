@@ -14,17 +14,17 @@ Kept current in every PR that changes what a row points to. The plan for coverin
 | Failures turned into regression tests | [failure-matrix.md](failure-matrix.md), checked by `tests/test_failure_matrix.py` | in place |
 | **3. AgentOps & observability (15%)** | | |
 | Traces across model and tool calls | `capabilities/runner.py` + `tracing.py` (one record per call, metadata only) | in place |
-| Latency, tokens, cost, retries, failures, task success | `TraceMeta`; metrics report in `results/` | fields in place; report planned (Phase 2) |
+| Latency, tokens, cost, retries, failures, task success | `TraceMeta`; metrics report in `results/` | in place (`reports/`, Settings usage); final numbers with T-26 |
 | Cost per successful task | definition in [eval/README.md](../eval/README.md) | planned (Phase 2) |
 | **4. Reliability, QA & security (15%)** | | |
 | Retries, timeouts, fallbacks, schema validation, graceful degradation | `capabilities/registry.py` (policy per capability), `runner.py` | in place |
 | Authorization, least privilege | `Actor`, club scoping, cabinet-only capabilities, approval gate | in place |
-| Secret and PII protection | [knowledge-base.md](knowledge-base.md), `RequesterDetails` (secrets), metadata-only traces | in place (redaction step planned with capture) |
-| Prompt-injection defences | `Untrusted`, propose-only capture, flagged proposals | contracts in place; capture planned (Phase 1) |
-| Failure Matrix | [failure-matrix.md](failure-matrix.md) | in place (40 rows: 36 covered, 2 partial, 2 planned) |
+| Secret and PII protection | [knowledge-base.md](knowledge-base.md), `RequesterDetails` (secrets), metadata-only traces | in place (redaction before every model call: `redaction.py`) |
+| Prompt-injection defences | `Untrusted`, propose-only capture, flagged proposals | in place (`learning/capture.py`: propose-only, quote check, injection flags); measured attack rate planned (J-13) |
+| Failure Matrix | [failure-matrix.md](failure-matrix.md) | in place (rows with regression tests; checked by `tests/test_failure_matrix.py`) |
 | Threat model | [threat-model.md](threat-model.md) | in place |
 | **5. Software engineering (10%)** | | |
-| Modular repo, typing, central configuration, no dead code | `src/clubops/`; ruff + strict mypy in CI | in place (central config planned with the first model call) |
+| Modular repo, typing, central configuration, no dead code | `src/clubops/`; ruff + strict mypy in CI | in place (`config.py`) |
 | **6. Poster & demo (10%)** | `docs/demo-script.md` (edge cases shown live) | planned (Phase 4) |
 | **7. Documentation & reproducibility (10%)** | | |
 | Setup, one-command checks | [README](../README.md), `make check` | in place |
@@ -33,7 +33,11 @@ Kept current in every PR that changes what a row points to. The plan for coverin
 | Data provenance | [data-provenance.md](data-provenance.md) | in place |
 | **Bonus: professional practices (up to +10%)** | | |
 | CI gates: lint, types, tests, coverage ≥ 85%, schema drift, dependency audit | `.github/workflows/ci.yml` | in place |
-| Pull requests, reviews, ownership, branch protection | [CONTRIBUTING.md](../CONTRIBUTING.md), PR template, CODEOWNERS | in place (branch protection to switch on) |
+| Pull requests, reviews, ownership, branch protection | [CONTRIBUTING.md](../CONTRIBUTING.md), PR template, CODEOWNERS | PRs and CODEOWNERS in place; branch protection and teammate reviews (T-40) |
 | Dependabot | `.github/dependabot.yml` | in place |
-| Evaluation in CI with regression gates | `make eval` in CI | planned (Phase 3) |
-| Prompt and model versioning | `TraceMeta.prompt_version`, capability versions | fields in place |
+| Evaluation in CI with regression gates | `make eval` in CI | planned (C-22) |
+| Prompt and model versioning | `TraceMeta.prompt_version`, capability versions, prompt versions in every agent call | in place |
+| Frontend checks in CI | web lint, types, tests, build | planned (C-23) |
+| Secret scanning and security linting | gitleaks + security linter in CI | planned (J-16) |
+| OpenTelemetry traces | one trace per agent run (Jaeger / Langfuse) | planned (C-25) |
+| Docker Compose | `docker-compose.yml` | planned (C-24) |

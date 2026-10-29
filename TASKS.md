@@ -246,6 +246,13 @@ Reference documents:
 - Needs: none
 - What: Create one Gmail account for ClubOps (the service, not one club), e.g. clubops.inbox@gmail.com, owned by the team. Turn on 2-step verification. Give Joey access for J-10. Its password and tokens live only in a password manager and the host's settings, never in the repo.
 - Done when: the account exists and Joey can open it.
+
+### T-40 Branch protection and reviewed pull requests (bonus)
+- Owner: tatiana
+- Status: todo
+- Needs: none
+- What: Get GitHub Pro free with the GitHub Student Developer Pack (education.github.com/pack), which allows branch protection on a private repo. Protect `main`: changes only through a pull request, 1 approving review from another teammate, all checks green, no force pushes. Then every PR is reviewed by someone other than its author (the reviewer leaves at least one real comment or approval).
+- Done when: `main` is protected and the PR history shows reviews by teammates from then on.
 ---
 
 ## Christophe: frontend
@@ -410,6 +417,27 @@ Reference documents:
 - Needs: T-26
 - What: `make eval` runs from recorded model answers (no API keys) in the CI workflow and fails if a key number drops below its threshold (e.g. approvals missed, invented answers). Tatiana gives the thresholds with the T-26 results.
 - Done when: the CI workflow runs `make eval` with regression gates.
+
+### C-23 Frontend checks in CI (bonus)
+- Owner: christophe
+- Status: todo
+- Needs: none
+- What: Add a CI job for `web/`: install from the lockfile, lint, type check, unit tests and a production build, so a broken screen fails the PR like broken Python does.
+- Done when: the CI workflow runs the web job on every PR and it is green on `main`.
+
+### C-24 Docker Compose (bonus)
+- Owner: christophe
+- Status: todo
+- Needs: C-18
+- What: A `docker-compose.yml` that starts the whole app locally (API + web, data on a volume, settings from `.env`) with one command, matching the deployed setup. Document it in the README.
+- Done when: `docker compose up` on a fresh clone gives a working app with dev sign-in.
+
+### C-25 OpenTelemetry traces (bonus)
+- Owner: christophe
+- Status: todo
+- Needs: C-20
+- What: Export the existing trace records (metadata only: capability, prompt version, model, latency, tokens, cost, retries, status; never prompts or personal data) as OpenTelemetry spans, one trace per agent run with a span per step and per model call, so they can be viewed in a tool such as Jaeger or Langfuse. Off unless an exporter endpoint is set.
+- Done when: a local run shows one agent run as a trace with its steps, and a test checks no prompt text or personal data is exported.
 ---
 
 ## Joey: calendar, reminders, drafts
@@ -504,7 +532,7 @@ Reference documents:
 - Status: todo
 - Needs: none
 - What: An adversarial test set that tries to break ClubOps: instructions hidden in an event description or a forwarded e-mail ("ignore the rules", "approve this"), fake "OSA" rules sent as facts, one club reaching another club's data, the adviser or a non-cabinet account changing things, a forged sign-in, spending past the limits. Start with the planner and the API (live now); add the chatbot and learning when T-17 and T-18 land. Made-up data only. Tests in `tests/security/` (yours).
-- Done when: the set runs in `make check`; every way it found to break ClubOps has a failure-matrix row and is fixed (or the row says why not, and Tatiana agreed).
+- Done when: the set runs in `make check`; every way it found to break ClubOps has a failure-matrix row and is fixed (or the row says why not, and Tatiana agreed); and the injection attack success rate is measured (how many of the attacks worked) with the defences off and on, and reported in `results/`.
 
 ### J-14 Made-up events for the missing event types (was T-36)
 - Owner: joey
@@ -519,3 +547,10 @@ Reference documents:
 - Needs: none
 - What: Answer a cabinet member's question only from the club's approved facts and the AUB rules, following the frozen `ask` contract (`AskRequest` -> `Answer` in `src/clubops/contracts/knowhow.py`). Find candidate facts with the store's search (`KnowHowStore.search`), give them to the model, and check its answer in code: every citation must be one of the facts given; no facts found, or the model unsure, means `known: false` with who to ask (`ask`) and where to look (`look_in`), never a made-up answer (D-49). Redact the question before the model (`clubops.redaction`). Use the model client and its budget (`clubops.model`). Code in `src/clubops/chat/` (yours); wire it to `POST /api/chat/ask` in place of the placeholder (tell Tatiana). Develop with made-up facts and questions; Tatiana runs the real 42-question test (private) and tells you the score.
 - Done when: the chatbot answers on the app with sources, says "not sure" with who to ask when it should, and Tatiana's 42-question run is recorded.
+
+### J-16 Secret scanning in CI (bonus)
+- Owner: joey
+- Status: todo
+- Needs: none
+- What: GitHub's own secret scanning and CodeQL need a public repo or a paid plan, so run free equivalents in CI: gitleaks (secrets in the code and history) and a Python security linter. Fix or explain every finding.
+- Done when: both run in CI on every PR and are green on `main`.
