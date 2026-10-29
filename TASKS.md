@@ -251,7 +251,7 @@ Reference documents:
 - Owner: tatiana
 - Status: todo
 - Needs: none
-- What: Get GitHub Pro free with the GitHub Student Developer Pack (education.github.com/pack), which allows branch protection on a private repo. Protect `main`: changes only through a pull request, 1 approving review from another teammate, all checks green, no force pushes. Then every PR is reviewed by someone other than its author (the reviewer leaves at least one real comment or approval). Also turn on a GitHub Projects board fed by `TASKS.md` (one card per task, columns = status), so task ownership is visible on GitHub.
+- What: Get GitHub Pro free with the GitHub Student Developer Pack (education.github.com/pack), which allows branch protection on a private repo. Protect `main`: changes only through a pull request, 1 approving review from another teammate, all checks green, no force pushes. Then every PR is reviewed by someone other than its author (the reviewer leaves at least one real comment or approval). Also turn on a GitHub Projects board fed by `TASKS.md` (one card per task, columns = status), so task ownership is visible on GitHub; use one-week sprints (a GitHub Projects iteration per week, with the tasks planned for it), reviewed at the end of each week.
 - Done when: `main` is protected and the PR history shows reviews by teammates from then on.
 ---
 
@@ -439,12 +439,12 @@ Reference documents:
 - What: Export the existing trace records (metadata only: capability, prompt version, model, latency, tokens, cost, retries, status; never prompts or personal data) as OpenTelemetry spans, one trace per agent run with a span per step and per model call, so they can be viewed in a tool such as Jaeger or Langfuse. Off unless an exporter endpoint is set.
 - Done when: a local run shows one agent run as a trace with its steps, and a test checks no prompt text or personal data is exported.
 
-### C-26 Production monitoring (bonus)
+### C-26 Metrics dashboard: Prometheus and Grafana (bonus)
 - Owner: christophe
 - Status: todo
-- Needs: C-18
-- What: Error monitoring on the deployed app with a free tool (e.g. Sentry's free plan) for the API and the web app: errors and slow requests, with personal data scrubbed (no e-mails, names, prompts or event descriptions), plus an alert by e-mail to the team. Show one real caught error in the report.
-- Done when: an error on the deployed app shows up in the monitoring tool within a minute, and a test or config check proves personal data is scrubbed.
+- Needs: C-24
+- What: Expose a `/metrics` endpoint on the API (Prometheus format, metadata only: request count and latency per endpoint; model calls, tokens, cost, retries and failures per feature; agent runs by outcome and steps used). Add Prometheus and Grafana to the Docker Compose file, with a ready-made Grafana dashboard saved in the repo (latency, cost per plan, error rate, runs at their limit) and one alert rule (e.g. error rate or spend too high). No names, e-mails, prompts or event text in any metric label.
+- Done when: `docker compose up` shows the dashboard filling with real numbers after a few planned events; a test checks the metric labels hold no personal data; a screenshot goes in the report.
 ---
 
 ## Joey: calendar, reminders, drafts

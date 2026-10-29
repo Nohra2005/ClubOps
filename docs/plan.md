@@ -111,11 +111,11 @@ The brief asks for "evidence of use", not tool logos: a few practices done in de
 | Grader looks for | Evidence | Tasks |
 |---|---|---|
 | CI gates | lint, strict types, tests with 85% coverage, schema drift, dependency audit (in place); web checks; `make eval` with thresholds | C-23, C-22 |
-| Reviewed PRs and branch protection | `main` protected (GitHub Pro from the Student Pack): PR only, 1 review by another teammate, checks green; PRs name their task | T-40, all |
+| Reviewed PRs, branch protection, sprints | `main` protected (GitHub Pro from the Student Pack): PR only, 1 review by another teammate, checks green; GitHub Projects board with weekly sprints; PRs name their task | T-40, all |
 | DevSecOps | Dependabot and pip-audit (in place); gitleaks and a security linter in CI (GitHub secret scanning and CodeQL need a public repo or a paid plan) | J-16 |
 | Observability tooling | OpenTelemetry traces of each agent run (viewable in Jaeger or Langfuse), metadata only | C-25 |
 | Reproducible environment | Docker Compose for the whole app; Dockerfile and Render config (in place) | C-24, C-18 |
-| Production monitoring | Error monitoring on the deployed app (e.g. Sentry free plan), personal data scrubbed, one real caught error shown | C-26 |
+| Production monitoring | Prometheus metrics + Grafana dashboard and an alert rule (latency, cost per plan, errors, runs at their limit), metadata only | C-26 |
 | Controlled evolution | Prompt and model versions in every trace; cheap vs stronger model compared with measured quality, latency and cost | T-26 |
 | Advanced testing | API contract tests (in place), red-team set with a measured attack success rate | J-13, C-13 |
 
