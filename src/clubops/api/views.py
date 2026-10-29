@@ -224,11 +224,19 @@ def knowledge(item: KnowHowItem, history: list[KnowHowItem], today: date) -> dic
     return out
 
 
-def review_card(p: KnowHowProposal) -> dict[str, Any]:
+def review_card(p: KnowHowProposal, target: KnowHowItem | None = None) -> dict[str, Any]:
+    """A proposed fact for the Review screen. ``target`` is the existing fact it merges with, updates or disputes."""
     c = p.candidate
-    return {
+    kind = (
+        "disagreement"
+        if p.conflicts_with
+        else "merge"
+        if p.op.value in ("merge", "update")
+        else ("rule" if c.kind is Kind.RULE else "fact")
+    )
+    card: dict[str, Any] = {
         "id": p.proposal_id,
-        "type": "disagreement" if p.conflicts_with else "rule" if c.kind is Kind.RULE else "fact",
+        "type": kind,
         "title": c.title,
         "statement": c.statement,
         "source": source(c),
@@ -236,6 +244,13 @@ def review_card(p: KnowHowProposal) -> dict[str, Any]:
         "kind": c.kind.value,
         "status": "pending",
     }
+    if target is not None:
+        card["alternative"] = {"statement": target.statement, "source": source(target)}
+    if p.injection_flags:
+        card["warning"] = "This source contained instructions; they were ignored. Check the fact carefully."
+    if "may be outdated" in p.rationale:
+        card["outdated"] = True
+    return card
 
 
 # ---------------------------------------------------------------- calendar
