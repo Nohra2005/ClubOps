@@ -79,7 +79,7 @@ Each row says what the grader must find, where it will be, and which tasks produ
 | Retries, timeouts, fallbacks, schema validation | Runner policy per capability (in place); fallbacks shown in the UI | T-10, C-12 |
 | Authorization and least privilege | Roles, adviser read-only, club scoping, approval gate | T-18, T-22, C-02 |
 | Secrets and personal data protected | Redaction before the model; secrets only on the host; metadata-only traces | T-11, C-18 |
-| Prompt injection defended | Untrusted inputs, propose-only learning, adversarial test set | T-18, J-13 |
+| Prompt injection defended | Untrusted inputs, propose-only learning, adversarial test set, injection success rate measured with defences off and on | T-18, J-13 |
 | Failure Matrix and threat model current | Updated to the new scope | J-13, T-31, J-06 |
 
 ### 5. Software engineering (10)
@@ -106,12 +106,16 @@ Each row says what the grader must find, where it will be, and which tasks produ
 
 ### Bonus: professional practice (up to +10)
 
+The brief asks for "evidence of use", not tool logos: a few practices done in depth.
+
 | Grader looks for | Evidence | Tasks |
 |---|---|---|
-| CI gates | lint, types, tests, coverage, schema drift, audit (in place); `make eval` with thresholds | C-22 |
-| PRs, reviews, ownership | Every change through a PR naming its task; `TASKS.md`; `AGENTS.md` | all |
-| Dependabot, prompt and model versions | in place; versions recorded in traces | T-10 |
-| Branch protection | Not available on a free private repo (GitHub 403); reviews are by convention, noted in `CONTRIBUTING.md` | — |
+| CI gates | lint, strict types, tests with 85% coverage, schema drift, dependency audit (in place); web checks; `make eval` with thresholds | C-23, C-22 |
+| Reviewed PRs and branch protection | `main` protected (GitHub Pro from the Student Pack): PR only, 1 review by another teammate, checks green; PRs name their task | T-40, all |
+| DevSecOps | Dependabot and pip-audit (in place); gitleaks and a security linter in CI (GitHub secret scanning and CodeQL need a public repo or a paid plan) | J-16 |
+| Observability tooling | OpenTelemetry traces of each agent run (viewable in Jaeger or Langfuse), metadata only | C-25 |
+| Reproducible environment | Docker Compose for the whole app; Dockerfile and Render config (in place) | C-24, C-18 |
+| Prompt and model versions | recorded in every trace and result (in place) | T-10 |
 
 ## Risks
 
