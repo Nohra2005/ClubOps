@@ -163,8 +163,8 @@ Reference documents:
 - Owner: tatiana
 - Status: todo
 - Needs: T-05, T-06, T-14, T-15, J-12, J-15, T-38
-- What: Plan the held-out events with every baseline and with ClubOps (3 runs each, report the spread), plus ClubOps with an empty club memory (rules-only score) and the ASME events (D-50); automatic check against what really happened; blind 1–5 grading by the 3 graders; chatbot test; learning test; cost per successful plan. Fix what it finds and turn each failure into a regression test.
-- Done when: result tables in `results/`, reproducible with `make eval`.
+- What: Plan the held-out events with every baseline and with ClubOps (3 runs each, report the spread), plus ClubOps with an empty club memory (rules-only score) and the ASME events (D-50); automatic check against what really happened; blind 1–5 grading by the 3 graders; chatbot test; learning test; cost per successful plan. The measured real-world constraint (brief: "identify and evaluate at least one") is cost: run ClubOps with a cheap and a stronger model through OpenRouter and report quality, latency and cost per plan for each, so the model choice is a measured comparison. Commit sample traces (metadata only) in `traces/samples/`. Fix what it finds and turn each failure into a regression test.
+- Done when: result tables in `results/` (including the cheap vs stronger model comparison), reproducible with `make eval`.
 
 ### T-27 Poster, demo and report
 - Owner: tatiana
@@ -251,7 +251,7 @@ Reference documents:
 - Owner: tatiana
 - Status: todo
 - Needs: none
-- What: Get GitHub Pro free with the GitHub Student Developer Pack (education.github.com/pack), which allows branch protection on a private repo. Protect `main`: changes only through a pull request, 1 approving review from another teammate, all checks green, no force pushes. Then every PR is reviewed by someone other than its author (the reviewer leaves at least one real comment or approval).
+- What: Get GitHub Pro free with the GitHub Student Developer Pack (education.github.com/pack), which allows branch protection on a private repo. Protect `main`: changes only through a pull request, 1 approving review from another teammate, all checks green, no force pushes. Then every PR is reviewed by someone other than its author (the reviewer leaves at least one real comment or approval). Also turn on a GitHub Projects board fed by `TASKS.md` (one card per task, columns = status), so task ownership is visible on GitHub; use one-week sprints (a GitHub Projects iteration per week, with the tasks planned for it), reviewed at the end of each week.
 - Done when: `main` is protected and the PR history shows reviews by teammates from then on.
 ---
 
@@ -438,6 +438,13 @@ Reference documents:
 - Needs: C-20
 - What: Export the existing trace records (metadata only: capability, prompt version, model, latency, tokens, cost, retries, status; never prompts or personal data) as OpenTelemetry spans, one trace per agent run with a span per step and per model call, so they can be viewed in a tool such as Jaeger or Langfuse. Off unless an exporter endpoint is set.
 - Done when: a local run shows one agent run as a trace with its steps, and a test checks no prompt text or personal data is exported.
+
+### C-26 Live monitoring of the deployed app (bonus)
+- Owner: christophe
+- Status: todo
+- Needs: C-18
+- What: Monitoring that works on the deployed app itself, not only locally. Christophe picks one, both have a free plan and need no extra server: **(a) Grafana Cloud** (hosted Prometheus + Grafana): the app pushes its metrics and traces with OpenTelemetry (this also delivers C-25) — request count and latency per endpoint; model calls, tokens, cost, retries and failures per feature; agent runs by outcome and steps used — with a dashboard (latency, cost per plan, error rate, runs at their limit) and one alert rule; or **(b) Sentry**: errors and slow requests from the API and the web app, with an e-mail alert. Either way: no names, e-mails, prompts or event text in any label or event (scrubbed before sending), keys only in the host's settings, and the dashboard or alert setup exported into the repo.
+- Done when: using the deployed app makes numbers or errors appear in the tool within a minute; a test checks nothing personal is sent; a screenshot goes in the report.
 ---
 
 ## Joey: calendar, reminders, drafts
