@@ -33,3 +33,13 @@ No entries yet.
 **Next:** Have T-22 call queue enqueue only after revision-bound plan approval, then drain on the server schedule.
 
 **Open questions / blockers:** Live Google setup and private message examples are pending Joey's account data.
+
+## 2026-10-31 — J-07 remaining draft types
+
+**Did:** Added model-backed templates for sponsor email, Instagram caption, poster text, expense form, volunteer shifts and impact report. The existing WhatsApp announcement and reminder remain in place. Synthetic tests cover every new type, club-specific approved examples, redaction, unsent state, wrong event and unsupplied citations.
+
+**State:** Local tests pass. J-07 remains doing until approved private club examples and J-08 cabinet feedback establish that the drafts are usable without edits.
+
+**Next:** Review drafts for three past events with two cabinet members, then revise templates from their feedback.
+
+**Open questions / blockers:** Real style examples must remain in private data and not be added to tests, prompts committed to git, or traces.
