@@ -10,10 +10,13 @@ saved for replay) or `live`. The test files are private (eval/FROZEN.md); only t
 from __future__ import annotations
 
 import argparse
+import sys
 import tempfile
 from collections.abc import Callable
 from datetime import date
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # so `python scripts/eval_plans.py` finds `scripts`
 
 from scripts.load_rulebook import read_rulebook
 
