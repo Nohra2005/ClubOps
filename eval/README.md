@@ -59,3 +59,7 @@ the result table is shared.
 ## Limitation
 
 One club's data. Results describe this club and do not by themselves show that ClubOps generalizes.
+
+## Handover test
+
+Protocol: [`handover-test.md`](handover-test.md) (T-33, D-74). Results: `results/handover-test.md`.
