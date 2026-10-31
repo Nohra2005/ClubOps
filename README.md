@@ -31,9 +31,9 @@ make check     # lint, strict types, tests + coverage, contract drift
 
 ## Status
 
-Updated 29 October 2026. Deadline: 30 November 2026. Live task list: [`TASKS.md`](TASKS.md) (`make tasks`).
+Updated 31 October 2026. Deadline: 30 November 2026. Live task list: [`TASKS.md`](TASKS.md) (`make tasks`).
 
-**Built and tested** (`make check`: lint, strict types, 376 tests, contract drift, dependency audit)
+**Built and tested** (`make check`: lint, strict types, 388 tests, contract drift, dependency audit)
 
 | Part | What works | Where |
 |---|---|---|
@@ -48,6 +48,7 @@ Updated 29 October 2026. Deadline: 30 November 2026. Live task list: [`TASKS.md`
 | Backend API | Google sign-in, events, agent runs, plan approval, tasks, calendar items, knowledge, review, cabinet, handover, usage | `src/clubops/api/`, [`docs/api.md`](docs/api.md) |
 | Web app | Every screen of the UI spec, connected to the API | `web/` |
 | Handover and cost report | Role guides from approved facts with gaps and who to ask; cost and trace report | `src/clubops/api/handover.py`, `src/clubops/reports/` |
+| Evaluation runner | Checklist, plain model, model + rulebook and ClubOps scored the same way (approvals caught, missed, false alarms, cost); ClubOps only sees facts from earlier events | `src/clubops/evaluation/`, `scripts/eval_plans.py` |
 | Calendar and drafts (first version) | Calendar items from an approved plan, Google sync with retries, WhatsApp drafts | `src/clubops/calendar/`, `src/clubops/drafts/` |
 
 **In progress**
@@ -62,7 +63,7 @@ Updated 29 October 2026. Deadline: 30 November 2026. Live task list: [`TASKS.md`
 | OSA e-mail inbox, daily checks, security tests | Joey | J-10, J-11, J-13 |
 | ASME test events (waiting for the real approvals) | Tatiana | T-35 |
 
-**Still to do:** seed the Running Club's know-how (T-09); graders and baselines (T-05, T-06); the final evaluation on past Running Club and ASME events, with the course key (T-26); real pilot event (T-32); report (T-27), poster (J-18), demo (C-28); test runners for the chatbot and learning tests (J-17, C-27).
+**Still to do:** seed the Running Club's know-how (T-09); graders (T-05); run the baselines once the course key and labels are in (T-06); the final evaluation on past Running Club and ASME events, with the course key (T-26); real pilot event (T-32); report (T-27), poster (J-18), demo (C-28); test runners for the chatbot and learning tests (J-17, C-27).
 
 ## Documentation
 
