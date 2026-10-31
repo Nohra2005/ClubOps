@@ -66,7 +66,7 @@ Reference documents:
 
 ### T-06 Baseline prompts
 - Owner: tatiana
-- Status: todo
+- Status: review
 - Needs: T-04
 - What: The comparison versions: a plain checklist (no model); the plain model, no memory; the same model with the OSA rulebook pasted in. Same events, same output format as ClubOps. Record every response (replay mode). Note the manual time from T-29.
 - Done when: all baselines run on all test events and responses are recorded.

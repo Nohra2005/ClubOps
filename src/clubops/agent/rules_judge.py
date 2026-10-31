@@ -71,8 +71,10 @@ def build_prompt(spec: EventSpec, rules: list[KnowHowItem]) -> str:
 class RuleJudge:
     """Callable like `check_rules`, plus the plan's budget."""
 
-    def __init__(self, client: ModelClient) -> None:
+    def __init__(self, client: ModelClient, *, temperature: float = 0.0, variant: str = "") -> None:
         self.client = client
+        self.temperature = temperature
+        self.version = PROMPT_VERSION + (f"#{variant}" if variant else "")
 
     def __call__(self, spec: EventSpec, rules: list[KnowHowItem], budget: Budget | None = None) -> RuleApplication:
         base = check_rules(spec, rules)
@@ -83,7 +85,11 @@ class RuleJudge:
         try:
             answer, usage = self.client.complete(
                 ModelRequest(
-                    prompt_version=PROMPT_VERSION, system=SYSTEM, user=build_prompt(spec, ask), max_tokens=800
+                    prompt_version=self.version,
+                    system=SYSTEM,
+                    user=build_prompt(spec, ask),
+                    max_tokens=800,
+                    temperature=self.temperature,
                 ),
                 JudgeAnswer,
             )
