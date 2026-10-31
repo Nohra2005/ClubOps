@@ -162,7 +162,7 @@ Reference documents:
 ### T-26 Run the final evaluation
 - Owner: tatiana
 - Status: todo
-- Needs: T-05, T-06, T-14, T-15, J-12, J-15, T-38, C-27, J-17
+- Needs: T-05, T-06, T-14, T-15, J-12, J-15, T-38, C-27, J-17, C-32, J-19
 - What: Plan the held-out events with every baseline and with ClubOps (3 runs each, report the spread), plus ClubOps with an empty club memory (rules-only score) and the ASME events (D-50); automatic check against what really happened; blind 1–5 grading by the 3 graders; chatbot test; learning test; cost per successful plan. The measured real-world constraint (brief: "identify and evaluate at least one") is cost: run ClubOps with a cheap and a stronger model through OpenRouter and report quality, latency and cost per plan for each, so the model choice is a measured comparison. Commit sample traces (metadata only) in `traces/samples/`. Fix what it finds and turn each failure into a regression test.
 - Done when: result tables in `results/` (including the cheap vs stronger model comparison), reproducible with `make eval`.
 
@@ -473,6 +473,13 @@ Reference documents:
 - What: A GitHub Projects board fed by `TASKS.md` (one card per task, columns = status), so ownership is visible on GitHub. One-week sprints (a Projects iteration per week with the tasks planned for it); a 10-minute review with the team each week, noted in one line under T-28.
 - Done when: the board matches `TASKS.md` and 3 weekly sprints are recorded.
 
+### C-32 Blind grading packets
+- Owner: christophe
+- Status: todo
+- Needs: T-05, T-06
+- What: The 3 graders score plans without knowing which system made them. A script takes each held-out event's plan from the 4 systems, shows them as Plan A-D in a random order per event (key saved privately), and produces one sheet per grader with T-05's 1-5 scale. A second command reads the filled sheets back and gives the mean grade per system, with how much the graders agree. Build and test it on synthetic plans.
+- Done when: packets and the score table work end to end on synthetic plans, with tests.
+
 ---
 
 ## Joey: calendar, reminders, drafts
@@ -603,3 +610,10 @@ Reference documents:
 - Needs: T-26
 - What: Update the poster to the new scope (agent, learning, handover, web app) and to the final numbers from `results/` (every number points to `docs/evidence.md`). Tatiana checks the numbers.
 - Done when: poster printed or submitted by 30 November.
+
+### J-19 Proposal accuracy runner
+- Owner: joey
+- Status: todo
+- Needs: J-12
+- What: Measure how close the proposal draft is to what the club really submitted: for each past event that has a real proposal (Tatiana gives the private files), compare the draft's answers field by field. Report correct, wrong, left for a person, and invented answers (filled in when the truth was unknown), plus form-check errors. Build and test it on synthetic proposals; Tatiana runs it on the real ones in T-26.
+- Done when: `scripts/eval_proposals.py` gives a result table on synthetic data, with tests, in replay mode.

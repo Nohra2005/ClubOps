@@ -58,7 +58,7 @@ Each row says what the grader must find, where it will be, and which tasks produ
 | Grader looks for | Evidence | Tasks |
 |---|---|---|
 | Test sets made before the system, held out | `eval/FROZEN.md` with hashes and dates | T-01 to T-04 |
-| Baselines and clear metrics | Approvals caught/missed/false alarms, field accuracy, blind 1–5 grades from 3 graders, invented-answer rate, learning test | T-05, T-06, T-26 |
+| Baselines and clear metrics | Approvals caught/missed/false alarms, field accuracy, blind 1–5 grades from 3 graders, invented-answer rate, learning test | T-05, T-06, T-26, C-27, C-32, J-17, J-19 |
 | Honest variance | 3 runs per configuration, spread reported | T-26 |
 | Failures become tests | `docs/failure-matrix.md` rows with regression tests | J-13, T-26, J-06 |
 | Reproducible numbers | `make eval` from recorded responses, no API keys | T-10, T-26 |
