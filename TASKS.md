@@ -198,12 +198,12 @@ Reference documents:
 - What: Plan one real Running Club event in November with ClubOps on the deployed app. Record the cabinet's time, what ClubOps caught or missed, and their feedback.
 - Done when: a short pilot write-up in `results/`, used in the report and poster.
 
-### T-33 Handover test (decide: keep or drop)
+### T-33 Handover test
 - Owner: tatiana
-- Status: todo
-- Needs: C-19
-- What: The planned headline result: new officers answer 10 standard questions with old chats only vs. the handover pack. Decide by 8 November whether there is time; if dropped, remove the claim from `docs/evidence.md`.
-- Done when: either run with results in `results/`, or dropped and recorded in the design log.
+- Status: doing
+- Needs: T-09, C-19
+- What: Run the protocol in `eval/handover-test.md` (D-74): 8 volunteers (AUB students, none on the cabinet or team), 10 frozen questions in two sets of 5; each person answers one set with the old chats and files and the other with ClubOps (chatbot, handover guide, Knowledge), order balanced; blind scoring; 12 to 18 November. Volunteers recruited (2026-10-31); now pick and balance the 10 questions privately now.
+- Done when: results in `results/handover-test.md` and the poster claim in `docs/evidence.md` points to them.
 
 <!-- T-34 moved to C-30 on 2026-10-31: it builds on the setup and docs in C-29. -->
 
