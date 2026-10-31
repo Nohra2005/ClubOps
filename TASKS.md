@@ -59,10 +59,11 @@ Reference documents:
 
 ### T-05 Line up the 3 graders and the grading sheet
 - Owner: tatiana
-- Status: todo
+- Status: doing
 - Needs: none
 - What: Ask 3 cabinet members outside the team (e.g. Gaëlle, Marc, Alexandra). Make a grading sheet: each part of a plan scored 1–5 (approvals, deadlines, proposal, budget, messages), with what each score means.
 - Done when: 3 people said yes and the sheet exists.
+- Progress (2026-10-31): graders chosen: Marc, Jana (founding VP) and Gaëlle (current VP), none on the team. Left: their yes, and the grading sheet.
 
 ### T-06 Baseline prompts
 - Owner: tatiana
