@@ -1,5 +1,9 @@
 """One-off: writes data/forms/osa_event_proposal_2026_2027.json from the published form.
 
+Field ids are stable (q01-q33 = the form with every "No"); questions the live form adds after a "Yes"
+(materials, catering) are q34-q52, placed after the question that opens them. Checked against a
+print of the live form with every branch open (2026-10-31): 52 questions.
+
 Kept in the repo so the transcription can be reviewed against the form, field by field.
 """
 
@@ -211,8 +215,178 @@ fields = [
     f(33, "Adviser's AUB Email", "email", True, "profile.adviser.aub_email"),
 ]
 
+DROPDOWN = "a dropdown on the live form; its choices were not captured, so any whole number is accepted"
+
+
+def yes(parent: str) -> dict[str, str]:
+    return {"field_id": parent, "equals": "Yes"}
+
+
+MATERIALS = [
+    f(
+        34,
+        "Number of tables required",
+        "count_range",
+        False,
+        "event.materials.tables",
+        required_if=yes("q19"),
+        help=DROPDOWN,
+    ),
+    f(
+        35,
+        "Number of chairs required",
+        "count_range",
+        False,
+        "event.materials.chairs",
+        required_if=yes("q19"),
+        help=DROPDOWN,
+    ),
+    f(
+        36,
+        "Number of boards required",
+        "count_range",
+        False,
+        "event.materials.boards",
+        required_if=yes("q19"),
+        help=DROPDOWN,
+    ),
+    f(
+        37,
+        "Do you require tents for your event?",
+        "single_choice",
+        False,
+        "event.materials.needs_tents",
+        choices=YES_NO,
+        required_if=yes("q19"),
+    ),
+    f(
+        38,
+        "Number of tents required",
+        "count_range",
+        False,
+        "event.materials.tents",
+        required_if=yes("q37"),
+        help=DROPDOWN,
+    ),
+    f(
+        39,
+        "Do you require table covers?",
+        "single_choice",
+        False,
+        "event.materials.needs_table_covers",
+        choices=YES_NO,
+        required_if=yes("q19"),
+    ),
+    f(
+        40,
+        "Number of table covers required",
+        "count_range",
+        False,
+        "event.materials.table_covers",
+        required_if=yes("q39"),
+        help=DROPDOWN,
+    ),
+    f(
+        41,
+        "Do you require electrical outlets for your event?",
+        "single_choice",
+        False,
+        "event.materials.needs_outlets",
+        choices=YES_NO,
+        required_if=yes("q19"),
+    ),
+    f(
+        42,
+        "What is the required amperage (in amps)?",
+        "text",
+        False,
+        "event.materials.amperage",
+        required_if=yes("q41"),
+    ),
+    f(
+        43,
+        "How many electrical outlets will you need?",
+        "count_range",
+        False,
+        "event.materials.outlets",
+        required_if=yes("q41"),
+        help=DROPDOWN,
+    ),
+]
+CATERING = [
+    f(44, "Catering Menu (Caterer - Menu)", "text", False, "event.catering.menu", required_if=yes("q20")),
+    f(
+        45,
+        "Exact number of people who should be considered for catering (a number, not a range)",
+        "count_range",
+        False,
+        "event.catering.people",
+        required_if=yes("q20"),
+    ),
+    f(46, "Catering Setup time", "text", False, "event.catering.setup_time", required_if=yes("q20")),
+    f(
+        47,
+        "Price per person",
+        "text",
+        False,
+        "event.catering.price_per_person",
+        required_if=yes("q20"),
+        help="The live form accepts a number only",
+    ),
+    f(
+        48,
+        "Do you need an additional catering option?",
+        "single_choice",
+        False,
+        "event.catering.needs_second_option",
+        choices=YES_NO,
+        required_if=yes("q20"),
+    ),
+    f(49, "Catering Option 2 (Caterer - Menu)", "text", False, "event.catering.second.menu", required_if=yes("q48")),
+    f(
+        50,
+        "Exact number of people who should be considered for catering 2 (a number, not a range)",
+        "count_range",
+        False,
+        "event.catering.second.people",
+        required_if=yes("q48"),
+    ),
+    f(
+        51,
+        "Price per person (catering 2)",
+        "text",
+        False,
+        "event.catering.second.price_per_person",
+        required_if=yes("q48"),
+        help="The live form accepts a number only",
+    ),
+    f(
+        52,
+        "Will the catering cost be shared with other clubs or societies? "
+        "If yes, list all clubs/societies splitting the cost (including yours)",
+        "text",
+        False,
+        "event.catering.shared_with",
+        required_if=yes("q20"),
+    ),
+]
+
+
+def with_branches(base: list[dict]) -> list[dict]:
+    out = []
+    for field in base:
+        out.append(field)
+        out.extend({"q19": MATERIALS, "q20": CATERING}.get(field["field_id"], []))
+    return out
+
+
 template = FormTemplate.model_validate(
-    {"form_id": "osa_event_proposal", "version": "2026-2027", "title": "Event Proposal 2026-2027", "fields": fields}
+    {
+        "form_id": "osa_event_proposal",
+        "version": "2026-2027",
+        "title": "Event Proposal 2026-2027",
+        "fields": with_branches(fields),
+    }
 )
 out = Path("data/forms/osa_event_proposal_2026_2027.json")
 out.write_text(json.dumps(template.model_dump(mode="json"), indent=2, ensure_ascii=False) + "\n")
