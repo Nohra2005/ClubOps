@@ -16,7 +16,7 @@ NOW = datetime(2026, 10, 31, 10, tzinfo=UTC)
 SENDERS = {"running-club": {"cabinet@example.test"}, "math-club": {"math@example.test"}}
 
 
-def forward(*, sender: str = "cabinet@example.test", to: str = "clubops.inbox+running-club@gmail.com") -> bytes:
+def forward(*, sender: str = "cabinet@example.test", to: str = "clubops.agent+running-club@gmail.com") -> bytes:
     mail = EmailMessage()
     mail["From"] = sender
     mail["To"] = to
@@ -39,12 +39,12 @@ def test_routes_valid_forward_as_untrusted_text_with_attachment_names() -> None:
 
 
 def test_unknown_tag_sender_and_ambiguous_routing_are_dropped() -> None:
-    assert capture_email(forward(to="clubops.inbox+unknown@gmail.com"), "msg-2", SENDERS, NOW) is None
+    assert capture_email(forward(to="clubops.agent+unknown@gmail.com"), "msg-2", SENDERS, NOW) is None
     assert capture_email(forward(sender="outsider@example.test"), "msg-3", SENDERS, NOW) is None
-    assert capture_email(forward(to="clubops.inbox@gmail.com"), "msg-4", SENDERS, NOW) is None
+    assert capture_email(forward(to="clubops.agent@gmail.com"), "msg-4", SENDERS, NOW) is None
     assert (
         capture_email(
-            forward(to="clubops.inbox+running-club@gmail.com, clubops.inbox+math-club@gmail.com"),
+            forward(to="clubops.agent+running-club@gmail.com, clubops.agent+math-club@gmail.com"),
             "msg-5",
             SENDERS,
             NOW,

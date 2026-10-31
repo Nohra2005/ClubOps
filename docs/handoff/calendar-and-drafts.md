@@ -43,3 +43,9 @@ No entries yet.
 **Next:** Wire pending requests to a cabinet action that calls `Learner.learn`, then mark the queue entry processed after Review cards are saved.
 
 **Open questions / blockers:** T-39 account access and owner-side API integration are pending. The task text's automatic mail-to-Review wording conflicts with the project-wide AI-on-click rule; D-77 records the safe interaction.
+
+## 2026-10-31 — J-10 forwarding address correction
+
+**Did:** Matched the routing parser and synthetic fixtures to the designated `clubops.agent+<club>@gmail.com` address. Closed private SQLite connections after use.
+
+**State:** Synthetic intake is ready for owner-side Review wiring; delegate access alone has not yet supplied a live Gmail API token or acceptance forward.

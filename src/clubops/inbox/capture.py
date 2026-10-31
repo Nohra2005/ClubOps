@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 import sqlite3
 from collections.abc import Mapping
+from contextlib import closing
 from datetime import datetime
 from email import policy
 from email.parser import BytesParser
@@ -14,7 +15,7 @@ from pathlib import Path
 from clubops.contracts.common import SourceKind, SourceRef, Untrusted
 from clubops.contracts.knowhow import CaptureRequest
 
-_TAG = re.compile(r"^clubops\.inbox\+([a-z0-9-]+)@gmail\.com$", re.IGNORECASE)
+_TAG = re.compile(r"^clubops\.agent\+([a-z0-9-]+)@gmail\.com$", re.IGNORECASE)
 
 
 def capture_email(
@@ -67,7 +68,7 @@ class PendingInbox:
     def __init__(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         self.path = path
-        with sqlite3.connect(path) as db:
+        with closing(sqlite3.connect(path)) as db, db:
             db.execute(
                 "CREATE TABLE IF NOT EXISTS inbox_capture ("
                 "message_id TEXT PRIMARY KEY, club_id TEXT NOT NULL, request_json TEXT NOT NULL, "
@@ -75,7 +76,7 @@ class PendingInbox:
             )
 
     def enqueue(self, message_id: str, request: CaptureRequest) -> bool:
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             cursor = db.execute(
                 "INSERT OR IGNORE INTO inbox_capture (message_id, club_id, request_json) VALUES (?, ?, ?)",
                 (message_id, request.club_id, request.model_dump_json()),
@@ -83,7 +84,7 @@ class PendingInbox:
         return cursor.rowcount == 1
 
     def pending(self, club_id: str) -> list[tuple[str, CaptureRequest]]:
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             rows = db.execute(
                 "SELECT message_id, request_json FROM inbox_capture "
                 "WHERE club_id=? AND processed=0 ORDER BY message_id",
@@ -92,7 +93,7 @@ class PendingInbox:
         return [(message_id, CaptureRequest.model_validate_json(raw)) for message_id, raw in rows]
 
     def mark_processed(self, message_id: str, club_id: str) -> None:
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             db.execute(
                 "UPDATE inbox_capture SET processed=1 WHERE message_id=? AND club_id=?",
                 (message_id, club_id),
