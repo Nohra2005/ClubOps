@@ -33,3 +33,13 @@ No entries yet.
 **Next:** Have T-22 call queue enqueue only after revision-bound plan approval, then drain on the server schedule.
 
 **Open questions / blockers:** Live Google setup and private message examples are pending Joey's account data.
+
+## 2026-10-31 — J-10 Gmail intake core
+
+**Did:** Added a Gmail read adapter and private SQLite queue for forwarded mail. It accepts exactly one known club tag and a sender on that club's cabinet list, deduplicates by Gmail message ID, and wraps mail content as `Untrusted`. Attachments are represented by name only. Synthetic tests cover routing, outsiders, duplicates, pagination and embedded instructions. Recorded D-76 and F-118 to F-121.
+
+**State:** Polling performs no AI call and does not auto-approve. J-10 remains doing until Tatiana's human-click Review integration and a cabinet-approved live forward after T-39 access.
+
+**Next:** Wire pending requests to a cabinet action that calls `Learner.learn`, then mark the queue entry processed after Review cards are saved.
+
+**Open questions / blockers:** T-39 account access and owner-side API integration are pending. The task text's automatic mail-to-Review wording conflicts with the project-wide AI-on-click rule; D-76 records the safe interaction.
