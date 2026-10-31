@@ -33,3 +33,13 @@ No entries yet.
 **Next:** Have T-22 call queue enqueue only after revision-bound plan approval, then drain on the server schedule.
 
 **Open questions / blockers:** Live Google setup and private message examples are pending Joey's account data.
+
+## 2026-10-31 — J-12 proposal draft, first implementation
+
+**Did:** Added a deterministic proposal drafter for the versioned form contract. It maps confirmed event, club and requester values, uses 24-hour times, records origins, and leaves unknown answers and files for a person. Synthetic tests cover the current form and an extra conditional field.
+
+**State:** Focused tests, Ruff and mypy pass. The task remains doing: the official materials extension is absent from the checked-in form template, and Tatiana still needs to wire the capability into the agent and page.
+
+**Next:** Check the official materials questions with the form owner, then test the complete 39-question template and add agent integration through Tatiana's API PR.
+
+**Open questions / blockers:** Do not invent wording or choices for the missing official form questions. Repository-wide schema drift remains in `docs/capabilities.md` and needs its owner to resolve it.
