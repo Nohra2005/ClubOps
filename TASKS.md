@@ -579,10 +579,11 @@ Reference documents:
 
 ### J-14 Made-up events for the missing event types (was T-36)
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: none
 - What: 10 short, made-up event descriptions for types the Running Club never ran (workshop, conference, film screening, concert, exhibition, gala, meeting, competition, trip, play), each with the approvals it needs judged from the 25 AUB rules only (`data/rulebook/aub-rules.json`, codes in `TASKS.md` T-08). Mark them synthetic. Save as `eval/synthetic-events.csv` with the same columns as the Running Club test set (Tatiana shares the header). Ask Tatiana when a rule is unclear; don't guess.
 - Done when: 10 labelled events are in the repo, checked by Tatiana, ready for T-38's freeze.
+- Progress (2026-10-31): ten synthetic rows added using the evaluation loader's columns and the sourced rulebook. Tatiana's label review and confirmation against the private D5 header remain before freeze.
 
 ### J-15 Chatbot with sources (was T-17)
 - Owner: joey

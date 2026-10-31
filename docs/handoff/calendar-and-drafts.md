@@ -33,3 +33,13 @@ No entries yet.
 **Next:** Have T-22 call queue enqueue only after revision-bound plan approval, then drain on the server schedule.
 
 **Open questions / blockers:** Live Google setup and private message examples are pending Joey's account data.
+
+## 2026-10-31 — J-14 synthetic event set
+
+**Did:** Added ten synthetic event types in `eval/synthetic-events.csv`, with approval labels based on the checked-in AUB rulebook. Used the columns consumed by the existing D5 evaluation loader.
+
+**State:** J-14 is ready for Tatiana's label review. The private Running Club CSV header is unavailable in this checkout, so exact header parity needs her confirmation before T-38 freezes the set. No real club information was added.
+
+**Next:** Confirm the labels and header with Tatiana; then freeze the dataset in T-38. Continue Joey's J-12 proposal drafter in a separate task PR.
+
+**Open questions / blockers:** The road-trip safety label and the interpretation of a film screening without filming should be explicitly checked by Tatiana. The current schema drift check reports an out-of-date `docs/capabilities.md` unrelated to this CSV change.
