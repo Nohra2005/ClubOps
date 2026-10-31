@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import json
+from datetime import date
+from decimal import Decimal
 
 from clubops.capabilities.runner import Usage
 from clubops.chat.ask import ask
 from clubops.contracts.knowhow import Answer, AskRequest, KnowHowItem
+from clubops.model.budget import Budget
 from tests.factories import TODAY, item, verified
 
 
@@ -23,10 +26,14 @@ class FakeModel:
         self.answer = answer
         self.called = False
         self.user = ""
+        self.budget: Budget | None = None
 
-    def complete(self, request: object, output: object, budget: object) -> tuple[Answer, Usage]:
+    def complete(self, request: object, output: object, budget: Budget) -> tuple[Answer, Usage]:
         self.called = True
         self.user = request.user  # type: ignore[attr-defined]
+        self.budget = budget
+        budget.check()
+        budget.charge(Usage())
         return self.answer, Usage()
 
 
@@ -62,3 +69,36 @@ def test_model_cannot_cite_unseen_fact() -> None:
     answer = ask(question(), FakeStore([fact]), FakeModel(known(["kh-other-club-secret"])))  # type: ignore[arg-type]
     assert not answer.known
     assert answer.citations == []
+
+
+def test_stale_fact_is_not_sent_to_model() -> None:
+    fact = verified(item()).model_copy(update={"valid_to": date(2026, 10, 4)})
+    model = FakeModel(known([fact.item_id]))
+    answer = ask(question(), FakeStore([fact]), model)  # type: ignore[arg-type]
+    assert not answer.known
+    assert not model.called
+
+
+def test_one_step_budget_is_passed_to_model() -> None:
+    fact = verified(item())
+    model = FakeModel(known([fact.item_id]))
+    ask(question(), FakeStore([fact]), model)  # type: ignore[arg-type]
+    assert model.budget is not None
+    assert model.budget.max_steps == 1
+    assert model.budget.max_usd == Decimal("0.05")
+    assert model.budget.steps == 1
+
+
+def test_model_uncertainty_is_preserved() -> None:
+    fact = verified(item())
+    uncertain = Answer(
+        known=False,
+        text="I don't know from these facts.",
+        citations=[],
+        basis="none",
+        ask={"who": "Club president"},
+        look_in="Club handover",
+    )
+    answer = ask(question(), FakeStore([fact]), FakeModel(uncertain))  # type: ignore[arg-type]
+    assert not answer.known
+    assert answer.ask == uncertain.ask

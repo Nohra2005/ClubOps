@@ -43,3 +43,5 @@ No entries yet.
 **Next:** Coordinate API wiring with Tatiana, run the private set, and adjust only based on documented failure cases.
 
 **Open questions / blockers:** The GitHub connector could not create PRs for this repository (404); branches can be pushed but reviews still need the connected GitHub access restored.
+
+**PR update:** Draft PR #35 is open through the authenticated GitHub API. Added tests for stale facts, model uncertainty and the one-step budget; 394 tests pass. Tatiana's API wiring and private evaluation remain.
