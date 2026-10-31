@@ -76,19 +76,21 @@ def test_fills_known_fields_and_leaves_unknowns_for_review(template: FormTemplat
     assert not validate_answers(template, draft)
 
 
-def test_materials_use_a_supplied_extended_form_without_inventing_answers(template: FormTemplate) -> None:
-    extra = {
-        "field_id": "q34",
-        "label": "How many tables?",
-        "type": "text",
-        "required": False,
-        "required_if": {"field_id": "q19", "equals": "Yes"},
-        "source": "human",
-    }
-    extended = FormTemplate.model_validate(
-        {**template.model_dump(), "fields": [*template.model_dump()["fields"], extra]}
-    )
-    draft = draft_proposal(request(extended, materials=True))
+def test_materials_on_official_form_remain_unknown_until_confirmed(template: FormTemplate) -> None:
+    draft = draft_proposal(request(template, materials=True))
     assert draft.answers["q19"].value == "Yes"
     assert draft.answers["q34"].value is None
-    assert {issue.code for issue in validate_answers(extended, draft)} == {"form.required"}
+    assert all(draft.answers[f"q{i}"].value is None for i in range(34, 44))
+    assert all(not draft.answers[f"q{i}"].sources for i in range(34, 44))
+    assert {issue.code for issue in validate_answers(template, draft)} == {"form.required"}
+
+
+def test_official_conditional_fields_are_present_without_invented_values(template: FormTemplate) -> None:
+    draft = draft_proposal(request(template))
+    assert len(draft.answers) + len(draft.attachments) == len(template.fields)
+    assert all(draft.answers[f"q{i}"].value is None for i in range(34, 53))
+    assert draft.answers["q13"].value == "2026-12-03"
+    assert draft.answers["q15"].value == "2026-12-03"
+    assert draft.answers["q14"].value == "14:00"
+    assert draft.answers["q16"].value == "16:00"
+    assert draft.answers["q01"].sources

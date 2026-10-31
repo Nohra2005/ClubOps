@@ -43,3 +43,11 @@ No entries yet.
 **Next:** Check the official materials questions with the form owner, then test the complete 39-question template and add agent integration through Tatiana's API PR.
 
 **Open questions / blockers:** Do not invent wording or choices for the missing official form questions. Repository-wide schema drift remains in `docs/capabilities.md` and needs its owner to resolve it.
+
+## 2026-10-31 — J-12 official conditional form follow-up
+
+**Did:** Merged the official form update from main (q34–q52) and replaced the provisional conditional-field test with tests against that form. The drafter includes all fields, leaves unsupported materials and catering details visibly unknown, and keeps confirmed dates and 24-hour times.
+
+**State:** The form wording is now available. Agent and event-page integration remain Tatiana-owned. Repository-wide schema drift in `docs/capabilities.md` remains with its owner.
+
+**Next:** Tatiana wires the draft tool through the agent and event API, then checks the rendered draft and its pending fields with the form owner.
