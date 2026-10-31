@@ -24,6 +24,12 @@ No entries yet.
 
 **Open questions / blockers:** J-01 remains blocked on live Google setup. T-22 must connect approval and retry persistence. Non-WhatsApp J-07 templates are still to do.
 
+## 2026-10-31 — J-06 calendar queue connection cleanup
+
+**Did:** Explicitly closed SQLite connections after queue setup, enqueue, reads, retry errors, and successful drains. Focused calendar tests pass with warnings treated as errors.
+
+**State:** Fake-Google coverage remains green. J-06 still needs the full failure suite and owner-side deployed integration before completion.
+
 ## 2026-10-23 — Joey, retry-queue follow-up (PR #15)
 
 **Did:** Added a SQLite queue for approved calendar items. A Google outage leaves the latest version pending across a restart; a later drain retries it and clears it after successful sync.
