@@ -242,17 +242,19 @@ Reference documents:
 
 ### T-39 Create the ClubOps Gmail inbox
 - Owner: tatiana
-- Status: todo
+- Status: blocked
 - Needs: none
 - What: Create one Gmail account for ClubOps (the service, not one club), e.g. clubops.inbox@gmail.com, owned by the team. Turn on 2-step verification. Give Joey access for J-10. Its password and tokens live only in a password manager and the host's settings, never in the repo.
 - Done when: the account exists and Joey can open it.
 
+- Blocker (2026-10-31): Google's phone check fails: after scanning the QR code and sending the SMS, no confirmation arrives. Next tries: wait a few minutes then press Next; another phone number or network; or Joey creates the account himself, since J-10 uses it.
 ### T-40 Branch protection and reviewed pull requests (bonus)
 - Owner: tatiana
-- Status: todo
+- Status: doing
 - Needs: none
 - What: Get GitHub Pro free with the GitHub Student Developer Pack (education.github.com/pack), which allows branch protection on a private repo. Protect `main`: changes only through a pull request, 1 approving review from another teammate, all checks green, no force pushes. Then every PR is reviewed by someone other than its author (the reviewer leaves at least one real comment or approval). Also turn on a GitHub Projects board fed by `TASKS.md` (one card per task, columns = status), so task ownership is visible on GitHub; use one-week sprints (a GitHub Projects iteration per week, with the tasks planned for it), reviewed at the end of each week.
 - Done when: `main` is protected and the PR history shows reviews by teammates from then on.
+- Progress (2026-10-31): GitHub Student Developer Pack approved on 31 October; benefits (GitHub Pro, needed for branch protection on a private repo) become available after 72 hours, around 3 November. Then: protect `main` and set up the Projects board.
 ---
 
 ## Christophe: frontend
