@@ -242,12 +242,12 @@ Reference documents:
 
 ### T-39 Create the ClubOps Gmail inbox
 - Owner: tatiana
-- Status: blocked
+- Status: doing
 - Needs: none
 - What: Create one Gmail account for ClubOps (the service, not one club), e.g. clubops.inbox@gmail.com, owned by the team. Turn on 2-step verification. Give Joey access for J-10. Its password and tokens live only in a password manager and the host's settings, never in the repo.
 - Done when: the account exists and Joey can open it.
 
-- Blocker (2026-10-31): Google's phone check fails: after scanning the QR code and sending the SMS, no confirmation arrives. Next tries: wait a few minutes then press Next; another phone number or network; or Joey creates the account himself, since J-10 uses it.
+- Progress (2026-10-31): account created. Left: turn on 2-step verification, store the password in a password manager, and give Joey access for J-10.
 ### T-40 Branch protection and reviewed pull requests (bonus)
 - Owner: tatiana
 - Status: doing
