@@ -43,3 +43,5 @@ No entries yet.
 **Next:** Confirm the labels and header with Tatiana; then freeze the dataset in T-38. Continue Joey's J-12 proposal drafter in a separate task PR.
 
 **Open questions / blockers:** The road-trip safety label and the interpretation of a film screening without filming should be explicitly checked by Tatiana. The current schema drift check reports an out-of-date `docs/capabilities.md` unrelated to this CSV change.
+
+**PR update:** Draft PR #33 is open for J-14. The trip case now explicitly involves challenging hiking so the safety label has a stated trigger. Tatiana's header and label review remain the acceptance gate.
