@@ -34,3 +34,7 @@
 ## Out of scope
 
 Attacks on AUB's own systems, on GitHub, or on the model provider.
+
+## J-13 adversarial test status (2026-10-31)
+
+`tests/security/test_attack_boundaries.py` uses synthetic inputs against the real API, learning, planner prompt and budget boundaries. It covers a forged session, adviser approval attempt, cross-club event access, an instruction in forwarded text, an unverified fake rule, and step/cost exhaustion. These checks exercise existing controls; they do not establish an injection success rate. The measured defense-off and defense-on run still needs a frozen attack set, recorded model responses, and Tatiana's results review. No rate should appear on the poster until that run exists in `results/`.
