@@ -62,7 +62,7 @@ Updated 29 October 2026. Deadline: 30 November 2026. Live task list: [`TASKS.md`
 | OSA e-mail inbox, daily checks, security tests | Joey | J-10, J-11, J-13 |
 | ASME test events (waiting for the real approvals) | Tatiana | T-35 |
 
-**Still to do:** seed the Running Club's know-how (T-09); graders and baselines (T-05, T-06); the final evaluation on past Running Club and ASME events, with the course key (T-26); real pilot event (T-32); poster, demo and report (T-27).
+**Still to do:** seed the Running Club's know-how (T-09); graders and baselines (T-05, T-06); the final evaluation on past Running Club and ASME events, with the course key (T-26); real pilot event (T-32); report (T-27), poster (J-18), demo (C-28); test runners for the chatbot and learning tests (J-17, C-27).
 
 ## Documentation
 

@@ -38,7 +38,7 @@ Cabinet ──> Web app (Christophe) ──API──> Backend (Tatiana)
 1. **Before building the agent:** test data written and frozen (T-01 to T-05). Christophe and Joey start in parallel against fake data and the calendar contract.
 2. **Core:** model client, redaction, storage, contracts (T-10 to T-13), then planner, rules, proposal, chatbot, learning (T-14 to T-18).
 3. **Complete the loop:** handover (C-19), new-club setup (C-21), daily check (J-11), API (T-22), deploy (C-18); frontend connects (C-13, C-14); calendar on the server (J-09).
-4. **Prove it:** pilot event (T-32), final evaluation (T-26), evaluation in CI (C-22), docs, poster, demo, grader check (T-27, T-31, T-34).
+4. **Prove it:** pilot event (T-32), final evaluation (T-26), evaluation in CI (C-22), docs, poster, demo, grader check (T-27, C-29, C-30, J-18, C-28).
 
 ## Rubric coverage (target 100/100 + bonus)
 
@@ -49,7 +49,7 @@ Each row says what the grader must find, where it will be, and which tasks produ
 | Grader looks for | Evidence | Tasks |
 |---|---|---|
 | A real user and a real problem | `docs/problem.md`, consented interview notes, timed walkthrough | T-29 |
-| Why an agent, not a form or a checklist | Agent loop that picks its own steps and asks for missing information; `architecture.md` says what stays deterministic or human | T-14, T-31 |
+| Why an agent, not a form or a checklist | Agent loop that picks its own steps and asks for missing information; `architecture.md` says what stays deterministic or human | T-14, C-29 |
 | Agent beats simpler options | Results table: checklist vs plain model vs model + rulebook vs ClubOps | T-06, T-26 |
 | Used for real | Pilot event write-up | T-32 |
 
@@ -80,7 +80,7 @@ Each row says what the grader must find, where it will be, and which tasks produ
 | Authorization and least privilege | Roles, adviser read-only, club scoping, approval gate | T-18, T-22, C-02 |
 | Secrets and personal data protected | Redaction before the model; secrets only on the host; metadata-only traces | T-11, C-18 |
 | Prompt injection defended | Untrusted inputs, propose-only learning, adversarial test set, injection success rate measured with defences off and on | T-18, J-13 |
-| Failure Matrix and threat model current | Updated to the new scope | J-13, T-31, J-06 |
+| Failure Matrix and threat model current | Updated to the new scope | J-13, C-29, J-06 |
 
 ### 5. Software engineering (10)
 
@@ -100,9 +100,9 @@ Each row says what the grader must find, where it will be, and which tasks produ
 
 | Grader looks for | Evidence | Tasks |
 |---|---|---|
-| Setup in one command | README; `make setup`, `make check`, `make eval` | T-31 |
-| Architecture, API and data provenance | `architecture.md`, `contracts.md`, UI spec, `data-provenance.md` | T-31 |
-| A grader can find everything | "How to grade this project" at the top of the README | T-34 |
+| Setup in one command | README; `make setup`, `make check`, `make eval` | C-29 |
+| Architecture, API and data provenance | `architecture.md`, `contracts.md`, UI spec, `data-provenance.md` | C-29 |
+| A grader can find everything | "How to grade this project" at the top of the README | C-30 |
 
 ### Bonus: professional practice (up to +10)
 
@@ -124,13 +124,13 @@ The brief asks for "evidence of use", not tool logos: a few practices done in de
 | The brief asks | Where we answer it |
 |---|---|
 | Problem before technology; real user; current workflow | `docs/problem.md`, interview notes (T-29) |
-| What stays deterministic or human-controlled | `docs/architecture.md`; approval gate; plain-code rule check and safety rules (T-31) |
+| What stays deterministic or human-controlled | `docs/architecture.md`; approval gate; plain-code rule check and safety rules (C-29) |
 | At least one real-world constraint, evaluated | Cost (cheap vs stronger model, cost per plan) and human approval (T-26) |
 | Tests beyond the happy path: invalid, ambiguous, tool failure, malformed, rate limit, malicious, unauthorized | `docs/failure-matrix.md` + tests; red-team set (J-13) |
-| Memory: scope, lifetime, retrieval, privacy | `docs/knowledge-base.md` (T-31) |
+| Memory: scope, lifetime, retrieval, privacy | `docs/knowledge-base.md` (C-29) |
 | UI designed around the user, not chat by default | Events, Review, Calendar, Knowledge, Handover screens (done) |
-| Final submission: demo + poster, repo, evaluation, traces and metrics, failure and threat analysis, architecture/API docs, technical report | T-26, T-27, T-31, T-34; `traces/samples/`; `docs/api.md` |
-| Demo shows edge cases, failures, invalid input and security challenges | `docs/demo-script.md` (T-27) |
+| Final submission: demo + poster, repo, evaluation, traces and metrics, failure and threat analysis, architecture/API docs, technical report | T-26, T-27, C-29, C-30, J-18; `traces/samples/`; `docs/api.md` |
+| Demo shows edge cases, failures, invalid input and security challenges | `docs/demo-script.md` (C-28) |
 | "Not the most features": strong idea, justified choices, credible evidence, known limits | Limitations section in the report and README (T-27) |
 
 ## Risks

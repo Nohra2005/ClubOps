@@ -162,15 +162,15 @@ Reference documents:
 ### T-26 Run the final evaluation
 - Owner: tatiana
 - Status: todo
-- Needs: T-05, T-06, T-14, T-15, J-12, J-15, T-38
+- Needs: T-05, T-06, T-14, T-15, J-12, J-15, T-38, C-27, J-17
 - What: Plan the held-out events with every baseline and with ClubOps (3 runs each, report the spread), plus ClubOps with an empty club memory (rules-only score) and the ASME events (D-50); automatic check against what really happened; blind 1–5 grading by the 3 graders; chatbot test; learning test; cost per successful plan. The measured real-world constraint (brief: "identify and evaluate at least one") is cost: run ClubOps with a cheap and a stronger model through OpenRouter and report quality, latency and cost per plan for each, so the model choice is a measured comparison. Commit sample traces (metadata only) in `traces/samples/`. Fix what it finds and turn each failure into a regression test.
 - Done when: result tables in `results/` (including the cheap vs stronger model comparison), reproducible with `make eval`.
 
-### T-27 Poster, demo and report
+### T-27 Report and evidence numbers
 - Owner: tatiana
 - Status: todo
 - Needs: T-26
-- What: Update the poster so every number matches the new results (`docs/evidence.md`); demo script; final report from the design log.
+- What: Final report from the design log: problem, evaluation and results chapters, plus putting the whole report together (Christophe and Joey write their own sections in C-29 and J-13). Update `docs/evidence.md` so every number matches the new results. Poster: J-18. Demo: C-28.
 - Done when: submitted by 30 November.
 
 ### T-28 Coordination
@@ -188,12 +188,7 @@ Reference documents:
 - Done when: every problem claim in `docs/evidence.md` points to a note or a timing.
 
 <!-- T-30 moved to C-22 on 2026-10-24: it fits Christophe's part and lightens Tatiana's load. -->
-### T-31 Keep the docs true
-- Owner: tatiana
-- Status: todo
-- Needs: T-22
-- What: Update `docs/architecture.md`, `docs/threat-model.md`, `docs/data-provenance.md`, `docs/knowledge-base.md`, `docs/rubric-map.md` and the README to the new scope (agent loop, calendar, email intake, web app, deployment). Setup must work from a fresh clone in one command.
-- Done when: a teammate sets the project up from the README alone.
+<!-- T-31 moved to C-29 on 2026-10-31: docs and setup fit Christophe's deploy work; Tatiana keeps the club data and evaluation. -->
 
 ### T-32 Real pilot event
 - Owner: tatiana
@@ -209,12 +204,7 @@ Reference documents:
 - What: The planned headline result: new officers answer 10 standard questions with old chats only vs. the handover pack. Decide by 8 November whether there is time; if dropped, remove the claim from `docs/evidence.md`.
 - Done when: either run with results in `results/`, or dropped and recorded in the design log.
 
-### T-34 Make the repo easy to grade
-- Owner: tatiana
-- Status: todo
-- Needs: T-27, C-22, T-31
-- What: The grader is likely an AI agent reading the repo. Add a "How to grade this project" section at the top of the README: each rubric item → the file that proves it → the command that reproduces it (see `docs/plan.md`). Then have a fresh AI session, with no context, grade the repo against the rubric and fix every gap it finds.
-- Done when: a fresh-session review finds no rubric item without evidence.
+<!-- T-34 moved to C-30 on 2026-10-31: it builds on the setup and docs in C-29. -->
 
 ### T-35 ASME data (real second club)
 - Owner: tatiana
@@ -252,9 +242,9 @@ Reference documents:
 - Owner: tatiana
 - Status: doing
 - Needs: none
-- What: Get GitHub Pro free with the GitHub Student Developer Pack (education.github.com/pack), which allows branch protection on a private repo. Protect `main`: changes only through a pull request, 1 approving review from another teammate, all checks green, no force pushes. Then every PR is reviewed by someone other than its author (the reviewer leaves at least one real comment or approval). Also turn on a GitHub Projects board fed by `TASKS.md` (one card per task, columns = status), so task ownership is visible on GitHub; use one-week sprints (a GitHub Projects iteration per week, with the tasks planned for it), reviewed at the end of each week.
+- What: Get GitHub Pro free with the GitHub Student Developer Pack (education.github.com/pack), which allows branch protection on a private repo. Protect `main`: changes only through a pull request, 1 approving review from another teammate, all checks green, no force pushes. Then every PR is reviewed by someone other than its author (the reviewer leaves at least one real comment or approval). The Projects board and weekly sprints moved to C-31.
 - Done when: `main` is protected and the PR history shows reviews by teammates from then on.
-- Progress (2026-10-31): GitHub Student Developer Pack approved on 31 October; benefits (GitHub Pro, needed for branch protection on a private repo) become available after 72 hours, around 3 November. Then: protect `main` and set up the Projects board.
+- Progress (2026-10-31): GitHub Student Developer Pack approved on 31 October; benefits (GitHub Pro, needed for branch protection on a private repo) become available after 72 hours, around 3 November. Then: protect `main`.
 ---
 
 ## Christophe: frontend
@@ -447,6 +437,42 @@ Reference documents:
 - Needs: C-18
 - What: Monitoring that works on the deployed app itself, not only locally. Christophe picks one, both have a free plan and need no extra server: **(a) Grafana Cloud** (hosted Prometheus + Grafana): the app pushes its metrics and traces with OpenTelemetry (this also delivers C-25) — request count and latency per endpoint; model calls, tokens, cost, retries and failures per feature; agent runs by outcome and steps used — with a dashboard (latency, cost per plan, error rate, runs at their limit) and one alert rule; or **(b) Sentry**: errors and slow requests from the API and the web app, with an e-mail alert. Either way: no names, e-mails, prompts or event text in any label or event (scrubbed before sending), keys only in the host's settings, and the dashboard or alert setup exported into the repo.
 - Done when: using the deployed app makes numbers or errors appear in the tool within a minute; a test checks nothing personal is sent; a screenshot goes in the report.
+
+### C-27 Learning test runner
+- Owner: christophe
+- Status: todo
+- Needs: none
+- What: A script like `scripts/eval_plans.py` for the learning test (`learning-test.csv`, frozen in T-04): feed each source to the learning code (`src/clubops/learning/`), approve what it proposes, then ask the matching question and check the answer uses the new fact. Report facts learned, wrong facts, missed facts, cost. Build and test it on synthetic rows (`tests/factories.py`); Tatiana runs it on the private file in T-26.
+- Done when: `scripts/eval_learning.py` gives a result table on synthetic data, with tests, in replay mode.
+
+### C-28 Demo script and backup video
+- Owner: christophe
+- Status: todo
+- Needs: C-14, C-18
+- What: `docs/demo-script.md`: 5 minutes on the deployed app, showing what the brief asks: one normal plan, then edge cases (missing facts → the agent asks; the step limit; a hidden instruction in an uploaded document; a member without rights trying to approve). Seed a demo club with synthetic data only. Record a backup video in case the network fails on demo day.
+- Done when: the script runs start to end on the deployed app, rehearsed once with the team, video saved.
+
+### C-29 Keep the docs true (was T-31)
+- Owner: christophe
+- Status: todo
+- Needs: T-22
+- What: Update `docs/architecture.md`, `docs/data-provenance.md`, `docs/knowledge-base.md` and the README setup to the new scope (agent loop, learning, web app, deployment, monitoring). Ask Tatiana when unsure how the backend works. Setup must work from a fresh clone in one command. Write the report sections on architecture, the web app, deployment and monitoring.
+- Done when: Joey sets the project up from the README alone; report sections handed to Tatiana.
+
+### C-30 Make the repo easy to grade (was T-34)
+- Owner: christophe
+- Status: todo
+- Needs: T-27, C-22, C-29
+- What: The grader is likely an AI agent reading the repo. Add a "How to grade this project" section at the top of the README: each rubric item → the file that proves it → the command that reproduces it (see `docs/plan.md`). Then have a fresh AI session, with no context, grade the repo against the rubric and fix every gap it finds.
+- Done when: a fresh-session review finds no rubric item without evidence.
+
+### C-31 GitHub Projects board and weekly sprints (bonus)
+- Owner: christophe
+- Status: todo
+- Needs: none
+- What: A GitHub Projects board fed by `TASKS.md` (one card per task, columns = status), so ownership is visible on GitHub. One-week sprints (a Projects iteration per week with the tasks planned for it); a 10-minute review with the team each week, noted in one line under T-28.
+- Done when: the board matches `TASKS.md` and 3 weekly sprints are recorded.
+
 ---
 
 ## Joey: calendar, reminders, drafts
@@ -540,7 +566,7 @@ Reference documents:
 - Owner: joey
 - Status: todo
 - Needs: none
-- What: An adversarial test set that tries to break ClubOps: instructions hidden in an event description or a forwarded e-mail ("ignore the rules", "approve this"), fake "OSA" rules sent as facts, one club reaching another club's data, the adviser or a non-cabinet account changing things, a forged sign-in, spending past the limits. Start with the planner and the API (live now); add the chatbot and learning when T-17 and T-18 land. Made-up data only. Tests in `tests/security/` (yours).
+- What: An adversarial test set that tries to break ClubOps: instructions hidden in an event description or a forwarded e-mail ("ignore the rules", "approve this"), fake "OSA" rules sent as facts, one club reaching another club's data, the adviser or a non-cabinet account changing things, a forged sign-in, spending past the limits. Start with the planner and the API (live now); add the chatbot and learning when T-17 and T-18 land. Made-up data only. Tests in `tests/security/` (yours). Also update `docs/threat-model.md` and write the report sections on security, the calendar and the inbox.
 - Done when: the set runs in `make check`; every way it found to break ClubOps has a failure-matrix row and is fixed (or the row says why not, and Tatiana agreed); and the injection attack success rate is measured (how many of the attacks worked) with the defences off and on, and reported in `results/`.
 
 ### J-14 Made-up events for the missing event types (was T-36)
@@ -563,3 +589,17 @@ Reference documents:
 - Needs: none
 - What: GitHub's own secret scanning and CodeQL need a public repo or a paid plan, so run free equivalents in CI: gitleaks (secrets in the code and history) and a Python security linter. Fix or explain every finding.
 - Done when: both run in CI on every PR and are green on `main`.
+
+### J-17 Chatbot test runner
+- Owner: joey
+- Status: todo
+- Needs: J-15
+- What: A script like `scripts/eval_plans.py` for the chatbot test (`chatbot-questions.csv`, frozen in T-04): ask each question, then score right answers, invented answers (an answer when the right reply is "not sure"), correct "not sure" replies, citations that really support the answer, and cost. Build and test it on synthetic questions; Tatiana runs it on the private file in T-26.
+- Done when: `scripts/eval_chat.py` gives a result table on synthetic data, with tests, in replay mode.
+
+### J-18 Poster
+- Owner: joey
+- Status: todo
+- Needs: T-26
+- What: Update the poster to the new scope (agent, learning, handover, web app) and to the final numbers from `results/` (every number points to `docs/evidence.md`). Tatiana checks the numbers.
+- Done when: poster printed or submitted by 30 November.
