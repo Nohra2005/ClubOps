@@ -137,12 +137,17 @@ Answer with JSON only: {"tool": ..., "say": "<one plain line>", "query"?, "facts
 class ModelDecider:
     """The real decider: one model call per step, checked against ``NextStep``."""
 
-    def __init__(self, client: ModelClient) -> None:
+    def __init__(self, client: ModelClient, *, temperature: float = 0.0, variant: str = "") -> None:
+        """``variant`` (e.g. 'r2') separates repeated evaluation runs in the recordings."""
         self.client = client
+        self.temperature = temperature
+        self.version = PROMPT_VERSION + (f"#{variant}" if variant else "")
 
     def __call__(self, prompt: str, budget: Budget) -> NextStep:
         step, _usage = self.client.complete(
-            ModelRequest(prompt_version=PROMPT_VERSION, system=SYSTEM, user=prompt, max_tokens=600),
+            ModelRequest(
+                prompt_version=self.version, system=SYSTEM, user=prompt, max_tokens=600, temperature=self.temperature
+            ),
             NextStep,
             budget,
         )
