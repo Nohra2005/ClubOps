@@ -272,6 +272,165 @@
       "source": "event.needs_materials"
     },
     {
+      "field_id": "q34",
+      "label": "Number of tables required",
+      "help": "a dropdown on the live form; its choices were not captured, so any whole number is accepted",
+      "type": "count_range",
+      "required": false,
+      "required_if": {
+        "field_id": "q19",
+        "equals": "Yes"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.materials.tables"
+    },
+    {
+      "field_id": "q35",
+      "label": "Number of chairs required",
+      "help": "a dropdown on the live form; its choices were not captured, so any whole number is accepted",
+      "type": "count_range",
+      "required": false,
+      "required_if": {
+        "field_id": "q19",
+        "equals": "Yes"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.materials.chairs"
+    },
+    {
+      "field_id": "q36",
+      "label": "Number of boards required",
+      "help": "a dropdown on the live form; its choices were not captured, so any whole number is accepted",
+      "type": "count_range",
+      "required": false,
+      "required_if": {
+        "field_id": "q19",
+        "equals": "Yes"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.materials.boards"
+    },
+    {
+      "field_id": "q37",
+      "label": "Do you require tents for your event?",
+      "help": null,
+      "type": "single_choice",
+      "required": false,
+      "required_if": {
+        "field_id": "q19",
+        "equals": "Yes"
+      },
+      "choices": [
+        "Yes",
+        "No"
+      ],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.materials.needs_tents"
+    },
+    {
+      "field_id": "q38",
+      "label": "Number of tents required",
+      "help": "a dropdown on the live form; its choices were not captured, so any whole number is accepted",
+      "type": "count_range",
+      "required": false,
+      "required_if": {
+        "field_id": "q37",
+        "equals": "Yes"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.materials.tents"
+    },
+    {
+      "field_id": "q39",
+      "label": "Do you require table covers?",
+      "help": null,
+      "type": "single_choice",
+      "required": false,
+      "required_if": {
+        "field_id": "q19",
+        "equals": "Yes"
+      },
+      "choices": [
+        "Yes",
+        "No"
+      ],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.materials.needs_table_covers"
+    },
+    {
+      "field_id": "q40",
+      "label": "Number of table covers required",
+      "help": "a dropdown on the live form; its choices were not captured, so any whole number is accepted",
+      "type": "count_range",
+      "required": false,
+      "required_if": {
+        "field_id": "q39",
+        "equals": "Yes"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.materials.table_covers"
+    },
+    {
+      "field_id": "q41",
+      "label": "Do you require electrical outlets for your event?",
+      "help": null,
+      "type": "single_choice",
+      "required": false,
+      "required_if": {
+        "field_id": "q19",
+        "equals": "Yes"
+      },
+      "choices": [
+        "Yes",
+        "No"
+      ],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.materials.needs_outlets"
+    },
+    {
+      "field_id": "q42",
+      "label": "What is the required amperage (in amps)?",
+      "help": null,
+      "type": "text",
+      "required": false,
+      "required_if": {
+        "field_id": "q41",
+        "equals": "Yes"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.materials.amperage"
+    },
+    {
+      "field_id": "q43",
+      "label": "How many electrical outlets will you need?",
+      "help": "a dropdown on the live form; its choices were not captured, so any whole number is accepted",
+      "type": "count_range",
+      "required": false,
+      "required_if": {
+        "field_id": "q41",
+        "equals": "Yes"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.materials.outlets"
+    },
+    {
       "field_id": "q20",
       "label": "Does your event include catering?",
       "help": "If yes, refer to the Procurement Set Menus",
@@ -285,6 +444,144 @@
       "max_files": null,
       "sensitive": false,
       "source": "event.has_catering"
+    },
+    {
+      "field_id": "q44",
+      "label": "Catering Menu (Caterer - Menu)",
+      "help": null,
+      "type": "text",
+      "required": false,
+      "required_if": {
+        "field_id": "q20",
+        "equals": "Yes"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.catering.menu"
+    },
+    {
+      "field_id": "q45",
+      "label": "Exact number of people who should be considered for catering (a number, not a range)",
+      "help": null,
+      "type": "count_range",
+      "required": false,
+      "required_if": {
+        "field_id": "q20",
+        "equals": "Yes"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.catering.people"
+    },
+    {
+      "field_id": "q46",
+      "label": "Catering Setup time",
+      "help": null,
+      "type": "text",
+      "required": false,
+      "required_if": {
+        "field_id": "q20",
+        "equals": "Yes"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.catering.setup_time"
+    },
+    {
+      "field_id": "q47",
+      "label": "Price per person",
+      "help": "The live form accepts a number only",
+      "type": "text",
+      "required": false,
+      "required_if": {
+        "field_id": "q20",
+        "equals": "Yes"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.catering.price_per_person"
+    },
+    {
+      "field_id": "q48",
+      "label": "Do you need an additional catering option?",
+      "help": null,
+      "type": "single_choice",
+      "required": false,
+      "required_if": {
+        "field_id": "q20",
+        "equals": "Yes"
+      },
+      "choices": [
+        "Yes",
+        "No"
+      ],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.catering.needs_second_option"
+    },
+    {
+      "field_id": "q49",
+      "label": "Catering Option 2 (Caterer - Menu)",
+      "help": null,
+      "type": "text",
+      "required": false,
+      "required_if": {
+        "field_id": "q48",
+        "equals": "Yes"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.catering.second.menu"
+    },
+    {
+      "field_id": "q50",
+      "label": "Exact number of people who should be considered for catering 2 (a number, not a range)",
+      "help": null,
+      "type": "count_range",
+      "required": false,
+      "required_if": {
+        "field_id": "q48",
+        "equals": "Yes"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.catering.second.people"
+    },
+    {
+      "field_id": "q51",
+      "label": "Price per person (catering 2)",
+      "help": "The live form accepts a number only",
+      "type": "text",
+      "required": false,
+      "required_if": {
+        "field_id": "q48",
+        "equals": "Yes"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.catering.second.price_per_person"
+    },
+    {
+      "field_id": "q52",
+      "label": "Will the catering cost be shared with other clubs or societies? If yes, list all clubs/societies splitting the cost (including yours)",
+      "help": null,
+      "type": "text",
+      "required": false,
+      "required_if": {
+        "field_id": "q20",
+        "equals": "Yes"
+      },
+      "choices": [],
+      "max_files": null,
+      "sensitive": false,
+      "source": "event.catering.shared_with"
     },
     {
       "field_id": "q21",

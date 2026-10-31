@@ -147,7 +147,9 @@ def test_registry_names_unique() -> None:
 def test_form_template_loads() -> None:
     raw = json.loads(Path("data/forms/osa_event_proposal_2026_2027.json").read_text())
     template = FormTemplate.model_validate(raw)
-    assert len(template.fields) == 33
+    assert len(template.fields) == 52  # every branch open, as on the live form
+    assert len([f for f in template.fields if not f.required_if or f.field_id in {"q11", "q24", "q26", "q28"}]) == 33
+    assert template.field("q38").required_if is not None and template.field("q38").required_if.field_id == "q37"
     assert template.field("q14").type.value == "time_24h"
     assert {f.field_id for f in template.fields if f.sensitive} == {"q05", "q08"}
 
