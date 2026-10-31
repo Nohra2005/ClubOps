@@ -45,3 +45,13 @@ No entries yet.
 **Open questions / blockers:** The GitHub connector could not create PRs for this repository (404); branches can be pushed but reviews still need the connected GitHub access restored.
 
 **PR update:** Draft PR #35 is open through the authenticated GitHub API. Added tests for stale facts, model uncertainty and the one-step budget; 394 tests pass. Tatiana's API wiring and private evaluation remain.
+
+## 2026-10-31 — J-17 chatbot evaluation runner
+
+**Did:** Added a scorer and CLI that read a redacted question CSV, use approved knowledge and the rulebook, call the cited chatbot through the model client in replay mode, and report correctness, invented answers, correct unknowns, unsupported citations and estimated cost. Synthetic tests include a CLI replay run without credentials.
+
+**State:** The synthetic test passes. This branch is stacked on J-15 because the runner calls its chat service. Private frozen CSV header and recordings need Tatiana's verification before J-17 can be marked done.
+
+**Next:** Align the private column mapping and evaluate the frozen set after J-15 is integrated.
+
+**Open questions / blockers:** The private CSV and model recordings are intentionally unavailable in this checkout; no private question text should enter git.
