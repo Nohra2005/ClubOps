@@ -69,3 +69,15 @@ No entries yet.
 **State:** The form wording is now available. Agent and event-page integration remain Tatiana-owned. Repository-wide schema drift in `docs/capabilities.md` remains with its owner.
 
 **Next:** Tatiana wires the draft tool through the agent and event API, then checks the rendered draft and its pending fields with the form owner.
+
+## 2026-10-31 — J-15 cited chatbot core
+
+**Did:** Added a chat service that searches approved current facts in the requester's club, redacts the question, calls the model with a one-step budget, checks citations against retrieved fact IDs, and returns an explicit unknown answer when evidence is unavailable or invalid. Synthetic tests cover a known answer, cross-club isolation, invalid citations and redaction.
+
+**State:** Core is ready for Tatiana to wire to `/api/chat/ask`. The task remains doing until app integration and the private 42-question evaluation are recorded. No real questions or club data entered the repository.
+
+**Next:** Coordinate API wiring with Tatiana, run the private set, and adjust only based on documented failure cases.
+
+**Open questions / blockers:** The GitHub connector could not create PRs for this repository (404); branches can be pushed but reviews still need the connected GitHub access restored.
+
+**PR update:** Draft PR #35 is open through the authenticated GitHub API. Added tests for stale facts, model uncertainty and the one-step budget; 394 tests pass. Tatiana's API wiring and private evaluation remain.
