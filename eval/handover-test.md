@@ -7,7 +7,7 @@ This is the poster's headline claim, so the protocol is fixed **before** anyone 
 ## Who
 
 - **8 volunteers** (AUB students) who never held a Running Club cabinet role: students from other clubs (ASME), playing the "new cabinet".
-- Not on the team, not graders of the planning evaluation, and they haven't seen ClubOps before.
+- Not on the team, and they haven't seen ClubOps before.
 - Each gives about 40 minutes and agrees in writing (consent line at the top of the answer sheet); answers are kept without names (V1 to V8).
 
 ## The questions
@@ -25,7 +25,7 @@ This is the poster's headline claim, so the protocol is fixed **before** anyone 
 
 Every question is answered 4 times with each method, and each method comes first for half the people, so neither the questions nor tiredness favour one side.
 
-- **Old chats and files:** a redacted copy of the club's WhatsApp exports and its documents (phone numbers, IDs and e-mails removed), searched any way they like.
+- **Old chats and files:** what a new cabinet really receives today: the cabinet group chat, the members group chat and the club's files (redacted: phone numbers, IDs and e-mails removed), searched any way they like. Private one-to-one chats (for example with OSA staff) are left out, since a new cabinet member would not have them.
 - **ClubOps:** the full app as a new cabinet member would use it: the chatbot, the handover guide for their role, and Knowledge search. If the chatbot (J-15) is not working by **12 November**, this part uses the handover guide and Knowledge search only, and the report says so.
 
 ## Rules during the test
