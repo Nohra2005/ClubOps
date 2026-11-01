@@ -1,3 +1,6 @@
+FROM scratch AS build-context-check
+COPY . /
+
 FROM node:24-bookworm-slim AS frontend
 WORKDIR /build/web
 COPY web/package.json web/package-lock.json ./

@@ -56,6 +56,8 @@ jobs:
         run: |
           uv sync --locked --project ..
           npm ci
+      - name: Build context excludes secrets, runtime data and host dependencies
+        run: node scripts/check-build-context.mjs
       - name: Install the matching Chromium build and OS dependencies
         run: npx playwright install --with-deps chromium
       - name: Demo workflows and accessibility (desktop and phone)
