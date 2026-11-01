@@ -51,3 +51,21 @@ No entries yet.
 **Open questions / blockers:** The road-trip safety label and the interpretation of a film screening without filming should be explicitly checked by Tatiana. The current schema drift check reports an out-of-date `docs/capabilities.md` unrelated to this CSV change.
 
 **PR update:** Draft PR #33 is open for J-14. The trip case now explicitly involves challenging hiking so the safety label has a stated trigger. Tatiana's header and label review remain the acceptance gate.
+
+## 2026-10-31 — J-12 proposal draft, first implementation
+
+**Did:** Added a deterministic proposal drafter for the versioned form contract. It maps confirmed event, club and requester values, uses 24-hour times, records origins, and leaves unknown answers and files for a person. Synthetic tests cover the current form and an extra conditional field.
+
+**State:** Focused tests, Ruff and mypy pass. The task remains doing: the official materials extension is absent from the checked-in form template, and Tatiana still needs to wire the capability into the agent and page.
+
+**Next:** Check the official materials questions with the form owner, then test the complete 39-question template and add agent integration through Tatiana's API PR.
+
+**Open questions / blockers:** Do not invent wording or choices for the missing official form questions. Repository-wide schema drift remains in `docs/capabilities.md` and needs its owner to resolve it.
+
+## 2026-10-31 — J-12 official conditional form follow-up
+
+**Did:** Merged the official form update from main (q34–q52) and replaced the provisional conditional-field test with tests against that form. The drafter includes all fields, leaves unsupported materials and catering details visibly unknown, and keeps confirmed dates and 24-hour times.
+
+**State:** The form wording is now available. Agent and event-page integration remain Tatiana-owned. Repository-wide schema drift in `docs/capabilities.md` remains with its owner.
+
+**Next:** Tatiana wires the draft tool through the agent and event API, then checks the rendered draft and its pending fields with the form owner.
