@@ -4,7 +4,9 @@ COPY . /
 FROM node:24-bookworm-slim AS frontend
 WORKDIR /build/web
 COPY web/package.json web/package-lock.json ./
-RUN npm ci
+RUN --mount=type=secret,id=clubops_build_ca \
+    if [ -f /run/secrets/clubops_build_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/clubops_build_ca; fi; \
+    npm ci
 COPY web/ ./
 # Public OAuth ID only. No provider keys or OAuth secrets belong in build args.
 ARG VITE_GOOGLE_CLIENT_ID
@@ -22,7 +24,9 @@ ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy \
     CLUBOPS_DATA_DIR=/var/data/clubops CLUBOPS_DEV_LOGIN=0 CLUBOPS_COOKIE_SECURE=1
 COPY pyproject.toml uv.lock README.md ./
 COPY src/ ./src/
-RUN uv sync --locked --no-dev --no-editable
+RUN --mount=type=secret,id=clubops_build_ca \
+    if [ -f /run/secrets/clubops_build_ca ]; then export SSL_CERT_FILE=/run/secrets/clubops_build_ca; fi; \
+    uv sync --locked --no-dev --no-editable --system-certs
 COPY scripts/load_rulebook.py scripts/add_member.py ./scripts/
 COPY data/rulebook/aub-rules.json ./data/rulebook/aub-rules.json
 COPY --from=frontend /build/web/dist ./web/dist/
