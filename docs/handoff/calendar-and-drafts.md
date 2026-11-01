@@ -126,3 +126,12 @@ No entries yet.
 **Next:** Coordinate deployment scheduling and API persistence with Christophe and Tatiana; verify the resulting reminders on the deployed app.
 
 **Open questions / blockers:** A failed source fetch must surface a warning rather than an unchanged-page claim; add this in the scheduler integration.
+## 2026-10-31 — J-13 adversarial boundary suite
+
+**Did:** Added synthetic security tests for forged sign-in, adviser approval, cross-club access, injected email and event text, unverified fake rules, and step/cost limits. Updated the threat model to distinguish these regression checks from a measured attack success rate.
+
+**State:** The new tests pass. J-13 remains doing because the broader frozen attack corpus, defense-off/on model run, result table and report sections are not complete.
+
+**Next:** Expand the corpus after J-15 chat and J-10 inbox integration, then run and record both configurations with Tatiana.
+
+**Open questions / blockers:** Results belong in Tatiana's `results/` area; coordinate the measured run and evidence before poster claims.
