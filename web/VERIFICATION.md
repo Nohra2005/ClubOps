@@ -69,3 +69,40 @@ the browser results above were run locally.
 
 The demo on `http://127.0.0.1:5173` remains available. Current task status and external
 blockers are in `TASKS.md`, `API_NOTES.md` and `DEPLOYMENT.md`.
+
+## Engineering bonus and learning integration — 1 November 2026
+
+Pulled main through `d1a6a86`. New work is in PR #44 under the updated reviewed-PR /
+merge-commit protocol. Coordination and teammate-agent instructions are in issue #43.
+The course bonus section is page 5; page 6 requires realistic failure/security demos.
+
+| Check                          | Observed result and reproduction                                                                                                                                                                                  |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Root gates                     | Ruff check/format (103 files), strict mypy (62 source files), schema/tasks pass; 388 tests, 92.77% coverage with workspace temporary storage                                                                      |
+| Frontend gates                 | `npm run check`: lint, format, 40 unit tests, strict types and production build pass                                                                                                                              |
+| Demo / intercepted HTTP        | 36 demo cases and 20 HTTP cases pass at desktop/375px; new warning test excludes instruction/outdated cards from batch approval                                                                                   |
+| Live API / development sign-in | 4 cases pass using temporary SQLite, a scripted model and the explicit local form; unknown cabinet email is rejected                                                                                              |
+| Actual Compose image           | 4 browser login/routing cases pass against the built app; both production and local targets build                                                                                                                 |
+| Volume persistence             | `web/scripts/check-compose-persistence.mjs` creates synthetic state, replaces the container and confirms the state and old session survive; removes its check record                                              |
+| Context/privacy                | Actual BuildKit export excludes synthetic environment/node_modules canaries, runtime/private data and host caches; the production image excludes the temporary CA mount, local entrypoint and workspace output    |
+| Production guards              | Insecure dev cookie settings are refused before serving; a production build with `VITE_DEV_LOGIN=1` fails deliberately                                                                                            |
+| GitHub evidence                | Web quality/browser gates passed in run `41332905874`; clean Linux container/persistence/auth checks passed in `41333987152`; Python/audit passed in `41333987085`. The PR Checks tab identifies the current head |
+
+**Open failure, not a clean production-flow pass:** a local Caddy/API run had four
+passing assertions but emitted `sqlite3.InterfaceError` from the session member lookup.
+A focused desktop repeat then failed the usage-screen assertion with the same server
+error. Issue #45 refers this backend-owned finding to Tatiana, with reproduction,
+ignored `output/production-observation.log` and browser trace evidence. No backend fix,
+Windows-only conclusion or production-flow completion is claimed. C-13 stays open.
+
+The new Web gate also caught a later `API_NOTES.md` formatting mistake; it was corrected
+with Prettier rather than disabling the check. Local network CA trust is supplied only
+as an optional BuildKit secret, with TLS verification enabled. Clean GitHub Linux builds
+use normal trust and need no local certificate file.
+
+The verified Compose instance is left at `http://127.0.0.1:18080/login` (isolated
+`clubops-bonus-check` project, synthetic `president@example.com`). This is the real
+local API with dev sign-in, not the browser-storage demo. It has no configured real
+Google identity or provider evaluation; new planning needs recordings/provider setup.
+Public hosting, OTel export, deployed monitoring, real measured cost/quality, branch
+protection and weekly sprint history have not been represented as complete.

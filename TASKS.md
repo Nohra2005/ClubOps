@@ -342,6 +342,7 @@ Reference documents:
 - Done when: every screen works on the deployed backend.
 - Unblocked (2026-10-24): T-22 part 1 is live. `docs/api.md` answers `web/API_NOTES.md` (conventions, sign-in, what is live and what answers 501). Always send `X-Requested-With: ClubOps` on changes, also without a body.
 - Progress (2026-10-26): available planning, approval, calendar, handover, usage and session flows pass against the local API and production router. Google credential exchange is implemented; real Google/deployed verification needs configuration. Remaining 501 features depend on J-15/T-18/C-21/J-07 and the API owner.
+- Progress (2026-11-01): integrated T-18 warning/outdated fields, supported uploads and no-fact replies. A real Caddy/API repeat exposed intermittent SQLite member-lookup errors (issue #45, API owner); production-flow completion remains open despite passing scripted/Vite and container checks.
 
 ### C-14 Deploy the frontend
 - Owner: christophe
@@ -379,7 +380,7 @@ Reference documents:
 - Needs: none
 - What: Put the backend (`uvicorn clubops.api.app:build --factory`) on the same free host as the frontend (Render, D-47), with a persistent disk for `CLUBOPS_DATA_DIR` and the secrets from `.env.example` in the host's settings, never in the repo. Load the rulebook and add the president (`scripts/load_rulebook.py`, `scripts/add_member.py`). Deployment files (`render.yaml`, `Dockerfile`) are yours; ask Tatiana before changing Python code.
 - Done when: the cabinet signs in on the deployed app and plans an event.
-- Progress (2026-10-26): Dockerfile, same-origin router and schema-validated Render Blueprint prepared; local production-routing tests pass. Docker engine is stopped, so image construction is not verified. Google client ID, hosting account/budget and provider configuration are unknown. Render Free cannot attach a disk; the prepared paid service must be reviewed before provisioning (`web/DEPLOYMENT.md`).
+- Progress (2026-11-01): production and local Docker targets build and run; Compose browser checks and data/session persistence across container replacement pass. Production refuses local auth settings. Real Google client ID, hosting account/budget and provider configuration remain unknown. Render Free cannot attach a disk; the prepared paid service must be reviewed before provisioning (`web/DEPLOYMENT.md`). No deployed URL yet.
 
 ### C-19 Handover endpoint (was T-19)
 - Owner: christophe
@@ -413,17 +414,19 @@ Reference documents:
 
 ### C-23 Frontend checks in CI (bonus)
 - Owner: christophe
-- Status: todo
+- Status: review
 - Needs: none
 - What: Add a CI job for `web/`: install from the lockfile, lint, type check, unit tests and a production build, so a broken screen fails the PR like broken Python does.
 - Done when: the CI workflow runs the web job on every PR and it is green on `main`.
+- PR #44: separate quality and synthetic browser/API jobs pass on GitHub; real BuildKit context checks are included. Main completion waits for reviewed merge.
 
 ### C-24 Docker Compose (bonus)
 - Owner: christophe
-- Status: todo
+- Status: review
 - Needs: C-18
 - What: A `docker-compose.yml` that starts the whole app locally (API + web, data on a volume, settings from `.env`) with one command, matching the deployed setup. Document it in the README.
 - Done when: `docker compose up` on a fresh clone gives a working app with dev sign-in.
+- PR #44: `docker compose up --build` starts the complete local app on loopback with a volume and synthetic cabinet account. Desktop/phone login and routing plus actual container replacement/data/session persistence verified. Dedicated CI gate added; public deployment remains C-18/C-14.
 
 ### C-25 OpenTelemetry traces (bonus)
 - Owner: christophe
@@ -455,7 +458,7 @@ Reference documents:
 
 ### C-29 Keep the docs true (was T-31)
 - Owner: christophe
-- Status: todo
+- Status: doing
 - Needs: T-22
 - What: Update `docs/architecture.md`, `docs/data-provenance.md`, `docs/knowledge-base.md` and the README setup to the new scope (agent loop, learning, web app, deployment, monitoring). Ask Tatiana when unsure how the backend works. Setup must work from a fresh clone in one command. Write the report sections on architecture, the web app, deployment and monitoring.
 - Done when: Joey sets the project up from the README alone; report sections handed to Tatiana.
@@ -534,6 +537,7 @@ Reference documents:
 - Needs: none
 - What: Templates for: WhatsApp announcement, reminder message, sponsor email, Instagram caption, poster text (never logos), expense form, volunteer shifts, impact report. Match the club's real style (look at past announcements).
 - Done when: each template produces a draft a cabinet member would send without edits.
+- Progress (2026-10-31): all eight draft types have a writer and synthetic tests. Approved private style examples and cabinet review are still needed to judge send-ready quality.
 
 ### J-08 Check the drafts with the cabinet
 - Owner: joey
@@ -551,45 +555,51 @@ Reference documents:
 
 ### J-10 OSA e-mail inbox
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: T-39, T-18
-- What: Read the ClubOps inbox (Gmail API) and turn each forwarded e-mail into input for learning. One inbox for all clubs: each club forwards to its own address with a "+" tag (`clubops.inbox+running-club@gmail.com`), and the tag says the club. Drop e-mails whose sender is not on that club's cabinet list, and e-mails with an unknown tag. Pass the rest as `Untrusted` text (sender, date, subject, body; attachments listed by name only) to T-18's capture step, so every fact waits in Review. Never auto-approve; never reply to the sender. Code in `src/clubops/inbox/`.
+- What: Read the ClubOps inbox (Gmail API) and turn each forwarded e-mail into input for learning. One inbox for all clubs: each club forwards to its own address with a "+" tag (`clubops.agent+running-club@gmail.com`), and the tag says the club. Drop e-mails whose sender is not on that club's cabinet list, and e-mails with an unknown tag. Pass the rest as `Untrusted` text (sender, date, subject, body; attachments listed by name only) to T-18's capture step, so every fact waits in Review. Never auto-approve; never reply to the sender. Code in `src/clubops/inbox/`.
 - Done when: forwarding a real OSA e-mail puts a proposed fact in that club's Review, and tests (with made-up e-mails) cover: wrong tag, sender not on the list, the same e-mail twice (no duplicate), and an e-mail with instructions inside ("ignore the rules...") treated as data. Each case has a failure-matrix row.
+- Progress (2026-10-31): Gmail read adapter, designated `clubops.agent+<club>@gmail.com` tag/sender filtering and durable deduplicated private queue added with synthetic tests. Human-click capture integration and live forward remain pending Gmail API access and Tatiana's API wiring.
 
 ### J-11 Daily check and OSA rule check (was T-21)
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: J-04
 - What: A daily plain-code check of each club's upcoming events (overdue tasks, deadlines inside 2 days, plans outdated by edits) that calls the AI only when it finds a real problem; and the monthly OSA website check from September until the president marks the new rules as in (D-30, D-31). Both run on a schedule on the server and write reminders, never send messages. Code in `src/clubops/checks/`.
 - Done when: both run on a schedule on the deployed app, with tests (made-up events) and failure-matrix rows.
+- Progress (2026-10-31): plain-code daily findings and OSA page hash checks added with synthetic tests. Server scheduling, reminder persistence and source fetch integration remain pending owner-side deployment/API work.
 
 ### J-12 Proposal draft (was T-16)
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: none
 - What: Fill the OSA Event Proposal form from an approved event's details, the club profile and the rule check, following the frozen `draft-proposal` contract (`DraftProposalRequest` -> `ProposalDraft` in `src/clubops/contracts/forms.py`). The form is `data/forms/osa_event_proposal_2026_2027.json`; it grows from 33 to 52 questions: "Yes" to materials adds 10 (q34-q43: tables, chairs, boards, tents, table covers, outlets and amperage), "Yes" to catering adds 9 (q44-q52: menu, people, setup time, price per person, a second option, cost sharing); each extra question has `required_if` on the question that opens it. Every answer says its origin (stated, from memory, computed, missing) and source; times in 24-hour format; dates match the event; adviser name without "Dr."; nothing invented (unknown = left for a person). Code in `src/clubops/drafts/proposal.py`. Tatiana adds it to the agent as a tool and to the event page once it works (tell her).
 - Done when: drafts for the made-up test events pass the form checks (required answers present, 24-hour times, dates consistent, attachments listed), with tests for both form versions.
+- Progress (2026-10-31): deterministic drafter and synthetic checks for the checked-in 33-question form added. The official six materials questions are not yet present in the checked-in template, so their exact form-version check remains pending.
 
 ### J-13 Security tests (was T-24)
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: none
 - What: An adversarial test set that tries to break ClubOps: instructions hidden in an event description or a forwarded e-mail ("ignore the rules", "approve this"), fake "OSA" rules sent as facts, one club reaching another club's data, the adviser or a non-cabinet account changing things, a forged sign-in, spending past the limits. Start with the planner and the API (live now); add the chatbot and learning when T-17 and T-18 land. Made-up data only. Tests in `tests/security/` (yours). Also update `docs/threat-model.md` and write the report sections on security, the calendar and the inbox.
 - Done when: the set runs in `make check`; every way it found to break ClubOps has a failure-matrix row and is fixed (or the row says why not, and Tatiana agreed); and the injection attack success rate is measured (how many of the attacks worked) with the defences off and on, and reported in `results/`.
+- Progress (2026-10-31): synthetic API, learning, planner prompt and budget boundary tests added. The full adversarial corpus, real defense-off/on measurement and report sections remain pending.
 
 ### J-14 Made-up events for the missing event types (was T-36)
 - Owner: joey
-- Status: todo
+- Status: review
 - Needs: none
 - What: 10 short, made-up event descriptions for types the Running Club never ran (workshop, conference, film screening, concert, exhibition, gala, meeting, competition, trip, play), each with the approvals it needs judged from the 25 AUB rules only (`data/rulebook/aub-rules.json`, codes in `TASKS.md` T-08). Mark them synthetic. Save as `eval/synthetic-events.csv` with the same columns as the Running Club test set (Tatiana shares the header). Ask Tatiana when a rule is unclear; don't guess.
 - Done when: 10 labelled events are in the repo, checked by Tatiana, ready for T-38's freeze.
+- Progress (2026-10-31): ten synthetic rows added using the evaluation loader's columns and the sourced rulebook. Tatiana's label review and confirmation against the private D5 header remain before freeze.
 
 ### J-15 Chatbot with sources (was T-17)
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: none
 - What: Answer a cabinet member's question only from the club's approved facts and the AUB rules, following the frozen `ask` contract (`AskRequest` -> `Answer` in `src/clubops/contracts/knowhow.py`). Find candidate facts with the store's search (`KnowHowStore.search`), give them to the model, and check its answer in code: every citation must be one of the facts given; no facts found, or the model unsure, means `known: false` with who to ask (`ask`) and where to look (`look_in`), never a made-up answer (D-49). Redact the question before the model (`clubops.redaction`). Use the model client and its budget (`clubops.model`). Code in `src/clubops/chat/` (yours); wire it to `POST /api/chat/ask` in place of the placeholder (tell Tatiana). Develop with made-up facts and questions; Tatiana runs the real 42-question test (private) and tells you the score.
 - Done when: the chatbot answers on the app with sources, says "not sure" with who to ask when it should, and Tatiana's 42-question run is recorded.
+- Progress (2026-10-31): source-gated chat core and synthetic tests added. App endpoint wiring and Tatiana's private 42-question run remain pending.
 
 ### J-16 Secret scanning in CI (bonus)
 - Owner: joey
@@ -600,10 +610,11 @@ Reference documents:
 
 ### J-17 Chatbot test runner
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: J-15
 - What: A script like `scripts/eval_plans.py` for the chatbot test (`chatbot-questions.csv`, frozen in T-04): ask each question, then score right answers, invented answers (an answer when the right reply is "not sure"), correct "not sure" replies, citations that really support the answer, and cost. Build and test it on synthetic questions; Tatiana runs it on the private file in T-26.
 - Done when: `scripts/eval_chat.py` gives a result table on synthetic data, with tests, in replay mode.
+- Progress (2026-10-31): replay-capable runner and synthetic scorer tests added. Tatiana's private CSV column mapping and recorded model responses still need verification.
 
 ### J-18 Poster
 - Owner: joey

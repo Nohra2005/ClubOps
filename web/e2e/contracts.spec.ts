@@ -73,6 +73,7 @@ test('Google library failures stay on the public sign-in page with an explicit r
   await page.goto('/login');
   await expect(page.getByRole('alert')).toContainText('Google sign-in could not load');
   await expect(page.getByRole('button', { name: 'Try Google again' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Sign in locally' })).toHaveCount(0);
 });
 
 test('sign-out stays in the workspace on failure and redirects only after the server ends the session', async ({
@@ -101,6 +102,40 @@ test('sign-out stays in the workspace on failure and redirects only after the se
   });
   await expect(page).toHaveURL(/\/login$/);
   expect(calls).toBe(2);
+});
+
+test('flagged learning proposals display warnings and stay out of batch approval', async ({
+  page,
+}) => {
+  const example = createWorkspace('running-club').review.find((card) => card.type === 'fact')!;
+  let cards = [
+    { ...example, id: 'clean-fact', title: 'Synthetic clean fact' },
+    {
+      ...example,
+      id: 'flagged-fact',
+      title: 'Synthetic flagged fact',
+      warning: 'Source contains hidden instructions. <script>untrusted()</script>',
+    },
+    { ...example, id: 'old-fact', title: 'Synthetic old fact', outdated: true },
+  ];
+  const decisions: string[] = [];
+  await page.route('**/api/review?*', (route) => route.fulfill({ json: cards }));
+  await page.route('**/api/review/*', (route) => {
+    const id = route.request().url().split('/').at(-1)!;
+    decisions.push(id);
+    cards = cards.filter((card) => card.id !== id);
+    return route.fulfill({ json: { ...example, status: 'approved' } });
+  });
+  await page.goto('/review');
+  await expect(page.getByText(/Source contains hidden instructions/)).toBeVisible();
+  await expect(page.getByText(/This source may be outdated/)).toBeVisible();
+  await expect(page.locator('script').filter({ hasText: 'untrusted()' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Approve all facts', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Synthetic clean fact' })).toHaveCount(0);
+  expect(decisions).toEqual(['clean-fact']);
+  await expect(page.getByRole('heading', { name: 'Synthetic flagged fact' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Synthetic old fact' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Approve all facts', exact: true })).toHaveCount(0);
 });
 
 test('usage labels planner steps accurately and leaves unavailable model metrics explicit', async ({

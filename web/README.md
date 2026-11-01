@@ -39,9 +39,10 @@ npm run check       # lint, formatting, unit tests, strict types, production bui
 npm run test:e2e    # real Chrome, desktop and 375px phone workflows
 npm run test:e2e:http # HTTP adapter against intercepted contract responses, same two widths
 npm run test:e2e:live # real local API + SQLite + scripted model (requires root uv setup)
+npm run test:e2e:compose # already-running local Docker app, sign-in and routing
 ```
 
-Browser tests default to installed Google Chrome. To use Playwright's own Chromium, run `npx playwright install chromium` and set `PLAYWRIGHT_CHANNEL=bundled` before the browser tests (PowerShell: `$env:PLAYWRIGHT_CHANNEL = 'bundled'`). The tests start Vite automatically and include WCAG accessibility scans. These tests have not been added to the shared root CI workflow; its owner can run the same commands in a frontend job.
+Browser tests default to installed Google Chrome. To use Playwright's own Chromium, run `npx playwright install chromium` and set `PLAYWRIGHT_CHANNEL=bundled` before the browser tests (PowerShell: `$env:PLAYWRIGHT_CHANNEL = 'bundled'`). The tests start Vite automatically and include WCAG accessibility scans. PR #44 runs these checks in the dedicated Web workflow. The existing Python workflow stays separate.
 
 The HTTP suite starts an isolated Vite instance on port 5174 with `VITE_API_MODE=http`; responses are intercepted and synthetic. It covers runs/questions/limits, Google exchange and logout failures, usage coverage, answers, calendar items and draft rejection/retry. The live suite uses ports 8001/5175, a fresh temporary store under root `output/`, a dev-only synthetic account and a scripted planner. It verifies cookie sessions, planning, explicit approval, calendar items, handover, usage and logout without interception or model charges. Neither suite verifies a real Google account or provider. Both leave the demo preview on port 5173 running.
 
@@ -51,7 +52,9 @@ Copy `.env.example` to `.env.local`. Set `VITE_API_MODE=http`; `VITE_API_BASE` d
 
 See [API_NOTES.md](API_NOTES.md) for current integration coverage and remaining server features. Actions without an agreed endpoint work only in the demo and return an unavailable-action error in HTTP mode. Production chat history must be supplied by the backend; it does not use the demo cache.
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for the prepared Docker/Caddy image, persistent Render configuration, Google setup and production-router tests. No service or paid resource has been created. Render Free cannot attach the required disk; hosting needs an account-owner decision. `npm run preview` is a local build check, not the production server.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the verified local Docker/Caddy image, Compose setup, persistent Render configuration and Google setup. From the root, `docker compose up --build` serves the real API at `http://127.0.0.1:8080/login` with an explicit synthetic local sign-in. Data and the generated local signing key survive container replacement. No public service or paid resource has been created. Hosting needs an account-owner decision. `npm run preview` is a local build check, not the production server.
+
+PR #44 adds real frontend and container gates in `.github/workflows/web.yml` and `container.yml`; see [ENGINEERING_EVIDENCE.md](ENGINEERING_EVIDENCE.md) for run links and remaining bonus tasks. The shared Python workflow is unchanged. Frontend/browser failure artifacts contain synthetic test activity only.
 
 ## Failure-state previews
 

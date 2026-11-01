@@ -59,6 +59,11 @@ export class ApiClient {
       return Promise.reject(new ApiError('Please choose a Google account to continue.', 422));
     return this.post<unknown>('/auth/google', { credential });
   }
+  signInDev(email: string) {
+    if (this.mode !== 'http' || !email.trim())
+      return Promise.reject(new ApiError('Enter a local cabinet test email.', 422));
+    return this.post<unknown>('/auth/dev', { email: email.trim() });
+  }
   logout() {
     if (this.mode !== 'http') return Promise.resolve();
     return this.post<unknown>('/auth/logout');
@@ -146,6 +151,12 @@ export class ApiClient {
     return this.request<void>('/cabinet', { method: 'DELETE', body: { member_id: id } });
   }
   upload(file: File) {
+    if (this.mode === 'http') {
+      if (!/\.(txt|md|csv|eml|xlsx)$/i.test(file.name))
+        return Promise.reject(new ApiError('Choose a text, Markdown, CSV, EML or XLSX file.', 422));
+      if (file.size > 2 * 1024 * 1024)
+        return Promise.reject(new ApiError('Choose a document no larger than 2 MB.', 413));
+    }
     const body = new FormData();
     body.append('file', file);
     return this.post<KnowledgeItem>('/documents', body);

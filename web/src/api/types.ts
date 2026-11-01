@@ -235,6 +235,8 @@ export interface ReviewCard {
   status: 'pending' | 'waiting_second_president' | 'approved' | 'rejected';
   opened_at?: string;
   decided_at?: string;
+  warning?: string;
+  outdated?: boolean;
 }
 export interface ReviewDecision {
   decision: string;

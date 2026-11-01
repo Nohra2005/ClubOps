@@ -267,7 +267,7 @@ export default function Settings() {
                   <input
                     className="sr-only"
                     type="file"
-                    accept=".pdf,.txt"
+                    accept={api.mode === 'http' ? '.txt,.md,.csv,.eml,.xlsx' : '.pdf,.txt'}
                     ref={uploadRef}
                     aria-label="Upload source document"
                     onChange={async (e) => {
@@ -307,12 +307,19 @@ export default function Settings() {
               ) : (
                 <EmptyState
                   title="No documents yet."
-                  description="Upload an authorized PDF or text file to begin."
+                  description={
+                    api.mode === 'http'
+                      ? 'Upload an authorized text document or expense spreadsheet to begin.'
+                      : 'Upload an authorized PDF or text file to begin.'
+                  }
                 />
               )}
             </Resource>
             <p className="inline-note upload-note">
-              PDF or text · up to 10 MB · uploaded content stays unverified until reviewed.
+              {api.mode === 'http'
+                ? 'TXT, MD, CSV, EML or XLSX · up to 2 MB'
+                : 'PDF or text · up to 10 MB'}
+              {' · uploaded content stays unverified until reviewed.'}
             </p>
           </section>
           <section className="panel" id="usage">

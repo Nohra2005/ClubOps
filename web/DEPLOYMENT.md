@@ -1,8 +1,9 @@
 # Deploy ClubOps (C-18 / C-14)
 
-**Status, 26 October 2026:** deployment files are prepared; no service, paid resource,
+**Status, 1 November 2026:** production and local images build and run; no service, paid resource,
 OAuth client or production URL has been created. The local API and production router
-are tested with synthetic data. A container build still needs a running Docker engine.
+are tested with synthetic data. Container replacement preserves SQLite data and the
+existing local session. PR #44 adds these checks to GitHub CI.
 
 ## Hosting decision needed
 
@@ -65,6 +66,36 @@ as a Docker build argument; provider keys stay in runtime configuration.
 
 ## Local packaging checks
 
+For the complete local app, run `docker compose up --build` from the repo root and open
+`http://127.0.0.1:8080/login`. The explicit `local` target enables dev sign-in for the
+synthetic `president@example.com` account, initializes the public rulebook once per
+version and preserves data/session keys on the named volume. Configure an unused port
+with `CLUBOPS_LOCAL_PORT` if 8080 is taken. Compose 2.24+ supports the optional `.env`.
+Planning still needs appropriate recordings or provider configuration; replay does not
+invent a model response. No model runs merely because the service starts.
+
+The default Docker target is production and cannot compile a local-login frontend.
+The local entrypoint is excluded from the production image. Never deploy the local
+target publicly or attach it to real production data.
+
+### Networks with an organization certificate
+
+If dependency downloads fail with an unknown certificate issuer, supply a trusted CA
+bundle as a temporary [BuildKit secret](https://docs.docker.com/build/building/secrets/),
+not as a build argument or a committed certificate. TLS verification stays enabled:
+
+```sh
+docker build --secret id=clubops_build_ca,src=/private/path/trusted-roots.pem --build-arg VITE_GOOGLE_CLIENT_ID=<public-client-id> -t clubops .
+```
+
+For Compose, add a private override file declaring `services.app.build.secrets:
+[clubops_build_ca]` and `secrets.clubops_build_ca.file: /private/path/trusted-roots.pem`,
+then pass both files with `docker compose -f docker-compose.yml -f <private-override> up --build`.
+The secret is consumed only by npm/uv dependency installation and is absent from the
+runtime image. Use trusted public roots only; never export a private key or disable TLS.
+
+### Production package
+
 With Docker running, from the repo root:
 
 ```sh
@@ -88,5 +119,24 @@ npm run test:e2e:production
 
 The browser suite starts its own synthetic API and Caddy on ports 8001/5175.
 Set `CADDY_BIN` to a Caddy executable path if it is not on PATH. It verifies deep links,
-JSON API errors, missing assets and the real plan/approval/session flow. This does not
-verify image construction, Render persistence, a real Google account or provider calls.
+JSON API errors, missing assets and the real plan/approval/session flow. Separate Compose
+checks verify actual image construction and volume persistence. Neither verifies Render
+persistence, a real Google account or provider calls.
+
+### Reproduce the container regression checks
+
+```sh
+cd web
+npm ci
+npm run test:e2e:compose
+```
+
+Set `CLUBOPS_COMPOSE_URL` if testing a different loopback port. The suite requires an
+already-running local Compose app; it never starts a public service. For persistence
+checks, use a separate `clubops-ci` or `clubops-bonus-check` Compose project and set
+`CLUBOPS_COMPOSE_TEST_PROJECT` to that name before running
+`node web/scripts/check-compose-persistence.mjs` from the repo root. This intentionally
+replaces that project's container while keeping the volume. It checks a synthetic record
+and the previous session, then removes its check record. Do not use a real-data project.
+`node web/scripts/check-build-context.mjs` checks the actual BuildKit context with
+synthetic canaries. See `.github/workflows/container.yml` for a clean CI reproduction.
