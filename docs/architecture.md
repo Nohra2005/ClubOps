@@ -1,76 +1,64 @@
 # Architecture
 
-ClubOps keeps a student club's **know-how** alive across cabinet turnover and uses it to prepare the club's event paperwork.
-The knowledge base is the spine; the **handover** and the **event packet** are its two consumers.
+Updated 1 November 2026 from the published contracts, plan and API table. Local integration and container checks are recorded in `web/VERIFICATION.md`; public deployment and live provider measurements remain pending.
+
+## Request and approval flow
 
 ```mermaid
 flowchart TB
-    subgraph IN["Untrusted inputs"]
-      chats["Old chats & handover docs<br/>(AUB Running Club, with consent)"]
-      mail["OSA emails"]
-      retro["Retrospectives & interviews"]
-      desc["Event descriptions"]
-    end
-
-    subgraph KB["Knowledge base (verified, versioned, sourced)"]
-      direction LR
-      aub["AUB-wide layer<br/>rules"]
-      club["Club layer<br/>procedures · lessons · relationships · gotchas<br/>decisions · identity · rhythm · obligations"]
-    end
-
-    chats & mail & retro -->|capture · agentic| prop["Know-how proposals<br/>(create · merge · update · retire · contradiction)"]
-    prop -->|verify · HUMAN| KB
-
-    KB -->|find-gaps · agentic| gaps["Gaps"] -->|interview questions| retro
-    KB --> ho["build-handover · deterministic"] --> pack["Handover pack<br/>every line cited"]
-    pack -->|sign-off · HUMAN| done["Role transferred"]
-
-    desc -->|intake · agentic| spec["EventSpec + provenance"]
-    KB -->|surface · agentic| spec
-    spec -->|apply-rules · agentic| rules["Verdicts"] -->|derive · deterministic| reqs["Requirements"]
-    reqs -->|plan-backward · deterministic| plan["Plan with due dates"]
-    spec & reqs -->|draft-proposal · agentic| draft["Proposal draft"] -->|validate · deterministic| ready["Submittable packet"]
-
-    ready & plan & pack --> queue["Approval queue · HUMAN<br/>payload-hash bound · idempotent"]
-    queue --> out["Emails · calendar invites · OSA submission · WhatsApp drafts"]
+  cabinet[Cabinet member] --> web[React web app]
+  web --> api[FastAPI: cookie session, CSRF and role checks]
+  inputs[Untrusted descriptions, teaching and documents] --> api
+  api --> planner[Planner: model chooses the next tool]
+  api --> learner[Learning: extract and propose]
+  learner --> review[Pending proposals and source warnings]
+  review --> human[Person verifies or rejects]
+  human --> memory[SQLite: shared AUB rules and isolated club knowledge]
+  memory --> planner
+  planner --> checks[Rule checks, requirements and deadline calculation]
+  checks --> plan[Saved plan and revision]
+  plan --> approval[Person approves this revision]
+  approval --> calendar[Internal calendar items]
+  memory --> handover[Deterministic cited role guide and gaps]
+  api --> records[Metadata-only run records]
+  records --> reports[Usage screen and report CLI]
 ```
 
-## Three kinds of component
+The planner can choose its own steps inside a user-started run. It cannot approve its own plan, verify knowledge or send a message. An edited event requires review of the new revision. Google calendar synchronization, new-club setup, the full chatbot and draft-generation wiring have separate owners/tasks; consult [api.md](api.md) for the current endpoint status rather than assuming a diagram is deployed functionality.
 
-| Kind | What it does here | Why not the other kinds |
+## What makes decisions
+
+| Component | Decision and boundary | Public interface/evidence |
 |---|---|---|
-| **Agentic** (a model decides) | Reading messy chats and emails, deciding what counts as know-how, merging and spotting contradictions, judging whether a rule applies, phrasing interview questions, ranking what is relevant now | The input is unstructured and the judgement is contextual; rules written by hand would miss most of it |
-| **Deterministic** (plain code) | Form validation, requirement derivation, due-date math, gap checks, handover assembly, the approval gate | Same input must give the same output; these are checkable and must never "hallucinate" |
-| **Human-controlled** | Verifying know-how, approving every outgoing action, signing off a handover | Wrong know-how or a wrong email to OSA or a sponsor costs the club trust; a person stays accountable |
+| Planner | Model chooses tools and asks questions; code checks valid transitions and enforces each explicit allowance of 8 steps / $0.05 | `AgentRun`, event contracts, API run endpoints, `tests/test_api.py` |
+| Rule check | Plain code evaluates explicit facts; a bounded model call handles description-dependent conditions. Missing/failed evidence stays uncertain | Rule/verdict contracts, `docs/plan.md`, `tests/test_rulebook.py` |
+| Learning | Model proposes from redacted input; code validates quoted support and candidate shape. Expense spreadsheets have a deterministic price-list path | Capture/know-how contracts, `tests/test_learning.py` |
+| Memory approval | A person verifies, rejects or edits proposals. Warnings and outdated sources require individual frontend review rather than batch approval | Verify contracts, Review API, `web/e2e/contracts.spec.ts` |
+| Plan approval | Server checks the submitted revision before creating internal calendar items | Event/API contracts, `web/e2e/live-api.spec.ts` |
+| Handover | Existing plain-code assembly becomes a view retaining current sources and explicit gaps; no model call | Handover contracts, `tests/test_handover_view.py`, `tests/test_handover_endpoint.py` |
+| Reporting | Deduplicates cumulative snapshots and trace IDs; absent metrics are unavailable, not zero | `src/clubops/reports/`, report tests |
 
-The full list, with each capability's inputs, outputs, policy and permissions, is generated from code: [capabilities.md](capabilities.md).
+Draft text is for a person to inspect and copy/send. Handover sign-off and several editing actions remain demo-only; the real transport reports unavailable actions explicitly.
 
-## Design rules
+## Hosting and authentication
 
-1. **Capabilities, not agents, own the contracts** ([ADR 0001](adr/0001-capabilities-not-agents.md)). A single agent and a multi-agent setup call the same typed functions, so they can be compared fairly.
-2. **Nothing enters the knowledge base without a cabinet member** ([ADR 0002](adr/0002-verified-writes.md)). The model proposes; a person verifies.
-3. **Untrusted content is data.** Chats, emails and interview answers arrive as `Untrusted` and only `capture` and `intake` accept them. They can produce proposals, never actions.
-4. **Every side effect goes through the approval gate** ([ADR 0005](adr/0005-approval-gate.md)). An approval is bound to the exact payload; an edit voids it.
-5. **Every fact carries its source.** Know-how cites the messages it came from; answers cite know-how or say "not known"; handover lines cite items or open gaps.
-6. **Contracts are code** ([ADR 0003](adr/0003-pydantic-source-of-truth.md)). Pydantic models are the source of truth; JSON Schemas and docs are generated and CI fails on drift.
+Production packaging uses one origin: Caddy serves the static React build and proxies `/api` to one API worker. SQLite databases and metadata live under `CLUBOPS_DATA_DIR` on the persistent volume. The default production image requires a Google client ID, a server session secret, secure cookies and dev sign-in disabled. Google credentials are exchanged for an HttpOnly session; the browser does not store the token. Club and permissions come from the server session, never the selected UI club or a caller-supplied URL.
 
-## Trust boundaries
+The separate Compose `local` target compiles an explicit dev sign-in form, boots a synthetic cabinet account, and publishes only a loopback port. It generates a local signing secret on the named volume so sessions survive container replacement. The default production target rejects a frontend built with local login. One-command setup and its remaining provider/hosting requirements are in the [README](../README.md) and [deployment guide](../web/DEPLOYMENT.md).
 
-```
- outside world (chats, email, sponsors)  ──Untrusted──▶  capture / intake  ──proposals──▶  [human verify]  ──▶  knowledge base
- knowledge base  ──▶  agentic + deterministic capabilities  ──ProposedAction──▶  [human approve]  ──▶  outside world
-```
+## Data and credential boundaries
 
-The model never holds credentials and never sends anything itself. See [threat-model.md](threat-model.md).
+1. External text is `Untrusted` data. Hidden instructions do not gain system authority; learning proposals remain subject to human review.
+2. Shared AUB rules and per-club knowledge use separate SQLite scopes. Cross-club IDs return 404. Frontend visibility is not authorization.
+3. Contract definitions own field names and versions. Generated schemas must match them in CI; HTTP screen adapters do not redefine Python contracts.
+4. Provider credentials stay on the server. Build inputs exclude private/runtime files; the optional local trust bundle is a temporary BuildKit secret and is not copied into the image.
+5. Reporting stores counts, timing, model/prompt versions and cost metadata, never prompts, source text or personal labels. Producers must identify the club before using the scoped trace sink.
+6. Retention, consent and deletion limits are explicit in [data-provenance.md](data-provenance.md) and [knowledge-base.md](knowledge-base.md). A named volume preserves data but does not prove that backups or deletion jobs exist.
 
-## Where things live
+## Current operations and limits
 
-| Path | Contents |
-|---|---|
-| `src/clubops/contracts/` | All input/output models (the contracts) |
-| `src/clubops/capabilities/` | Registry, runner (policy, auth, tracing), deterministic capabilities |
-| `src/clubops/knowhow/` | Knowledge store, gap checks, handover assembly |
-| `data/forms/` | OSA forms as versioned data |
-| `schemas/` | Generated JSON Schemas |
-| `eval/` | Evaluation datasets and protocol |
-| `docs/` | This documentation |
+- Python CI checks lint, strict types, coverage and schema drift; dependency auditing remains active.
+- PR #44 adds frontend quality/browser gates and container/persistence checks. A teammate review and green main run are still required before claiming the new gates are established on main.
+- OpenTelemetry export, deployed monitoring/alerts and final evaluation thresholds remain C-25/C-26/C-22 work. Metadata fields alone do not prove those systems are running.
+- Runs execute in-process; a single worker/instance is the supported deployment configuration. Finish active planning before a restart. Durable job recovery and horizontal scaling are not claimed.
+- Real provider quality, production OAuth, persistent hosting recovery and real-world pilot outcomes are not established by scripted tests.

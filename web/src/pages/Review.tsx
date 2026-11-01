@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router';
 import { Check, CheckCheck, FileText, GitMerge, Scale, ShieldCheck, Upload, X } from 'lucide-react';
 import { useApp } from '../AppContext';
 import type { ReviewCard, ReviewDecision, ReviewFilter } from '../api/types';
+import { canBatchApprove } from '../api/review-policy';
 import {
   PageHeading,
   EmptyState,
@@ -90,6 +91,15 @@ function ReviewItem({
         </div>
         <StatusBadge status={card.status} />
       </div>
+      {(card.warning || card.outdated) && (
+        <section className="notice warning" aria-label="Source warnings">
+          <div>
+            {card.warning && <p>{card.warning}</p>}
+            {card.outdated && <p>This source may be outdated. Check the current version first.</p>}
+            <p>Review this proposal individually. It is excluded from batch approval.</p>
+          </div>
+        </section>
+      )}
       {card.alternative ? (
         <div className="review-comparison">
           <div>
@@ -333,7 +343,7 @@ export default function Review() {
       document.getElementById(search.get('item')!)?.scrollIntoView({ block: 'center' });
   }, [review.value, search]);
   async function approveGroup(cards: ReviewCard[]) {
-    const eligible = cards.filter((c) => c.type === 'fact' && c.status === 'pending');
+    const eligible = cards.filter(canBatchApprove);
     const result = await batch.run(async () => {
       let count = 0;
       try {
@@ -404,7 +414,7 @@ export default function Review() {
                     {cards.length} {cards.length === 1 ? 'item' : 'items'}
                   </span>
                 </h2>
-                {canEdit && cards.some((c) => c.type === 'fact' && c.status === 'pending') && (
+                {canEdit && cards.some(canBatchApprove) && (
                   <button
                     className="text-button"
                     disabled={batch.pending}

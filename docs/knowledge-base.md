@@ -1,32 +1,38 @@
-# Knowledge base (memory)
+# Knowledge base and working memory
 
-The brief asks each memory to define its **scope, lifetime, retrieval strategy and privacy**. ClubOps has one long-lived memory, the club's know-how, plus short-lived working state.
+Updated 1 November 2026. The memory model separates proposed knowledge, verified knowledge and event/run working state. Public interfaces are in `src/clubops/contracts/`; availability is in `docs/api.md`.
 
-## What counts as know-how
+## Stores, scope and lifetime
 
-| Kind | Example (synthetic) |
-|---|---|
-| Procedure | Booking Green Field: reservation form, then calendar invite; three weeks ahead |
-| Lesson | Early-morning runs drew more people than evening runs |
-| Relationship | A local supplier gives water; prefers WhatsApp; wants its logo on the bib |
-| Gotcha | OSA sends forms back if times are not in 24-hour format |
-| Decision | Entry fees were dropped because attendance fell (what and why) |
-| Identity | Tone, audience, signature events, values |
-| Rhythm | What happens in which month each year |
-| Obligation | Semester report to OSA, membership minimum |
-| Rule (AUB-wide) | Non-AUB guests require approval |
+| Store | Scope and lifetime | Retrieval and privacy |
+|---|---|---|
+| Verified know-how | Shared AUB rules or one club; current while verified and within its validity window. Old versions remain history until an explicit retention decision | SQLite/full-text search plus kind, tag and validity filters. No embeddings are currently required. Club access comes from the session |
+| Pending proposals | One club; remain pending until a person verifies/rejects/edits them | Review queue with source, proposed change, known alternative, instruction warning and outdated flag. Not treated as verified answers |
+| Contacts, assets and event history | Club-scoped operational records; separate from a free-form conversation | Access through published contracts/API views. Authorized contact details can exist privately; they must not appear in public fixtures, traces or model prompts |
+| Event specifications and runs | One club and revision/run ID; saved so the UI can poll and reload | Facts, steps, budget and questions support the current workflow. Runtime data may be sensitive. In-process background execution does not promise restart recovery |
+| Handover guide | Computed for one club, role and current knowledge view | Deterministic assembly plus all current citations and explicit gaps. Production sign-off/version retention is not yet wired; the demo sign-off is synthetic |
+| Model recordings | Private replay/record material under configured storage | Replay avoids paid calls; recordings may contain derived content and are not metadata-only. Keep them private and subject to source authorization |
+| Run and trace reports | Per-club metadata; month aggregation uses Beirut time for recorded metrics | Deduplicate cumulative snapshots/trace IDs. No prompt, answer or step text in report records. Unscoped global traces are not read into a club's report |
+| Browser demo | Synthetic workspace, isolated by club and test user | Browser storage only for the demo; it is not production authentication or approved club knowledge |
 
-## Stores
+No automatic raw-data, history, recording or trace purge is claimed. Retention/deletion and backup restoration still require an implemented operational policy and evidence; see [data-provenance.md](data-provenance.md).
 
-| Store | Scope | Lifetime | Retrieval | Privacy |
-|---|---|---|---|---|
-| **Verified know-how** | One club, or AUB-wide for rules | Until retired or superseded; old versions kept as history | Filters on kind, tags, scope, validity date; full-text search (planned); embeddings only if evaluation shows a gain ([ADR 0004](adr/0004-storage-and-retrieval.md)) | Cabinet-only by default. Contacts stored as references, never raw numbers. Quotes capped at 500 characters |
-| **Pending proposals** | One club | Until verified or rejected | By club, op, target item | Same as above; shown as open questions, never as facts |
-| **Raw sources** (chat exports, emails, interview notes) | One club | Processed, then deleted; never committed to the repo | Not retrieved; only the extracted know-how and short quotes remain | Personal data redacted before capture; consent recorded per source ([data-provenance.md](data-provenance.md)) |
-| **Requester details** (AUB ID, phone) | One request | The duration of one draft | Not retrieved | Held as secrets; never stored, logged or traced |
-| **Handover packs** | One club and role | Kept per signed version | By role and date | Cabinet-only |
-| **Traces** | System | 90 days (planned) | By trace id, capability | Metadata only; no request or response content |
+## Knowledge lifecycle
 
-## Lifecycle of an item
+A source is untrusted input. Learning extracts source-supported candidates and submits proposals. Existing knowledge can lead to a create, merge, update or contradiction proposal; a model cannot verify its own output. Human decisions create the verified view, while retired, superseded, expired and unapproved items stay out of current knowledge.
 
-`proposed → verified → (merged into · updated by · contradicted by) → superseded` or `retired`. Only `verified` items inside their validity window are **current**. Everything else is history or an open question.
+Instruction warnings and old-document flags are visible in Review and excluded from bulk approval. They remain available for an individual source check. Official status cannot be acquired merely by uploading a document or typing an instruction into a chat.
+
+Handover entries retain every current approved source. Unsupported entries become gaps naming a question, who to ask and where to look; they do not become fabricated rules. The chatbot's production implementation is separate J-15 work and is still a placeholder on main at this update.
+
+## Examples and authority
+
+Know-how kinds include procedures, lessons, relationships, gotchas, decisions, identity, rhythm, obligations and shared rules. A synthetic operational example is: "The example supplier prefers a confirmation call." It is test data, not an AUB policy. Real lead times and submission requirements must come from the sourced rulebook or authorized verified club knowledge; none are inferred from these examples.
+
+## Authentication and credentials
+
+Production Google identity is matched to the cabinet list, with an HttpOnly session cookie. Session club/role authorizes reads and decisions. Provider keys remain server-side. Local Compose has a separate explicit development target and volume-backed random signing secret; the default production image rejects local-login builds and insecure development cookie settings.
+
+## Known limits
+
+Missing model-token/latency/retry records appear as unavailable, not zero. Real provider measurements, OpenTelemetry export, deployed alerts, production retention/backup recovery and evidence that handover improves users' results remain separate tasks. Read-only screen visits do not silently launch a model run or verify knowledge.

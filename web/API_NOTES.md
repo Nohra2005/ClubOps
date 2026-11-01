@@ -4,7 +4,7 @@ The supplied 22 October UI PDF is the source for `/api` paths and the example ch
 
 The real transport uses authenticated cookies, encoded path identifiers, abortable requests, a bounded timeout and generic error messages. The backend must enforce authorization, CSRF protection, club isolation, content hashes and spend limits. Hiding a frontend button is not authorization.
 
-## Current integration — 26 October 2026 (C-13 / C-19 / C-20)
+## Current integration — 1 November 2026 (C-13 / C-19 / C-20)
 
 The published [API table](../docs/api.md) now resolves the earlier T-22 questions.
 The historical C-17 notes below describe the earlier contract review, not current blockers.
@@ -15,7 +15,7 @@ The historical C-17 notes below describe the earlier contract review, not curren
 | Google / logout | Official GIS button, `POST /auth/google {credential}`, HttpOnly session; protected `POST /auth/logout` must succeed before redirect. No token storage. Public client ID and real account test pending |
 | Planning        | Poll canonical run; questions are plain text; explicit `/continue` resumes the same ID and polling; leaving a limited run sends no invented stop action                                               |
 | Approval        | Revision sent to the server; local real-API test confirms no calendar items before approval and persistence after approval/reload. Approver IDs resolve through the cabinet list                      |
-| Chat            | Accept richer UI source objects and canonical citation IDs. Current server ask is an uncertainty placeholder until T-17; teaching is 501 until T-18                                                   |
+| Chat            | Accept richer UI source objects and canonical citation IDs. Current server ask is an uncertainty placeholder until J-15; teaching is live, including no-fact results                                  |
 | Handover        | Live C-19 deterministic endpoint; UI/export preserves all supplied sources and gap questions. Sign-off remains demo-only                                                                              |
 | Usage           | Existing monthly planning totals plus recorded outcomes/cost-per-success; steps labelled accurately. Trace metrics remain unavailable until club-scoped traces are supplied                           |
 | Calendar        | Internal approved items work; Google sync is not connected in the API                                                                                                                                 |
@@ -24,8 +24,13 @@ Verified locally with real HTTP/SQLite on desktop and 375px phone: plan → appr
 calendar, handover, usage and cookie logout. Google SDK/credential behavior and failure
 states use intercepted tests. See `VERIFICATION.md` for conditions and limitations.
 
-Remaining server work: T-17 answers, T-18 teaching/documents/after-event learning,
-T-20 setup, J-07 draft wiring, Google Calendar wiring, and uncontracted `__ui` actions.
+T-18 teaching, after-event learning and uploads are now live. The UI accepts empty
+review IDs without inventing a saved fact, shows instruction/outdated-source warnings,
+and excludes flagged proposals from batch approval. HTTP uploads accept TXT, MD, CSV,
+EML and XLSX up to 2 MB; the PDF/10 MB demo path is labelled separately.
+
+Remaining server work: J-15 answers, C-21 setup, J-07 draft wiring,
+Google Calendar wiring, and uncontracted `__ui` actions.
 These produce explicit unavailable responses; HTTP mode never saves them in demo storage.
 C-13's deployed/every-screen completion criterion is still open.
 

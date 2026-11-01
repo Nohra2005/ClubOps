@@ -24,11 +24,13 @@ function Reply({ reply, id }: { reply: ChatReply; id: string }) {
         <div className="learned-card">
           <CheckCheck size={18} />
           <div>
-            <strong>New fact sent for review</strong>
+            <strong>{reply.review_id ? 'New fact sent for review' : 'No new fact proposed'}</strong>
             <p>{reply.text}</p>
-            <Link to={`/review?item=${encodeURIComponent(reply.review_id)}`}>
-              Review it before the club relies on it →
-            </Link>
+            {reply.review_id && (
+              <Link to={`/review?item=${encodeURIComponent(reply.review_id)}`}>
+                Review it before the club relies on it →
+              </Link>
+            )}
           </div>
         </div>
       ) : (

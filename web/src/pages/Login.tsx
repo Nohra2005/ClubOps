@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { ArrowRight } from 'lucide-react';
 import { apiMode } from '../api';
 import { GoogleSignIn } from '../components/GoogleSignIn';
+import { DevSignIn } from '../components/DevSignIn';
 
 /** Public route: it must remain reachable when /me is unauthorized or the server is down. */
 export default function Login() {
@@ -37,7 +38,9 @@ export default function Login() {
         <h2>Your club starts here.</h2>
         <p>Sign in to your cabinet workspace.</p>
         {apiMode === 'http' ? (
-          clientId ? (
+          import.meta.env.VITE_DEV_LOGIN === '1' ? (
+            <DevSignIn />
+          ) : clientId ? (
             <GoogleSignIn clientId={clientId} />
           ) : (
             <p role="status" className="inline-note">

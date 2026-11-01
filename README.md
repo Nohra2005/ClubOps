@@ -9,7 +9,7 @@ Tatiana Nohra · Christophe El Chabab · Joey Saade
 
 ## The problem
 
-AUB club cabinets are volunteers who change every year. How things actually get done (which form, how far ahead, who to call, what went wrong last time, why a decision was made) lives in old WhatsApp chats and people's heads, and leaves when they graduate. Meanwhile every event needs a 33-question OSA proposal, a venue booking, an Expense Form, sponsor confirmations and reminders, and small mistakes get submissions sent back.
+AUB club cabinets are volunteers who change every year. How things actually get done (which form, how far ahead, who to call, what went wrong last time, why a decision was made) lives in old WhatsApp chats and people's heads, and leaves when they graduate. Meanwhile every event needs a 52-question OSA proposal (including conditional sections), a venue booking, an Expense Form, sponsor confirmations and reminders, and small mistakes get submissions sent back.
 
 ## What ClubOps does
 
@@ -22,12 +22,39 @@ Start with [docs/architecture.md](docs/architecture.md). Contracts: [docs/contra
 
 ## Quickstart
 
-Requires [uv](https://docs.astral.sh/uv/).
+### Run the complete app locally
+
+Requires Docker with Compose 2.24+ (no Google account or model key needed for local sign-in):
+
+```sh
+docker compose up --build
+```
+
+Open **http://127.0.0.1:8080/login** and choose **Sign in locally**, using the synthetic
+`president@example.com` account. The local target runs the real API and SQLite; it
+stores data and a random local session key on a named volume. It binds to loopback.
+This is a development setup; public deployment uses the separate production target.
+
+Copy `.env.example` to ignored `.env` only when configuring a provider or recordings.
+Replay is the default: reading screens/signing in needs no provider calls, while a new
+model-generated plan requires a matching recording or deliberate provider setup.
+`docker compose down` stops the app and retains its volume. See
+[deployment and proxy trust setup](web/DEPLOYMENT.md) for production requirements,
+optional local CA configuration, checks and storage limits.
+
+### Work without Docker
+
+Requires [uv](https://docs.astral.sh/uv/) for Python and Node 22.12+ for `web/`.
 
 ```bash
 make setup     # install from the lockfile
 make check     # lint, strict types, tests + coverage, contract drift
 ```
+
+Frontend commands and the local API setup are in [web/README.md](web/README.md) and
+[docs/api.md](docs/api.md). New [web](.github/workflows/web.yml) and
+[container](.github/workflows/container.yml) checks are proposed in PR #44; their
+verified runs and remaining bonus work are tracked in [the engineering evidence](web/ENGINEERING_EVIDENCE.md).
 
 ## Status
 
