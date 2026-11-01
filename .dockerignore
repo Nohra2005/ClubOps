@@ -28,6 +28,8 @@ web/*
 !web/public/**
 !web/Caddyfile
 !web/start.sh
+!web/start-local.sh
+!web/serve.sh
 **/*.test.ts
 **/*.test.tsx
 **/__pycache__/

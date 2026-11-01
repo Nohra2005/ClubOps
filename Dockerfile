@@ -10,8 +10,9 @@ RUN --mount=type=secret,id=clubops_build_ca \
 COPY web/ ./
 # Public OAuth ID only. No provider keys or OAuth secrets belong in build args.
 ARG VITE_GOOGLE_CLIENT_ID
+ARG VITE_DEV_LOGIN=0
 ENV VITE_API_MODE=http VITE_API_BASE=/api
-RUN test -n "$VITE_GOOGLE_CLIENT_ID" && npm run build
+RUN if [ "$VITE_DEV_LOGIN" != 1 ]; then test -n "$VITE_GOOGLE_CLIENT_ID"; fi && npm run build
 
 FROM ghcr.io/astral-sh/uv:0.13.5 AS uv
 FROM caddy:2.11.7 AS caddy
@@ -30,10 +31,21 @@ RUN --mount=type=secret,id=clubops_build_ca \
 COPY scripts/load_rulebook.py scripts/add_member.py ./scripts/
 COPY data/rulebook/aub-rules.json ./data/rulebook/aub-rules.json
 COPY --from=frontend /build/web/dist ./web/dist/
-COPY web/Caddyfile web/start.sh ./web/
+COPY web/Caddyfile web/start.sh web/serve.sh ./web/
 # Accommodate Windows CRLF checkouts without requiring a repository-wide rewrite.
-RUN sed -i 's/\r$//' web/start.sh && chmod +x web/start.sh && mkdir -p /var/data/clubops
+RUN sed -i 's/\r$//' web/*.sh && chmod +x web/*.sh && mkdir -p /var/data/clubops
 ARG VITE_GOOGLE_CLIENT_ID
-ENV CLUBOPS_WEB_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+ARG VITE_DEV_LOGIN=0
+ENV CLUBOPS_WEB_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID CLUBOPS_WEB_DEV_LOGIN=$VITE_DEV_LOGIN
 EXPOSE 10000
 CMD ["bash", "/app/web/start.sh"]
+
+FROM runtime AS local
+COPY web/start-local.sh ./web/start-local.sh
+RUN sed -i 's/\r$//' web/start-local.sh && chmod +x web/start-local.sh && touch /app/.local-development-build
+ENV CLUBOPS_DEV_LOGIN=1 CLUBOPS_COOKIE_SECURE=0
+CMD ["bash", "/app/web/start-local.sh"]
+
+# The default build is production; a local-login frontend cannot ship in this target.
+FROM runtime AS production
+RUN test "$CLUBOPS_WEB_DEV_LOGIN" = 0
