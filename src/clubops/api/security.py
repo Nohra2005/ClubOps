@@ -17,9 +17,11 @@ import hmac
 import json
 import re
 import sqlite3
+import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import httpx
 
@@ -92,8 +94,12 @@ _EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[a-z]{2,}$")
 
 
 class MemberStore:
+    """The cabinet list, shared by every request. One SQLite connection serves all request threads, so every
+    use of it (including reading the rows) holds a lock: unsynchronized use breaks the connection (issue #45)."""
+
     def __init__(self, data_dir: Path) -> None:
         data_dir.mkdir(parents=True, exist_ok=True)
+        self._lock = threading.RLock()
         self._db = sqlite3.connect(str(data_dir / "general.db"), check_same_thread=False)
         self._db.execute(
             "CREATE TABLE IF NOT EXISTS members (member_id TEXT PRIMARY KEY, club_id TEXT NOT NULL, "
@@ -101,21 +107,29 @@ class MemberStore:
         )
 
     def close(self) -> None:
-        self._db.close()
+        with self._lock:
+            self._db.close()
+
+    def _one(self, sql: str, params: tuple[str, ...]) -> Any:
+        with self._lock:
+            return self._db.execute(sql, params).fetchone()
+
+    def _all(self, sql: str, params: tuple[str, ...]) -> list[Any]:
+        with self._lock:
+            return self._db.execute(sql, params).fetchall()
 
     @staticmethod
     def _row(row: tuple[str, str, str, str, str] | None) -> Member | None:
         return None if row is None else Member(row[0], row[1], row[2], row[3], Role(row[4]))
 
     def get(self, member_id: str) -> Member | None:
-        return self._row(self._db.execute("SELECT * FROM members WHERE member_id = ?", (member_id,)).fetchone())
+        return self._row(self._one("SELECT * FROM members WHERE member_id = ?", (member_id,)))
 
     def by_email(self, email: str) -> Member | None:
-        row = self._db.execute("SELECT * FROM members WHERE email = ?", (email.strip().lower(),)).fetchone()
-        return self._row(row)
+        return self._row(self._one("SELECT * FROM members WHERE email = ?", (email.strip().lower(),)))
 
     def of_club(self, club_id: str) -> list[Member]:
-        rows = self._db.execute("SELECT * FROM members WHERE club_id = ? ORDER BY name", (club_id,)).fetchall()
+        rows = self._all("SELECT * FROM members WHERE club_id = ? ORDER BY name", (club_id,))
         return [m for m in (self._row(r) for r in rows) if m is not None]
 
     def add(self, club_id: str, name: str, email: str, role: Role) -> Member:
@@ -125,22 +139,23 @@ class MemberStore:
         if role is Role.MEMBER:
             raise ValueError("only cabinet members and the adviser have accounts")
         slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:40] or "member"
-        member_id, n = f"m-{slug}", 1
-        while self.get(member_id) is not None:
-            n += 1
-            member_id = f"m-{slug}-{n}"
-        with self._db:
-            self._db.execute(
-                "INSERT INTO members VALUES (?, ?, ?, ?, ?)", (member_id, club_id, name.strip(), email, role.value)
-            )
-        member = self.get(member_id)
+        with self._lock:  # pick a free id and insert it as one step, so two requests can't take the same id
+            member_id, n = f"m-{slug}", 1
+            while self.get(member_id) is not None:
+                n += 1
+                member_id = f"m-{slug}-{n}"
+            with self._db:
+                self._db.execute(
+                    "INSERT INTO members VALUES (?, ?, ?, ?, ?)", (member_id, club_id, name.strip(), email, role.value)
+                )
+            member = self.get(member_id)
         assert member is not None  # noqa: S101 (just written)
         return member
 
     def remove(self, club_id: str, member_id: str) -> bool:
-        with self._db:
+        with self._lock, self._db:
             cur = self._db.execute("DELETE FROM members WHERE member_id = ? AND club_id = ?", (member_id, club_id))
-        return cur.rowcount == 1
+            return cur.rowcount == 1
 
 
 # ------------------------------------------------------------------ google
