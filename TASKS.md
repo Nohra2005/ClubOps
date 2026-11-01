@@ -14,7 +14,7 @@ Status values: `todo` · `doing` · `blocked` · `review` (PR open) · `done`.
 
 - Christophe builds every screen against the **fake API data** in the UI spec, so he never waits for the backend. He switches to the real backend at C-13.
 - Joey's calendar part reads the **calendar contract** (`docs/calendar-contract.md`). The backend sends calendar items only after a plan is approved.
-- Tatiana's evaluation data (T-01 to T-05) is **frozen before** the planner (T-14) and chatbot (J-15) are built. Otherwise the test can be tuned to the system.
+- Tatiana's evaluation data (T-01 to T-04) is **frozen before** the planner (T-14) and chatbot (J-15) are built. Otherwise the test can be tuned to the system.
 - The final test run (T-26) needs everything else done. Keep the last week for it.
 
 Reference documents:
@@ -57,13 +57,7 @@ Reference documents:
 - What: Pick a random 30% held out (record the seed). Record the file hashes and date in `eval/FROZEN.md`. Other clubs' sets are frozen later in T-38.
 - Done when: `eval/FROZEN.md` is committed, before any code for T-14 or J-15.
 
-### T-05 Line up the 3 graders and the grading sheet
-- Owner: tatiana
-- Status: doing
-- Needs: none
-- What: Ask 3 cabinet members outside the team (e.g. Gaëlle, Marc, Alexandra). Make a grading sheet: each part of a plan scored 1–5 (approvals, deadlines, proposal, budget, messages), with what each score means.
-- Done when: 3 people said yes and the sheet exists.
-- Progress (2026-10-31): graders chosen: Marc, Jana (founding VP) and Gaëlle (current VP), none on the team. Left: their yes, and the grading sheet.
+<!-- T-05 dropped on 2026-11-01 (D-82): approvals, proposal fields and cost are scored by code against the president's labels; human graders could not add to that. -->
 
 ### T-06 Baseline prompts
 - Owner: tatiana
@@ -163,8 +157,8 @@ Reference documents:
 ### T-26 Run the final evaluation
 - Owner: tatiana
 - Status: todo
-- Needs: T-05, T-06, T-14, T-15, J-12, J-15, T-38, C-27, J-17, C-32, J-19
-- What: Plan the held-out events with every baseline and with ClubOps (3 runs each, report the spread), plus ClubOps with an empty club memory (rules-only score) and the ASME events (D-50); automatic check against what really happened; blind 1–5 grading by the 3 graders; chatbot test; learning test; cost per successful plan. The measured real-world constraint (brief: "identify and evaluate at least one") is cost: run ClubOps with a cheap and a stronger model through OpenRouter and report quality, latency and cost per plan for each, so the model choice is a measured comparison. Commit sample traces (metadata only) in `traces/samples/`. Fix what it finds and turn each failure into a regression test.
+- Needs: T-06, T-14, T-15, J-12, J-15, T-38, C-27, J-17, J-19
+- What: Plan the held-out events with every baseline and with ClubOps (3 runs each, report the spread), plus ClubOps with an empty club memory (rules-only score) and the ASME events (D-50); automatic check against what really happened (approvals, proposal fields; no human graders, D-82); chatbot test; learning test; cost per successful plan. The measured real-world constraint (brief: "identify and evaluate at least one") is cost: run ClubOps with a cheap and a stronger model through OpenRouter and report quality, latency and cost per plan for each, so the model choice is a measured comparison. Commit sample traces (metadata only) in `traces/samples/`. Fix what it finds and turn each failure into a regression test.
 - Done when: result tables in `results/` (including the cheap vs stronger model comparison), reproducible with `make eval`.
 
 ### T-27 Report and evidence numbers
@@ -477,14 +471,8 @@ Reference documents:
 - What: A GitHub Projects board fed by `TASKS.md` (one card per task, columns = status), so ownership is visible on GitHub. One-week sprints (a Projects iteration per week with the tasks planned for it); a 10-minute review with the team each week, noted in one line under T-28.
 - Done when: the board matches `TASKS.md` and 3 weekly sprints are recorded.
 
-### C-32 Blind grading packets
-- Owner: christophe
-- Status: todo
-- Needs: T-05, T-06
-- What: The 3 graders score plans without knowing which system made them. A script takes each held-out event's plan from the 4 systems, shows them as Plan A-D in a random order per event (key saved privately), and produces one sheet per grader with T-05's 1-5 scale. A second command reads the filled sheets back and gives the mean grade per system, with how much the graders agree. Build and test it on synthetic plans.
-- Done when: packets and the score table work end to end on synthetic plans, with tests.
+<!-- C-32 dropped on 2026-11-01 (D-82): no human graders, so no blind grading packets. -->
 
----
 
 ## Joey: calendar, reminders, drafts
 

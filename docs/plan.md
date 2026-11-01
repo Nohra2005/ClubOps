@@ -35,7 +35,7 @@ Cabinet ──> Web app (Christophe) ──API──> Backend (Tatiana)
 
 ## Order of work
 
-1. **Before building the agent:** test data written and frozen (T-01 to T-05). Christophe and Joey start in parallel against fake data and the calendar contract.
+1. **Before building the agent:** test data written and frozen (T-01 to T-04). Christophe and Joey start in parallel against fake data and the calendar contract.
 2. **Core:** model client, redaction, storage, contracts (T-10 to T-13), then planner, rules, proposal, chatbot, learning (T-14 to T-18).
 3. **Complete the loop:** handover (C-19), new-club setup (C-21), daily check (J-11), API (T-22), deploy (C-18); frontend connects (C-13, C-14); calendar on the server (J-09).
 4. **Prove it:** pilot event (T-32), final evaluation (T-26), evaluation in CI (C-22), docs, poster, demo, grader check (T-27, C-29, C-30, J-18, C-28).
@@ -58,7 +58,7 @@ Each row says what the grader must find, where it will be, and which tasks produ
 | Grader looks for | Evidence | Tasks |
 |---|---|---|
 | Test sets made before the system, held out | `eval/FROZEN.md` with hashes and dates | T-01 to T-04 |
-| Baselines and clear metrics | Approvals caught/missed/false alarms, field accuracy, blind 1–5 grades from 3 graders, invented-answer rate, learning test | T-05, T-06, T-26, C-27, C-32, J-17, J-19 |
+| Baselines and clear metrics | Scored by code against the president's labels: approvals caught/missed/false alarms, proposal field accuracy, invented-answer rate, learning test, cost per plan (no human graders, D-82) | T-06, T-26, C-27, J-17, J-19 |
 | Honest variance | 3 runs per configuration, spread reported | T-26 |
 | Failures become tests | `docs/failure-matrix.md` rows with regression tests | J-13, T-26, J-06 |
 | Reproducible numbers | `make eval` from recorded responses, no API keys | T-10, T-26 |
