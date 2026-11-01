@@ -342,6 +342,7 @@ Reference documents:
 - Done when: every screen works on the deployed backend.
 - Unblocked (2026-10-24): T-22 part 1 is live. `docs/api.md` answers `web/API_NOTES.md` (conventions, sign-in, what is live and what answers 501). Always send `X-Requested-With: ClubOps` on changes, also without a body.
 - Progress (2026-10-26): available planning, approval, calendar, handover, usage and session flows pass against the local API and production router. Google credential exchange is implemented; real Google/deployed verification needs configuration. Remaining 501 features depend on J-15/T-18/C-21/J-07 and the API owner.
+- Progress (2026-11-01): integrated T-18 warning/outdated fields, supported uploads and no-fact replies. A real Caddy/API repeat exposed intermittent SQLite member-lookup errors (issue #45, API owner); production-flow completion remains open despite passing scripted/Vite and container checks.
 
 ### C-14 Deploy the frontend
 - Owner: christophe
