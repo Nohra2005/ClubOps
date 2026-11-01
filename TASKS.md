@@ -413,14 +413,14 @@ Reference documents:
 
 ### C-23 Frontend checks in CI (bonus)
 - Owner: christophe
-- Status: todo
+- Status: doing
 - Needs: none
 - What: Add a CI job for `web/`: install from the lockfile, lint, type check, unit tests and a production build, so a broken screen fails the PR like broken Python does.
 - Done when: the CI workflow runs the web job on every PR and it is green on `main`.
 
 ### C-24 Docker Compose (bonus)
 - Owner: christophe
-- Status: todo
+- Status: doing
 - Needs: C-18
 - What: A `docker-compose.yml` that starts the whole app locally (API + web, data on a volume, settings from `.env`) with one command, matching the deployed setup. Document it in the README.
 - Done when: `docker compose up` on a fresh clone gives a working app with dev sign-in.
