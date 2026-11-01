@@ -560,10 +560,11 @@ Reference documents:
 
 ### J-11 Daily check and OSA rule check (was T-21)
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: J-04
 - What: A daily plain-code check of each club's upcoming events (overdue tasks, deadlines inside 2 days, plans outdated by edits) that calls the AI only when it finds a real problem; and the monthly OSA website check from September until the president marks the new rules as in (D-30, D-31). Both run on a schedule on the server and write reminders, never send messages. Code in `src/clubops/checks/`.
 - Done when: both run on a schedule on the deployed app, with tests (made-up events) and failure-matrix rows.
+- Progress (2026-10-31): plain-code daily findings and OSA page hash checks added with synthetic tests. Server scheduling, reminder persistence and source fetch integration remain pending owner-side deployment/API work.
 
 ### J-12 Proposal draft (was T-16)
 - Owner: joey

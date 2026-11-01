@@ -117,3 +117,12 @@ No entries yet.
 **Did:** Matched the routing parser and synthetic fixtures to the designated `clubops.agent+<club>@gmail.com` address. Closed private SQLite connections after use.
 
 **State:** Synthetic intake is ready for owner-side Review wiring; delegate access alone has not yet supplied a live Gmail API token or acceptance forward.
+## 2026-10-31 — J-11 daily check core
+
+**Did:** Added plain-code findings for overdue tasks, deadlines within two days and plans outdated by edits. Added an official-page hash comparison that treats the first successful fetch as a baseline and later changes as human-review findings. Synthetic tests cover these cases and done/cancelled work. F-122 and F-123 record the failure modes.
+
+**State:** The task remains doing. The server scheduler, official OSA fetch, hash persistence and Calendar/Review reminder writes are owner-side integration work. No scheduled AI call was added because the project only allows AI after a person's click.
+
+**Next:** Coordinate deployment scheduling and API persistence with Christophe and Tatiana; verify the resulting reminders on the deployed app.
+
+**Open questions / blockers:** A failed source fetch must surface a warning rather than an unchanged-page claim; add this in the scheduler integration.
