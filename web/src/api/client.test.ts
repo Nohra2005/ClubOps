@@ -3,6 +3,21 @@ import { ApiClient, httpTransport } from './client';
 
 afterEach(() => vi.unstubAllGlobals());
 describe('real API boundary', () => {
+  it('rejects unsupported and oversized documents before transport, while accepting XLSX', async () => {
+    const transport = vi.fn().mockResolvedValue({ item_id: 'kh-synthetic-document' });
+    const api = new ApiClient(transport, 'http');
+    await expect(api.upload(new File(['%PDF'], 'example.pdf'))).rejects.toMatchObject({
+      status: 422,
+    });
+    await expect(
+      api.upload(new File([new Uint8Array(2 * 1024 * 1024 + 1)], 'large.txt')),
+    ).rejects.toMatchObject({ status: 413 });
+    expect(transport).not.toHaveBeenCalled();
+    await api.upload(new File(['synthetic spreadsheet'], 'expense.XLSX'));
+    expect(transport).toHaveBeenCalledTimes(1);
+    expect(transport.mock.calls[0][0]).toBe('/documents');
+    expect(transport.mock.calls[0][1].body.get('file').name).toBe('expense.XLSX');
+  });
   it('exchanges a Google credential and logs out using the protected cookie-session endpoints', async () => {
     const fetcher = vi.fn().mockImplementation(async () => new Response(null, { status: 204 }));
     vi.stubGlobal('fetch', fetcher);
