@@ -211,6 +211,15 @@ describe('published 0.2.0 contract responses', () => {
       );
   });
 
+  it('accepts the published no-fact teaching reply without inventing a review target', () => {
+    expect(
+      readAnswer({ kind: 'learned', text: 'No supported new fact was found.', review_id: '' }),
+    ).toEqual({ kind: 'learned', text: 'No supported new fact was found.', review_id: '' });
+    expect(() => readAnswer({ kind: 'learned', text: 'Malformed reply', review_id: null })).toThrow(
+      'incompatible data',
+    );
+  });
+
   it('does not treat HTTP-200 failure envelopes or blocking questions as successful answers', () => {
     expect(() =>
       readAnswer({

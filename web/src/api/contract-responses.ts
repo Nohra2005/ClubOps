@@ -146,7 +146,7 @@ export function readAnswer(value: unknown): ChatReply {
   const fallback = degraded || data.fallback === true;
   const answer = text(data.text, 1500);
   if (data.kind === 'learned')
-    return { kind: 'learned', text: answer, review_id: text(data.review_id, 200, 1) };
+    return { kind: 'learned', text: answer, review_id: text(data.review_id, 200) };
   if (data.kind !== undefined && data.kind !== (data.known ? 'answer' : 'unknown'))
     throw incompatible();
   const citations: Source[] =
