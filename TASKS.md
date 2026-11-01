@@ -603,10 +603,11 @@ Reference documents:
 
 ### J-17 Chatbot test runner
 - Owner: joey
-- Status: todo
+- Status: doing
 - Needs: J-15
 - What: A script like `scripts/eval_plans.py` for the chatbot test (`chatbot-questions.csv`, frozen in T-04): ask each question, then score right answers, invented answers (an answer when the right reply is "not sure"), correct "not sure" replies, citations that really support the answer, and cost. Build and test it on synthetic questions; Tatiana runs it on the private file in T-26.
 - Done when: `scripts/eval_chat.py` gives a result table on synthetic data, with tests, in replay mode.
+- Progress (2026-10-31): replay-capable runner and synthetic scorer tests added. Tatiana's private CSV column mapping and recorded model responses still need verification.
 
 ### J-18 Poster
 - Owner: joey
