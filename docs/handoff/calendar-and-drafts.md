@@ -91,3 +91,13 @@ No entries yet.
 **Next:** Align the private column mapping and evaluate the frozen set after J-15 is integrated.
 
 **Open questions / blockers:** The private CSV and model recordings are intentionally unavailable in this checkout; no private question text should enter git.
+
+## 2026-10-31 — J-07 remaining draft types
+
+**Did:** Added model-backed templates for sponsor email, Instagram caption, poster text, expense form, volunteer shifts and impact report. The existing WhatsApp announcement and reminder remain in place. Synthetic tests cover every new type, club-specific approved examples, redaction, unsent state, wrong event and unsupplied citations.
+
+**State:** Local tests pass. J-07 remains doing until approved private club examples and J-08 cabinet feedback establish that the drafts are usable without edits.
+
+**Next:** Review drafts for three past events with two cabinet members, then revise templates from their feedback.
+
+**Open questions / blockers:** Real style examples must remain in private data and not be added to tests, prompts committed to git, or traces.
