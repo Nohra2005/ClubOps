@@ -1,4 +1,4 @@
-﻿# Architecture
+# Architecture
 
 Updated 1 November 2026 from the published contracts, plan and API table. Local integration and container checks are recorded in `web/VERIFICATION.md`; public deployment and live provider measurements remain pending.
 
@@ -31,7 +31,7 @@ The planner can choose its own steps inside a user-started run. It cannot approv
 | Component | Decision and boundary | Public interface/evidence |
 |---|---|---|
 | Planner | Model chooses tools and asks questions; code checks valid transitions and enforces each explicit allowance of 8 steps / $0.05 | `AgentRun`, event contracts, API run endpoints, `tests/test_api.py` |
-| Rule check | Plain code evaluates explicit facts; a bounded model call handles description-dependent conditions. Missing/failed evidence stays uncertain | Rule/verdict contracts, `docs/plan.md`, `tests/test_rules_check.py` |
+| Rule check | Plain code evaluates explicit facts; a bounded model call handles description-dependent conditions. Missing/failed evidence stays uncertain | Rule/verdict contracts, `docs/plan.md`, `tests/test_rulebook.py` |
 | Learning | Model proposes from redacted input; code validates quoted support and candidate shape. Expense spreadsheets have a deterministic price-list path | Capture/know-how contracts, `tests/test_learning.py` |
 | Memory approval | A person verifies, rejects or edits proposals. Warnings and outdated sources require individual frontend review rather than batch approval | Verify contracts, Review API, `web/e2e/contracts.spec.ts` |
 | Plan approval | Server checks the submitted revision before creating internal calendar items | Event/API contracts, `web/e2e/live-api.spec.ts` |
