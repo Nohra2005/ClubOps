@@ -59,6 +59,11 @@ export class ApiClient {
       return Promise.reject(new ApiError('Please choose a Google account to continue.', 422));
     return this.post<unknown>('/auth/google', { credential });
   }
+  signInDev(email: string) {
+    if (this.mode !== 'http' || !email.trim())
+      return Promise.reject(new ApiError('Enter a local cabinet test email.', 422));
+    return this.post<unknown>('/auth/dev', { email: email.trim() });
+  }
   logout() {
     if (this.mode !== 'http') return Promise.resolve();
     return this.post<unknown>('/auth/logout');

@@ -73,6 +73,7 @@ test('Google library failures stay on the public sign-in page with an explicit r
   await page.goto('/login');
   await expect(page.getByRole('alert')).toContainText('Google sign-in could not load');
   await expect(page.getByRole('button', { name: 'Try Google again' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Sign in locally' })).toHaveCount(0);
 });
 
 test('sign-out stays in the workspace on failure and redirects only after the server ends the session', async ({
