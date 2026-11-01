@@ -379,7 +379,7 @@ Reference documents:
 - Needs: none
 - What: Put the backend (`uvicorn clubops.api.app:build --factory`) on the same free host as the frontend (Render, D-47), with a persistent disk for `CLUBOPS_DATA_DIR` and the secrets from `.env.example` in the host's settings, never in the repo. Load the rulebook and add the president (`scripts/load_rulebook.py`, `scripts/add_member.py`). Deployment files (`render.yaml`, `Dockerfile`) are yours; ask Tatiana before changing Python code.
 - Done when: the cabinet signs in on the deployed app and plans an event.
-- Progress (2026-10-26): Dockerfile, same-origin router and schema-validated Render Blueprint prepared; local production-routing tests pass. Docker engine is stopped, so image construction is not verified. Google client ID, hosting account/budget and provider configuration are unknown. Render Free cannot attach a disk; the prepared paid service must be reviewed before provisioning (`web/DEPLOYMENT.md`).
+- Progress (2026-11-01): production and local Docker targets build and run; Compose browser checks and data/session persistence across container replacement pass. Production refuses local auth settings. Real Google client ID, hosting account/budget and provider configuration remain unknown. Render Free cannot attach a disk; the prepared paid service must be reviewed before provisioning (`web/DEPLOYMENT.md`). No deployed URL yet.
 
 ### C-19 Handover endpoint (was T-19)
 - Owner: christophe
@@ -413,17 +413,19 @@ Reference documents:
 
 ### C-23 Frontend checks in CI (bonus)
 - Owner: christophe
-- Status: doing
+- Status: review
 - Needs: none
 - What: Add a CI job for `web/`: install from the lockfile, lint, type check, unit tests and a production build, so a broken screen fails the PR like broken Python does.
 - Done when: the CI workflow runs the web job on every PR and it is green on `main`.
+- PR #44: separate quality and synthetic browser/API jobs pass on GitHub; real BuildKit context checks are included. Main completion waits for reviewed merge.
 
 ### C-24 Docker Compose (bonus)
 - Owner: christophe
-- Status: doing
+- Status: review
 - Needs: C-18
 - What: A `docker-compose.yml` that starts the whole app locally (API + web, data on a volume, settings from `.env`) with one command, matching the deployed setup. Document it in the README.
 - Done when: `docker compose up` on a fresh clone gives a working app with dev sign-in.
+- PR #44: `docker compose up --build` starts the complete local app on loopback with a volume and synthetic cabinet account. Desktop/phone login and routing plus actual container replacement/data/session persistence verified. Dedicated CI gate added; public deployment remains C-18/C-14.
 
 ### C-25 OpenTelemetry traces (bonus)
 - Owner: christophe
@@ -455,7 +457,7 @@ Reference documents:
 
 ### C-29 Keep the docs true (was T-31)
 - Owner: christophe
-- Status: todo
+- Status: doing
 - Needs: T-22
 - What: Update `docs/architecture.md`, `docs/data-provenance.md`, `docs/knowledge-base.md` and the README setup to the new scope (agent loop, learning, web app, deployment, monitoring). Ask Tatiana when unsure how the backend works. Setup must work from a fresh clone in one command. Write the report sections on architecture, the web app, deployment and monitoring.
 - Done when: Joey sets the project up from the README alone; report sections handed to Tatiana.
