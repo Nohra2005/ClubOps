@@ -106,3 +106,33 @@ local API with dev sign-in, not the browser-storage demo. It has no configured r
 Google identity or provider evaluation; new planning needs recordings/provider setup.
 Public hosting, OTel export, deployed monitoring, real measured cost/quality, branch
 protection and weekly sprint history have not been represented as complete.
+
+## 3 November 2026 — C-21/C-31, PR #55
+
+This branch starts from main `d5dfb17` and is independent of the still-open C-27
+PR #54. Test totals therefore describe this branch, not the union of both PRs.
+
+| Check             | Observed result                                                                                                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Root gates        | Ruff check/format: 125 files; strict mypy: 73 source files; schema/task checks pass; 438 tests, 92.99% coverage                                                         |
+| Setup regressions | 17 synthetic service/router/real-auth/SQLite adapter tests pass; all facts remain unapproved                                                                            |
+| Frontend          | `npm run check` passes: lint, format, 42 unit tests, 12 board-tool tests, strict types and production build                                                             |
+| Setup browsers    | 4 demo cases and 6 intercepted HTTP cases pass across desktop and phone: completion, skip/resume, reload, failed/malformed responses and adviser access                 |
+| Board preview     | Default dry run reads all 77 main tasks and proposes four seven-day iterations; exact source commit and input hash recorded in ignored `output/project-board-plan.json` |
+| GitHub schema     | Current Projects field/view/iteration inputs checked by authenticated public introspection; this does not establish live-board access or successful publication         |
+
+Actual API/SQLite tests explicitly replace the placeholder in a test app; main's
+production setup route remains 501 until Tatiana wires the callbacks and `/me`
+completion field. Decided-card retry semantics and sourced ASME facts remain owner
+integration work. See [CLUB_SETUP.md](CLUB_SETUP.md).
+
+The Projects token still lacks access; the browser host is unavailable. No board,
+team access or completed weekly review was fabricated. Board API tests use a stateful
+synthetic double (including 123 paginated cards), not live GitHub mutations. See
+[PROJECT_BOARD.md](PROJECT_BOARD.md) for the concrete publishing command and limits.
+Final-head CI is recorded on [PR #55](https://github.com/Nohra2005/ClubOps/pull/55);
+independent review and a merge commit are required before merge.
+
+For the earlier SQLite finding above: #45 was closed by Tatiana's #47. The 2 November
+recheck recorded with PR #54 passed all four Caddy/API cases without server exceptions.
+That supersedes the older unresolved note; public deployment still remains open.

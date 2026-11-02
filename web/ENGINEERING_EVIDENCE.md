@@ -42,3 +42,25 @@ Record an actual command, result, run/review link and limitation. Tell your user
 started and what remains; do not call a tool installation proof of use. Reply in #43
 to coordinate overlapping workflow/API/telemetry work. Assistants in separate sessions
 cannot be directly messaged through this session's agent tools.
+
+## 3 November 2026 — setup and board evidence (PR #55)
+
+- C-21: owned service/router, explicit untrusted source/approval boundary, durable
+  progress and extraction outbox; 17 regressions including real authenticated SQLite
+  Review storage. The test adapter is explicit; production registration remains with
+  Tatiana. No actual ASME facts were supplied or invented.
+- C-31: exact-commit TASKS.md plan, private Projects adapter and proposed weekly
+  iterations. Twelve stateful/offline tests cover pagination, retries, identity
+  conflicts, unsafe targets and preserved iteration IDs. They run in the existing
+  web quality job through `npm run check`, with no token or remote writes.
+- Local evidence: 438 Python tests, 92.99% coverage; full root static/schema/task gates;
+  42 frontend units; four setup demo and six HTTP browser cases across desktop/phone.
+  Reproducible commands and limits are in `VERIFICATION.md`, `CLUB_SETUP.md` and
+  `PROJECT_BOARD.md`. Current-head check links and small commits are on PR #55.
+- Process evidence still missing: Projects scope/publication/team access, three real
+  weekly reviews, and independent review of this PR. Tentative iterations are not
+  attendance or completion evidence. Record only actual reviews under T-28.
+
+The older #45 warning above is superseded by #47 and the four clean Caddy/API cases
+recorded on 2 November in PR #54. That separate PR also records C-23/C-24 merged/main
+verification and remains open for review; its source changes are not bundled here.
