@@ -337,6 +337,7 @@ Reference documents:
 - Unblocked (2026-10-24): T-22 part 1 is live. `docs/api.md` answers `web/API_NOTES.md` (conventions, sign-in, what is live and what answers 501). Always send `X-Requested-With: ClubOps` on changes, also without a body.
 - Progress (2026-10-26): available planning, approval, calendar, handover, usage and session flows pass against the local API and production router. Google credential exchange is implemented; real Google/deployed verification needs configuration. Remaining 501 features depend on J-15/T-18/C-21/J-07 and the API owner.
 - Progress (2026-11-01): integrated T-18 warning/outdated fields, supported uploads and no-fact replies. A real Caddy/API repeat exposed intermittent SQLite member-lookup errors (issue #45, API owner); production-flow completion remains open despite passing scripted/Vite and container checks.
+- Progress (2026-11-02): #47 fixes the SQLite connection race; the same Caddy/API suite now passes all 4 cases with no ASGI/SQLite exceptions in the captured log. Deployed Google/every-screen verification remains pending.
 
 ### C-14 Deploy the frontend
 - Owner: christophe
@@ -412,7 +413,7 @@ Reference documents:
 - Needs: none
 - What: Add a CI job for `web/`: install from the lockfile, lint, type check, unit tests and a production build, so a broken screen fails the PR like broken Python does.
 - Done when: the CI workflow runs the web job on every PR and it is green on `main`.
-- PR #44: separate quality and synthetic browser/API jobs pass on GitHub; real BuildKit context checks are included. Main completion waits for reviewed merge.
+- PR #44 merged with individual commits preserved; quality/browser/API/BuildKit checks are green on main `d5dfb17` (2026-11-02).
 
 ### C-24 Docker Compose (bonus)
 - Owner: christophe
@@ -420,7 +421,7 @@ Reference documents:
 - Needs: C-18
 - What: A `docker-compose.yml` that starts the whole app locally (API + web, data on a volume, settings from `.env`) with one command, matching the deployed setup. Document it in the README.
 - Done when: `docker compose up` on a fresh clone gives a working app with dev sign-in.
-- PR #44: `docker compose up --build` starts the complete local app on loopback with a volume and synthetic cabinet account. Desktop/phone login and routing plus actual container replacement/data/session persistence verified. Dedicated CI gate added; public deployment remains C-18/C-14.
+- PR #44 merged: `docker compose up --build` starts the complete local app on loopback with a volume and synthetic cabinet account. Desktop/phone login/routing and actual container replacement/data/session persistence are verified locally and green in main CI. Public deployment remains C-18/C-14.
 
 ### C-25 OpenTelemetry traces (bonus)
 - Owner: christophe
@@ -438,10 +439,11 @@ Reference documents:
 
 ### C-27 Learning test runner
 - Owner: christophe
-- Status: doing
+- Status: review
 - Needs: none
 - What: A script like `scripts/eval_plans.py` for the learning test (`learning-test.csv`, frozen in T-04): feed each source to the learning code (`src/clubops/learning/`), approve what it proposes, then ask the matching question and check the answer uses the new fact. Report facts learned, wrong facts, missed facts, cost. Build and test it on synthetic rows (`tests/factories.py`); Tatiana runs it on the private file in T-26.
 - Done when: `scripts/eval_learning.py` gives a result table on synthetic data, with tests, in replay mode.
+- Implementation (2026-11-02): isolated capture -> sandbox verification -> cited follow-up; exact pre-labelled statement/alias scoring, wrong/missed/duplicate facts and budget costs. Frozen column mappings and plain-text labels are supported without rewriting input. Checked-in synthetic replay runs with no key/network; 20 evaluator tests cover the real pipeline, privacy, failure accounting and replay. See `web/LEARNING_EVALUATION.md`; real private T-26 results are not claimed.
 
 ### C-28 Demo script and backup video
 - Owner: christophe
