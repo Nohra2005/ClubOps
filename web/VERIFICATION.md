@@ -106,3 +106,34 @@ local API with dev sign-in, not the browser-storage demo. It has no configured r
 Google identity or provider evaluation; new planning needs recordings/provider setup.
 Public hosting, OTel export, deployed monitoring, real measured cost/quality, branch
 protection and weekly sprint history have not been represented as complete.
+
+## Merged progress and learning evaluation — 2 November 2026 (C-27)
+
+Pulled main `d5dfb17`: PR #44 is merged with the original 17 commits preserved, and
+main's Web/Container/Python workflows pass. Tatiana's PR #47 fixes issue #45 with a
+shared-connection lock and F-131 concurrency regression. Re-running the previously
+failing Caddy/API suite now gives **4 passed**, with no ASGI/SQLite exceptions in
+`output/sqlite-fixed-flow.log`. C-23/C-24 are done; deployed C-13 remains open.
+
+C-27 is proposed in PR #54. The scorer depends on published contracts; its assigned
+CLI composes the public learner/store/ask interfaces in new per-case sandboxes.
+
+| Check              | Result                                                                                                                                                           |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Root gates         | Ruff check/format (127 files), strict mypy (73 source files), schema/task checks pass; 441 tests, 92.99% coverage                                                |
+| CLI typing         | `mypy scripts/eval_learning.py` passes in addition to the package gate                                                                                           |
+| C-27 regressions   | 20 synthetic tests: CSV/alias validation, scope/current facts, duplicates, errors/failed spend, label privacy, real record/replay and checked-in offline example |
+| Actual offline CLI | The documented fixture command runs without a key/network, with 2 completed cases, 1 expected/learned fact, 1 supported new-fact citation and 0 errors           |
+| Frontend           | `npm run check` passes, including all 40 unit tests; no app-screen behavior changed by C-27                                                                      |
+
+The fixture response/token values are synthetic and the replay budget cost is zero.
+Neither is a provider-quality or operating-cost result. Reports expose mode, model,
+configured token rates, scoring version and the exact dataset-snapshot hash, but no
+source/fact/answer text or raw errors. Runtime errors return a nonzero status rather
+than becoming valid zero-quality measurements. Explicit mappings support frozen
+plain-text labels without rewriting their CSV.
+
+Use [LEARNING_EVALUATION.md](LEARNING_EVALUATION.md) for the exact command, metrics
+and limits. The replay regression runs automatically in root CI; real private-set
+results and final held-out thresholds remain T-26/C-22. Alias sets must not be tuned
+after seeing model outputs. Sandbox verification is simulation, not user acceptance.
