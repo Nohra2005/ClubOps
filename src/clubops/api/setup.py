@@ -69,7 +69,12 @@ class SetupService:
         if not path.exists():
             return False
         with closing(sqlite3.connect(path, timeout=1)) as connection:
-            row = connection.execute("SELECT position FROM progress WHERE singleton = 1").fetchone()
+            try:
+                row = connection.execute("SELECT position FROM progress WHERE singleton = 1").fetchone()
+            except sqlite3.OperationalError as error:
+                if "no such table: progress" in str(error):
+                    return False  # a concurrent first request has not initialized the file yet
+                raise
         return row is not None and int(row[0]) >= len(QUESTIONS)
 
     @staticmethod
@@ -116,7 +121,9 @@ class SetupService:
                 if answer is not None and self._digest(actor.club_id, position, answer) != digest:
                     raise SetupConflict("Resume setup to finish the previous answer before answering another question.")
                 result = CaptureResult.model_validate_json(pending)
-            elif answer is None or position >= len(QUESTIONS):
+            elif position >= len(QUESTIONS) and answer is not None:
+                raise SetupConflict("Setup is already complete. Resume to check it, or add new facts in Chat.")
+            elif answer is None:
                 connection.commit()
                 return self._view(position, rules_count)
             elif answer == "[skip]":

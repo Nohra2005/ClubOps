@@ -70,7 +70,9 @@ def test_resume_skip_restart_and_complete_without_approving(tmp_path: Path) -> N
         result = advance(restarted, backend, "[skip]")
     assert result.done and result.index == 10 and restarted.complete("running-club")
     assert len(backend.inputs) == 1
-    assert advance(restarted, backend, "late duplicate").done
+    with pytest.raises(SetupConflict, match="already complete"):
+        advance(restarted, backend, "late duplicate")
+    assert advance(restarted, backend).done
     # Progress doesn't retain a duplicate raw answer once it reached Review.
     with closing(sqlite3.connect(tmp_path / "setup/running-club.sqlite3")) as connection:
         assert connection.execute("SELECT digest, pending FROM progress").fetchone() == (None, None)
@@ -82,6 +84,14 @@ def test_club_progress_is_isolated_and_ids_cannot_escape_the_directory(tmp_path:
     assert advance(service, backend, user=actor(club="asme")).index == 1
     with pytest.raises(ValidationError):
         service.complete("../outside")
+
+
+def test_an_empty_initializing_file_is_incomplete_not_a_server_error(tmp_path: Path) -> None:
+    (tmp_path / "setup").mkdir()
+    (tmp_path / "setup/running-club.sqlite3").touch()
+    service, backend = SetupService(tmp_path), Backend()
+    assert not service.complete("running-club")
+    assert advance(service, backend).index == 1
 
 
 @pytest.mark.parametrize("user", [actor(Role.EVENTS), actor(Role.ADVISER), actor(verified=False)])
