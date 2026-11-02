@@ -408,7 +408,7 @@ Reference documents:
 
 ### C-23 Frontend checks in CI (bonus)
 - Owner: christophe
-- Status: review
+- Status: done
 - Needs: none
 - What: Add a CI job for `web/`: install from the lockfile, lint, type check, unit tests and a production build, so a broken screen fails the PR like broken Python does.
 - Done when: the CI workflow runs the web job on every PR and it is green on `main`.
@@ -416,7 +416,7 @@ Reference documents:
 
 ### C-24 Docker Compose (bonus)
 - Owner: christophe
-- Status: review
+- Status: done
 - Needs: C-18
 - What: A `docker-compose.yml` that starts the whole app locally (API + web, data on a volume, settings from `.env`) with one command, matching the deployed setup. Document it in the README.
 - Done when: `docker compose up` on a fresh clone gives a working app with dev sign-in.
@@ -438,7 +438,7 @@ Reference documents:
 
 ### C-27 Learning test runner
 - Owner: christophe
-- Status: todo
+- Status: doing
 - Needs: none
 - What: A script like `scripts/eval_plans.py` for the learning test (`learning-test.csv`, frozen in T-04): feed each source to the learning code (`src/clubops/learning/`), approve what it proposes, then ask the matching question and check the answer uses the new fact. Report facts learned, wrong facts, missed facts, cost. Build and test it on synthetic rows (`tests/factories.py`); Tatiana runs it on the private file in T-26.
 - Done when: `scripts/eval_learning.py` gives a result table on synthetic data, with tests, in replay mode.
