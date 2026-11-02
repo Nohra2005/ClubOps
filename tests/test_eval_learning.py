@@ -2,12 +2,16 @@
 
 import csv
 import json
+from datetime import date
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
 
 from clubops.contracts.common import SourceKind
-from clubops.evaluation.learning import Case, Columns, load_cases, normalized
+from clubops.contracts.knowhow import Answer
+from clubops.evaluation.learning import Case, Columns, Trial, evaluate, load_cases, markdown, normalized, score_case
+from tests.factories import CLUB, TODAY, item, source, verified
 
 
 def dataset(path: Path, expected: object, **extra: str) -> Path:
@@ -54,3 +58,93 @@ def test_case_rejects_scope_escape_and_invalid_lengths() -> None:
         Case("case-0001", "Synthetic note", "Question?", (), club_id="../private")
     with pytest.raises(ValueError, match="length"):
         Case("case-0001", "", "Question?", ())
+
+
+STATEMENT = "Reserve the synthetic studio with form A."
+
+
+def case(ref: str = "case-0001") -> Case:
+    return Case(ref, "PRIVATE SOURCE", "A private test question?", ((STATEMENT,),), club_id=CLUB)
+
+
+def unknown() -> Answer:
+    return Answer(known=False, text="PRIVATE ANSWER", basis="none", ask={"who": "Synthetic reviewer"})
+
+
+def trial(**updates: object) -> Trial:
+    candidate = item(statement=STATEMENT, sources=[source(quote=STATEMENT)])
+    values = {
+        "proposed": (candidate,),
+        "approved": (verified(candidate),),
+        "before": unknown(),
+        "after": Answer(known=True, text="PRIVATE ANSWER", basis="verified", citations=[candidate.item_id]),
+        "cost_usd": Decimal("0.01"),
+        "budget_steps": 2,
+        **updates,
+    }
+    return Trial(**values)  # type: ignore[arg-type]
+
+
+def test_counts_verified_exact_facts_and_new_citations_without_reporting_private_content() -> None:
+    report = evaluate([case()], lambda _: trial(), TODAY)
+    assert report["totals"]["facts_learned"] == 1
+    assert report["totals"]["successful_cases"] == 1
+    assert report["totals"]["answer_reused_new_fact"] == 1
+    public = json.dumps(report) + markdown(report)
+    for private in [STATEMENT, "PRIVATE SOURCE", "PRIVATE ANSWER", "private test question"]:
+        assert private not in public
+
+
+def test_negation_duplicates_foreign_and_unapproved_items_do_not_inflate_learning() -> None:
+    wrong = item("kh-wrong", statement="Do not reserve the synthetic studio with form A.")
+    foreign = item("kh-foreign", statement=STATEMENT, club_id="other-club")
+    unapproved = item("kh-pending", statement=STATEMENT)
+    result = score_case(
+        case(), trial(proposed=(wrong, wrong, foreign), approved=(verified(foreign), unapproved)), TODAY
+    )
+    assert (result["facts_learned"], result["wrong_facts"], result["missed_facts"], result["duplicate_facts"]) == (
+        0,
+        2,
+        1,
+        1,
+    )
+    assert not result["answer_reused_new_fact"] and result["unsupported_answer"]
+
+
+def test_preexisting_answers_expired_facts_and_wrong_citations_do_not_claim_reuse() -> None:
+    correct = trial()
+    assert not score_case(case(), trial(before=correct.after), TODAY)["successful"]
+    expired = verified(item(statement=STATEMENT)).model_copy(update={"valid_to": date(2026, 1, 1)})
+    assert score_case(case(), trial(approved=(expired,)), TODAY)["facts_learned"] == 0
+    wrong = Answer(known=True, text="PRIVATE ANSWER", basis="verified", citations=["kh-not-in-this-case"])
+    assert not score_case(case(), trial(after=wrong), TODAY)["answer_reused_new_fact"]
+
+
+def test_failed_cases_stay_in_denominators_and_failed_spend_is_in_cost_per_success() -> None:
+    def system(value: Case) -> Trial:
+        return (
+            trial()
+            if value.ref == "case-0001"
+            else trial(approved=(), after=None, error="capture", cost_usd=Decimal("0.02"))
+        )
+
+    report = evaluate([case(), case("case-0002")], system, TODAY)
+    totals = report["totals"]
+    assert (totals["cases"], totals["expected_facts"], totals["facts_learned"], totals["missed_facts"]) == (2, 2, 1, 1)
+    assert totals["cost_per_successful_case_usd"] == "0.03" and totals["errors"] == 1
+
+
+def test_unexpected_failure_has_unknown_cost_not_a_measured_zero() -> None:
+    def broken(_: Case) -> Trial:
+        raise RuntimeError("PRIVATE PROVIDER DIAGNOSTIC")
+
+    report = evaluate([case()], broken, TODAY)
+    assert report["totals"]["missed_facts"] == 1
+    assert not report["totals"]["cost_complete"] and report["totals"]["cost_usd"] is None
+    assert "PRIVATE PROVIDER DIAGNOSTIC" not in json.dumps(report)
+
+
+def test_negative_case_can_succeed_only_without_a_fabricated_answer() -> None:
+    negative = Case("case-0001", "Synthetic off-topic note", "Any new fact?", (), club_id=CLUB)
+    result = score_case(negative, Trial(before=unknown(), after=unknown(), cost_usd=Decimal(0)), TODAY)
+    assert result["successful"]

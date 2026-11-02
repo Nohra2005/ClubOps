@@ -6,12 +6,17 @@ import csv
 import json
 import re
 import unicodedata
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
+from datetime import date
+from decimal import Decimal
 from pathlib import Path
+from typing import Any, Literal
 
 from pydantic import TypeAdapter, ValidationError
 
 from clubops.contracts.common import ClubId, SourceKind
+from clubops.contracts.knowhow import Answer, KnowHowItem, Scope
 
 
 def normalized(text: str) -> str:
@@ -97,3 +102,147 @@ def load_cases(path: Path, columns: Columns = DEFAULT_COLUMNS) -> list[Case]:
             return cases
     except (csv.Error, UnicodeError):
         raise ValueError("Invalid learning CSV encoding or quoting; private values omitted.") from None
+
+
+Phase = Literal["baseline", "capture", "approval", "answer", "runtime"]
+
+
+@dataclass(frozen=True)
+class Trial:
+    proposed: tuple[KnowHowItem, ...] = field(default=(), repr=False)
+    approved: tuple[KnowHowItem, ...] = field(default=(), repr=False)
+    before: Answer | None = field(default=None, repr=False)
+    after: Answer | None = field(default=None, repr=False)
+    cost_usd: Decimal | None = None
+    budget_steps: int = 0
+    error: Phase | None = None
+
+    def __post_init__(self) -> None:
+        if self.cost_usd is not None and (not self.cost_usd.is_finite() or self.cost_usd < 0):
+            raise ValueError("Invalid recorded cost.")
+        if self.budget_steps < 0 or self.error not in (None, "baseline", "capture", "approval", "answer", "runtime"):
+            raise ValueError("Invalid trial metadata.")
+
+
+def score_case(case: Case, trial: Trial, on: date) -> dict[str, Any]:
+    labels = {normalized(alias): index for index, group in enumerate(case.expected) for alias in group}
+
+    def label(item: KnowHowItem) -> int | None:
+        if item.scope is not Scope.CLUB or item.club_id != case.club_id:
+            return None
+        return labels.get(normalized(item.statement))
+
+    visible = {item.item_id: item for item in trial.approved if item.is_current(on) and item.club_id == case.club_id}
+    learned = {index for item in visible.values() if (index := label(item)) is not None}
+    correct_ids = {item.item_id for item in visible.values() if label(item) is not None}
+    unique = {(item.club_id, item.scope, normalized(item.statement)): item for item in trial.proposed}
+    wrong = sum(label(item) is None for item in unique.values())
+    duplicates = len(trial.proposed) - len(unique)
+    error = trial.error or ("baseline" if trial.before is None else "answer" if trial.after is None else None)
+    baseline_known = bool(trial.before and trial.before.known)
+    supported = bool(
+        trial.after
+        and trial.after.known
+        and trial.after.basis in ("verified", "single_source")
+        and trial.after.citations
+        and set(trial.after.citations) <= visible.keys()
+        and correct_ids.intersection(trial.after.citations)
+    )
+    reused = supported and not baseline_known and error is None
+    missed = len(case.expected) - len(learned)
+    successful = (
+        error is None
+        and not baseline_known
+        and not (wrong or missed or duplicates)
+        and (reused if case.expected else bool(trial.after and not trial.after.known))
+    )
+    return {
+        "case": case.ref,
+        "expected_facts": len(case.expected),
+        "facts_learned": len(learned),
+        "wrong_facts": wrong,
+        "missed_facts": missed,
+        "duplicate_facts": duplicates,
+        "answer_reused_new_fact": reused,
+        "baseline_already_known": baseline_known,
+        "unsupported_answer": bool(trial.after and trial.after.known and not supported),
+        "successful": successful,
+        "error": error,
+        "budget_steps": trial.budget_steps,
+        "cost_usd": str(trial.cost_usd) if trial.cost_usd is not None else None,
+    }
+
+
+def evaluate(cases: Sequence[Case], system: Callable[[Case], Trial], on: date) -> dict[str, Any]:
+    """Every case stays in the denominator, including infrastructure and validation failures."""
+    rows: list[dict[str, Any]] = []
+    for case in cases:
+        try:
+            trial = system(case)
+        except Exception:
+            trial = Trial(error="runtime")  # no private exception messages; cost is unknown, not zero
+        rows.append(score_case(case, trial, on))
+    cost_complete = all(row["cost_usd"] is not None for row in rows)
+    recorded_cost = sum((Decimal(row["cost_usd"]) for row in rows if row["cost_usd"] is not None), Decimal(0))
+    success = sum(row["successful"] for row in rows)
+    totals = {
+        key: sum(row[key] for row in rows)
+        for key in (
+            "expected_facts",
+            "facts_learned",
+            "wrong_facts",
+            "missed_facts",
+            "duplicate_facts",
+            "answer_reused_new_fact",
+            "baseline_already_known",
+            "unsupported_answer",
+            "budget_steps",
+        )
+    }
+    return {
+        "scoring_version": "learning-exact-v1",
+        "as_of": on.isoformat(),
+        "totals": {
+            "cases": len(rows),
+            **totals,
+            "successful_cases": success,
+            "errors": sum(row["error"] is not None for row in rows),
+            "cost_complete": cost_complete,
+            "known_cost_usd": str(recorded_cost),
+            "cost_usd": str(recorded_cost) if cost_complete else None,
+            "cost_per_successful_case_usd": str(recorded_cost / success) if cost_complete and success else None,
+        },
+        "cases": rows,
+        "limits": (
+            "Exact normalized statements and pre-labelled aliases, not semantic accuracy. "
+            "Answer reuse means a newly approved expected fact was cited, not that every answer claim was correct. "
+            "Sandbox approvals are evaluator actions, not real-user acceptance."
+        ),
+    }
+
+
+def markdown(report: dict[str, Any]) -> str:
+    totals = report["totals"]
+    lines = [
+        "# Learning evaluation",
+        "",
+        report["limits"],
+        "",
+        "| Case | Expected | Learned | Wrong | Missed | Duplicates | New fact cited | Error | Cost USD |",
+        "|---|---:|---:|---:|---:|---:|---:|---|---:|",
+    ]
+    for row in report["cases"]:
+        lines.append(
+            f"| {row['case']} | {row['expected_facts']} | {row['facts_learned']} | {row['wrong_facts']} "
+            f"| {row['missed_facts']} | {row['duplicate_facts']} | {int(row['answer_reused_new_fact'])} "
+            f"| {row['error'] or '-'} | {row['cost_usd'] if row['cost_usd'] is not None else 'unavailable'} |"
+        )
+    lines.extend(
+        [
+            "",
+            f"Cases: {totals['cases']}; errors: {totals['errors']}; successful: {totals['successful_cases']}.",
+            f"Model cost USD: {totals['cost_usd'] if totals['cost_complete'] else 'unavailable'}.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
