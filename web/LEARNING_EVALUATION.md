@@ -69,6 +69,8 @@ of the single dataset snapshot it evaluated; it cannot overwrite the input file.
 - Cost comes from the shared per-case budget (at most $0.05 and 8 steps), including
   failed spend. Unknown cost is unavailable, not zero. Replay charges zero budget cost;
   record/live cost is usage-based accounting, not reconciliation of a provider bill.
+  Reports include the configured input/output USD-per-million-token rates. A configured
+  zero rate does not establish that a provider is free; verify rates before T-26 cost claims.
 
 ## Record and replay private evaluation
 

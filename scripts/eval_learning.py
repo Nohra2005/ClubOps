@@ -189,6 +189,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             "dataset_kind": args.dataset_kind,
             "mode": args.mode,
             "model": settings.model,
+            "price_in_per_mtok": str(settings.price_in_per_mtok),
+            "price_out_per_mtok": str(settings.price_out_per_mtok),
             "budget_usd_per_case": str(MAX_COST),
             "max_steps_per_case": 8,
             "sandbox_approval": True,
@@ -198,7 +200,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             ),
         }
     )
-    text = markdown(report) + f"\nMode: {args.mode}; dataset: {args.dataset_kind}; sandbox approval only.\n"
+    text = markdown(report) + (
+        f"\nMode: {args.mode}; dataset: {args.dataset_kind}; sandbox approval only.\n"
+        f"Configured USD per million tokens: input {settings.price_in_per_mtok}, output {settings.price_out_per_mtok}. "
+        "These are accounting assumptions, not verification of the provider's price.\n"
+    )
     for path, content in [(args.out, text), (args.json_out, json.dumps(report, indent=2) + "\n")]:
         if path is not None:
             path.parent.mkdir(parents=True, exist_ok=True)
