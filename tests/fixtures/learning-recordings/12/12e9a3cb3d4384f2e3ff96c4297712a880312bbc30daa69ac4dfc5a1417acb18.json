@@ -1,0 +1,8 @@
+{
+ "key": "12e9a3cb3d4384f2e3ff96c4297712a880312bbc30daa69ac4dfc5a1417acb18",
+ "model": "fake-model",
+ "prompt_version": "learn-extract-v1",
+ "text": "{\"facts\": [{\"kind\": \"procedure\", \"title\": \"Synthetic studio reservation\", \"statement\": \"Reserve the synthetic studio with form A.\", \"quote\": \"Reserve the synthetic studio with form A.\", \"source\": 0, \"details\": {\"kind\": \"procedure\", \"goal\": \"Reserve the synthetic studio\", \"steps\": [{\"order\": 1, \"action\": \"Reserve the synthetic studio with form A.\", \"actor_role\": null, \"channel\": null, \"lead_time_days\": null}], \"applies_when\": []}}]}",
+ "tokens_in": 500,
+ "tokens_out": 100
+}

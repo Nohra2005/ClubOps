@@ -1,0 +1,8 @@
+{
+ "key": "b138df8dacb2af6397cdd2eb5c16b154d1c6934711386f3252f376dde970793e",
+ "model": "fake-model",
+ "prompt_version": "ask-v1",
+ "text": "{\"known\": true, \"text\": \"Reserve the synthetic studio with form A.\", \"basis\": \"verified\", \"citations\": [\"kh-learn-case-0001-1\"]}",
+ "tokens_in": 500,
+ "tokens_out": 100
+}

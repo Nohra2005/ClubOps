@@ -144,6 +144,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--cases", type=Path, required=True)
     parser.add_argument("--as-of", type=_date, required=True, help="fixed evaluation date, also used for stable replay")
     parser.add_argument("--mode", choices=[mode.value for mode in ModelMode], default="replay")
+    parser.add_argument("--model", help="public model identifier; otherwise use the configured model")
     parser.add_argument("--dataset-kind", choices=["private", "synthetic"], default="private")
     parser.add_argument("--source-column", default="source")
     parser.add_argument("--question-column", default="question")
@@ -172,6 +173,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         snapshot = args.cases.read_bytes()
         cases = parse_cases(snapshot.decode("utf-8-sig"), columns)
         env = {**os.environ, "CLUBOPS_MODEL_MODE": args.mode}
+        if args.model is not None:
+            env["CLUBOPS_MODEL"] = args.model
         if args.recordings is not None:
             env["CLUBOPS_RECORDINGS_DIR"] = str(args.recordings)
         settings = load_settings(env=env)
@@ -185,6 +188,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             "dataset_sha256": hashlib.sha256(snapshot).hexdigest(),
             "dataset_kind": args.dataset_kind,
             "mode": args.mode,
+            "model": settings.model,
+            "budget_usd_per_case": str(MAX_COST),
+            "max_steps_per_case": 8,
             "sandbox_approval": True,
             "cost_accounting": (
                 "Shared per-case budget records successful and failed spend, not a reconciled provider bill. "

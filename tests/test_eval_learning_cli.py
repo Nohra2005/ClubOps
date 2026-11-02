@@ -160,3 +160,34 @@ def test_output_cannot_overwrite_frozen_input(tmp_path: Path) -> None:
     with pytest.raises(SystemExit) as error:
         eval_learning.main(["--cases", str(path), "--as-of", "2026-10-29", "--out", str(path)])
     assert error.value.code == 2 and path.read_bytes() == before
+
+
+@pytest.mark.usefixtures("environment")
+def test_checked_in_synthetic_example_replays_without_an_api_key(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = Path(__file__).resolve().parents[1]
+    monkeypatch.setenv("CLUBOPS_API_KEY", "")
+
+    def no_network(*_: object, **__: object) -> None:
+        raise AssertionError("Checked-in replay attempted network access.")
+
+    monkeypatch.setattr(httpx.Client, "send", no_network)
+    code = eval_learning.main(
+        [
+            "--cases",
+            str(root / "tests/fixtures/learning.synthetic.csv"),
+            "--as-of",
+            "2026-10-29",
+            "--dataset-kind",
+            "synthetic",
+            "--recordings",
+            str(root / "tests/fixtures/learning-recordings"),
+            "--json-out",
+            str(tmp_path / "result.json"),
+        ]
+    )
+    result = json.loads((tmp_path / "result.json").read_text())
+    assert code == 0 and result["mode"] == "replay" and result["model"] == "fake-model"
+    assert (result["totals"]["cases"], result["totals"]["facts_learned"], result["totals"]["errors"]) == (2, 1, 0)
+    assert result["totals"]["cost_usd"] == "0"

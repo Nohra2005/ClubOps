@@ -1,0 +1,3 @@
+source,question,expected_facts,source_kind,club_id
+Reserve the synthetic studio with form A.,How do we reserve the synthetic studio?,"[""Reserve the synthetic studio with form A.""]",user_input,eval-club
+Hello from the synthetic test group.,Does this greeting explain studio booking?,[],email,eval-club
