@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { URL } from 'node:url';
 import { test } from 'node:test';
 import { managedItems, marker, parseTasks, planBoard } from './project-plan.mjs';
 
@@ -52,7 +53,7 @@ test('refuses ambiguous, overlapping or invalid sprint plans', () => {
     { duration: 14 },
     { title: 'Week 1' },
   ]) {
-    const changed = structuredClone(config);
+    const changed = globalThis.structuredClone(config);
     Object.assign(changed.sprints[1], change);
     assert.throws(() => planBoard(source, changed, ref));
   }
