@@ -53,16 +53,16 @@ const requiredText = (value: unknown, max = 20_000): string => {
   return value.trim();
 };
 const setupQuestions = [
-  'What kinds of events does your club run?',
-  'Where do you usually meet?',
-  'Who is in the cabinet?',
-  'Who is your adviser?',
-  'Which sponsors or partners do you work with?',
-  'What dates matter each year?',
-  'How do you communicate with members?',
-  'What worked well at your last event?',
-  'What should the next cabinet watch out for?',
-  'What else would you like the next cabinet to know?',
+  "What is your club or society's official name?",
+  'Are you a club or a faculty society? If a society, which faculty?',
+  'Which department or office advises your club? Keep personal contact details in Cabinet, not here.',
+  "Which cabinet roles handle which responsibilities? Use roles, not people's names or contact details.",
+  'What are your signature events and activities?',
+  'Which venues do you usually use, and for what?',
+  'Which organizations sponsor or partner with your club? Omit personal contact details.',
+  'What recurring dates or seasonal activities should the next cabinet know about?',
+  'Which communication channels do you use? Do not paste private links, credentials or contact details.',
+  'What practical lesson should the next cabinet carry forward?',
 ];
 
 export function createMockTransport(
@@ -178,7 +178,10 @@ export function createMockTransport(
       (/^\/events\/(plan|[^/]+\/(rebuild|drafts\/[^/]+|after-event))$/.test(path) ||
         path.startsWith('/chat/') ||
         /^\/runs\/.+\/answer$/.test(path) ||
-        path === '/setup/next');
+        (path === '/setup/next' &&
+          body.answer !== undefined &&
+          body.answer !== '[skip]' &&
+          !data.setup_complete));
     if (paid && options.scenario === 'ai-error')
       throw new ApiError("ClubOps couldn't finish this. Nothing was saved or sent.", 503);
     let result: unknown;
@@ -756,10 +759,12 @@ export function createMockTransport(
     else if (path === '/setup/next' && method === 'POST') {
       mutateAllowed(true);
       if (body.answer !== undefined && data.setup_index < setupQuestions.length) {
-        const text = String(body.answer);
-        if (text.trim() && text !== '[skip]') addFact(data, text.trim(), `${club.name} setup`);
+        const text = requiredText(body.answer, 2000);
+        if (text !== '[skip]') {
+          addFact(data, text, `${club.name} setup`);
+          charge(data, 'Club setup');
+        }
         data.setup_index++;
-        charge(data, 'Club setup');
       }
       if (data.setup_index >= setupQuestions.length) data.setup_complete = true;
       result = {
