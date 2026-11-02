@@ -6,6 +6,7 @@ import {
   readAgentRun,
   readAnswer,
   readDraft,
+  readSetupStep,
   runStatuses,
   stepStates,
   draftTypes,
@@ -44,6 +45,28 @@ const draft = {
 };
 
 describe('published 0.2.0 contract responses', () => {
+  it('rejects malformed setup progress instead of clearing the answer or showing completion', () => {
+    const step = {
+      question: 'Synthetic question',
+      index: 2,
+      total: 10,
+      done: false,
+      rules_count: 25,
+    };
+    expect(readSetupStep(step)).toEqual(step);
+    for (const change of [
+      { index: 0 },
+      { index: 11 },
+      { total: 0 },
+      { index: 1.5 },
+      { done: true },
+      { done: 'false' },
+      { rules_count: -1 },
+      { question: '' },
+    ])
+      expect(() => readSetupStep({ ...step, ...change })).toThrow('incompatible data');
+    expect(readSetupStep({ ...step, index: 10, done: true }).done).toBe(true);
+  });
   it('preserves the published HTTP chat view model with expanded citations and review links', () => {
     const reply = readAnswer({
       kind: 'answer',
