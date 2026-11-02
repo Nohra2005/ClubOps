@@ -17,6 +17,104 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
+test('HTTP setup resumes durable progress and recovers a queue failure without resending an answer', async ({
+  page,
+}) => {
+  await page.route('**/api/knowledge?**', (route) => route.fulfill({ json: [] }));
+  await page.route('**/api/events', (route) => route.fulfill({ json: [] }));
+  let position = 3;
+  let answers = 0;
+  await page.route('**/api/setup/next', async (route) => {
+    expect(route.request().headers()['x-requested-with']).toBe('ClubOps');
+    const body = route.request().postDataJSON();
+    if (body.answer !== undefined) {
+      answers++;
+      expect(body).toEqual({ answer: 'Synthetic venue lesson.' });
+      position = 4; // extraction was saved, but its queue completion response failed
+      await route.fulfill({ status: 503, json: { detail: 'Synthetic internal error' } });
+    } else
+      await route.fulfill({
+        json: {
+          question: `Synthetic question ${position}`,
+          index: position,
+          total: 10,
+          done: false,
+          rules_count: 0,
+        },
+      });
+  });
+  await page.goto('/setup');
+  await expect(
+    page.getByText('No approved shared rules are available yet.', { exact: false }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Start or resume club setup' }).click();
+  await expect(page.locator('.setup-progress')).toContainText('3 of 10');
+  await page.getByLabel('Your setup answer').fill('Synthetic venue lesson.');
+  await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(page.getByLabel('Your setup answer')).toHaveValue('Synthetic venue lesson.');
+  await page.getByRole('button', { name: 'Resume saved setup' }).click();
+  await expect(page.locator('.setup-progress')).toContainText('4 of 10');
+  expect(answers).toBe(1);
+  await page.getByRole('button', { name: /Stop for now/ }).click();
+  await page.goto('/setup');
+  await page.getByRole('button', { name: 'Start or resume club setup' }).click();
+  await expect(page.locator('.setup-progress')).toContainText('4 of 10');
+});
+
+test('an incompatible setup response preserves the draft and allows an explicit retry', async ({
+  page,
+}) => {
+  await page.route('**/api/knowledge?**', (route) => route.fulfill({ json: [] }));
+  let invalid = true;
+  await page.route('**/api/setup/next', async (route) => {
+    const body = route.request().postDataJSON();
+    const index = body.answer === undefined ? 1 : invalid ? 0 : 2;
+    if (body.answer !== undefined) invalid = false;
+    await route.fulfill({
+      json: { question: 'Synthetic setup question', index, total: 10, done: false, rules_count: 0 },
+    });
+  });
+  await page.goto('/setup');
+  await page.getByRole('button', { name: 'Start or resume club setup' }).click();
+  await page.getByLabel('Your setup answer').fill('Synthetic unsaved answer.');
+  await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('incompatible data');
+  await expect(page.getByLabel('Your setup answer')).toHaveValue('Synthetic unsaved answer.');
+  await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  await expect(page.locator('.setup-progress')).toContainText('2 of 10');
+  await expect(page.getByLabel('Your setup answer')).toHaveValue('');
+});
+
+test('an adviser cannot open the setup controls or post setup answers', async ({ page }) => {
+  let changes = 0;
+  await page.route('**/api/me', (route) =>
+    route.fulfill({
+      json: {
+        user: {
+          member_id: 'm-adviser',
+          name: 'Synthetic Adviser',
+          email: 'adviser@example.com',
+          role: 'adviser',
+        },
+        role: 'adviser',
+        club: clubs[0],
+        counts: { overdue_events: 0, review: 0, reminders: 0 },
+      },
+    }),
+  );
+  await page.route('**/api/events', (route) => route.fulfill({ json: [] }));
+  await page.route('**/api/knowledge?**', (route) => route.fulfill({ json: [] }));
+  await page.route('**/api/setup/next', (route) => {
+    changes++;
+    return route.fulfill({ status: 403, json: {} });
+  });
+  await page.goto('/setup');
+  await expect(page).toHaveURL(/\/events$/);
+  await expect(page.getByRole('button', { name: 'Start or resume club setup' })).toHaveCount(0);
+  expect(changes).toBe(0);
+});
+
 test('Google sign-in exchanges the credential without persisting it in browser storage', async ({
   page,
   context,

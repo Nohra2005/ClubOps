@@ -184,7 +184,7 @@ export default function Setup() {
             </form>
           </section>
           <button className="text-button stop-setup" onClick={stop} disabled={action.pending}>
-            Stop for now · submitted answers are kept
+            Stop for now · saved progress is kept
           </button>
           <p className="inline-note">
             Next question may use AI to propose facts. Skipping or resuming does not call AI.
