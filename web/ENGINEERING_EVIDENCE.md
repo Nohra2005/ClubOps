@@ -27,11 +27,20 @@ Current results and conditions are in `VERIFICATION.md`; the PR's Checks tab is 
 authority for its latest head. The deployed/pilot/evaluation tasks stay open until their
 own completion evidence exists.
 
-**Open integration finding:** [issue #45](https://github.com/Nohra2005/ClubOps/issues/45)
-records a reproduced intermittent SQLite member-lookup exception in the local real-API
-Caddy path. A run with four passing assertions still emitted server exceptions, and a
-focused repeat failed. This is referred to the API owner; green Linux/unit/container
-checks are not being used to claim that the backend finding is fixed.
+**2 November follow-up:** PR #44 is merged with its 17 original commits preserved;
+Web, Container and Python workflows are green on main `d5dfb17`. GitHub's PR #44 review
+list has no review records, so independent-review evidence remains a T-40 process gap,
+not something this document claims happened retroactively.
+
+Tatiana fixed [issue #45](https://github.com/Nohra2005/ClubOps/issues/45) in PR #47
+with a shared-connection lock and concurrency regression (F-131). The same local
+Caddy/API suite now passes all 4 cases with no ASGI/SQLite errors in its captured log.
+Public deployment/Google verification remains open.
+
+[PR #54](https://github.com/Nohra2005/ClubOps/pull/54) adds C-27's isolated learning
+evaluation and full synthetic record/replay regression. The command and limits are in
+[LEARNING_EVALUATION.md](LEARNING_EVALUATION.md). This runs in root CI without keys;
+it is not T-26's real private-set results or C-22's final held-out thresholds.
 
 ## Instructions for teammate agents
 

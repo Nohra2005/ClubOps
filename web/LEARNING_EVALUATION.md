@@ -88,3 +88,6 @@ a cumulative-memory merge benchmark, human acceptance, real-provider quality evi
 or the final held-out regression thresholds. Tatiana runs the frozen private set in
 T-26; C-22's final CI gates need those results. The synthetic replay test already runs
 under the existing root CI without calling a provider.
+
+Only club-scoped create proposals are approved in this empty-store experiment. Shared
+AUB-policy approval and merge/update behavior against existing memory are separate tests.
