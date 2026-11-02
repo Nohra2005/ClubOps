@@ -398,6 +398,7 @@ Reference documents:
 - Needs: none
 - What: The backend for the setup screen you built (C-11): `POST /api/setup/next {answer?}` walks a new club through about 10 questions (name, club or society and faculty, adviser, cabinet roles, signature events, usual venues, sponsors...) and turns each answer into a proposed fact in Review; the 25 AUB rules apply from day one (they are shared). Code in `src/clubops/api/setup.py` (yours); register it in place of the 501 route (one line; tell Tatiana). Tatiana gives you ASME's non-personal facts to seed ASME as the second club for the demo.
 - Done when: a new club can go through setup in the demo, and ASME is the second club.
+- Progress (2026-11-03): owned service/router and frontend in PR #55; durable per-club questions, Untrusted capture, retry outbox and Review-only writes. 17 synthetic service/HTTP/SQLite adapter tests plus desktop/phone setup tests. See `web/CLUB_SETUP.md`. Still doing: Tatiana must wire the public callbacks and `/me` completion field, approve decided-card retry semantics and provide sourced non-personal ASME seed facts. Existing answer-only contract's stale-tab limit is documented; no contract was silently extended.
 
 ### C-22 Evaluation in CI (was T-30)
 - Owner: christophe
@@ -466,10 +467,12 @@ Reference documents:
 
 ### C-31 GitHub Projects board and weekly sprints (bonus)
 - Owner: christophe
-- Status: doing
+- Status: blocked
 - Needs: none
 - What: A GitHub Projects board fed by `TASKS.md` (one card per task, columns = status), so ownership is visible on GitHub. One-week sprints (a Projects iteration per week with the tasks planned for it); a 10-minute review with the team each week, noted in one line under T-28.
 - Done when: the board matches `TASKS.md` and 3 weekly sprints are recorded.
+- Progress (2026-11-03): PR #55 adds the pinned TASKS.md plan, private Projects v2 create/sync CLI, board fields, proposed weekly iterations and read-back verification. 12 synthetic tool tests run in web CI; dry run reads 77 tasks from main. See `web/PROJECT_BOARD.md`.
+- Blocker: current CLI token lacks Projects scope; browser host is unavailable. Christophe was asked to run `gh auth refresh -s project`. No live board or team access has been verified. Three actual weekly team reviews still need to happen and be recorded under T-28; planned iterations are not completed-review evidence.
 
 <!-- C-32 dropped on 2026-11-01 (D-82): no human graders, so no blind grading packets. -->
 
