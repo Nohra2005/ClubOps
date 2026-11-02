@@ -114,8 +114,8 @@ PR #54. Test totals therefore describe this branch, not the union of both PRs.
 
 | Check             | Observed result                                                                                                                                                         |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Root gates        | Ruff check/format: 125 files; strict mypy: 73 source files; schema/task checks pass; 438 tests, 92.99% coverage                                                         |
-| Setup regressions | 17 synthetic service/router/real-auth/SQLite adapter tests pass; all facts remain unapproved                                                                            |
+| Root gates        | Ruff check/format: 125 files; strict mypy: 73 source files; schema/task checks pass; 439 tests, 92.99% coverage                                                         |
+| Setup regressions | 18 synthetic cases: service/router/real-auth/SQLite checks and one unresolved stale-tab reproduction (F-151); no automatic approval                                     |
 | Frontend          | `npm run check` passes: lint, format, 42 unit tests, 12 board-tool tests, strict types and production build                                                             |
 | Setup browsers    | 4 demo cases and 6 intercepted HTTP cases pass across desktop and phone: completion, skip/resume, reload, failed/malformed responses and adviser access                 |
 | Board preview     | Default dry run reads all 77 main tasks and proposes four seven-day iterations; exact source commit and input hash recorded in ignored `output/project-board-plan.json` |

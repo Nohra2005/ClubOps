@@ -46,17 +46,18 @@ cannot be directly messaged through this session's agent tools.
 ## 3 November 2026 — setup and board evidence (PR #55)
 
 - C-21: owned service/router, explicit untrusted source/approval boundary, durable
-  progress and extraction outbox; 17 regressions including real authenticated SQLite
+  progress and extraction outbox; 18 cases including real authenticated SQLite
   Review storage. The test adapter is explicit; production registration remains with
   Tatiana. No actual ASME facts were supplied or invented.
 - C-31: exact-commit TASKS.md plan, private Projects adapter and proposed weekly
   iterations. Twelve stateful/offline tests cover pagination, retries, identity
   conflicts, unsafe targets and preserved iteration IDs. They run in the existing
   web quality job through `npm run check`, with no token or remote writes.
-- Local evidence: 438 Python tests, 92.99% coverage; full root static/schema/task gates;
+- Local evidence: 439 Python tests, 92.99% coverage; full root static/schema/task gates;
   42 frontend units; four setup demo and six HTTP browser cases across desktop/phone.
   Reproducible commands and limits are in `VERIFICATION.md`, `CLUB_SETUP.md` and
   `PROJECT_BOARD.md`. Current-head check links and small commits are on PR #55.
+- F-151 reproduces the answer-only stale-tab limit; a passing reproduction is not a safety guarantee. Its owner-approved question-token fix remains pending.
 - Process evidence still missing: Projects scope/publication/team access, three real
   weekly reviews, and independent review of this PR. Tentative iterations are not
   attendance or completion evidence. Record only actual reviews under T-28.
