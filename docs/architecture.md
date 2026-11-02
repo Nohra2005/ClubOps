@@ -1,6 +1,6 @@
 # Architecture
 
-Updated 1 November 2026 from the published contracts, plan and API table. Local integration and container checks are recorded in `web/VERIFICATION.md`; public deployment and live provider measurements remain pending.
+Updated 3 November 2026 from the published contracts, plan and API table. Local integration and container checks are recorded in `web/VERIFICATION.md`; public deployment and live provider measurements remain pending.
 
 ## Request and approval flow
 
@@ -62,3 +62,18 @@ The separate Compose `local` target compiles an explicit dev sign-in form, boots
 - OpenTelemetry export, deployed monitoring/alerts and final evaluation thresholds remain C-25/C-26/C-22 work. Metadata fields alone do not prove those systems are running.
 - Runs execute in-process; a single worker/instance is the supported deployment configuration. Finish active planning before a restart. Durable job recovery and horizontal scaling are not claimed.
 - Real provider quality, production OAuth, persistent hosting recovery and real-world pilot outcomes are not established by scripted tests.
+
+## Prepared setup adapter (C-21, PR #55)
+
+`src/clubops/api/setup.py` owns durable per-club question progress and an extraction
+outbox. It accepts authenticated Actor, capture, idempotent Review submission and
+shared-rule count callbacks; it imports contracts rather than backend implementation.
+Answers are Untrusted interview sources. Nothing in setup verifies knowledge or
+changes cabinet/profile records. The UI supports resume and preserves failed drafts.
+
+Application registration and `/me.club.setup_complete` wiring are still pending with
+Tatiana; main's setup endpoint remains 501. Real-auth/SQLite tests explicitly install
+a reference adapter and use synthetic extraction, not production wiring or measured
+model quality. The submit callback must preserve earlier Review decisions on retry.
+See [the integration guide](../web/CLUB_SETUP.md) for the exact boundary and current
+answer-only contract's stale-tab limitation. Sourced ASME seeding is still pending.

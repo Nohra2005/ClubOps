@@ -1,6 +1,6 @@
 # Data provenance
 
-Updated 1 November 2026. Sources must be public, authorized or synthetic. A source's existence is not evidence that consent, a pilot or an evaluation has happened.
+Updated 3 November 2026. Sources must be public, authorized or synthetic. A source's existence is not evidence that consent, a pilot or an evaluation has happened.
 
 ## Source inventory
 
@@ -32,3 +32,17 @@ The redaction component hides phone numbers, AUB IDs, emails and links before mo
 ## Limits on conclusions
 
 Running Club material cannot establish generalization to every AUB club. Synthetic scenarios test behavior but do not establish provider quality or user benefit. Real pilot, handover, security-rate and model-comparison claims must cite measured results in `docs/evidence.md`; prepared scripts alone do not support those claims.
+
+## Prepared setup data path (C-21, PR #55)
+
+The setup module labels incoming answers as Untrusted interview sources with the
+club and question locator. Its active progress row stores a question index and, only
+while queue submission is unfinished, extracted proposals and an answer fingerprint.
+This outbox belongs under the private application data directory and persistent
+volume, not Git or telemetry. Normal completion clears the active outbox fields;
+that is not a secure-erasure or backup-retention guarantee. Human approval still
+controls whether a proposed fact becomes retrievable knowledge.
+
+All committed setup/browser/adapter examples are synthetic. No real ASME seed facts
+were supplied or invented. Owner wiring, source review and explicit approval remain
+necessary before claiming a real second-club demo; see [CLUB_SETUP.md](../web/CLUB_SETUP.md).
