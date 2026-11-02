@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import io
 import json
 import re
 import unicodedata
@@ -54,6 +55,14 @@ class Columns:
     expected: str = "expected_facts"
     kind: str = "source_kind"
     club: str = "club_id"
+    expected_format: Literal["json", "text"] = "json"
+
+    def __post_init__(self) -> None:
+        required = (self.source, self.question, self.expected)
+        if len(set(required)) != 3 or any(not name.strip() for name in required):
+            raise ValueError("Source, question and expected-fact columns must be distinct and nonempty.")
+        if self.expected_format not in ("json", "text"):
+            raise ValueError("Unknown expected-fact format.")
 
 
 def _labels(raw: str) -> tuple[tuple[str, ...], ...]:
@@ -75,7 +84,15 @@ DEFAULT_COLUMNS = Columns()
 def load_cases(path: Path, columns: Columns = DEFAULT_COLUMNS) -> list[Case]:
     """Private CSV in; sanitized row-level validation errors out. No label/source values echoed."""
     try:
-        with path.open(encoding="utf-8-sig", newline="") as source:
+        return parse_cases(path.read_text(encoding="utf-8-sig"), columns)
+    except UnicodeError:
+        raise ValueError("Invalid learning CSV encoding; private values omitted.") from None
+
+
+def parse_cases(content: str, columns: Columns = DEFAULT_COLUMNS) -> list[Case]:
+    """Parse a single frozen input snapshot so the report hash matches the actual evaluated rows."""
+    try:
+        with io.StringIO(content, newline="") as source:
             reader = csv.DictReader(source, strict=True)
             names = reader.fieldnames or []
             if len(set(names)) != len(names) or not {columns.source, columns.question, columns.expected} <= set(names):
@@ -90,7 +107,13 @@ def load_cases(path: Path, columns: Columns = DEFAULT_COLUMNS) -> list[Case]:
                             ref=f"case-{index:04d}",
                             source=row[columns.source],
                             question=row[columns.question],
-                            expected=_labels(row[columns.expected]),
+                            expected=(
+                                _labels(row[columns.expected])
+                                if columns.expected_format == "json"
+                                else ((row[columns.expected],),)
+                                if row[columns.expected].strip()
+                                else ()
+                            ),
                             kind=SourceKind(row.get(columns.kind) or "user_input"),
                             club_id=row.get(columns.club) or "eval-club",
                         )

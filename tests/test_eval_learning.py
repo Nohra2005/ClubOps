@@ -53,6 +53,18 @@ def test_empty_negative_case_and_explicit_column_mapping(tmp_path: Path) -> None
         load_cases(path)
 
 
+def test_existing_plain_fact_column_can_be_mapped_without_rewriting_the_frozen_file(tmp_path: Path) -> None:
+    path = tmp_path / "original.csv"
+    path.write_text("excerpt,follow_up,fact\nSynthetic source,Question?,Use the example form.\n", encoding="utf-8")
+    before = path.read_bytes()
+    [loaded] = load_cases(
+        path, Columns(source="excerpt", question="follow_up", expected="fact", expected_format="text")
+    )
+    assert loaded.expected == (("Use the example form.",),) and path.read_bytes() == before
+    with pytest.raises(ValueError, match="distinct"):
+        Columns(source="labels", expected="labels")
+
+
 def test_case_rejects_scope_escape_and_invalid_lengths() -> None:
     with pytest.raises(ValueError):
         Case("case-0001", "Synthetic note", "Question?", (), club_id="../private")
