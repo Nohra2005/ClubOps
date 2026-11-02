@@ -13,6 +13,7 @@ from collections.abc import Callable
 from contextlib import closing
 from datetime import UTC, date, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
@@ -210,7 +211,7 @@ def router(
                 actor,
                 body.answer,
                 now=now,
-                rules_count=rules_count(actor.club_id, now.date()),
+                rules_count=rules_count(actor.club_id, now.astimezone(ZoneInfo("Asia/Beirut")).date()),
                 capture=capture,
                 submit=submit,
             )
