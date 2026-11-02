@@ -94,6 +94,18 @@ def test_an_empty_initializing_file_is_incomplete_not_a_server_error(tmp_path: P
     assert advance(service, backend).index == 1
 
 
+def test_answer_only_contract_reproduces_the_unresolved_stale_tab_limit(tmp_path: Path) -> None:
+    """Reproduction, not a safety claim: replace after an owner-approved question token."""
+    service, backend = SetupService(tmp_path), Backend()
+    old_tab = advance(service, backend)
+    assert old_tab.index == 1
+    advance(service, backend, "Synthetic answer from another tab")
+    # This tab still displays question 1, but the published request has only answer.
+    response = advance(service, backend, "Synthetic delayed answer from the old tab")
+    assert response.index == 3
+    assert backend.inputs[-1].sources[0].source.locator == "Club setup question 2"
+
+
 @pytest.mark.parametrize("user", [actor(Role.EVENTS), actor(Role.ADVISER), actor(verified=False)])
 def test_only_an_authenticated_president_can_change_setup(tmp_path: Path, user: Actor) -> None:
     service, backend = SetupService(tmp_path), Backend()

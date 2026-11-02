@@ -57,6 +57,10 @@ An answer-only request has no question token. A delayed response retry or second
 can therefore answer a later question accidentally after the first request completed.
 Use one setup tab; an owner-approved question token/If-Match extension was requested
 in #43. No silent HTTP-contract extension was introduced here.
+F-151 and `test_answer_only_contract_reproduces_the_unresolved_stale_tab_limit`
+preserve an explicit reproduction. A passing reproduction test is not a claim that
+stale answers are rejected; replace it with rejection assertions after the owner
+agrees the contract change.
 
 ## Second-club demo and remaining work
 
