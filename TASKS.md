@@ -394,7 +394,7 @@ Reference documents:
 
 ### C-21 New-club setup (was T-20)
 - Owner: christophe
-- Status: todo
+- Status: doing
 - Needs: none
 - What: The backend for the setup screen you built (C-11): `POST /api/setup/next {answer?}` walks a new club through about 10 questions (name, club or society and faculty, adviser, cabinet roles, signature events, usual venues, sponsors...) and turns each answer into a proposed fact in Review; the 25 AUB rules apply from day one (they are shared). Code in `src/clubops/api/setup.py` (yours); register it in place of the 501 route (one line; tell Tatiana). Tatiana gives you ASME's non-personal facts to seed ASME as the second club for the demo.
 - Done when: a new club can go through setup in the demo, and ASME is the second club.
@@ -466,7 +466,7 @@ Reference documents:
 
 ### C-31 GitHub Projects board and weekly sprints (bonus)
 - Owner: christophe
-- Status: todo
+- Status: doing
 - Needs: none
 - What: A GitHub Projects board fed by `TASKS.md` (one card per task, columns = status), so ownership is visible on GitHub. One-week sprints (a Projects iteration per week with the tasks planned for it); a 10-minute review with the team each week, noted in one line under T-28.
 - Done when: the board matches `TASKS.md` and 3 weekly sprints are recorded.
