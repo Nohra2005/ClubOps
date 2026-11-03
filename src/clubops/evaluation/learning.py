@@ -411,10 +411,15 @@ def read_ratings(sheet_snapshot: bytes, manifest_snapshot: bytes) -> tuple[dict[
             raise ValueError("Invalid review companion.")
         if (
             not isinstance(run.get("as_of"), str)
-            or date.fromisoformat(run["as_of"]).isoformat() != run["as_of"]
             or not isinstance(run.get("run_id"), str)
             or not re.fullmatch(r"[a-f0-9]{32}", run["run_id"])
         ):
+            raise ValueError("Invalid review run metadata.")
+        try:
+            on = date.fromisoformat(run["as_of"])
+        except ValueError:
+            raise ValueError("Invalid review run metadata; private values omitted.") from None
+        if on.isoformat() != run["as_of"]:
             raise ValueError("Invalid review run metadata.")
         entries = run["cases"]
         if not isinstance(entries, list) or not entries:
@@ -431,6 +436,9 @@ def read_ratings(sheet_snapshot: bytes, manifest_snapshot: bytes) -> tuple[dict[
                 or not re.fullmatch(r"case-\d{4,}", ref)
                 or ref in refs
                 or not isinstance(entry["baseline_already_known"], bool)
+                or (entry["cost_usd"] is not None and not isinstance(entry["cost_usd"], str))
+                or not isinstance(entry["budget_steps"], int)
+                or isinstance(entry["budget_steps"], bool)
             ):
                 raise ValueError("Duplicate or invalid review identities.")
             # Reuse the numeric/phase validator; never trust a hand-edited cost as a float.

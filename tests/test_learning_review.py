@@ -194,3 +194,30 @@ def test_unapproved_facts_are_not_presented_as_learned_and_missing_cost_is_not_z
     report = summarize_ratings(sheet.read_bytes(), manifest.read_bytes())
     assert report["totals"]["errors"] == 1 and report["totals"]["cost_usd"] is None
     assert report["totals"]["cases"] == 1
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("as_of", "PRIVATE INVALID DATE"),
+        ("cost_usd", True),
+        ("cost_usd", "NaN"),
+        ("budget_steps", True),
+        ("error", "PRIVATE PHASE"),
+    ],
+)
+def test_invalid_companion_metadata_is_rejected_without_private_diagnostics(
+    tmp_path: Path,
+    field: str,
+    value: object,
+) -> None:
+    sheet, manifest = bundle(tmp_path)
+    rate(sheet, [("yes", "yes")])
+    run = json.loads(manifest.read_text())
+    if field == "as_of":
+        run[field] = value
+    else:
+        run["cases"][0][field] = value
+    with pytest.raises(ValueError) as error:
+        summarize_ratings(sheet.read_bytes(), json.dumps(run).encode())
+    assert "PRIVATE" not in str(error.value)
