@@ -264,7 +264,7 @@ def evaluate(cases: Sequence[Case], system: Callable[[Case], Trial], on: date) -
 def markdown(report: dict[str, Any]) -> str:
     totals = report["totals"]
     lines = [
-        "# Learning evaluation",
+        "# Exact-word learning smoke diagnostic",
         "",
         report["limits"],
         "",
@@ -512,6 +512,8 @@ def human_markdown(report: dict[str, Any]) -> str:
     totals = report["totals"]
     lines = [
         "# Human-reviewed learning evaluation",
+        "",
+        f"Dataset: {report.get('dataset_kind', 'unspecified')}; mode: {report.get('mode', 'unspecified')}.",
         "",
         report["limits"],
         "",

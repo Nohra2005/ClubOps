@@ -64,6 +64,7 @@ def environment(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
 
 def arguments(path: Path, tmp_path: Path) -> list[str]:
     return [
+        "smoke",
         "--cases",
         str(path),
         "--as-of",
@@ -158,7 +159,7 @@ def test_output_cannot_overwrite_frozen_input(tmp_path: Path) -> None:
     path = dataset(tmp_path / "cases.csv", [STATEMENT])
     before = path.read_bytes()
     with pytest.raises(SystemExit) as error:
-        eval_learning.main(["--cases", str(path), "--as-of", "2026-10-29", "--out", str(path)])
+        eval_learning.main(["smoke", "--cases", str(path), "--as-of", "2026-10-29", "--out", str(path)])
     assert error.value.code == 2 and path.read_bytes() == before
 
 
@@ -175,6 +176,7 @@ def test_checked_in_synthetic_example_replays_without_an_api_key(
     monkeypatch.setattr(httpx.Client, "send", no_network)
     code = eval_learning.main(
         [
+            "smoke",
             "--cases",
             str(root / "tests/fixtures/learning.synthetic.csv"),
             "--as-of",
