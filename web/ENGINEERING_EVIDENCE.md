@@ -51,3 +51,18 @@ Record an actual command, result, run/review link and limitation. Tell your user
 started and what remains; do not call a tool installation proof of use. Reply in #43
 to coordinate overlapping workflow/API/telemetry work. Assistants in separate sessions
 cannot be directly messaged through this session's agent tools.
+
+## 3 November 2026 — human review correction (C-27, PR #54)
+
+At Tatiana's request, `export` now produces the requested seven-column private review
+CSV with actual saved facts/answers and two blank ratings. `score` reads completed
+yes/partly/no labels offline; no wording comparator or model assigns semantic grades.
+Partly stays separate. The exact-word path is an explicit technical `smoke` only.
+D-87 supersedes D-83's quality use, not planning's separate automatic evaluation.
+
+File-backed checks: 48 evaluator regressions, 469 full Python tests / 92.93% coverage,
+strict source/CLI typing and root gates; 40 frontend units and production build. The
+actual synthetic replay exported two blank-rated rows with no key/network. Synthetic
+ratings in tests prove mechanics only; Tatiana's real ten-case grades remain pending.
+Commands, privacy, CSV import and limits are in `LEARNING_EVALUATION.md`; latest GitHub
+checks and review evidence are on PR #54. No private sheet or source row is committed.

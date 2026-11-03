@@ -137,3 +137,29 @@ Use [LEARNING_EVALUATION.md](LEARNING_EVALUATION.md) for the exact command, metr
 and limits. The replay regression runs automatically in root CI; real private-set
 results and final held-out thresholds remain T-26/C-22. Alias sets must not be tuned
 after seeing model outputs. Sandbox verification is simulation, not user acceptance.
+
+## 3 November 2026 — C-27 human review revision
+
+Tatiana's feedback replaces automatic exact-word grading for learning/answer quality
+with the two-command workflow in [LEARNING_EVALUATION.md](LEARNING_EVALUATION.md).
+The new CSV deliberately contains the private expected/saved facts, question and
+actual answer; only learned/answer_ok start blank. Keep real sheets and companions
+in ignored private locations. Result Markdown/JSON remains free of evidence text.
+
+Verified after updating to main `22c4dae` and its locked dependencies:
+
+- Root gates pass: Ruff check/format (128 files), strict package typing (73 source
+  files), explicit CLI typing, schema/task checks; **469 tests, 92.93% coverage**.
+- **48 C-27 tests** cover actual record/replay, a paraphrased saved fact accepted by
+  supplied human yes labels, blank/invalid grades, row completeness/provenance,
+  literal spreadsheet text, output protection and a model/configuration-free scorer.
+- Frontend `npm run check` passes, including 40 units, lint/format/types/build.
+- The documented synthetic replay actually produced two review rows, zero errors
+  and both rating columns blank. No API key/network or real provider charge was used.
+- Linux CI caught a test relying on the local Windows temporary-folder location;
+  the regression now sets an explicit repository boundary without weakening the guard.
+
+Earlier exact-label totals above are historical **smoke diagnostics**, not semantic
+learning/answer accuracy. They now require the explicit `smoke` subcommand. D-87 and
+F-152–F-159 record the revised design/failure evidence. No real private case, actual
+human-study grade or T-26 result is claimed. Final-head CI/review is on PR #54.
