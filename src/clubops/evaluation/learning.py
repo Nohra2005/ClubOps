@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import io
 import json
 import re
@@ -13,6 +14,7 @@ from datetime import date
 from decimal import Decimal
 from pathlib import Path
 from typing import Any, Literal
+from uuid import uuid4
 
 from pydantic import TypeAdapter, ValidationError
 
@@ -284,3 +286,118 @@ def markdown(report: dict[str, Any]) -> str:
         ]
     )
     return "\n".join(lines)
+
+
+REVIEW_COLUMNS = (
+    "id",
+    "fact I expected",
+    "fact ClubOps learned",
+    "question",
+    "ClubOps's answer",
+    "learned",
+    "answer_ok",
+)
+REVIEW_FORMAT = "clubops-learning-review-v1"
+RATINGS = ("yes", "partly", "no")
+RUN_FIELDS = (
+    "dataset_sha256",
+    "dataset_kind",
+    "mode",
+    "model",
+    "price_in_per_mtok",
+    "price_out_per_mtok",
+    "budget_usd_per_case",
+    "max_steps_per_case",
+    "sandbox_approval",
+    "cost_accounting",
+)
+
+
+def _dangerous_cell(value: str) -> bool:
+    return value.lstrip().startswith(("=", "+", "-", "@")) or value.startswith(("\t", "\r", "\n"))
+
+
+def _spreadsheet_text(value: str) -> str:
+    if len(value) > 32767:
+        raise ValueError("A review cell exceeds the spreadsheet text limit; nothing was truncated.")
+    return "'" + value if _dangerous_cell(value) else value
+
+
+def _review_fingerprint(values: Sequence[str]) -> str:
+    canonical = []
+    for value in values:
+        text = value.replace("\r\n", "\n").replace("\r", "\n")
+        if text.startswith("'") and _dangerous_cell(text[1:]):
+            text = text[1:]  # accept a text-import round trip with or without our CSV safety prefix
+        canonical.append(text)
+    return hashlib.sha256(json.dumps(canonical, ensure_ascii=False).encode()).hexdigest()
+
+
+def write_review(
+    cases: Sequence[Case],
+    trials: Sequence[Trial],
+    on: date,
+    *,
+    sheet: Path,
+    manifest: Path,
+    metadata: dict[str, Any],
+) -> dict[str, Any]:
+    """Export actual saved statements/answers and two blank human-rating columns.
+
+    The CSV deliberately contains private text. Its companion retains only hashes,
+    operational metadata and budget costs, never a second copy of the review text.
+    Neither existing file is overwritten, especially a sheet with completed ratings.
+    """
+    if not cases or len(cases) != len(trials):
+        raise ValueError("Review cases and trials must align.")
+    if sheet.suffix.lower() != ".csv" or manifest.suffix.lower() != ".json":
+        raise ValueError("Use a .csv review sheet and .json companion.")
+    if sheet.resolve() == manifest.resolve() or sheet.exists() or manifest.exists():
+        raise ValueError("Review outputs must be new, distinct files; existing ratings are never overwritten.")
+    rows: list[list[str]] = []
+    records: list[dict[str, Any]] = []
+    for case, trial in zip(cases, trials, strict=True):
+        learned = [
+            item.statement
+            for item in trial.approved
+            if item.scope is Scope.CLUB and item.club_id == case.club_id and item.is_current(on)
+        ]
+        fixed = [
+            _spreadsheet_text(value)
+            for value in (
+                case.case_id or case.ref,
+                "\n".join(group[0] for group in case.expected),
+                "\n".join(learned),
+                case.question,
+                trial.after.text if trial.after else "",
+            )
+        ]
+        rows.append([*fixed, "", ""])
+        error = trial.error or ("baseline" if trial.before is None else "answer" if trial.after is None else None)
+        records.append(
+            {
+                "case": case.ref,
+                "fixed_sha256": _review_fingerprint(fixed),
+                "error": error,
+                "baseline_already_known": bool(trial.before and trial.before.known),
+                "cost_usd": str(trial.cost_usd) if trial.cost_usd is not None else None,
+                "budget_steps": trial.budget_steps,
+            }
+        )
+    run = {
+        "format": REVIEW_FORMAT,
+        "run_id": uuid4().hex,
+        "as_of": on.isoformat(),
+        **{key: metadata[key] for key in RUN_FIELDS if key in metadata},
+        "cases": records,
+    }
+    content = json.dumps(run, indent=2) + "\n"
+    sheet.parent.mkdir(parents=True, exist_ok=True)
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    with sheet.open("x", encoding="utf-8-sig", newline="") as output:
+        writer = csv.writer(output)
+        writer.writerow(REVIEW_COLUMNS)
+        writer.writerows(rows)
+    with manifest.open("x", encoding="utf-8") as output:
+        output.write(content)
+    return run
