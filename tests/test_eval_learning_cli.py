@@ -354,6 +354,7 @@ def test_export_protects_frozen_input_existing_ratings_and_private_output_locati
         eval_learning.main(args)
     assert sheet.read_text() == "KEEP EXISTING HUMAN RATINGS" and path.read_bytes() == frozen
     private = tmp_path / "untracked-private.csv"
+    monkeypatch.setattr(eval_learning, "ROOT", tmp_path)  # explicit repo boundary, independent of OS temp location
     with pytest.raises(SystemExit):
         eval_learning.main([*args, "--sheet", str(private), "--dataset-kind", "private"])
     assert not private.exists()
