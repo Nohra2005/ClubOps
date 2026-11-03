@@ -65,6 +65,17 @@ def test_existing_plain_fact_column_can_be_mapped_without_rewriting_the_frozen_f
         Columns(source="labels", expected="labels")
 
 
+def test_private_case_ids_are_preserved_for_review_but_not_public_refs(tmp_path: Path) -> None:
+    path = dataset(tmp_path / "cases.csv", ["Synthetic expected fact"], id="private-001")
+    [loaded] = load_cases(path)
+    assert loaded.case_id == "private-001" and loaded.ref == "case-0001"
+    assert "private-001" not in repr(loaded)
+    with path.open("a", encoding="utf-8", newline="") as output:
+        output.write('Another synthetic source,Question?,"[]",private-001\n')
+    with pytest.raises(ValueError, match="private values omitted"):
+        load_cases(path)
+
+
 def test_case_rejects_scope_escape_and_invalid_lengths() -> None:
     with pytest.raises(ValueError):
         Case("case-0001", "Synthetic note", "Question?", (), club_id="../private")

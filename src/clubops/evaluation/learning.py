@@ -1,4 +1,4 @@
-"""C-27: labelled learning cases and deterministic scoring; never a model-based judge."""
+"""C-27: private human-review sheets and explicit exact-word smoke diagnostics."""
 
 from __future__ import annotations
 
@@ -33,11 +33,14 @@ class Case:
     expected: tuple[tuple[str, ...], ...] = field(repr=False)
     kind: SourceKind = SourceKind.USER_INPUT
     club_id: str = "eval-club"
+    case_id: str = field(default="", repr=False)
 
     def __post_init__(self) -> None:
         TypeAdapter(ClubId).validate_python(self.club_id)
         if not re.fullmatch(r"case-\d{4,}", self.ref):
             raise ValueError("Case references must be opaque row numbers.")
+        if len(self.case_id) > 200 or "\n" in self.case_id or "\r" in self.case_id:
+            raise ValueError("Invalid private case id.")
         if not self.source.strip() or len(self.source) > 20_000 or not 3 <= len(self.question.strip()) <= 500:
             raise ValueError("Invalid source or question length.")
         seen: set[str] = set()
@@ -56,6 +59,7 @@ class Columns:
     kind: str = "source_kind"
     club: str = "club_id"
     expected_format: Literal["json", "text"] = "json"
+    id: str = "id"
 
     def __post_init__(self) -> None:
         required = (self.source, self.question, self.expected)
@@ -98,26 +102,31 @@ def parse_cases(content: str, columns: Columns = DEFAULT_COLUMNS) -> list[Case]:
             if len(set(names)) != len(names) or not {columns.source, columns.question, columns.expected} <= set(names):
                 raise ValueError("Missing required or duplicate CSV columns.")
             cases: list[Case] = []
+            ids: set[str] = set()
             for index, row in enumerate(reader, 1):
                 try:
                     if None in row or any(value is None for value in row.values()):
                         raise ValueError("Uneven row.")
-                    cases.append(
-                        Case(
-                            ref=f"case-{index:04d}",
-                            source=row[columns.source],
-                            question=row[columns.question],
-                            expected=(
-                                _labels(row[columns.expected])
-                                if columns.expected_format == "json"
-                                else ((row[columns.expected],),)
-                                if row[columns.expected].strip()
-                                else ()
-                            ),
-                            kind=SourceKind(row.get(columns.kind) or "user_input"),
-                            club_id=row.get(columns.club) or "eval-club",
-                        )
+                    case = Case(
+                        ref=f"case-{index:04d}",
+                        source=row[columns.source],
+                        question=row[columns.question],
+                        expected=(
+                            _labels(row[columns.expected])
+                            if columns.expected_format == "json"
+                            else ((row[columns.expected],),)
+                            if row[columns.expected].strip()
+                            else ()
+                        ),
+                        kind=SourceKind(row.get(columns.kind) or "user_input"),
+                        club_id=row.get(columns.club) or "eval-club",
+                        case_id=(row.get(columns.id) or "").strip(),
                     )
+                    private_id = case.case_id or case.ref
+                    if private_id in ids:
+                        raise ValueError("Duplicate case id.")
+                    ids.add(private_id)
+                    cases.append(case)
                 except (ValueError, TypeError, ValidationError):
                     raise ValueError(f"Invalid learning case at CSV row {index + 1}; private values omitted.") from None
             if not cases:
@@ -196,15 +205,21 @@ def score_case(case: Case, trial: Trial, on: date) -> dict[str, Any]:
     }
 
 
-def evaluate(cases: Sequence[Case], system: Callable[[Case], Trial], on: date) -> dict[str, Any]:
-    """Every case stays in the denominator, including infrastructure and validation failures."""
-    rows: list[dict[str, Any]] = []
+def collect_trials(cases: Sequence[Case], system: Callable[[Case], Trial]) -> list[Trial]:
+    """Run each case once, retaining operational failures for either review workflow."""
+    trials: list[Trial] = []
     for case in cases:
         try:
             trial = system(case)
         except Exception:
             trial = Trial(error="runtime")  # no private exception messages; cost is unknown, not zero
-        rows.append(score_case(case, trial, on))
+        trials.append(trial)
+    return trials
+
+
+def evaluate(cases: Sequence[Case], system: Callable[[Case], Trial], on: date) -> dict[str, Any]:
+    """Exact-word smoke diagnostic only; semantic quality comes from completed human ratings."""
+    rows = [score_case(case, trial, on) for case, trial in zip(cases, collect_trials(cases, system), strict=True)]
     cost_complete = all(row["cost_usd"] is not None for row in rows)
     recorded_cost = sum((Decimal(row["cost_usd"]) for row in rows if row["cost_usd"] is not None), Decimal(0))
     success = sum(row["successful"] for row in rows)
