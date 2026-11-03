@@ -401,3 +401,138 @@ def write_review(
     with manifest.open("x", encoding="utf-8") as output:
         output.write(content)
     return run
+
+
+def read_ratings(sheet_snapshot: bytes, manifest_snapshot: bytes) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Ratings-only import: no model, exact-word comparison or spreadsheet formula execution."""
+    try:
+        run = json.loads(manifest_snapshot.decode("utf-8-sig"))
+        if not isinstance(run, dict) or run.get("format") != REVIEW_FORMAT:
+            raise ValueError("Invalid review companion.")
+        if (
+            not isinstance(run.get("as_of"), str)
+            or date.fromisoformat(run["as_of"]).isoformat() != run["as_of"]
+            or not isinstance(run.get("run_id"), str)
+            or not re.fullmatch(r"[a-f0-9]{32}", run["run_id"])
+        ):
+            raise ValueError("Invalid review run metadata.")
+        entries = run["cases"]
+        if not isinstance(entries, list) or not entries:
+            raise ValueError("Invalid review case list.")
+        expected: dict[str, dict[str, Any]] = {}
+        refs: set[str] = set()
+        for entry in entries:
+            fingerprint, ref = entry["fixed_sha256"], entry["case"]
+            if (
+                not isinstance(fingerprint, str)
+                or not re.fullmatch(r"[a-f0-9]{64}", fingerprint)
+                or fingerprint in expected
+                or not isinstance(ref, str)
+                or not re.fullmatch(r"case-\d{4,}", ref)
+                or ref in refs
+                or not isinstance(entry["baseline_already_known"], bool)
+            ):
+                raise ValueError("Duplicate or invalid review identities.")
+            # Reuse the numeric/phase validator; never trust a hand-edited cost as a float.
+            Trial(
+                cost_usd=Decimal(entry["cost_usd"]) if entry["cost_usd"] is not None else None,
+                budget_steps=entry["budget_steps"],
+                error=entry["error"],
+            )
+            expected[fingerprint] = entry
+            refs.add(ref)
+        with io.StringIO(sheet_snapshot.decode("utf-8-sig"), newline="") as text:
+            reader = csv.reader(text, strict=True)
+            if next(reader, None) != list(REVIEW_COLUMNS):
+                raise ValueError("The seven review column headers must be unchanged.")
+            rated: dict[str, dict[str, Any]] = {}
+            for index, cells in enumerate(reader, 2):
+                if not any(cells):
+                    continue
+                if len(cells) != len(REVIEW_COLUMNS):
+                    raise ValueError(f"Invalid review row {index}; private text omitted.")
+                fingerprint = _review_fingerprint(cells[:5])
+                if fingerprint not in expected or fingerprint in rated:
+                    raise ValueError("Review evidence changed, duplicated or belongs to another run.")
+                grades = [value.strip().casefold() for value in cells[5:]]
+                if any(value not in RATINGS for value in grades):
+                    raise ValueError(f"Fill learned and answer_ok with yes, partly or no at row {index}.")
+                rated[fingerprint] = {**expected[fingerprint], "learned": grades[0], "answer_ok": grades[1]}
+        if len(rated) != len(expected):
+            raise ValueError("Every original case must remain in the review sheet.")
+        return run, [rated[entry["fixed_sha256"]] for entry in entries]
+    except (UnicodeError, csv.Error, json.JSONDecodeError, KeyError, TypeError, ArithmeticError):
+        raise ValueError("Invalid review sheet or companion; private values omitted.") from None
+
+
+def summarize_ratings(sheet_snapshot: bytes, manifest_snapshot: bytes) -> dict[str, Any]:
+    """Unweighted human counts, retaining all cases, operational failures and failed spend."""
+    run, rows = read_ratings(sheet_snapshot, manifest_snapshot)
+    cost_complete = all(row["cost_usd"] is not None for row in rows)
+    cost = sum((Decimal(row["cost_usd"]) for row in rows if row["cost_usd"] is not None), Decimal(0))
+    both_yes = sum(row["learned"] == "yes" and row["answer_ok"] == "yes" for row in rows)
+    successful = sum(
+        row["learned"] == "yes"
+        and row["answer_ok"] == "yes"
+        and row["error"] is None
+        and not row["baseline_already_known"]
+        for row in rows
+    )
+    return {
+        "scoring_version": "learning-human-v1",
+        "as_of": run["as_of"],
+        "run_id": run["run_id"],
+        **{key: run[key] for key in RUN_FIELDS if key in run},
+        "review_sheet_sha256": hashlib.sha256(sheet_snapshot).hexdigest(),
+        "run_manifest_sha256": hashlib.sha256(manifest_snapshot).hexdigest(),
+        "totals": {
+            "cases": len(rows),
+            **{
+                metric: {rating: sum(row[metric] == rating for row in rows) for rating in RATINGS}
+                for metric in ("learned", "answer_ok")
+            },
+            "both_yes": both_yes,
+            "successful_cases": successful,
+            "errors": sum(row["error"] is not None for row in rows),
+            "baseline_already_known": sum(row["baseline_already_known"] for row in rows),
+            "cost_complete": cost_complete,
+            "known_cost_usd": str(cost),
+            "cost_usd": str(cost) if cost_complete else None,
+            "cost_per_successful_case_usd": str(cost / successful) if cost_complete and successful else None,
+        },
+        "cases": [{key: row[key] for key in ("case", "learned", "answer_ok", "error", "cost_usd")} for row in rows],
+        "limits": "Human case-level ratings from the completed sheet. Partly is a separate category, not 0.5. "
+        "No automatic wording or semantic judge. All original cases remain in the denominator. "
+        "Successful cases require both yes, no operational error and an unknown baseline. "
+        "Sandbox approval is simulation, not real-user memory acceptance.",
+    }
+
+
+def human_markdown(report: dict[str, Any]) -> str:
+    totals = report["totals"]
+    lines = [
+        "# Human-reviewed learning evaluation",
+        "",
+        report["limits"],
+        "",
+        "| Metric | Yes | Partly | No | Total |",
+        "|---|---:|---:|---:|---:|",
+    ]
+    for metric in ("learned", "answer_ok"):
+        values = totals[metric]
+        lines.append(f"| {metric} | {values['yes']} | {values['partly']} | {values['no']} | {totals['cases']} |")
+    lines.extend(["", "| Case | Learned | Answer OK | Operational error | Cost USD |", "|---|---|---|---|---:|"])
+    for row in report["cases"]:
+        cost = row["cost_usd"] if row["cost_usd"] is not None else "unavailable"
+        lines.append(f"| {row['case']} | {row['learned']} | {row['answer_ok']} | {row['error'] or '-'} | {cost} |")
+    lines.extend(
+        [
+            "",
+            f"Both yes: {totals['both_yes']}; successful without operational errors or baseline contamination: "
+            f"{totals['successful_cases']}; operational errors: {totals['errors']}.",
+            f"Model cost USD: {totals['cost_usd'] if totals['cost_complete'] else 'unavailable'}.",
+            f"Cost per successful case USD: {totals['cost_per_successful_case_usd'] or 'unavailable'}.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
