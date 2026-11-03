@@ -441,8 +441,8 @@ Reference documents:
 - Owner: christophe
 - Status: doing
 - Needs: none
-- What: A script like `scripts/eval_plans.py` for the learning test (`learning-test.csv`, frozen in T-04): feed each source to the learning code (`src/clubops/learning/`), approve what it proposes, then ask the matching question and check the answer uses the new fact. Report facts learned, wrong facts, missed facts, cost. Build and test it on synthetic rows (`tests/factories.py`); Tatiana runs it on the private file in T-26.
-- Done when: `scripts/eval_learning.py` gives a result table on synthetic data, with tests, in replay mode.
+- What: Run the frozen learning cases through learning, sandbox approval and the follow-up question; export a private seven-column sheet (id, expected fact, actual saved facts, question, actual answer, blank learned/answer_ok). Tatiana marks yes/partly/no for the ten tests; a second offline command makes the category-count results table, preserving costs/errors. Build/test on synthetic data; Tatiana runs the private file in T-26. Exact-word matching is a smoke diagnostic only.
+- Done when: `scripts/eval_learning.py export` produces the blank review sheet and `score` summarizes completed ratings on synthetic data in replay mode, with tests.
 - Revision (2026-11-03): Tatiana's review relayed by Christophe replaces automatic exact-word quality scoring with a private review sheet: expected fact, learned fact, question and actual answer, plus blank learned/answer_ok ratings (yes/partly/no). A second offline command summarizes the completed sheet. Exact matching is retained only as an explicitly named technical smoke diagnostic, not learning/answer correctness.
 - Implementation (2026-11-02): isolated capture -> sandbox verification -> cited follow-up; exact pre-labelled statement/alias scoring, wrong/missed/duplicate facts and budget costs. Frozen column mappings and plain-text labels are supported without rewriting input. Checked-in synthetic replay runs with no key/network; 20 evaluator tests cover the real pipeline, privacy, failure accounting and replay. See `web/LEARNING_EVALUATION.md`; real private T-26 results are not claimed.
 

@@ -1,95 +1,125 @@
 # Learning evaluation (C-27)
 
-The runner exercises the public learner, knowledge verification and cited-answer
-interfaces. Each CSV row gets a new empty in-memory store. It asks before learning,
-captures proposals, simulates individual evaluator approval in that sandbox, then asks
-the same question again. It cannot connect to an existing production knowledge store.
-Ground-truth labels are used only by the scorer, never added to model prompts.
+C-27 now has two steps: export the evidence, then summarize Tatiana's completed
+ratings. A paraphrase is not marked wrong by code. No model or wording comparator
+fills the ratings. This replaces exact-word scoring for learning/answer quality
+(D-87); planning evaluation and the dropped T-05/C-32 graders are unchanged.
 
-## Offline synthetic example
+## 1. Export the review sheet
 
-From the repository root after installing the locked Python environment:
-
-```sh
-uv run python scripts/eval_learning.py --cases tests/fixtures/learning.synthetic.csv --as-of 2026-10-29 --model fake-model --dataset-kind synthetic --recordings tests/fixtures/learning-recordings --out output/learning-synthetic.md --json-out output/learning-synthetic.json
-```
-
-This runs with no API key or network. The committed recordings contain only synthetic
-studio-booking/greeting responses, generated with a mock provider. Expected smoke result:
-2 completed cases, 1 expected/learned fact, 0 unmatched/missed facts, 1 new-fact citation,
-0 operational errors. Replay budget cost is zero, **not** measured provider operating
-cost or evidence of model quality. The root test suite verifies this complete replay.
-
-## CSV interface and frozen inputs
-
-| Column           | Required | Meaning                                                                                                                                           |
-| ---------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `source`         | yes      | Authorized untrusted source text, nonempty and at most 20,000 characters                                                                          |
-| `question`       | yes      | Follow-up question, 3–500 characters                                                                                                              |
-| `expected_facts` | yes      | JSON array of labelled statements; a nested array contains pre-labelled alternative wordings for one fact. `[]` means no fact should be extracted |
-| `source_kind`    | no       | Published SourceKind value: `user_input` by default; also `email`, `chat_message`, `retrospective`, `document`, etc.                              |
-| `club_id`        | no       | Published club slug; defaults to isolated `eval-club`                                                                                             |
-
-For example, `[["Use form A.", "Submit form A."], "Ask the example coordinator."]`
-labels two facts, allowing two exact wordings of the first. Duplicate/overlapping
-labels are refused. Names of people, original case IDs and filenames are not used as
-report row labels; rows are `case-0001`, etc.
-
-Do not rewrite a frozen private file to fit the runner. Explicitly map its headers:
+This complete synthetic example needs no API key or network:
 
 ```sh
-uv run python scripts/eval_learning.py --cases <private-learning.csv> --as-of <YYYY-MM-DD> --source-column <source-header> --question-column <question-header> --expected-column <fact-header> --expected-format text --recordings <private-recordings> --out results/tmp/learning.md
+uv run python scripts/eval_learning.py export --cases tests/fixtures/learning.synthetic.csv --as-of 2026-10-29 --model fake-model --dataset-kind synthetic --recordings tests/fixtures/learning-recordings --sheet output/learning-review.csv
 ```
 
-`--expected-format text` treats each nonempty fact cell as one labelled statement;
-the default JSON format permits multiple facts and pre-labelled aliases. Kind/club
-headers can also be mapped with `--kind-column` and `--club-column`. Unknown enum values
-fail validation rather than being silently guessed. The report hashes the exact bytes
-of the single dataset snapshot it evaluated; it cannot overwrite the input file.
+Each row runs the public learner -> individual sandbox approval -> follow-up answer
+once, in a new empty in-memory store. The question is also checked before teaching.
+Labels never enter model prompts. Nothing touches production knowledge.
 
-## What the numbers mean
+The CSV has exactly these seven columns:
 
-- `facts_learned`: distinct expected labels matched by current verified facts in this
-  case's club. Match = NFKC Unicode normalization, case folding, punctuation/whitespace
-  normalization and otherwise exact wording. Negation is not removed.
-- `wrong_facts`: distinct unmatched or wrong-scope proposals **under this exact-label
-  metric**. An unmatched paraphrase is not proof of a factually false statement. Alias
-  sets must be frozen before viewing model outputs; do not tune labels after the run.
-- `missed_facts`: expected labels with no current verified match; duplicate proposals
-  get no extra credit and have their own count.
-- `answer_reused_new_fact`: the baseline was unknown and the new known answer cites a
-  newly verified expected fact, with all citations visible to this case. This measures
-  citation reuse, not semantic correctness of every answer claim.
-- A successful positive case needs complete labels, no unmatched/duplicate proposals,
-  an unknown baseline, supported citation reuse and no operational error. A negative
-  case succeeds only with no proposed facts and a still-unknown answer.
-- Every case remains in the denominator. Model failures/missing recordings are phase
-  errors even if a capability returns a fallback. Error text is not exported. The CLI
-  returns exit code 2 for operational errors, while still writing the result table.
-- Cost comes from the shared per-case budget (at most $0.05 and 8 steps), including
-  failed spend. Unknown cost is unavailable, not zero. Replay charges zero budget cost;
-  record/live cost is usage-based accounting, not reconciliation of a provider bill.
-  Reports include the configured input/output USD-per-million-token rates. A configured
-  zero rate does not establish that a provider is free; verify rates before T-26 cost claims.
+| id  | fact I expected | fact ClubOps learned | question | ClubOps's answer | learned | answer_ok |
+| --- | --------------- | -------------------- | -------- | ---------------- | ------- | --------- |
 
-## Record and replay private evaluation
+- `id` preserves the original input ID if present; otherwise it is `case-0001`, etc.
+- Expected facts are shown literally. For existing JSON alias groups, the first
+  canonical wording is displayed; multiple facts/statements use line breaks.
+- Learned facts are the actual current facts saved in that case's sandbox, including
+  paraphrases or incorrect statements. Unapproved proposals are not labelled saved.
+- The answer is ClubOps's actual answer text, not a suggested correct answer.
+- **Both rating columns start empty.** Nothing auto-fills them, even for the fixture.
 
-The default is always replay, even if an ambient `.env` says live. A deliberate
-`--mode record` or `--mode live` can use the configured provider. Keep provider keys,
-authorized sources and real recordings private; choose a private `--recordings` path.
-Use the same model, fixed `--as-of` date, dataset snapshot and recordings for replay.
-Case-local deterministic item IDs keep follow-up recording keys stable.
+The companion `learning-review.run.json` records the run, input hash, fixed-row
+hashes, execution errors and costs. It does not duplicate the private facts/questions/
+answers. Keep the sheet and its matching companion together. Existing sheets or
+companions are never overwritten; use a new filename for a new run.
 
-Reports contain opaque row references, counts, phase errors, budget metadata, model,
-mode, input hash and scoring version; no sources, extracted statements or answer text.
-The scoring version is `learning-exact-v1`. The task-authorized CLI composes public
-interfaces; the scoring module depends on contracts, not backend implementations.
+## 2. Tatiana fills only the last two columns
 
-This is an isolated capture/verify/ask evaluation, not browser/email-delivery testing,
-a cumulative-memory merge benchmark, human acceptance, real-provider quality evidence
-or the final held-out regression thresholds. Tatiana runs the frozen private set in
-T-26; C-22's final CI gates need those results. The synthetic replay test already runs
-under the existing root CI without calling a provider.
+Import the UTF-8 CSV into Excel or Sheets with columns treated as text, preserving
+IDs, dates and line breaks. Formula-like evidence is prefixed with an apostrophe to
+make it literal text. Save the completed sheet back as UTF-8 CSV.
 
-Only club-scoped create proposals are approved in this empty-store experiment. Shared
-AUB-policy approval and merge/update behavior against existing memory are separate tests.
+Use `yes`, `partly` or `no` in **both** columns for **every** original row:
+
+| Rating | learned                                                                    | answer_ok                                          |
+| ------ | -------------------------------------------------------------------------- | -------------------------------------------------- |
+| yes    | The expected fact was correctly saved, even with different wording         | The answer correctly uses the expected information |
+| partly | Some useful information was saved but an important detail is missing/wrong | The answer is partly correct or incomplete         |
+| no     | The expected fact was not saved correctly                                  | The answer is absent or incorrect                  |
+
+For a negative case with no expected fact, judge whether no fact was invented and
+whether an unknown answer is appropriate. These are case-level judgments, not an
+automatic count of individual wrong/missed facts. Multiple extra/wrong learned facts
+remain visible for the reviewer to consider.
+
+Rows may be sorted. Do not edit the first five columns, remove cases, change headers
+or combine rows from different runs. The scorer checks fixed-row hashes against the
+companion and rejects changed, missing or duplicate evidence. These are accidental-
+edit checks, not a signed or authenticated proof of who supplied the ratings.
+
+## 3. Build the results table, offline
+
+After the two columns are complete:
+
+```sh
+uv run python scripts/eval_learning.py score --sheet output/learning-review.csv --out output/learning-reviewed.md --json-out output/learning-reviewed.json
+```
+
+`score` does not load model configuration or call a provider. It reports separate
+yes/partly/no counts for `learned` and `answer_ok`, plus a per-case table. **Partly
+gets no invented numeric weight** such as 0.5. Both-yes counts are separate from
+successful cases with no operational error or already-known baseline. All original
+cases and failed spend remain in the denominator/cost accounting.
+
+Blank or invalid ratings cause a nonzero exit and no results table. Exported
+operational errors remain visible even after grading: the results are written, but
+the command still returns exit code 2. Empty fact/answer cells mean no output was
+produced; inspect an errored run's companion before treating it as poor model quality.
+
+Result Markdown/JSON contains opaque case references, ratings, run hashes and cost/
+error metadata, not the private evidence text. Replay cost is zero budget accounting,
+not estimated historical provider operating cost. Configured token rates are recorded
+assumptions, not verification of a provider price or reconciliation of a bill.
+
+## Private frozen inputs
+
+Use the actual frozen path/headers without rewriting its bytes. For example, replace
+the capitalized placeholders below with the real values:
+
+```sh
+uv run python scripts/eval_learning.py export --cases PRIVATE_CSV_PATH --as-of YYYY-MM-DD --source-column SOURCE_HEADER --question-column QUESTION_HEADER --expected-column FACT_HEADER --expected-format text --id-column ID_HEADER --recordings data/private/learning-recordings --sheet data/private/learning-review.csv
+uv run python scripts/eval_learning.py score --sheet data/private/learning-review.csv --out results/tmp/learning-reviewed.md --json-out results/tmp/learning-reviewed.json
+```
+
+Default input headers are `source`, `question`, `expected_facts` (JSON array), optional
+`id`, `source_kind`, `club_id`. Plain single-fact cells use `--expected-format text`.
+The default source kind is `user_input` and club is the isolated `eval-club`; optional
+kind/club headers can also be mapped. The export preserves original IDs and hashes
+the exact input snapshot. It never writes to the frozen CSV.
+
+**Review CSVs intentionally contain private evidence.** For private datasets, repo-
+local sheets/companions must live in ignored `data/private/` or `results/tmp/`, or
+outside the repository. Never commit them, private recordings or provider keys. The
+synthetic example is explicitly labelled and is not a real evaluation result.
+
+Replay remains the default even if an ambient `.env` says live. Only deliberate
+`--mode record`/`--mode live` can use a configured provider, with one shared eight-step /
+$0.05 budget per case. Keep the same model, fixed `--as-of` date, input snapshot and
+recordings for replay. Sandbox approval simulates an evaluator action; it is not a
+real cabinet member accepting knowledge into production memory.
+
+## Technical smoke diagnostic
+
+The previous exact-word/citation checks remain available only under the explicit
+`smoke` command for replay plumbing and regressions:
+
+```sh
+uv run python scripts/eval_learning.py smoke --cases tests/fixtures/learning.synthetic.csv --as-of 2026-10-29 --model fake-model --dataset-kind synthetic --recordings tests/fixtures/learning-recordings --out output/learning-smoke.md
+```
+
+Those exact-label counts are **not semantic quality scores** and must not grade the
+ten private learning cases or compare model quality. Old invocations without a
+subcommand now require choosing `export`, `score` or `smoke` explicitly. Real private
+review and measurements remain Tatiana's T-26; final C-22 thresholds are still pending.
