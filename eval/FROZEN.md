@@ -16,6 +16,13 @@ Labelled by Tatiana Nohra (president). Held-out split: random, seed 503; held-ou
 
 No leakage: when ClubOps plans a test event, it only knows facts tagged with earlier events (`learned_from_event`) and the AUB documents.
 
-## Freeze 2: other clubs (pending, T-38)
+## Freeze 2: other clubs and made-up events (2026-11-04)
 
-ASME events (T-35) and one made-up event per missing event type (T-36), frozen before the generalization run (D-50).
+All items are held out: none were used while building ClubOps. Frozen before the generalization run (D-50).
+
+| File | Items | Labelled by | SHA-256 |
+|---|---|---|---|
+| `asme-events.csv` (private, `data/private/asme/`) | 13 past ASME events (A08 and A11 dropped: not remembered) | ASME president (Alexis), correcting a written guess; unedited items kept as guessed, as he asked | `2ec3798e5618cd2d7f3db2c1370dac665caf23a8998ea6486ee71746fb9cd018` |
+| `eval/synthetic-events.csv` (public, synthetic) | 10 made-up events, one per event type the Running Club never ran | Joey (J-14), checked and corrected by Tatiana (S06, S07, S08) | `bcec66154ec2dbafcd65af0e2a9e46828c5cdab11e4cd681c4372f4432a84006` |
+
+Finding while labelling: ASME spent over $200 twice (A01, A07) without the members' vote our rulebook asks for, and OSA still approved. The labels record what really happened.

@@ -203,7 +203,7 @@ Reference documents:
 
 ### T-35 ASME data (real second club)
 - Owner: tatiana
-- Status: doing
+- Status: done
 - Needs: none
 - What: Ask Alexis (ASME president) for 3-5 past proposals (ideally a workshop, trip or conference), what each really needed, his OK to use them privately, and a 10-minute setup chat later. Remove phone numbers and IDs.
 - Done when: ASME events and their real approvals are in the private eval folder.
@@ -219,7 +219,7 @@ Reference documents:
 
 ### T-38 Freeze the other-club test sets
 - Owner: tatiana
-- Status: todo
+- Status: done
 - Needs: T-35, J-14
 - What: Same as T-04 for the ASME events and the made-up events: held-out split, hashes in `eval/FROZEN.md` (Freeze 2).
 - Done when: Freeze 2 is filled in, before the generalization run in T-26.
