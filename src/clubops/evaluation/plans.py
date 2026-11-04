@@ -76,10 +76,24 @@ def truth_codes(label: str) -> frozenset[str]:
     return frozenset(m.group(2) for m in _CODE.finditer(label) if m.group(2) in SCORED and not m.group(1))
 
 
+_DAY = re.compile(r"(\d{4})-(\d{2})(?:-(\d{2}))?")
+UNKNOWN_DATE = date(2026, 3, 16)  # mid-semester stand-in when a past event's date was never recorded
+
+
+def event_date(text: str) -> date:
+    """First date in the cell: '2026-10-07', '2025-11-06 to 2025-11-07' -> that day; '2025-12 (day not given)'
+    -> the 15th; 'not given' -> UNKNOWN_DATE. Only used as the planner's 'today' and for the no-leakage filter."""
+    m = _DAY.search(text or "")
+    if not m:
+        return UNKNOWN_DATE
+    return date(int(m.group(1)), int(m.group(2)), int(m.group(3) or 15))
+
+
 def describe(row: dict[str, str]) -> str:
     """The event as a cabinet member would type it. Never uses the notes or the labels."""
+    when = row["date"] if _DAY.search(row["date"] or "") else "a date not given"
     parts = [
-        f"{row['event']} on {row['date']}",
+        f"{row['event']} on {when}",
         f"Place: {row['place']}",
         f"People: {row['people']}",
         f"Outside guests: {row['outside_guests']}",
@@ -96,7 +110,7 @@ def load_cases(path: Path, label_column: str = "approvals_real (you fill)") -> l
         label = row.get(label_column, "") or ""
         if not label.strip() or label.strip().upper().startswith("DROP"):
             continue
-        cases.append(Case(row["id"], date.fromisoformat(row["date"][:10]), describe(row), truth_codes(label)))
+        cases.append(Case(row["id"], event_date(row["date"]), describe(row), truth_codes(label)))
     return cases
 
 
