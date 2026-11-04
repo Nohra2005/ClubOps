@@ -18,12 +18,14 @@ from clubops.agent.planner import Planner
 from clubops.config import ModelMode, Settings
 from clubops.evaluation.plans import (
     PLAIN_VERSION,
+    UNKNOWN_DATE,
     Case,
     ClubOpsSystem,
     Prediction,
     checklist,
     codes_by_rule,
     describe,
+    event_date,
     facts_before,
     load_cases,
     model_baseline,
@@ -245,3 +247,11 @@ def test_scores_count_misses_false_alarms_and_unsure_flags() -> None:
     assert s.rows[0]["missed"] == ["GUEST", "HOST"]
     out = table({"test": s}, 2)
     assert "| test | 0.50 | 0.67 | 0.57 | 2 | 1 | 1 | 2 | 0.0100 | 0.0050 | 1 |" in out
+
+
+def test_partial_or_missing_dates_still_load() -> None:
+    assert event_date("2025-11-06 to 2025-11-07") == date(2025, 11, 6)
+    assert event_date("2025-12 (day not given)") == date(2025, 12, 15)
+    assert event_date("2026-09/10 (two days, ends 2026-10-01)") == date(2026, 9, 15)
+    assert event_date("not given") == UNKNOWN_DATE
+    assert "a date not given" in describe({**ROW, "date": "not given"})
