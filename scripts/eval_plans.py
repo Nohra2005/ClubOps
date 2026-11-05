@@ -10,6 +10,7 @@ saved for replay) or `live`. The test files are private (eval/FROZEN.md); only t
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 import tempfile
 from collections.abc import Callable
@@ -20,10 +21,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # so `python scrip
 
 from scripts.load_rulebook import read_rulebook
 
+from clubops.agent.planner import PROMPT_VERSION as PLANNER_VERSION
 from clubops.agent.planner import ModelDecider, Planner
+from clubops.agent.rules_judge import PROMPT_VERSION as JUDGE_VERSION
 from clubops.agent.rules_judge import RuleJudge
 from clubops.config import load_settings
 from clubops.evaluation.plans import (
+    PLAIN_VERSION,
+    RULEBOOK_VERSION,
     Case,
     ClubOpsSystem,
     Score,
@@ -36,6 +41,7 @@ from clubops.evaluation.plans import (
     score,
     table,
 )
+from clubops.evaluation.tracking import Tracker, file_hash, tracker
 from clubops.knowhow.directory import Directory
 from clubops.knowhow.store import KnowHowStore
 from clubops.model.client import ModelClient
@@ -75,6 +81,53 @@ def clubops_system(
     return ClubOpsSystem(make, store_for, directory_for, codes_by_rule(rules))
 
 
+VERSIONS = {"plain": PLAIN_VERSION, "rulebook": RULEBOOK_VERSION, "clubops": f"{PLANNER_VERSION}+{JUDGE_VERSION}"}
+
+
+def log_run(  # noqa: PLR0917  (a one-place script helper; keyword-only would only add noise)
+    track: Tracker,
+    label: str,
+    system: str,
+    run: int,
+    args: argparse.Namespace,
+    cases: list[Case],
+    result: Score,
+    tags: dict[str, str],
+) -> None:
+    """One MLflow run per system and repeat: settings in, scores out. Ids and codes only, no event text."""
+    settings = load_settings()
+    params = {
+        "system": system,
+        "run": run,
+        "model": settings.model if system != "checklist" else "none",
+        "prompt_version": VERSIONS.get(system, "none"),
+        "mode": settings.mode.value,
+        "reasoning_effort": settings.reasoning_effort or "none",
+        "step_limit": settings.max_steps_per_plan,
+        "cost_limit_usd": settings.budget_usd_per_packet,
+        "events_file": args.events.name,
+        "events_sha": file_hash(args.events),
+        "facts_sha": file_hash(args.facts) if args.facts else "none",
+        "events": ",".join(c.case_id for c in cases),
+    }
+    metrics = {
+        "recall": result.recall,
+        "precision": result.precision,
+        "f1": result.f1,
+        "caught": result.caught,
+        "missed": result.missed,
+        "false_alarms": result.false_alarms,
+        "unsure_caught": result.unsure_caught,
+        "errors": result.errors,
+        "model_calls": result.calls,
+        "cost_usd": float(result.cost_usd),
+        "cost_per_event_usd": float(result.cost_usd) / max(len(cases), 1),
+        "seconds_per_event": result.seconds / max(len(cases), 1),
+    }
+    tables = {"result.md": table({label: result}, len(cases)), "rows.json": json.dumps(result.rows, indent=1)}
+    track.log_run(label, params, metrics, tags, tables)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--events", type=Path, required=True)
@@ -83,7 +136,11 @@ def main() -> None:
     parser.add_argument("--runs", type=int, default=1, help="repeat model systems (each run is recorded separately)")
     parser.add_argument("--only", nargs="*", default=None, help="case ids to run (default: all)")
     parser.add_argument("--out", type=Path, default=None)
+    parser.add_argument("--track", metavar="EXPERIMENT", default=None, help="log each system's run to MLflow")
+    parser.add_argument("--tag", action="append", default=[], metavar="KEY=VALUE", help="extra run tags")
     args = parser.parse_args()
+    track = tracker(args.track)
+    tags = dict(t.split("=", 1) for t in args.tag)
 
     cases = [c for c in load_cases(args.events) if not args.only or c.case_id in args.only]
     client = ModelClient(load_settings())
@@ -100,6 +157,7 @@ def main() -> None:
             for run in range(1, runs + 1):
                 label = name if runs == 1 else f"{name} (run {run})"
                 results[label] = score(cases, builders[name](run))  # type: ignore[arg-type]
+                log_run(track, label, name, run, args, cases, results[label], tags)
     text = f"# Planning evaluation ({date.today()}, {len(cases)} events)\n\n" + table(results, len(cases)) + "\n"
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)

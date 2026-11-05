@@ -15,6 +15,11 @@ dependencies = [
     "openpyxl>=3.1",
 ]
 
+[project.optional-dependencies]
+tracking = [
+    "mlflow>=3.18",
+]
+
 [dependency-groups]
 dev = [
     "pytest>=8",
@@ -55,6 +60,10 @@ strict = true
 plugins = ["pydantic.mypy"]
 mypy_path = "src"
 packages = ["clubops"]
+
+[[tool.mypy.overrides]]
+module = ["mlflow", "mlflow.*"]  # optional tracking extra; CI type-checks without it installed
+ignore_missing_imports = true
 
 [tool.coverage.run]
 source = ["src/clubops"]
