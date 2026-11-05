@@ -135,6 +135,9 @@ class ModelClient:
             "max_tokens": request.max_tokens,
             "response_format": {"type": "json_object"},
         }
+        if "openrouter.ai" in s.base_url:
+            # Club text is redacted, but still: only providers that don't keep or train on prompts (D-88).
+            body["provider"] = {"data_collection": "deny"}
         headers = {"Authorization": f"Bearer {s.api_key.get_secret_value()}"}
         try:
             with httpx.Client(transport=self._transport, timeout=self._timeout_s) as http:

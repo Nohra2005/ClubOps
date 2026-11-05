@@ -228,3 +228,14 @@ def test_replayed_calls_still_count_as_steps(tmp_path: Path) -> None:
     with pytest.raises(CapabilityError) as exc:
         client.complete(REQUEST, Verdict, budget)
     assert exc.value.code is ErrorCode.BUDGET_EXCEEDED
+
+
+def test_openrouter_requests_ask_for_providers_that_do_not_keep_prompts(tmp_path: Path) -> None:
+    transport, seen = provider()
+    s = settings(tmp_path, ModelMode.LIVE, base_url="https://openrouter.ai/api/v1")
+    ModelClient(s, transport=transport).complete(REQUEST, Verdict)
+    assert json.loads(seen[0].content)["provider"] == {"data_collection": "deny"}
+
+    other, other_seen = provider()
+    ModelClient(settings(tmp_path, ModelMode.LIVE), transport=other).complete(REQUEST, Verdict)
+    assert "provider" not in json.loads(other_seen[0].content)
