@@ -256,3 +256,13 @@ def test_a_wrong_shape_says_which_field_was_wrong(tmp_path: Path) -> None:
         ModelClient(settings(tmp_path, ModelMode.LIVE), transport=transport).complete(REQUEST, Verdict)
     assert exc.value.code is ErrorCode.MALFORMED_MODEL_OUTPUT
     assert "applies" in exc.value.message
+
+
+def test_thinking_models_are_asked_to_think_briefly_unless_turned_off(tmp_path: Path) -> None:
+    transport, seen = provider()
+    ModelClient(settings(tmp_path, ModelMode.LIVE), transport=transport).complete(REQUEST, Verdict)
+    assert json.loads(seen[0].content)["reasoning"] == {"effort": "low"}
+
+    off, off_seen = provider()
+    ModelClient(settings(tmp_path, ModelMode.LIVE, reasoning_effort=None), transport=off).complete(REQUEST, Verdict)
+    assert "reasoning" not in json.loads(off_seen[0].content)

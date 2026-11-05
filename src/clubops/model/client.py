@@ -140,6 +140,8 @@ class ModelClient:
                 "json_schema": {"name": output.__name__, "schema": output.model_json_schema(), "strict": False},
             },
         }
+        if s.reasoning_effort:
+            body["reasoning"] = {"effort": s.reasoning_effort}
         if "openrouter.ai" in s.base_url:
             # Club text is redacted, but still: only providers that don't keep or train on prompts (D-88).
             body["provider"] = {"data_collection": "deny"}
