@@ -239,3 +239,20 @@ def test_openrouter_requests_ask_for_providers_that_do_not_keep_prompts(tmp_path
     other, other_seen = provider()
     ModelClient(settings(tmp_path, ModelMode.LIVE), transport=other).complete(REQUEST, Verdict)
     assert "provider" not in json.loads(other_seen[0].content)
+
+
+def test_the_provider_is_given_the_exact_answer_shape(tmp_path: Path) -> None:
+    transport, seen = provider()
+    ModelClient(settings(tmp_path, ModelMode.LIVE), transport=transport).complete(REQUEST, Verdict)
+    rf = json.loads(seen[0].content)["response_format"]
+    assert rf["type"] == "json_schema"
+    assert rf["json_schema"]["name"] == "Verdict"
+    assert set(rf["json_schema"]["schema"]["properties"]) == {"applies", "reason"}
+
+
+def test_a_wrong_shape_says_which_field_was_wrong(tmp_path: Path) -> None:
+    transport, _ = provider(content=json.dumps({"applies": "maybe", "reason": "x"}))
+    with pytest.raises(CapabilityError) as exc:
+        ModelClient(settings(tmp_path, ModelMode.LIVE), transport=transport).complete(REQUEST, Verdict)
+    assert exc.value.code is ErrorCode.MALFORMED_MODEL_OUTPUT
+    assert "applies" in exc.value.message

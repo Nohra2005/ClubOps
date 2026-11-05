@@ -146,7 +146,7 @@ class ModelDecider:
     def __call__(self, prompt: str, budget: Budget) -> NextStep:
         step, _usage = self.client.complete(
             ModelRequest(
-                prompt_version=self.version, system=SYSTEM, user=prompt, max_tokens=600, temperature=self.temperature
+                prompt_version=self.version, system=SYSTEM, user=prompt, max_tokens=1200, temperature=self.temperature
             ),
             NextStep,
             budget,
@@ -278,6 +278,10 @@ class Planner:
                     state = self._step(
                         state, "think", "Couldn't read the model's answer; trying again", StepState.FAILED
                     )
+                    # Tell the model what was wrong, so the retry can fix it instead of repeating it (F-160).
+                    why = err.message.split(": ", 1)[-1]
+                    note = f"your last answer was rejected ({why}); use only the fields and values in the schema"
+                    state = state.model_copy(update={"notes": [*state.notes, note]})
                     continue
                 state = self._step(state, "think", "ClubOps couldn't reach the model", StepState.FAILED)
                 return self._with_run(state, status=RunStatus.FAILED)

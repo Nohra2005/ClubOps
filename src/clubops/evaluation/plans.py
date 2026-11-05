@@ -184,7 +184,7 @@ def model_baseline(client: ModelClient, rulebook_text: str | None, run: int = 1)
         budget = Budget(max_usd=Decimal("0.05"), max_steps=1)
         try:
             answer, usage = client.complete(
-                ModelRequest(version, system, f"<event>\n{case.description}\n</event>", max_tokens=600),
+                ModelRequest(version, system, f"<event>\n{case.description}\n</event>", max_tokens=1200),
                 CodesAnswer,
                 budget,
             )

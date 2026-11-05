@@ -88,7 +88,7 @@ class RuleJudge:
                     prompt_version=self.version,
                     system=SYSTEM,
                     user=build_prompt(spec, ask),
-                    max_tokens=800,
+                    max_tokens=1600,
                     temperature=self.temperature,
                 ),
                 JudgeAnswer,
