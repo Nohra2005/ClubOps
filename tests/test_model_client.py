@@ -6,9 +6,11 @@ no network, no API key, no cost.
 
 from __future__ import annotations
 
+import dataclasses
 import json
 from decimal import Decimal
 from pathlib import Path
+from typing import Any
 
 import httpx
 import pytest
@@ -266,3 +268,45 @@ def test_thinking_models_are_asked_to_think_briefly_unless_turned_off(tmp_path: 
     off, off_seen = provider()
     ModelClient(settings(tmp_path, ModelMode.LIVE, reasoning_effort=None), transport=off).complete(REQUEST, Verdict)
     assert "reasoning" not in json.loads(off_seen[0].content)
+
+
+def test_answer_schemas_are_simplified_for_providers() -> None:
+    from clubops.model.client import provider_schema
+
+    raw = {
+        "type": "object",
+        "properties": {
+            "a": {"anyOf": [{"type": "string", "maxLength": 5}, {"type": "null"}], "default": None},
+            "b": {"oneOf": [{"type": "integer"}, {"type": "string"}], "discriminator": {"propertyName": "k"}},
+            "c": {"type": "array", "items": {"type": "string", "pattern": "^x$"}, "maxItems": 20},
+        },
+    }
+    assert provider_schema(raw) == {
+        "type": "object",
+        "properties": {
+            "a": {"type": "string"},
+            "b": {"anyOf": [{"type": "integer"}, {"type": "string"}]},
+            "c": {"type": "array", "items": {"type": "string"}},
+        },
+    }
+
+
+def test_a_refused_schema_is_retried_as_plain_json_with_the_shape_in_the_instructions(tmp_path: Path) -> None:
+    seen: list[dict[str, Any]] = []
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        seen.append(body)
+        if body["response_format"]["type"] == "json_schema":
+            return httpx.Response(400, json={"error": {"message": "The compiled grammar is too large"}})
+        return httpx.Response(200, json={"choices": [{"message": {"content": GOOD}}], "usage": {}})
+
+    client = ModelClient(settings(tmp_path, ModelMode.LIVE), transport=httpx.MockTransport(handle))
+    answer, _ = client.complete(REQUEST, Verdict)
+    assert answer.applies is not None
+    assert [b["response_format"]["type"] for b in seen] == ["json_schema", "json_object"]
+    assert "Answer JSON matching this schema" in seen[1]["messages"][0]["content"]
+
+    seen.clear()
+    client.complete(dataclasses.replace(REQUEST, schema_in_prompt=True, prompt_version="v-direct"), Verdict)
+    assert [b["response_format"]["type"] for b in seen] == ["json_object"]  # no request that is refused first

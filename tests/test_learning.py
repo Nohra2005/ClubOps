@@ -287,3 +287,24 @@ def test_unsupported_files_are_refused(app_client: tuple[TestClient, Provider]) 
     c, _ = app_client
     r = c.post("/api/documents", files={"file": ("x.pdf", b"%PDF-1.4", "application/pdf")}, headers=HEADERS)
     assert r.status_code == 422
+
+
+def test_only_the_detail_fields_of_the_facts_kind_are_kept() -> None:
+    from clubops.learning.capture import ExtractedFact
+
+    fact = ExtractedFact.model_validate(
+        {
+            "kind": "gotcha",
+            "title": "Hostler gate closed",
+            "statement": "Hostler gate can be closed on Sundays.",
+            "quote": "hostler gate is closed",
+            "source": 0,
+            "details": {"trigger": "Sunday run", "consequence": "gate closed", "avoid_by": "meet outside", "goal": "x"},
+        }
+    )
+    assert fact.detail_dict() == {
+        "kind": "gotcha",
+        "trigger": "Sunday run",
+        "consequence": "gate closed",
+        "avoid_by": "meet outside",
+    }
