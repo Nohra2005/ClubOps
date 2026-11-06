@@ -28,6 +28,8 @@ FACT = {
             "title": "Green Field booking lead time",
             "statement": "Book Green Field 3 weeks before the event.",
             "quote": "we always book Green Field 3 weeks ahead",
+            "lasting": "lasting",
+            "stated_as": "fact",
             "source": 0,
             "details": {"outcome": "worked", "context": "booking the field", "recommendation": "book 3 weeks ahead"},
             "tags": ["green-field"],

@@ -23,7 +23,7 @@ from clubops.config import ModelMode, Settings
 from clubops.contracts.common import Role, SourceKind, SourceRef, Untrusted
 from clubops.contracts.knowhow import CaptureRequest, ItemStatus, ProposalOp
 from clubops.knowhow.store import KnowHowStore
-from clubops.learning.capture import Learner, injection_flags, outdated_note, price_list
+from clubops.learning.capture import Learner, injection_flags, outdated_note, price_list, source_date, term_end
 from clubops.model.budget import Budget
 from clubops.model.client import ModelClient
 from tests.factories import CLUB, item, verified
@@ -38,6 +38,8 @@ LESSON = {
     "title": "Cafe B needs ten days' notice",
     "statement": "Tell Cafe B ten days before a run to get free coffee.",
     "quote": "tell Cafe B ten days before a run",
+    "lasting": "lasting",
+    "stated_as": "fact",
     "source": 0,
     "details": {
         "trigger": "asking Cafe B for free coffee",
@@ -167,6 +169,8 @@ def test_a_disagreement_is_left_for_a_person(known: KnowHowStore, tmp_path: Path
         **LESSON,
         "statement": "Tell Cafe B two days before.",
         "quote": "two days before",
+        "lasting": "lasting",
+        "stated_as": "fact",
         "title": "Cafe B notice",
     }
     provider = Provider(
@@ -298,6 +302,8 @@ def test_only_the_detail_fields_of_the_facts_kind_are_kept() -> None:
             "title": "Hostler gate closed",
             "statement": "Hostler gate can be closed on Sundays.",
             "quote": "hostler gate is closed",
+            "lasting": "lasting",
+            "stated_as": "fact",
             "source": 0,
             "details": {"trigger": "Sunday run", "consequence": "gate closed", "avoid_by": "meet outside", "goal": "x"},
         }
@@ -308,3 +314,51 @@ def test_only_the_detail_fields_of_the_facts_kind_are_kept() -> None:
         "consequence": "gate closed",
         "avoid_by": "meet outside",
     }
+
+
+# -------------------------------------------------- lasting know-how only (F-167)
+
+
+@pytest.mark.parametrize(
+    "judged",
+    [{"lasting": "one_time"}, {"stated_as": "opinion"}, {"stated_as": "suggestion"}, {"stated_as": "question"}],
+)
+def test_one_time_things_and_one_persons_view_are_not_know_how(
+    store: KnowHowStore, tmp_path: Path, judged: dict[str, str]
+) -> None:
+    result = capture(store, tmp_path, Provider({"facts": [{**LESSON, **judged}]}), BLK)
+    assert result.proposals == [] and result.sources_skipped == 1
+
+
+def test_a_group_decision_is_kept(store: KnowHowStore, tmp_path: Path) -> None:
+    [p] = capture(store, tmp_path, Provider({"facts": [{**LESSON, "stated_as": "agreed"}]}), BLK).proposals
+    assert p.candidate.valid_to is None
+
+
+TERM_CHAT = "[12/10/26, 18:02:11] Rana: this semester we share one Kahoot account, password in the drive"
+TERM_FACT = {
+    **LESSON,
+    "kind": "decision",
+    "title": "Shared Kahoot account this term",
+    "statement": "The club shares one Kahoot account this semester.",
+    "quote": "this semester we share one Kahoot account",
+    "lasting": "this_term",
+    "details": {"decision": "Share one Kahoot account", "rationale": "cost"},
+}
+
+
+def test_a_this_term_fact_expires_at_the_end_of_its_term(store: KnowHowStore, tmp_path: Path) -> None:
+    [p] = capture(store, tmp_path, Provider({"facts": [TERM_FACT]}), TERM_CHAT).proposals
+    assert p.candidate.valid_to == date(2026, 12, 31)  # written 12 October 2026: the fall term
+
+
+def test_a_this_term_fact_from_a_finished_term_is_dropped(store: KnowHowStore, tmp_path: Path) -> None:
+    old_chat = TERM_CHAT.replace("12/10/26", "14/03/25")
+    assert capture(store, tmp_path, Provider({"facts": [TERM_FACT]}), old_chat).proposals == []
+
+
+def test_the_date_of_the_quoted_line_is_read_day_first() -> None:
+    chat = "[02/03/25, 09:00:00] A: hi\n[13/04/25, 10:00:00] B: we book the hall early\n[20/05/25, 11:00:00] C: ok"
+    assert source_date(chat, "we book the hall early", date(2026, 1, 1)) == date(2025, 4, 13)
+    assert source_date("no dates here", "x", date(2026, 1, 1)) == date(2026, 1, 1)
+    assert term_end(date(2026, 2, 1)) == date(2026, 5, 31) and term_end(date(2026, 7, 1)) == date(2026, 8, 31)
