@@ -116,7 +116,7 @@ The brief asks for "evidence of use", not tool logos: a few practices done in de
 | Observability tooling | OpenTelemetry traces of each agent run (viewable in Jaeger or Langfuse), metadata only | C-25 |
 | Reproducible environment | Docker Compose for the whole app; Dockerfile and Render config (in place) | C-24, C-18 |
 | Production monitoring | Live on the deployed app: Grafana Cloud (hosted Prometheus + Grafana, fed by OpenTelemetry) or Sentry, Christophe's choice; dashboard or alerts, metadata only | C-26 |
-| Controlled evolution | Prompt and model versions in every trace; cheap vs stronger model compared with measured quality, latency and cost | T-26 |
+| Controlled evolution | Prompt and model versions in every trace; 4 models compared on measured quality, failures, latency and cost before choosing one (`results/model-trial.md`) | T-26 |
 | Advanced testing | API contract tests (in place), red-team set with a measured attack success rate | J-13, C-13 |
 
 ## Brief checklist (from the course announcement)
@@ -125,7 +125,7 @@ The brief asks for "evidence of use", not tool logos: a few practices done in de
 |---|---|
 | Problem before technology; real user; current workflow | `docs/problem.md`, interview notes (T-29) |
 | What stays deterministic or human-controlled | `docs/architecture.md`; approval gate; plain-code rule check and safety rules (C-29) |
-| At least one real-world constraint, evaluated | Cost (cheap vs stronger model, cost per plan) and human approval (T-26) |
+| At least one real-world constraint, evaluated | Cost (4-model trial, then cost per plan with the chosen model) and human approval (T-26) |
 | Tests beyond the happy path: invalid, ambiguous, tool failure, malformed, rate limit, malicious, unauthorized | `docs/failure-matrix.md` + tests; red-team set (J-13) |
 | Memory: scope, lifetime, retrieval, privacy | `docs/knowledge-base.md` (C-29) |
 | UI designed around the user, not chat by default | Events, Review, Calendar, Knowledge, Handover screens (done) |

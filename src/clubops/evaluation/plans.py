@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import csv
 import re
+import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
@@ -312,6 +313,7 @@ class Score:
     cost_usd: Decimal = Decimal("0")
     calls: int = 0
     errors: int = 0
+    seconds: float = 0.0
     rows: list[dict[str, Any]] = field(default_factory=list)
 
     @property
@@ -331,7 +333,9 @@ class Score:
 def score(cases: list[Case], predict: Predict) -> Score:
     s = Score()
     for case in cases:
+        started = time.monotonic()
         pred = predict(case)
+        s.seconds += time.monotonic() - started
         caught = pred.codes & case.truth
         missed = case.truth - pred.codes
         alarms = pred.codes - case.truth
