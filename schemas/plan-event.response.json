@@ -1,5 +1,5 @@
 {
-  "$comment": "clubops 0.2.1 \u00b7 capability plan-event 0.1.0 \u00b7 generated",
+  "$comment": "clubops 0.2.2 \u00b7 capability plan-event 0.1.0 \u00b7 generated",
   "$defs": {
     "AgentRun": {
       "additionalProperties": false,
@@ -88,6 +88,20 @@
     "AgentStep": {
       "additionalProperties": false,
       "properties": {
+        "model_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "time the model took to choose this step",
+          "title": "Model Ms"
+        },
         "n": {
           "minimum": 1,
           "title": "N",
@@ -107,6 +121,20 @@
           "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
           "title": "Tool",
           "type": "string"
+        },
+        "tool_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "time the tool took (including any model call in it)",
+          "title": "Tool Ms"
         }
       },
       "required": [

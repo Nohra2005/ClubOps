@@ -5,8 +5,16 @@ Four systems get the same event description (built from the frozen test row, nev
 2. plain      - one model call: the approval codes and what each means, but not when each is needed.
 3. rulebook   - one model call with the 25 AUB rules pasted in.
 4. clubops    - the planning agent with the rulebook and the club's memory, as in the app. A simulated user
-                answers its questions with the same description. Memory holds only facts learned from
-                events *before* the one being planned (no leakage, eval/FROZEN.md).
+                answers its questions (see below). Memory holds only facts learned from events *before* the
+                one being planned (no leakage, eval/FROZEN.md).
+
+Two settings:
+- full start (default): every system gets the whole description; the simulated user repeats it.
+- short start (``short_start=True``): every system gets only what a president types first (the event and
+  its date). The agent may ask; the simulated user answers each question only from the matching fields of
+  that event's row (place, people, guests, sponsors, money, partners), or "I don't know". It never uses the
+  notes or the labels, and never says more than the row. One-call systems cannot ask, which is the point:
+  it measures what asking adds.
 
 Scoring compares the predicted codes with the president's labels (`approvals_real`), on the codes she labels
 (SCORED). Codes outside that set (e.g. LOGO, RCPT) are ignored for every system alike.
@@ -70,6 +78,9 @@ class Case:
     on: date
     description: str
     truth: frozenset[str]
+    # The row's event fields (never notes or labels), for the simulated user's answers in short start.
+    details: tuple[tuple[str, str], ...] = ()
+    short_start: bool = False
 
 
 def truth_codes(label: str) -> frozenset[str]:
@@ -106,13 +117,54 @@ def describe(row: dict[str, str]) -> str:
     return ". ".join(p for p in parts if p and not p.endswith(": ")) + "."
 
 
-def load_cases(path: Path, label_column: str = "approvals_real (you fill)") -> list[Case]:
+DETAIL_FIELDS = {
+    "place": "Place",
+    "people": "People",
+    "outside_guests": "Outside guests",
+    "sponsors_prizes": "Sponsors or prizes",
+    "money": "Money",
+    "partners": "Partners",
+}
+# Which row field answers a question, by its words. Food has no column, so food questions get "I don't know".
+_ASKS: list[tuple[str, str]] = [
+    ("place", r"venue|where|place|location|room|field|hall|indoor|outdoor"),
+    ("people", r"how many|number of|participants|attend|size|expect"),
+    ("outside_guests", r"guest|outside|non-aub|external|public|open to|who can|audience|families"),
+    ("sponsors_prizes", r"sponsor|prize|award|gift|giveaway"),
+    ("money", r"money|cost|budget|fee|ticket|pay|price|fund|sell|sale|charge|spend|donat"),
+    ("partners", r"partner|collab|other club|societ|co-host|together with"),
+]
+
+
+def opening(row: dict[str, str]) -> str:
+    """What a president types first: the event and its date."""
+    when = row["date"] if _DAY.search(row["date"] or "") else "a date not given"
+    return f"{row['event']} on {when}."
+
+
+def simulated_answer(case: Case, question: str) -> str:
+    """The simulated president's reply: only the row fields the question is about, or "I don't know"."""
+    if not case.short_start:
+        return f"That's all I know: {case.description}"
+    known = dict(case.details)
+    q = question.lower()
+    parts = [
+        f"{DETAIL_FIELDS[name]}: {known[name]}"
+        for name, words in _ASKS
+        if re.search(words, q) and known.get(name, "").strip()
+    ]
+    return ". ".join(parts) + "." if parts else "I don't know."
+
+
+def load_cases(path: Path, label_column: str = "approvals_real (you fill)", *, short_start: bool = False) -> list[Case]:
     cases = []
     for row in csv.DictReader(path.open(encoding="utf-8")):
         label = row.get(label_column, "") or ""
         if not label.strip() or label.strip().upper().startswith("DROP"):
             continue
-        cases.append(Case(row["id"], event_date(row["date"]), describe(row), truth_codes(label)))
+        details = tuple((k, (row.get(k) or "").strip()) for k in DETAIL_FIELDS)
+        text = opening(row) if short_start else describe(row)
+        cases.append(Case(row["id"], event_date(row["date"]), text, truth_codes(label), details, short_start))
     return cases
 
 
@@ -128,6 +180,8 @@ class Prediction:
     cost_usd: Decimal = Decimal("0")
     calls: int = 0
     error: str | None = None
+    model_ms: int = 0  # time in model calls and in tools, from the agent's steps (ClubOps only)
+    tool_ms: int = 0
 
 
 _KEYWORDS: list[tuple[str, tuple[str, ...]]] = [
@@ -225,10 +279,10 @@ class ClubOpsSystem:
                 PlanEventRequest(club_id="eval-club", description=words, today=case.on - PLANNING_LEAD),
                 f"run-{case.case_id.lower()}",
             )
-            for _ in range(3):  # the simulated user repeats what it knows; the agent gets 3 answers at most
+            for _ in range(5 if case.short_start else 3):  # the agent gets a few answers at most
                 if state.run.status.value != "waiting_for_user":
                     break
-                state = planner.answer(state, f"That's all I know: {case.description}")
+                state = planner.answer(state, simulated_answer(case, state.run.steps[-1].text))
         except Exception as err:
             return Prediction(frozenset(), error=type(err).__name__)
         finally:
@@ -251,6 +305,8 @@ class ClubOpsSystem:
             cost_usd=state.run.cost_usd,
             calls=state.run.steps_used,
             error=None if state.run.status.value == "done" else state.run.status.value,
+            model_ms=sum(st.model_ms or 0 for st in state.run.steps),
+            tool_ms=sum(st.tool_ms or 0 for st in state.run.steps),
         )
 
 
@@ -314,11 +370,19 @@ class Score:
     calls: int = 0
     errors: int = 0
     seconds: float = 0.0
+    model_seconds: float = 0.0
+    tool_seconds: float = 0.0
     rows: list[dict[str, Any]] = field(default_factory=list)
 
     @property
     def recall(self) -> float:
         return self.caught / (self.caught + self.missed) if self.caught + self.missed else 0.0
+
+    @property
+    def found_or_flagged(self) -> float:
+        """Approvals caught, or missed but flagged "not sure" (a person is told to check). Read with false alarms."""
+        total = self.caught + self.missed
+        return (self.caught + self.unsure_caught) / total if total else 0.0
 
     @property
     def precision(self) -> float:
@@ -346,6 +410,8 @@ def score(cases: list[Case], predict: Predict) -> Score:
         s.cost_usd += pred.cost_usd
         s.calls += pred.calls
         s.errors += pred.error is not None
+        s.model_seconds += pred.model_ms / 1000
+        s.tool_seconds += pred.tool_ms / 1000
         s.rows.append(
             {
                 "case": case.case_id,
@@ -360,14 +426,15 @@ def score(cases: list[Case], predict: Predict) -> Score:
 
 def table(results: dict[str, Score], n: int) -> str:
     lines = [
-        "| System | Recall | Precision | F1 | Missed | False alarms | Missed but flagged 'not sure' "
+        "| System | Recall | Found or flagged | Precision | F1 | Missed | False alarms | Missed but flagged 'not sure' "
         "| Model calls | Cost (USD) | Cost per event | Errors |",
-        "|---|---|---|---|---|---|---|---|---|---|---|",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for name, s in results.items():
         per = s.cost_usd / n if n else Decimal("0")
         lines.append(
-            f"| {name} | {s.recall:.2f} | {s.precision:.2f} | {s.f1:.2f} | {s.missed} | {s.false_alarms} | "
+            f"| {name} | {s.recall:.2f} | {s.found_or_flagged:.2f} | {s.precision:.2f} | {s.f1:.2f} | "
+            f"{s.missed} | {s.false_alarms} | "
             f"{s.unsure_caught} | {s.calls} | {s.cost_usd:.4f} | {per:.4f} | {s.errors} |"
         )
     return "\n".join(lines)

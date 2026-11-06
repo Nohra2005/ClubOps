@@ -377,3 +377,9 @@ def test_an_aub_tip_from_a_club_is_not_shown_as_an_official_rule(memory: KnowHow
     state = planner(memory, directory, script).start(request(), "run-n7")
     found = next(n for n in state.notes if n.startswith("memory 'west hall'"))
     assert "West Hall rooms (AUB tip learned from a club, not an official rule)" in found
+
+
+def test_each_step_records_model_and_tool_time(memory: KnowHowStore, directory: Directory) -> None:
+    state = planner(memory, directory, Script(*full_plan())).start(request(), "run-t1")
+    assert all(st.model_ms is not None and st.model_ms >= 0 for st in state.run.steps)
+    assert all(st.tool_ms is not None for st in state.run.steps if st.state.value == "done")
