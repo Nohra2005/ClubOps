@@ -383,3 +383,33 @@ def test_each_step_records_model_and_tool_time(memory: KnowHowStore, directory: 
     state = planner(memory, directory, Script(*full_plan())).start(request(), "run-t1")
     assert all(st.model_ms is not None and st.model_ms >= 0 for st in state.run.steps)
     assert all(st.tool_ms is not None for st in state.run.steps if st.state.value == "done")
+
+
+def test_self_check_asks_before_finishing_when_a_rule_is_unsure_and_a_fact_is_missing(
+    memory: KnowHowStore, directory: Directory
+) -> None:
+    vague = FACTS.model_copy(update={"audience": None})  # who can come is unknown: the guest rule is unsure
+    script = Script(
+        step(Tool.UPDATE_EVENT, facts=vague),
+        step(Tool.CHECK_RULES),
+        step(Tool.PLAN_TASKS),
+        step(Tool.FINISH),  # refused once by the self-check
+        step(Tool.ASK_USER, question="Can people from outside AUB come?"),
+    )
+    state = planner(memory, directory, script).start(request(), "run-s1")
+    assert state.run.status.value == "waiting_for_user"
+    refused = next(n for n in state.notes if n.startswith("refused finish: Before finishing:"))
+    assert "audience" in refused and "kh-rule-guests" in refused
+
+
+def test_self_check_runs_once_so_the_agent_can_still_finish(memory: KnowHowStore, directory: Directory) -> None:
+    vague = FACTS.model_copy(update={"audience": None})
+    script = Script(
+        step(Tool.UPDATE_EVENT, facts=vague),
+        step(Tool.CHECK_RULES),
+        step(Tool.PLAN_TASKS),
+        step(Tool.FINISH),
+        step(Tool.FINISH),  # the user can't know: finishing is allowed the second time
+    )
+    state = planner(memory, directory, script).start(request(), "run-s2")
+    assert state.run.status.value == "done"
