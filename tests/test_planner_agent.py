@@ -22,13 +22,13 @@ from clubops.config import ModelMode, Settings
 from clubops.contracts.agent import PlanEventRequest, RunStatus, StepState
 from clubops.contracts.common import ErrorCode, SourceKind, SourceRef, Untrusted
 from clubops.contracts.event import Audience, EventRecord, EventSpec, EventStatus, EventType, Venue, VenueKind
-from clubops.contracts.knowhow import Requirement, RequirementKind, RuleDetails
+from clubops.contracts.knowhow import Requirement, RequirementKind, RuleDetails, Scope
 from clubops.contracts.rules import Applicability
 from clubops.knowhow.directory import Directory
 from clubops.knowhow.store import KnowHowStore
 from clubops.model.budget import Budget
 from clubops.model.client import ModelClient
-from tests.factories import CLUB, NOW, rule, verified
+from tests.factories import CLUB, NOW, item, rule, verified
 
 TODAY = date(2026, 10, 1)
 START = datetime(2026, 10, 25, 6, 0, tzinfo=UTC)
@@ -361,3 +361,19 @@ def test_the_model_decider_uses_the_model_client(tmp_path: Path) -> None:
 def test_the_prompt_stays_short(memory: KnowHowStore, directory: Directory) -> None:
     state = planner(memory, directory, Script(*full_plan())).start(request(), "run-p7")
     assert len(build_prompt(RunState.model_validate(state.model_dump()))) < 3000
+
+
+def test_a_new_club_with_no_know_how_is_told_to_ask_not_guess(memory: KnowHowStore, directory: Directory) -> None:
+    script = Script(full_plan()[0], step(Tool.SEARCH_MEMORY, query="sponsor contact"), *full_plan()[2:])
+    state = planner(memory, directory, script).start(request(), "run-n6")
+    found = next(n for n in state.notes if n.startswith("memory 'sponsor contact'"))
+    assert "nothing approved found" in found and "never guess" in found
+
+
+def test_an_aub_tip_from_a_club_is_not_shown_as_an_official_rule(memory: KnowHowStore, directory: Directory) -> None:
+    tip = item("kh-west-hall", scope=Scope.AUB, club_id=None, title="West Hall rooms", tags=["west-hall"])
+    memory.backend.append(verified(tip))
+    script = Script(full_plan()[0], step(Tool.SEARCH_MEMORY, query="west hall"), *full_plan()[2:])
+    state = planner(memory, directory, script).start(request(), "run-n7")
+    found = next(n for n in state.notes if n.startswith("memory 'west hall'"))
+    assert "West Hall rooms (AUB tip learned from a club, not an official rule)" in found

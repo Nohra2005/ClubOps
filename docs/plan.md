@@ -60,6 +60,7 @@ Each row says what the grader must find, where it will be, and which tasks produ
 | Test sets made before the system, held out | `eval/FROZEN.md` with hashes and dates | T-01 to T-04 |
 | Baselines and clear metrics | Scored by code against the president's labels: approvals caught/missed/false alarms, proposal field accuracy, invented-answer rate, learning test, cost per plan (no human graders, D-82) | T-06, T-26, C-27, J-17, J-19 |
 | Honest variance | 3 runs per configuration, spread reported | T-26 |
+| Works for any club, not only the one we tuned on | Shared AUB layer, prompts free of club words (test), new-club test with a learning curve on ASME and 3 synthetic clubs starting empty (D-91) | T-41 to T-44, J-20, C-33, C-34 |
 | Failures become tests | `docs/failure-matrix.md` rows with regression tests | J-13, T-26, J-06 |
 | Reproducible numbers | `make eval` from recorded responses, no API keys | T-10, T-26 |
 

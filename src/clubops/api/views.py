@@ -15,7 +15,15 @@ from clubops.api.store import PlannedEvent
 from clubops.contracts.calendar import CalendarItem
 from clubops.contracts.common import SourceKind, SourceRef
 from clubops.contracts.event import Audience, EventRecord, EventSpec
-from clubops.contracts.knowhow import ItemStatus, Kind, KnowHowItem, KnowHowProposal, RelationshipDetails, RuleDetails
+from clubops.contracts.knowhow import (
+    ItemStatus,
+    Kind,
+    KnowHowItem,
+    KnowHowProposal,
+    RelationshipDetails,
+    RuleDetails,
+    Scope,
+)
 from clubops.contracts.planning import TaskState
 from clubops.contracts.rules import Applicability
 
@@ -243,6 +251,7 @@ def review_card(p: KnowHowProposal, target: KnowHowItem | None = None) -> dict[s
         "group": tab(c),
         "kind": c.kind.value,
         "status": "pending",
+        "shared": c.scope is Scope.AUB,  # true: every AUB club will see it once approved (D-91)
     }
     if target is not None:
         card["alternative"] = {"statement": target.statement, "source": source(target)}

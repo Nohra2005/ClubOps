@@ -7,7 +7,8 @@ Review. The president then decides on a sheet instead of clicking through the ap
   uv run python scripts/seed_club.py learn --club running-club --data-dir data/app \\
       --source data/private/club/cabinet.txt:chat_message --source data/private/club/bookings.txt:document
 
-  # 2. write the review sheet, fill the "decision" column (approve / reject / edit + corrected text)
+  # 2. write the review sheet, fill the "decision" column (approve / reject / edit + corrected text);
+  #    "share_with_all_clubs" is yes for facts true for every AUB club (change it if ClubOps guessed wrong)
   uv run python scripts/seed_club.py sheet --club running-club --data-dir data/app --out data/private/review.csv
 
   # 3. apply the decisions, as the president
@@ -34,9 +35,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # so `python scrip
 from clubops.api.security import MemberStore
 from clubops.config import Settings, load_settings
 from clubops.contracts.common import SourceKind, SourceRef, Untrusted
-from clubops.contracts.knowhow import CaptureRequest, KnowHowProposal, VerifyDecision, VerifyRequest
+from clubops.contracts.knowhow import CaptureRequest, Kind, KnowHowProposal, Scope, VerifyDecision, VerifyRequest
 from clubops.knowhow.backends import open_club_store_backend
-from clubops.knowhow.store import KnowHowStore
+from clubops.knowhow.store import KnowHowStore, rescoped
 from clubops.learning.capture import MAX_SOURCE_CHARS, Learner
 from clubops.model.client import ModelClient
 
@@ -49,6 +50,7 @@ SHEET_COLUMNS = [
     "source",
     "known_fact",
     "warning",
+    "share_with_all_clubs",
     "decision",
     "edited_text",
 ]
@@ -168,6 +170,7 @@ def _card(p: KnowHowProposal, store: KnowHowStore) -> dict[str, str]:
         "source": f"{src.source_id} ({src.locator})" if src else "",
         "known_fact": known.statement if known else "",
         "warning": " | ".join(warning),
+        "share_with_all_clubs": "yes" if p.candidate.scope is Scope.AUB else "no",
         "decision": "",
         "edited_text": "",
     }
@@ -212,6 +215,14 @@ def apply(args: argparse.Namespace) -> None:
                     if not row["edited_text"].strip():
                         raise SystemExit(f"{row['proposal_id']}: 'edit' needs the corrected text in edited_text")
                     edited = proposal.candidate.model_copy(update={"statement": row["edited_text"].strip()})
+                share = (row.get("share_with_all_clubs") or "").strip().lower()
+                if share in {"yes", "no"} and decision != "reject":
+                    if share == "no" and proposal.candidate.kind is Kind.RULE:
+                        raise SystemExit(f"{row['proposal_id']}: AUB rules are always shared with every club")
+                    moved = rescoped(edited or proposal.candidate, args.club, shared=share == "yes")
+                    edited = None if moved == proposal.candidate else moved
+                    if edited is not None and decision == "approve":
+                        decision = "edit"  # only the sharing changed
                 verdict = {
                     "approve": VerifyDecision.ACCEPT,
                     "reject": VerifyDecision.REJECT,
