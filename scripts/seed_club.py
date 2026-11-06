@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 import sys
 import time
 from datetime import UTC, date, datetime
@@ -74,6 +75,27 @@ def pieces(text: str, size: int = MAX_SOURCE_CHARS) -> list[str]:
     return out
 
 
+_WA_LINE = re.compile(r"^\u200e?\[\d{1,2}/\d{1,2}/\d{2,4}, [^\]]+\] [^:]+: (.*)$")
+_WA_NOISE = re.compile(
+    r"joined using|requested to (join|add)|\badded\b|\bleft$|\bremoved\b|changed (this group|the group|their phone)"
+    r"|(image|video|audio|sticker|GIF|document) omitted|This message was deleted|You deleted this message"
+    r"|end-to-end encrypted|pinned a message|created group|changed the settings|turned (on|off) admin"
+    r"|created the username|^POLL:$"
+)
+
+
+def clean_whatsapp(text: str) -> str:
+    """Drop WhatsApp system lines (joins, adds, media placeholders...): they hold no know-how and cost money."""
+    kept = []
+    for line in text.splitlines():
+        m = _WA_LINE.match(line)
+        body = (m.group(1) if m else line).replace("\u200e", "").strip()
+        if m and (not body or _WA_NOISE.search(body)):
+            continue
+        kept.append(line)
+    return "\n".join(kept) + "\n"
+
+
 def parse_source(spec: str) -> tuple[Path, SourceKind]:
     path, _, kind = spec.rpartition(":")
     if not path:
@@ -95,7 +117,10 @@ def learn(args: argparse.Namespace, client: ModelClient | None = None, settings:
     try:
         for spec in args.source:
             path, kind = parse_source(spec)
-            for i, piece in enumerate(pieces(path.read_text(encoding="utf-8", errors="replace"))):
+            text = path.read_text(encoding="utf-8", errors="replace")
+            if kind is SourceKind.CHAT_MESSAGE:
+                text = clean_whatsapp(text)
+            for i, piece in enumerate(pieces(text)):
                 key = f"{path.name}#{i}"
                 if key in done:
                     continue

@@ -9,7 +9,7 @@ from pathlib import Path
 
 import httpx
 import pytest
-from scripts.seed_club import apply, learn, pieces, sheet
+from scripts.seed_club import apply, clean_whatsapp, learn, pieces, sheet
 
 from clubops.api.security import MemberStore
 from clubops.config import ModelMode
@@ -97,3 +97,16 @@ def test_only_cabinet_members_of_the_club_can_apply_a_sheet(tmp_path: Path) -> N
     out.write_text("proposal_id,decision\n")
     with pytest.raises(SystemExit):
         apply(argparse.Namespace(club="running-club", data_dir=tmp_path, sheet=out, member="m-nobody"))
+
+
+def test_whatsapp_system_lines_are_dropped_before_learning() -> None:
+    chat = (
+        "[27/02/2025, 4:43:51 PM] Club: \u200eMessages and calls are end-to-end encrypted.\n"
+        "[27/02/2025, 4:51:23 PM] Sam Sample: \u200eSam Sample joined using a group link\n"
+        "\u200e[07/03/2025, 10:28:31 AM] Lee Example: \u200eimage omitted\n"
+        "[12/03/2025, 3:35:23 PM] Lee Example: Starting point in front of sea gate\n"
+        "continued line of the same message\n"
+    )
+    out = clean_whatsapp(chat)
+    assert "sea gate" in out and "continued line" in out
+    assert "joined" not in out and "omitted" not in out and "encrypted" not in out
