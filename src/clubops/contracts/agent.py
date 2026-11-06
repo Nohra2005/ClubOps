@@ -33,6 +33,8 @@ class AgentStep(Contract):
     tool: Slug = Field(description="what the agent chose to do, e.g. 'search-memory', 'apply-rules', 'ask-user'")
     text: str = Field(max_length=200, description="one plain line for the steps panel")
     state: StepState
+    model_ms: int | None = Field(default=None, ge=0, description="time the model took to choose this step")
+    tool_ms: int | None = Field(default=None, ge=0, description="time the tool took (including any model call in it)")
 
 
 class PlanEventRequest(Contract):

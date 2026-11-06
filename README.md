@@ -60,11 +60,11 @@ verified runs and remaining bonus work are tracked in [the engineering evidence]
 
 Updated 6 November 2026. Deadline: 30 November 2026. Live task list: [`TASKS.md`](TASKS.md) (`make tasks`).
 
-**Built and tested** (`make check`: lint, strict types, 462 tests, contract drift, dependency audit)
+**Built and tested** (`make check`: lint, strict types, 468 tests, contract drift, dependency audit)
 
 | Part | What works | Where |
 |---|---|---|
-| Contracts | Shared data shapes for every part, exported as JSON schemas (version 0.2.1) | `src/clubops/contracts/`, `schemas/` |
+| Contracts | Shared data shapes for every part, exported as JSON schemas (version 0.2.2) | `src/clubops/contracts/`, `schemas/` |
 | Model client | Any OpenAI-compatible provider (the course's OpenRouter key); replay, record and live modes; cost limit per plan | `src/clubops/model/` |
 | Privacy | Phone numbers, AUB IDs, e-mails and links hidden before any text reaches the model | `src/clubops/redaction.py` |
 | Club memory | Shared AUB layer + one file per club (SQLite, full-text search): facts true for every AUB club are shared once a president approves them, so a new club starts with what other clubs taught (D-91); every fact versioned, nothing saved without a cabinet member's approval | `src/clubops/knowhow/` |
@@ -75,7 +75,7 @@ Updated 6 November 2026. Deadline: 30 November 2026. Live task list: [`TASKS.md`
 | Backend API | Google sign-in, events, agent runs, plan approval, tasks, calendar items, knowledge, review, cabinet, handover, usage | `src/clubops/api/`, [`docs/api.md`](docs/api.md) |
 | Web app | Every screen of the UI spec, connected to the API | `web/` |
 | Handover and cost report | Role guides from approved facts with gaps and who to ask; cost and trace report | `src/clubops/api/handover.py`, `src/clubops/reports/` |
-| Evaluation runner | Checklist, plain model, model + rulebook and ClubOps scored the same way (approvals caught, missed, false alarms, cost); ClubOps only sees facts from earlier events | `src/clubops/evaluation/`, `scripts/eval_plans.py` |
+| Evaluation runner | Checklist, plain model, model + rulebook and ClubOps scored the same way (approvals caught, found or flagged, missed, false alarms, cost, model and tool time); ClubOps only sees facts from earlier events; a short-start setting where the agent must ask and a simulated president answers from the event's row (D-92) | `src/clubops/evaluation/`, `scripts/eval_plans.py` |
 | Calendar and drafts (first version) | Calendar items from an approved plan, Google sync with retries, WhatsApp drafts | `src/clubops/calendar/`, `src/clubops/drafts/` |
 
 **In progress**
