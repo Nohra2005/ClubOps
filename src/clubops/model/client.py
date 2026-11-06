@@ -45,6 +45,9 @@ class ModelRequest:
     user: str
     max_tokens: int = 1500
     temperature: float = 0.0
+    # True for answer shapes known to be too big for providers' structured output: send the shape in the
+    # instructions and ask for plain JSON, instead of a request that is refused first (F-162).
+    schema_in_prompt: bool = False
 
     def messages(self) -> list[dict[str, str]]:
         return [{"role": "system", "content": self.system}, {"role": "user", "content": self.user}]
@@ -53,6 +56,33 @@ class ModelRequest:
 def _strip_fences(text: str) -> str:
     match = _FENCE.match(text)
     return match.group(1) if match else text.strip()
+
+
+_SCHEMA_REFUSED = re.compile(r"schema|grammar", re.IGNORECASE)
+
+
+def provider_schema(schema: Any) -> Any:
+    """The answer schema in the subset providers accept (F-162): ``oneOf`` becomes ``anyOf``; pydantic's
+    ``discriminator``, ``default`` and length/count/pattern limits are dropped; "X or null" becomes X (an
+    optional field is simply left out of ``required``). Smaller schemas also keep the provider's compiled
+    grammar under its size limit. Validation still uses the full pydantic model."""
+    if isinstance(schema, list):
+        return [provider_schema(v) for v in schema]
+    if not isinstance(schema, dict):
+        return schema
+    out: dict[str, Any] = {}
+    for key, value in schema.items():
+        if key in {"discriminator", "default", "maxItems", "minItems", "maxLength", "minLength", "pattern"}:
+            continue  # length and count limits blow up the provider's grammar; pydantic still enforces them
+        if key in {"anyOf", "oneOf"}:
+            options = [o for o in value if o != {"type": "null"}]
+            if len(options) == 1:
+                out.update(provider_schema(options[0]))
+                continue
+            out["anyOf"] = provider_schema(options)
+            continue
+        out[key] = provider_schema(value)
+    return out
 
 
 class ModelClient:
@@ -137,7 +167,11 @@ class ModelClient:
             # inventing its own (seen on 2026-11-05 with mid-priced models, F-160). Validation below still decides.
             "response_format": {
                 "type": "json_schema",
-                "json_schema": {"name": output.__name__, "schema": output.model_json_schema(), "strict": False},
+                "json_schema": {
+                    "name": output.__name__,
+                    "schema": provider_schema(output.model_json_schema()),
+                    "strict": False,
+                },
             },
         }
         if s.reasoning_effort:
@@ -146,14 +180,17 @@ class ModelClient:
             # Club text is redacted, but still: only providers that don't keep or train on prompts (D-88).
             body["provider"] = {"data_collection": "deny"}
         headers = {"Authorization": f"Bearer {s.api_key.get_secret_value()}"}
-        try:
-            with httpx.Client(transport=self._transport, timeout=self._timeout_s) as http:
-                response = http.post(f"{s.base_url}/chat/completions", json=body, headers=headers)
-        except httpx.TimeoutException as exc:
-            raise CapabilityError(ErrorCode.UPSTREAM_TIMEOUT, "model provider timed out") from exc
-        except httpx.HTTPError as exc:
-            reason = f"could not reach the model provider: {type(exc).__name__}"
-            raise CapabilityError(ErrorCode.UPSTREAM_ERROR, reason) from exc
+        response = None if request.schema_in_prompt else self._post(body, headers)
+        if response is None or (response.status_code == 400 and _SCHEMA_REFUSED.search(response.text)):
+            # Some answer shapes are too big for the provider's structured output (F-162): ask for plain JSON
+            # and put the shape in the instructions instead.
+            schema = json.dumps(provider_schema(output.model_json_schema()), separators=(",", ":"))
+            messages = request.messages()
+            messages[0] = {
+                **messages[0],
+                "content": f"{messages[0]['content']}\n\nAnswer JSON matching this schema: {schema}",
+            }
+            response = self._post({**body, "messages": messages, "response_format": {"type": "json_object"}}, headers)
 
         if response.status_code == 429:
             raise CapabilityError(ErrorCode.RATE_LIMITED, "model provider rate limit")
@@ -180,6 +217,16 @@ class ModelClient:
             cost_usd=self._cost(tokens_in, tokens_out),
         )
         return text, usage
+
+    def _post(self, body: dict[str, Any], headers: dict[str, str]) -> httpx.Response:
+        try:
+            with httpx.Client(transport=self._transport, timeout=self._timeout_s) as http:
+                return http.post(f"{self.settings.base_url}/chat/completions", json=body, headers=headers)
+        except httpx.TimeoutException as exc:
+            raise CapabilityError(ErrorCode.UPSTREAM_TIMEOUT, "model provider timed out") from exc
+        except httpx.HTTPError as exc:
+            reason = f"could not reach the model provider: {type(exc).__name__}"
+            raise CapabilityError(ErrorCode.UPSTREAM_ERROR, reason) from exc
 
     @staticmethod
     def _parse(text: str, output: type[T], usage: Usage) -> T:

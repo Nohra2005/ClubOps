@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any, Literal
 
-from pydantic import Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError
 
 from clubops.capabilities.runner import CapabilityError
 from clubops.contracts.common import Contract, ItemId, Slug, SourceKind, SourceRef, Untrusted
@@ -103,14 +103,67 @@ def _hash(*parts: str) -> str:
 Kinds = Literal["lesson", "gotcha", "procedure", "relationship", "decision", "rhythm", "obligation", "rule"]
 
 
+class FlatStep(BaseModel):
+    order: int
+    action: str
+    lead_time_days: int | None = None
+
+
+class FlatDetails(BaseModel):
+    """Every kind's detail fields in one flat object: a schema small enough for providers' structured output
+    (a union of the nine detail models is rejected as too large, F-162). Only the fields of the fact's kind are
+    kept; KnowHowItem then checks them."""
+
+    outcome: Literal["worked", "failed", "mixed"] | None = Field(default=None, description="lesson")
+    context: str | None = Field(default=None, description="lesson")
+    recommendation: str | None = Field(default=None, description="lesson")
+    trigger: str | None = Field(default=None, description="gotcha")
+    consequence: str | None = Field(default=None, description="gotcha")
+    avoid_by: str | None = Field(default=None, description="gotcha")
+    goal: str | None = Field(default=None, description="procedure")
+    steps: list[FlatStep] | None = Field(default=None, description="procedure: numbered 1..n")
+    applies_when: list[str] | None = Field(default=None, description="procedure")
+    party_name: str | None = Field(default=None, description="relationship")
+    party_type: Literal["sponsor", "vendor", "aub_office", "venue", "other_club", "other"] | None = Field(
+        default=None, description="relationship"
+    )
+    offers: list[str] | None = Field(default=None, description="relationship")
+    preferred_channel: str | None = Field(default=None, description="relationship")
+    decision: str | None = Field(default=None, description="decision")
+    rationale: str | None = Field(default=None, description="decision")
+    month: int | None = Field(default=None, description="rhythm: 1-12")
+    recurs: Literal["yearly", "fall", "spring"] | None = Field(default=None, description="rhythm")
+    owed_to: str | None = Field(default=None, description="obligation")
+    due_rule: str | None = Field(default=None, description="obligation")
+    triggers: list[str] | None = Field(default=None, description="rule")
+    requirements: list[dict[str, Any]] | None = Field(default=None, description="rule")
+
+
+_FIELDS_OF_KIND: dict[str, set[str]] = {
+    "lesson": {"outcome", "context", "recommendation"},
+    "gotcha": {"trigger", "consequence", "avoid_by"},
+    "procedure": {"goal", "steps", "applies_when"},
+    "relationship": {"party_name", "party_type", "offers", "preferred_channel"},
+    "decision": {"decision", "rationale"},
+    "rhythm": {"month", "recurs"},
+    "obligation": {"owed_to", "due_rule"},
+    "rule": {"triggers", "requirements"},
+}
+
+
 class ExtractedFact(Contract):
     kind: Kinds
     title: str = Field(min_length=3, max_length=120)
     statement: str = Field(min_length=3, max_length=600)
     quote: str = Field(min_length=3, max_length=500, description="copied word for word from the source")
     source: int = Field(ge=0, description="index of the source the quote comes from")
-    details: dict[str, Any]
+    details: FlatDetails = Field(default_factory=FlatDetails, description="fill the fields of this fact's kind")
     tags: list[Slug] = Field(default_factory=list, max_length=5)
+
+    def detail_dict(self) -> dict[str, Any]:
+        wanted = _FIELDS_OF_KIND[self.kind]
+        raw = self.details.model_dump(exclude_none=True, mode="json")
+        return {"kind": self.kind, **{k: v for k, v in raw.items() if k in wanted}}
 
 
 class Extraction(Contract):
@@ -193,7 +246,13 @@ class Learner:
         if texts and self.client is not None:
             try:
                 extraction, _ = self.client.complete(
-                    ModelRequest(EXTRACT_VERSION, EXTRACT_SYSTEM, self._extract_prompt(prepared), max_tokens=1500),
+                    ModelRequest(
+                        EXTRACT_VERSION,
+                        EXTRACT_SYSTEM,
+                        self._extract_prompt(prepared),
+                        max_tokens=2500,
+                        schema_in_prompt=True,
+                    ),
                     Extraction,
                     budget,
                 )
@@ -260,7 +319,7 @@ class Learner:
                     "club_id": None if is_rule else request.club_id,
                     "title": fact.title,
                     "statement": fact.statement,
-                    "details": {**fact.details, "kind": fact.kind},
+                    "details": fact.detail_dict(),
                     "tags": fact.tags,
                     "sources": [
                         SourceRef(
