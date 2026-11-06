@@ -73,8 +73,10 @@ def test_learn_then_review_on_a_sheet_then_apply(tmp_path: Path) -> None:
     rows = list(csv.DictReader(out.open(encoding="utf-8-sig")))
     assert len(rows) == 1 and rows[0]["quote"] == "we always book Green Field 3 weeks ahead"
     assert "Sam" not in rows[0]["statement"]
+    assert rows[0]["share_with_all_clubs"] == "no"  # ClubOps guessed "about this club"
 
     rows[0]["decision"] = "approve"
+    rows[0]["share_with_all_clubs"] = "yes"  # the president decides it holds for every AUB club (D-91)
     with out.open("w", encoding="utf-8-sig", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0]))
         w.writeheader()
@@ -90,6 +92,11 @@ def test_learn_then_review_on_a_sheet_then_apply(tmp_path: Path) -> None:
         assert [i.status for i in store.visible("running-club")] == [ItemStatus.VERIFIED]
     finally:
         store.close()
+    other = KnowHowStore(open_club_store_backend(data, "chess-club"))
+    try:
+        assert [i.title for i in other.visible("chess-club")] == ["Green Field booking lead time"]
+    finally:
+        other.close()
 
 
 def test_only_cabinet_members_of_the_club_can_apply_a_sheet(tmp_path: Path) -> None:

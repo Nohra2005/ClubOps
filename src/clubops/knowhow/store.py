@@ -34,6 +34,13 @@ def _rebuild(item: KnowHowItem, **changes: Any) -> KnowHowItem:
     return KnowHowItem.model_validate({**item.model_dump(), **changes})
 
 
+def rescoped(item: KnowHowItem, club_id: ClubId, *, shared: bool) -> KnowHowItem:
+    """The same fact for every AUB club (``shared``) or for ``club_id`` only. A president decides (D-91)."""
+    if shared:
+        return _rebuild(item, scope=Scope.AUB, club_id=None)
+    return _rebuild(item, scope=Scope.CLUB, club_id=club_id)
+
+
 class KnowHowStore:
     def __init__(self, backend: Backend | None = None) -> None:
         self.backend: Backend = backend if backend is not None else MemoryBackend()
@@ -120,8 +127,10 @@ class KnowHowStore:
         candidate = request.edited_candidate or proposal.candidate
         if candidate.scope is Scope.CLUB and candidate.club_id != actor.club_id:
             raise CapabilityError(ErrorCode.NOT_AUTHORIZED, "cannot verify another club's know-how")
-        if candidate.scope is Scope.AUB and Role.PRESIDENT not in actor.roles:
-            raise CapabilityError(ErrorCode.NOT_AUTHORIZED, "AUB-wide rules are verified by a club president")
+        target = self.latest(proposal.target_item) if proposal.target_item else None
+        shared = candidate.scope is Scope.AUB or (target is not None and target.scope is Scope.AUB)
+        if shared and Role.PRESIDENT not in actor.roles:
+            raise CapabilityError(ErrorCode.NOT_AUTHORIZED, "AUB-wide facts are verified by a club president")
         if proposal.injection_flags and request.decision is not VerifyDecision.REJECT and not request.reason:
             raise CapabilityError(
                 ErrorCode.INJECTION_SUSPECTED, "accepting a flagged proposal requires a written reason"
@@ -148,7 +157,15 @@ class KnowHowStore:
                     raise CapabilityError(ErrorCode.CONFLICT, "an item with this id already exists")
                 return _rebuild(candidate, version=1, **stamp), []
             case ProposalOp.UPDATE if target is not None:
-                committed = _rebuild(candidate, item_id=target.item_id, version=target.version + 1, **stamp)
+                # A new version stays in its fact's layer: a club can't pull an AUB fact into its own (F-163).
+                committed = _rebuild(
+                    candidate,
+                    item_id=target.item_id,
+                    version=target.version + 1,
+                    scope=target.scope,
+                    club_id=target.club_id,
+                    **stamp,
+                )
                 return committed, [target.item_id]
             case ProposalOp.MERGE if target is not None:
                 sources = list(
