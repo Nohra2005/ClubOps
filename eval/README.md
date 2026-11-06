@@ -52,6 +52,8 @@ uv run python scripts/eval_plans.py --events data/private/d5/d5-events.csv \
     --facts data/private/d5/facts-learned.csv --runs 3 --out results/plans.md
 ```
 
+**Experiment tracking (MLflow):** add `--track <experiment>` (and `--tag key=value`) to log every system's run: model, prompt versions, settings, the hash of the test file, and recall, precision, false alarms, errors, cost and time per event. Install with `uv sync --extra tracking`; the store is private (`data/private/mlflow`, never committed) and holds only ids, codes and scores. Browse: `uv run --extra tracking mlflow ui --backend-store-uri sqlite:///data/private/mlflow/mlflow.db`.
+
 `CLUBOPS_MODEL_MODE=record` makes real calls once and saves them; `replay` (default) re-runs for free. Each run has
 its own recordings (`#r2`, `#r3`), so repeated runs show how much answers vary. The event files stay private; only
 the result table is shared.

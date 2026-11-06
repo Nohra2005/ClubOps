@@ -158,8 +158,8 @@ Reference documents:
 - Owner: tatiana
 - Status: todo
 - Needs: T-06, T-14, T-15, J-12, J-15, T-38, C-27, J-17, J-19
-- What: Plan the held-out events with every baseline and with ClubOps (3 runs each, report the spread), plus ClubOps with an empty club memory (rules-only score) and the ASME events (D-50); automatic check against what really happened (approvals, proposal fields; no human graders, D-82); chatbot test; learning test; cost per successful plan. The measured real-world constraint (brief: "identify and evaluate at least one") is cost: run ClubOps with a cheap and a stronger model through OpenRouter and report quality, latency and cost per plan for each, so the model choice is a measured comparison. Commit sample traces (metadata only) in `traces/samples/`. Fix what it finds and turn each failure into a regression test.
-- Done when: result tables in `results/` (including the cheap vs stronger model comparison), reproducible with `make eval`.
+- What: Plan the held-out events with every baseline and with ClubOps (3 runs each, report the spread), plus ClubOps with an empty club memory (rules-only score) and the ASME events (D-50); automatic check against what really happened (approvals, proposal fields; no human graders, D-82); chatbot test; learning test; cost per successful plan. The measured real-world constraint (brief: "identify and evaluate at least one") is cost: run ClubOps with a one model, Claude Haiku 5.5, chosen in a measured 4-model trial (`results/model-trial.md`, D-90); report its quality, latency and cost per plan. Commit sample traces (metadata only) in `traces/samples/`. Fix what it finds and turn each failure into a regression test.
+- Done when: result tables in `results/` (the model trial is in `results/model-trial.md`), reproducible with `make eval`.
 
 ### T-27 Report and evidence numbers
 - Owner: tatiana
