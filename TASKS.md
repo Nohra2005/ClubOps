@@ -256,6 +256,7 @@ Reference documents:
 - Needs: T-14
 - What: When memory has nothing approved, the planner is told to ask the user instead of guessing; an AUB tip learned from a club is labelled "not an official rule" (planner-v4). Learning from use already exists (after-event notes, teaching in chat).
 - Done when: `tests/test_planner_agent.py` covers both notes.
+- Also (2026-11-06, D-93): a plain-code self-check before finishing asks once about "not sure" rules while a fact is missing (planner-v5).
 
 ### T-43 Prompts fit any club (D-91)
 - Owner: tatiana

@@ -280,3 +280,29 @@ def test_the_simulated_user_answers_only_what_was_asked_from_the_row(tmp_path: P
 def test_full_start_keeps_repeating_the_description(tmp_path: Path) -> None:
     [c] = load_cases(write_csv(tmp_path / "events.csv", [ROW]))
     assert simulated_answer(c, "Where?") == f"That's all I know: {c.description}"
+
+
+def test_in_short_start_the_agent_gets_its_answer_from_the_row(tmp_path: Path) -> None:
+    from clubops.agent.planner import Tool
+    from tests.test_planner_agent import step
+
+    [c] = load_cases(write_csv(tmp_path / "events.csv", [ROW]), short_start=True)
+    guests = verified(rule()).model_copy(update={"tags": ["guests", "guest"]})
+    scripts: list[Script] = []
+
+    def store_for(_: Case) -> KnowHowStore:
+        store = KnowHowStore()
+        store.backend.append(guests)
+        return store
+
+    def make(store: KnowHowStore, directory: Directory, _: object) -> Planner:
+        first, *rest = full_plan()
+        scripts.append(Script(first, step(Tool.ASK_USER, question="Can outside guests come?"), *rest))
+        return Planner(scripts[0], store, directory)
+
+    system = ClubOpsSystem(
+        make, store_for, lambda x: Directory(tmp_path / x.case_id, "eval-club"), codes_by_rule([guests])
+    )
+    pred = system(c)
+    assert pred.error is None and pred.codes == {"GUEST"}
+    assert "- Outside guests: yes, friends." in scripts[0].prompts[-1]  # the row's answer, nothing more

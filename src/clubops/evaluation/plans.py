@@ -279,10 +279,17 @@ class ClubOpsSystem:
                 PlanEventRequest(club_id="eval-club", description=words, today=case.on - PLANNING_LEAD),
                 f"run-{case.case_id.lower()}",
             )
-            for _ in range(5 if case.short_start else 3):  # the agent gets a few answers at most
-                if state.run.status.value != "waiting_for_user":
+            answers, continued = 0, False
+            while True:  # the simulated user answers a few questions and clicks "continue" once, as in the app
+                status = state.run.status.value
+                if status == "waiting_for_user" and answers < (5 if case.short_start else 3):
+                    answers += 1
+                    state = planner.answer(state, simulated_answer(case, state.run.steps[-1].text))
+                elif status == "at_limit" and case.short_start and not continued:
+                    continued = True
+                    state = planner.keep_going(state)
+                else:
                     break
-                state = planner.answer(state, simulated_answer(case, state.run.steps[-1].text))
         except Exception as err:
             return Prediction(frozenset(), error=type(err).__name__)
         finally:

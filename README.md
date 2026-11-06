@@ -60,7 +60,7 @@ verified runs and remaining bonus work are tracked in [the engineering evidence]
 
 Updated 6 November 2026. Deadline: 30 November 2026. Live task list: [`TASKS.md`](TASKS.md) (`make tasks`).
 
-**Built and tested** (`make check`: lint, strict types, 468 tests, contract drift, dependency audit)
+**Built and tested** (`make check`: lint, strict types, 475 tests, contract drift, dependency audit)
 
 | Part | What works | Where |
 |---|---|---|
@@ -69,7 +69,7 @@ Updated 6 November 2026. Deadline: 30 November 2026. Live task list: [`TASKS.md`
 | Privacy | Phone numbers, AUB IDs, e-mails and links hidden before any text reaches the model | `src/clubops/redaction.py` |
 | Club memory | Shared AUB layer + one file per club (SQLite, full-text search): facts true for every AUB club are shared once a president approves them, so a new club starts with what other clubs taught (D-91); every fact versioned, nothing saved without a cabinet member's approval | `src/clubops/knowhow/` |
 | AUB rulebook | 25 rules from the OSA and AUB documents, each quoting its source, reviewed by the Running Club president | `data/rulebook/aub-rules.json` |
-| Planning agent | The model picks its next step from 6 tools; code refuses unsafe steps; asks when facts are missing; stops at 8 steps or $0.05 | `src/clubops/agent/` |
+| Planning agent | The model picks its next step from 6 tools; code refuses unsafe steps; asks when facts are missing, with a self-check before finishing (D-93); stops at 8 steps or $0.05 | `src/clubops/agent/` |
 | Rule check and deadlines | Plain code for the facts, one model call for what only the description says; deadlines in working days, moved off AUB holidays | `src/clubops/agent/`, `src/clubops/holidays.py` |
 | Learning | Chat teaching, the after-event form and uploaded documents become proposed facts in Review; invented quotes dropped; hidden instructions flagged; old documents flagged; expense forms become a price list | `src/clubops/learning/` |
 | Backend API | Google sign-in, events, agent runs, plan approval, tasks, calendar items, knowledge, review, cabinet, handover, usage | `src/clubops/api/`, [`docs/api.md`](docs/api.md) |
