@@ -40,6 +40,22 @@ Cabinet ──> Web app (Christophe) ──API──> Backend (Tatiana)
 3. **Complete the loop:** handover (C-19), new-club setup (C-21), daily check (J-11), API (T-22), deploy (C-18); frontend connects (C-13, C-14); calendar on the server (J-09).
 4. **Prove it:** pilot event (T-32), final evaluation (T-26), evaluation in CI (C-22), docs, poster, demo, grader check (T-27, C-29, C-30, J-18, C-28).
 
+## Schedule to the deadline (set 6 November)
+
+Owners as in `TASKS.md`. Blockers of the final evaluation are marked **(blocker)**; if one is late by 3 days, Tatiana takes it or cuts it.
+
+| When | What | Tasks |
+|---|---|---|
+| 6 - 8 Nov | Review the Running Club's 161 learned facts on the sheet; merge open PRs | T-09 |
+| 9 Nov | ASME starter pack in date order, leak check against its labels | T-44 |
+| 9 - 10 Nov | Proposal draft and chatbot ready **(blocker)**; their test runners **(blocker)** | J-12, J-15, J-17, J-19 |
+| 10 Nov | AUB rules updated from OSA's latest rules (or kept as they are), each with the date it started; one practice run on 5 events, both start settings | T-08, T-26 |
+| 11 Nov | **ASME onboarding run:** ASME starts empty, gets its documents in date order; after each one, learning cost (MLflow `kind=learning`) and its later events planned (approvals caught, false alarms, time) = the learning curve | T-44, J-20 |
+| 12 - 18 Nov | Handover sessions with 8 volunteers | T-33 |
+| 19 - 22 Nov | Final evaluation, frozen, 3 runs per system, tracked in MLflow | T-26 |
+| 23 - 27 Nov | Report, poster, demo, evidence | T-27, J-18, C-28, T-29 |
+| 28 - 30 Nov | Buffer and submission | all |
+
 ## Rubric coverage (target 100/100 + bonus)
 
 Each row says what the grader must find, where it will be, and which tasks produce it. Keep [`rubric-map.md`](rubric-map.md) pointing at the real files as they appear.

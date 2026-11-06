@@ -117,3 +117,39 @@ def test_whatsapp_system_lines_are_dropped_before_learning() -> None:
     out = clean_whatsapp(chat)
     assert "sea gate" in out and "continued line" in out
     assert "joined" not in out and "omitted" not in out and "encrypted" not in out
+
+
+def test_learning_cost_and_counts_are_tracked_without_club_text(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.seed_club as seed
+
+    logged: list[tuple[str, dict[str, object], dict[str, float], dict[str, str]]] = []
+
+    class Recorder:
+        def log_run(
+            self,
+            name: str,
+            params: dict[str, object],
+            metrics: dict[str, float],
+            tags: dict[str, str],
+            tables: dict[str, str],
+        ) -> None:
+            logged.append((name, dict(params), dict(metrics), dict(tags)))
+
+    monkeypatch.setattr(seed, "tracker", lambda experiment: Recorder())
+    chat = tmp_path / "chat.txt"
+    chat.write_text(CHAT)
+    args = argparse.Namespace(
+        club="running-club",
+        data_dir=tmp_path / "app",
+        source=[f"{chat}:chat_message"],
+        time_budget=999.0,
+        track="onboarding",
+        tag=["step=1"],
+    )
+    learn(args, fake_client(tmp_path), settings(tmp_path, ModelMode.LIVE))
+    [(name, params, metrics, tags)] = logged
+    assert name == "learn running-club" and tags == {"kind": "learning", "step": "1"}
+    assert metrics["pieces"] == 1 and metrics["facts"] == 1 and metrics["cost_usd"] > 0
+    assert "Green Field" not in json.dumps([params, tags])  # ids, hashes and counts only

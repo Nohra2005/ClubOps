@@ -36,9 +36,10 @@ from clubops.api.security import MemberStore
 from clubops.config import Settings, load_settings
 from clubops.contracts.common import SourceKind, SourceRef, Untrusted
 from clubops.contracts.knowhow import CaptureRequest, Kind, KnowHowProposal, Scope, VerifyDecision, VerifyRequest
+from clubops.evaluation.tracking import file_hash, tracker
 from clubops.knowhow.backends import open_club_store_backend
 from clubops.knowhow.store import KnowHowStore, rescoped
-from clubops.learning.capture import MAX_SOURCE_CHARS, Learner
+from clubops.learning.capture import EXTRACT_VERSION, MATCH_VERSION, MAX_SOURCE_CHARS, Learner
 from clubops.model.client import ModelClient
 
 SHEET_COLUMNS = [
@@ -116,6 +117,7 @@ def learn(args: argparse.Namespace, client: ModelClient | None = None, settings:
     store = KnowHowStore(open_club_store_backend(args.data_dir, args.club))
     learner = Learner(client or ModelClient(settings), store)
     started = time.monotonic()
+    before = (len(done), facts, dropped, cost)
     try:
         for spec in args.source:
             path, kind = parse_source(spec)
@@ -128,6 +130,9 @@ def learn(args: argparse.Namespace, client: ModelClient | None = None, settings:
                     continue
                 if time.monotonic() - started > args.time_budget:
                     print(f"paused: {len(done)} pieces done, {facts} facts, ${cost:.4f}")
+                    _log_learning(
+                        args, settings, before, (len(done), facts, dropped, cost), started=started, status="paused"
+                    )
                     return
                 ref = SourceRef(kind=kind, source_id=path.stem, locator=f"part {i + 1}", observed_at=datetime.now(UTC))
                 budget = settings.new_budget()
@@ -144,8 +149,49 @@ def learn(args: argparse.Namespace, client: ModelClient | None = None, settings:
                     json.dumps({"done": done, "proposals": facts, "dropped": dropped, "cost": str(cost)})
                 )
         print(f"all done: {len(done)} pieces, {facts} facts sent to Review, {dropped} dropped, ${cost:.4f}")
+        _log_learning(args, settings, before, (len(done), facts, dropped, cost), started=started, status="done")
     finally:
         store.close()
+
+
+def _log_learning(
+    args: argparse.Namespace,
+    settings: Settings,
+    before: tuple[int, int, int, Decimal],
+    after: tuple[int, int, int, Decimal],
+    *,
+    started: float,
+    status: str,
+) -> None:
+    """One MLflow run per learn command (``--track``): what this chunk read and what it cost (D-94).
+    Counts and costs only, never club text. Totals so far are logged too, for the onboarding curve."""
+    track = tracker(getattr(args, "track", None))
+    pieces_now = after[0] - before[0]
+    facts_now, cost_now = after[1] - before[1], after[3] - before[3]
+    params = {
+        "club": args.club,
+        "model": settings.model or "unset",
+        "extract_version": EXTRACT_VERSION,
+        "match_version": MATCH_VERSION,
+        "mode": settings.mode.value,
+        "sources": ",".join(parse_source(s)[0].name for s in args.source),
+        "sources_sha": ",".join(file_hash(parse_source(s)[0]) for s in args.source),
+        "status": status,
+    }
+    metrics = {
+        "pieces": pieces_now,
+        "facts": facts_now,
+        "dropped": after[2] - before[2],
+        "cost_usd": float(cost_now),
+        "cost_per_piece_usd": float(cost_now) / max(pieces_now, 1),
+        "cost_per_fact_usd": float(cost_now) / max(facts_now, 1),
+        "seconds": time.monotonic() - started,
+        "total_pieces": after[0],
+        "total_facts": after[1],
+        "total_cost_usd": float(after[3]),
+    }
+    tags = dict(t.split("=", 1) for t in getattr(args, "tag", []) or [])
+    track.log_run(f"learn {args.club}", params, metrics, {"kind": "learning", **tags}, {})
 
 
 def _card(p: KnowHowProposal, store: KnowHowStore) -> dict[str, str]:
@@ -251,6 +297,8 @@ def main() -> None:
             p.add_argument(
                 "--time-budget", type=float, default=float("inf"), help="stop after N seconds; rerun to resume"
             )
+            p.add_argument("--track", metavar="EXPERIMENT", default=None, help="log cost and counts to MLflow")
+            p.add_argument("--tag", action="append", default=[], metavar="KEY=VALUE", help="e.g. step=2")
         if name == "sheet":
             p.add_argument("--out", type=Path, required=True)
         if name == "apply":
