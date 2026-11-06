@@ -234,6 +234,13 @@ def test_an_unreadable_model_answer_is_a_failed_step_not_a_crash(memory: KnowHow
     assert state.run.status is RunStatus.DONE and state.run.steps_used == 6
 
 
+def test_the_model_is_told_why_its_last_answer_was_rejected(memory: KnowHowStore, directory: Directory) -> None:
+    bad = CapabilityError(ErrorCode.MALFORMED_MODEL_OUTPUT, "model answer did not match NextStep: facts.venue: bad")
+    script = Script(bad, *full_plan())
+    planner(memory, directory, script).start(request(), "run-k3")
+    assert "your last answer was rejected (facts.venue: bad)" in script.prompts[1]
+
+
 def test_when_the_model_cannot_be_reached_the_run_fails_cleanly(memory: KnowHowStore, directory: Directory) -> None:
     script = Script(CapabilityError(ErrorCode.UPSTREAM_TIMEOUT, "slow"))
     state = planner(memory, directory, script).start(request(), "run-l3")

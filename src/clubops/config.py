@@ -38,6 +38,9 @@ class Settings:
     mode: ModelMode
     recordings_dir: Path
     trace_path: Path
+    # How hard a "thinking" model may think before answering: low keeps steps fast and cheap (F-161).
+    # Empty = don't send it (for providers without the setting).
+    reasoning_effort: str | None = "low"
 
     def new_budget(self) -> Budget:
         """A fresh per-plan budget with the configured limits."""
@@ -84,4 +87,5 @@ def load_settings(env: dict[str, str] | None = None, dotenv: Path = Path(".env")
         mode=ModelMode(get("CLUBOPS_MODEL_MODE") or ModelMode.REPLAY.value),
         recordings_dir=Path(get("CLUBOPS_RECORDINGS_DIR", "eval/recordings") or "eval/recordings"),
         trace_path=Path(get("CLUBOPS_TRACE_PATH", "traces/clubops.jsonl") or "traces/clubops.jsonl"),
+        reasoning_effort=values.get("CLUBOPS_REASONING_EFFORT", "low") or None,
     )

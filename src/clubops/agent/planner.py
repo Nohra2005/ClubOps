@@ -49,7 +49,7 @@ from clubops.model.budget import Budget
 from clubops.model.client import ModelClient, ModelRequest
 from clubops.redaction import redact
 
-PROMPT_VERSION = "planner-v2"
+PROMPT_VERSION = "planner-v3"
 MAX_NOTES = 12
 
 
@@ -122,7 +122,8 @@ class Decide(Protocol):
 SYSTEM = """You plan events for an AUB student club inside ClubOps. At each turn choose ONE next step.
 Tools:
 - update-event: record event facts the user gave (date/time with +03:00, venue, audience, prizes, food...).
-  Never guess a fact; leave unknown ones out.
+  Never guess a fact; leave unknown ones out. If only the day is known, record start as that day at
+  00:00+03:00: deadlines only need the day, so don't ask for the time.
 - search-memory: look up the club's approved know-how (rules, contacts, lessons) and similar past events
   with a few words.
 - check-rules: check which AUB rules apply to the event as known now.
@@ -146,7 +147,7 @@ class ModelDecider:
     def __call__(self, prompt: str, budget: Budget) -> NextStep:
         step, _usage = self.client.complete(
             ModelRequest(
-                prompt_version=self.version, system=SYSTEM, user=prompt, max_tokens=600, temperature=self.temperature
+                prompt_version=self.version, system=SYSTEM, user=prompt, max_tokens=1200, temperature=self.temperature
             ),
             NextStep,
             budget,
@@ -278,6 +279,10 @@ class Planner:
                     state = self._step(
                         state, "think", "Couldn't read the model's answer; trying again", StepState.FAILED
                     )
+                    # Tell the model what was wrong, so the retry can fix it instead of repeating it (F-160).
+                    why = err.message.split(": ", 1)[-1]
+                    note = f"your last answer was rejected ({why}); use only the fields and values in the schema"
+                    state = state.model_copy(update={"notes": [*state.notes, note]})
                     continue
                 state = self._step(state, "think", "ClubOps couldn't reach the model", StepState.FAILED)
                 return self._with_run(state, status=RunStatus.FAILED)
@@ -336,7 +341,10 @@ class Planner:
                     raise Refused("Check the rules for the latest event details first")
                 outcome = plan_backward(PlanRequest(spec=spec, rules=state.rules, today=state.today))
                 if outcome.data is None:
-                    raise Refused("Need the event date to set due dates")
+                    raise Refused(
+                        "Need the event day: record it with update-event as start "
+                        "(YYYY-MM-DDT00:00:00+03:00 if the time is unknown)"
+                    )
                 plan, moved = move_off_holidays(outcome.data, state.today)
                 note = f"plan: {len(plan.tasks)} tasks"
                 if moved:

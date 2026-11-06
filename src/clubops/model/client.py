@@ -133,8 +133,18 @@ class ModelClient:
             "messages": request.messages(),
             "temperature": request.temperature,
             "max_tokens": request.max_tokens,
-            "response_format": {"type": "json_object"},
+            # The provider is given the exact answer shape, so the model fills our fields instead of
+            # inventing its own (seen on 2026-11-05 with mid-priced models, F-160). Validation below still decides.
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {"name": output.__name__, "schema": output.model_json_schema(), "strict": False},
+            },
         }
+        if s.reasoning_effort:
+            body["reasoning"] = {"effort": s.reasoning_effort}
+        if "openrouter.ai" in s.base_url:
+            # Club text is redacted, but still: only providers that don't keep or train on prompts (D-88).
+            body["provider"] = {"data_collection": "deny"}
         headers = {"Authorization": f"Bearer {s.api_key.get_secret_value()}"}
         try:
             with httpx.Client(transport=self._transport, timeout=self._timeout_s) as http:
@@ -175,9 +185,15 @@ class ModelClient:
     def _parse(text: str, output: type[T], usage: Usage) -> T:
         try:
             return output.model_validate(json.loads(_strip_fences(text)))
-        except (json.JSONDecodeError, ValidationError) as exc:
+        except json.JSONDecodeError as exc:
+            raise CapabilityError(
+                ErrorCode.MALFORMED_MODEL_OUTPUT, f"model answer did not match {output.__name__}: not JSON", usage=usage
+            ) from exc
+        except ValidationError as exc:
+            first = exc.errors()[0]
+            where = ".".join(str(part) for part in first["loc"]) or "answer"
             raise CapabilityError(
                 ErrorCode.MALFORMED_MODEL_OUTPUT,
-                f"model answer did not match {output.__name__}",
+                f"model answer did not match {output.__name__}: {where}: {first['msg']}"[:200],
                 usage=usage,
             ) from exc

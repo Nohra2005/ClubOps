@@ -18,7 +18,7 @@ import csv
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -77,6 +77,7 @@ def truth_codes(label: str) -> frozenset[str]:
 
 
 _DAY = re.compile(r"(\d{4})-(\d{2})(?:-(\d{2}))?")
+PLANNING_LEAD = timedelta(days=30)  # the club starts planning about a month before (deadlines are then reachable)
 UNKNOWN_DATE = date(2026, 3, 16)  # mid-semester stand-in when a past event's date was never recorded
 
 
@@ -184,7 +185,7 @@ def model_baseline(client: ModelClient, rulebook_text: str | None, run: int = 1)
         budget = Budget(max_usd=Decimal("0.05"), max_steps=1)
         try:
             answer, usage = client.complete(
-                ModelRequest(version, system, f"<event>\n{case.description}\n</event>", max_tokens=600),
+                ModelRequest(version, system, f"<event>\n{case.description}\n</event>", max_tokens=1200),
                 CodesAnswer,
                 budget,
             )
@@ -220,7 +221,8 @@ class ClubOpsSystem:
         )
         try:
             state = planner.start(
-                PlanEventRequest(club_id="eval-club", description=words, today=case.on), f"run-{case.case_id.lower()}"
+                PlanEventRequest(club_id="eval-club", description=words, today=case.on - PLANNING_LEAD),
+                f"run-{case.case_id.lower()}",
             )
             for _ in range(3):  # the simulated user repeats what it knows; the agent gets 3 answers at most
                 if state.run.status.value != "waiting_for_user":
