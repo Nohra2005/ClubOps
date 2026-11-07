@@ -60,7 +60,7 @@ verified runs and remaining bonus work are tracked in [the engineering evidence]
 
 Updated 6 November 2026. Deadline: 30 November 2026. Live task list: [`TASKS.md`](TASKS.md) (`make tasks`).
 
-**Built and tested** (`make check`: lint, strict types, 476 tests, contract drift, dependency audit)
+**Built and tested** (`make check`: lint, strict types, 498 tests, contract drift, dependency audit)
 
 | Part | What works | Where |
 |---|---|---|

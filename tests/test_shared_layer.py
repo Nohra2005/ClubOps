@@ -28,6 +28,8 @@ AUB_FACT = {
     "title": "West Hall rooms are booked through OSA",
     "statement": "Book West Hall rooms through the OSA form at least five days ahead.",
     "quote": "go through the OSA form at least five days ahead",
+    "lasting": "lasting",
+    "stated_as": "fact",
     "source": 0,
     "about": "aub",
     "details": {"goal": "Book a West Hall room", "steps": [{"order": 1, "action": "Fill the OSA form"}]},

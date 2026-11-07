@@ -87,7 +87,7 @@ Reference documents:
 - Needs: T-12, T-18
 - What: Teach ClubOps the club's main tips, contacts and sponsors (president notes; old-chat import only if time allows).
 - Done when: Knowledge shows the club's core facts, approved.
-- Progress (2026-11-06): `scripts/seed_club.py` read the club's chats and files (107 pieces, $0.14): 161 facts wait in Review. Tatiana marks them on the review sheet (approve / reject / edit, and whether each is shared with all clubs), then `apply`.
+- Progress (2026-11-06): `scripts/seed_club.py` read the club's chats and files (107 pieces, $0.14): 161 facts wait in Review. Tatiana marks them on the review sheet (approve / reject / edit, and whether each is shared with all clubs), then `apply`. The first sheet held many one-time arrangements and personal opinions (F-167): learning now drops them (D-95), so the club is learned again on a fresh store before the review.
 
 ### T-10 Model client
 - Owner: tatiana
