@@ -142,7 +142,7 @@ def test_code_settles_what_the_facts_say() -> None:
     assert v["food"] is Applicability.NOT_APPLICABLE
     assert v["major-event"] is Applicability.NOT_APPLICABLE
     assert v["room-booking"] is Applicability.NOT_APPLICABLE
-    assert v["poster-approval"] is Applicability.UNCERTAIN  # only the description can tell
+    assert v["poster-approval"] is Applicability.APPLIES  # every club event is promoted on Instagram (D-96)
 
 
 def test_an_event_with_no_expenses_needs_no_expense_form() -> None:
@@ -233,7 +233,8 @@ def test_the_model_cannot_overrule_the_facts_or_add_rules(tmp_path: Path) -> Non
 def test_when_the_model_fails_the_rules_stay_not_sure(tmp_path: Path) -> None:
     j, _ = judge(tmp_path, "this is not json")
     v = {x.item_id: x.verdict for x in j(EVENT, verified_rules()).verdicts}
-    assert v["kh-aub-poster-approval"] is Applicability.UNCERTAIN
+    assert v["kh-aub-logo-use"] is Applicability.UNCERTAIN  # depends on the description, so only the model can tell
+    assert v["kh-aub-poster-approval"] is Applicability.APPLIES  # settled by code: every event is promoted (D-96)
 
 
 def test_no_model_call_when_the_money_is_spent(tmp_path: Path) -> None:

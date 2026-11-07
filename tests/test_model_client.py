@@ -22,6 +22,11 @@ from clubops.contracts.common import ErrorCode
 from clubops.model import Budget, ModelClient, ModelRequest
 
 
+@pytest.fixture(autouse=True)
+def _no_waiting(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("clubops.model.client.time.sleep", lambda _seconds: None)
+
+
 class Verdict(BaseModel):
     applies: bool
     reason: str
@@ -168,6 +173,44 @@ def test_provider_timeout_is_an_upstream_timeout(tmp_path: Path) -> None:
     assert exc.value.code is ErrorCode.UPSTREAM_TIMEOUT
 
 
+@pytest.mark.parametrize("trouble", [503, 429, "timeout"])
+def test_a_passing_provider_problem_is_retried(tmp_path: Path, trouble: object) -> None:
+    calls = {"n": 0}
+
+    def flaky(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        if calls["n"] == 1:
+            if trouble == "timeout":
+                raise httpx.ReadTimeout("too slow", request=request)
+            return httpx.Response(int(str(trouble)), json={"error": "busy"})
+        return httpx.Response(
+            200,
+            json={"choices": [{"message": {"content": GOOD}}], "usage": {"prompt_tokens": 10, "completion_tokens": 5}},
+        )
+
+    answer, _ = ModelClient(settings(tmp_path, ModelMode.LIVE), transport=httpx.MockTransport(flaky)).complete(
+        REQUEST, Verdict
+    )
+    assert answer.applies is True
+    assert calls["n"] == 2
+
+
+def test_gemini_gets_the_thinking_setting_as_a_top_level_field(tmp_path: Path) -> None:
+    transport, seen = provider()
+    gemini = settings(tmp_path, ModelMode.LIVE, base_url="https://generativelanguage.googleapis.com/v1beta/openai")
+    ModelClient(gemini, transport=transport).complete(REQUEST, Verdict)
+    body = json.loads(seen[0].content)
+    assert body["reasoning_effort"] == "low"
+    assert "reasoning" not in body
+
+
+def test_a_refused_key_is_not_retried(tmp_path: Path) -> None:
+    transport, seen = provider(status=401)
+    with pytest.raises(CapabilityError):
+        ModelClient(settings(tmp_path, ModelMode.LIVE), transport=transport).complete(REQUEST, Verdict)
+    assert len(seen) == 1
+
+
 def test_unreachable_provider_is_an_upstream_error(tmp_path: Path) -> None:
     def down(request: httpx.Request) -> httpx.Response:
         raise httpx.ConnectError("no route", request=request)
@@ -310,3 +353,34 @@ def test_a_refused_schema_is_retried_as_plain_json_with_the_shape_in_the_instruc
     seen.clear()
     client.complete(dataclasses.replace(REQUEST, schema_in_prompt=True, prompt_version="v-direct"), Verdict)
     assert [b["response_format"]["type"] for b in seen] == ["json_object"]  # no request that is refused first
+
+
+def test_debug_log_records_every_attempt_and_stays_off_by_default(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    log_file = tmp_path / "debug.jsonl"
+    calls = {"n": 0}
+
+    def flaky(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return httpx.Response(503, json={"error": "busy"})
+        return httpx.Response(
+            200,
+            json={"choices": [{"message": {"content": GOOD}}], "usage": {"prompt_tokens": 10, "completion_tokens": 5}},
+        )
+
+    client = ModelClient(settings(tmp_path, ModelMode.LIVE), transport=httpx.MockTransport(flaky))
+    client.complete(REQUEST, Verdict)
+    assert not log_file.exists()
+
+    calls["n"] = 0
+    monkeypatch.setenv("CLUBOPS_DEBUG_LOG", str(log_file))
+    client.complete(REQUEST, Verdict)
+    lines = [json.loads(line) for line in log_file.read_text().splitlines()]
+    assert [(x["kind"], x.get("status")) for x in lines] == [
+        ("http_attempt", 503),
+        ("http_attempt", 200),
+        ("model_ok", None),
+    ]
+    assert "sk-test-secret" not in log_file.read_text()

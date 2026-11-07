@@ -25,6 +25,7 @@ from __future__ import annotations
 import csv
 import re
 import time
+import traceback
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
@@ -34,6 +35,7 @@ from typing import Any
 
 from pydantic import Field
 
+from clubops import debuglog
 from clubops.agent.planner import Planner, RunState
 from clubops.contracts.agent import PlanEventRequest
 from clubops.contracts.common import Contract, SourceKind, SourceRef, Untrusted
@@ -291,10 +293,25 @@ class ClubOpsSystem:
                 else:
                     break
         except Exception as err:
+            debuglog.log(
+                "case",
+                case=case.case_id,
+                status="exception",
+                error=repr(err)[:300],
+                trace=traceback.format_exc()[-1500:],
+            )
             return Prediction(frozenset(), error=type(err).__name__)
         finally:
             store.close()
             directory.close()
+        debuglog.log(
+            "case",
+            case=case.case_id,
+            status=str(state.run.status),
+            steps=[
+                f"{s.n} {s.tool} [{s.state}] model={s.model_ms}ms tool={s.tool_ms}ms: {s.text}" for s in state.run.steps
+            ],
+        )
         return self._codes(state)
 
     def _codes(self, state: RunState) -> Prediction:

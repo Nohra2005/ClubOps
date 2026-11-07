@@ -202,10 +202,14 @@ RULES = [
         "poster-approval",
         "Posters and flyers need the OSA stamp",
         "Posters need OSA approval and a stamp before posting (official boards only, max A3, 75 per event); "
-        "flyer distribution needs approval in advance. Sponsor logos max 3 x 3 cm.",
-        ["publicity"],
+        "flyer distribution needs approval in advance. Sponsor logos max 3 x 3 cm. Every club event is "
+        "promoted on the club's Instagram, and any Instagram post counts as a poster: attach it to the proposal.",
+        ["always"],
         [req("poster-approval", "approval", "OSA approval and stamp for posters and flyers", TWO_WEEKS, True)],
-        [(POSTERS, "OSA approval + stamp before posting; submitted to West Hall 112.")],
+        [
+            (POSTERS, "OSA approval + stamp before posting; submitted to West Hall 112."),
+            (PRESIDENT, "Every club event is promoted on Instagram; any Instagram post should be in the proposal."),
+        ],
         ["publicity"],
     ),
     rule(
