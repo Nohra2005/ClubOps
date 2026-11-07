@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from dataclasses import dataclass
 from decimal import Decimal
 from typing import Any, TypeVar
@@ -25,6 +26,7 @@ from typing import Any, TypeVar
 import httpx
 from pydantic import BaseModel, ValidationError
 
+from clubops import debuglog
 from clubops.capabilities.runner import CapabilityError, Usage
 from clubops.config import ModelMode, Settings
 from clubops.contracts.common import ErrorCode
@@ -85,13 +87,17 @@ def provider_schema(schema: Any) -> Any:
     return out
 
 
+# Seconds to wait before each retry of a call that failed for a passing reason.
+RETRY_PAUSES_S = (2.0, 5.0)
+
+
 class ModelClient:
     def __init__(
         self,
         settings: Settings,
         *,
         transport: httpx.BaseTransport | None = None,
-        timeout_s: float = 30.0,
+        timeout_s: float = 60.0,
     ) -> None:
         self.settings = settings
         self.recordings = RecordingStore(settings.recordings_dir)
@@ -124,12 +130,34 @@ class ModelClient:
                 budget.charge(usage)
             return self._parse(saved.text, output, usage), usage
 
-        if budget is not None:
-            budget.check()
-        text, usage = self._call(request, output)
-        if budget is not None:
-            budget.charge(usage)
-        parsed = self._parse(text, output, usage)
+        started = time.monotonic()
+        text = ""
+        try:
+            if budget is not None:
+                budget.check()
+            text, usage = self._call(request, output)
+            if budget is not None:
+                budget.charge(usage)
+            parsed = self._parse(text, output, usage)
+        except CapabilityError as err:
+            debuglog.log(
+                "model_error",
+                model=model,
+                prompt_version=request.prompt_version,
+                code=str(err.code),
+                message=err.message,
+                seconds=round(time.monotonic() - started, 2),
+                answer_head=text[:300],
+            )
+            raise
+        debuglog.log(
+            "model_ok",
+            model=model,
+            prompt_version=request.prompt_version,
+            seconds=round(time.monotonic() - started, 2),
+            tokens_in=usage.tokens_in,
+            tokens_out=usage.tokens_out,
+        )
         if self.settings.mode is ModelMode.RECORD:
             self.recordings.put(
                 Recording(
@@ -175,7 +203,10 @@ class ModelClient:
             },
         }
         if s.reasoning_effort:
-            body["reasoning"] = {"effort": s.reasoning_effort}
+            if "generativelanguage.googleapis.com" in s.base_url:
+                body["reasoning_effort"] = s.reasoning_effort  # Gemini's OpenAI endpoint: top-level field
+            else:
+                body["reasoning"] = {"effort": s.reasoning_effort}
         if "openrouter.ai" in s.base_url:
             # Club text is redacted, but still: only providers that don't keep or train on prompts (D-88).
             body["provider"] = {"data_collection": "deny"}
@@ -219,14 +250,43 @@ class ModelClient:
         return text, usage
 
     def _post(self, body: dict[str, Any], headers: dict[str, str]) -> httpx.Response:
-        try:
-            with httpx.Client(transport=self._transport, timeout=self._timeout_s) as http:
-                return http.post(f"{self.settings.base_url}/chat/completions", json=body, headers=headers)
-        except httpx.TimeoutException as exc:
-            raise CapabilityError(ErrorCode.UPSTREAM_TIMEOUT, "model provider timed out") from exc
-        except httpx.HTTPError as exc:
-            reason = f"could not reach the model provider: {type(exc).__name__}"
-            raise CapabilityError(ErrorCode.UPSTREAM_ERROR, reason) from exc
+        """Send the request. Brief trouble at the provider (timeout, rate limit, 5xx) is retried twice:
+        one slow answer must not fail a whole plan. Anything else (bad key, bad request) fails at once."""
+        for attempt, pause in enumerate((*RETRY_PAUSES_S, None), start=1):
+            began = time.monotonic()
+            try:
+                with httpx.Client(transport=self._transport, timeout=self._timeout_s) as http:
+                    response = http.post(f"{self.settings.base_url}/chat/completions", json=body, headers=headers)
+            except httpx.TimeoutException as exc:
+                debuglog.log(
+                    "http_attempt", attempt=attempt, outcome="timeout", seconds=round(time.monotonic() - began, 2)
+                )
+                if pause is None:
+                    raise CapabilityError(ErrorCode.UPSTREAM_TIMEOUT, "model provider timed out") from exc
+            except httpx.HTTPError as exc:
+                debuglog.log(
+                    "http_attempt",
+                    attempt=attempt,
+                    outcome=type(exc).__name__,
+                    error=str(exc)[:200],
+                    seconds=round(time.monotonic() - began, 2),
+                )
+                if pause is None:
+                    reason = f"could not reach the model provider: {type(exc).__name__}"
+                    raise CapabilityError(ErrorCode.UPSTREAM_ERROR, reason) from exc
+            else:
+                debuglog.log(
+                    "http_attempt",
+                    attempt=attempt,
+                    outcome="http",
+                    status=response.status_code,
+                    seconds=round(time.monotonic() - began, 2),
+                    body_head=response.text[:300] if response.status_code >= 400 else "",
+                )
+                if pause is None or not (response.status_code == 429 or response.status_code >= 500):
+                    return response
+            time.sleep(pause)
+        raise AssertionError("unreachable")  # the last pass above always returns or raises
 
     @staticmethod
     def _parse(text: str, output: type[T], usage: Usage) -> T:

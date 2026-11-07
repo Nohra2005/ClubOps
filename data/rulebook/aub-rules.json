@@ -394,11 +394,11 @@
   "scope": "aub",
   "club_id": null,
   "title": "Posters and flyers need the OSA stamp",
-  "statement": "Posters need OSA approval and a stamp before posting (official boards only, max A3, 75 per event); flyer distribution needs approval in advance. Sponsor logos max 3 x 3 cm.",
+  "statement": "Posters need OSA approval and a stamp before posting (official boards only, max A3, 75 per event); flyer distribution needs approval in advance. Sponsor logos max 3 x 3 cm. Every club event is promoted on the club's Instagram, and any Instagram post counts as a poster: attach it to the proposal.",
   "details": {
    "kind": "rule",
    "triggers": [
-    "publicity"
+    "always"
    ],
    "requirements": [
     {
@@ -421,11 +421,18 @@
     "locator": "aub.edu.lb/SAO/activities/Documents/poster-policy.pdf",
     "quote": "OSA approval + stamp before posting; submitted to West Hall 112.",
     "observed_at": "2026-10-12T12:00:00+03:00"
+   },
+   {
+    "kind": "user_input",
+    "source_id": "running-club-president-2026-10",
+    "locator": "stated by the Running Club president",
+    "quote": "Every club event is promoted on Instagram; any Instagram post should be in the proposal.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
    }
   ],
   "support": {
    "events": [],
-   "source_count": 1
+   "source_count": 2
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
