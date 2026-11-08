@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import re
 import sys
 import time
@@ -156,6 +157,8 @@ def parse_source(spec: str) -> tuple[Path, SourceKind]:
 
 def learn(args: argparse.Namespace, client: ModelClient | None = None, settings: Settings | None = None) -> None:
     settings = settings or load_settings()
+    # A learning failure must never be invisible again (D-98): record every attempt unless asked otherwise.
+    os.environ.setdefault("CLUBOPS_DEBUG_LOG", str(args.data_dir / "learn-debug.jsonl"))
     state_path = args.data_dir / f"seed-{args.club}.json"
     saved = json.loads(state_path.read_text()) if state_path.exists() else {}
     done: list[str] = list(saved.get("done", []))

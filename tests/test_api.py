@@ -271,7 +271,7 @@ def test_only_the_president_changes_the_cabinet(client: TestClient) -> None:
 def test_the_rulebook_shows_in_knowledge(client: TestClient) -> None:
     sign_in(client)
     rules = client.get("/api/knowledge?tab=rules").json()
-    assert len(rules) == 25 and all(r["scope"] == "aub" for r in rules)
+    assert len(rules) == 27 and all(r["scope"] == "aub" for r in rules)
     one = client.get("/api/knowledge/kh-aub-proposal").json()
     assert one["lead_time_days"] == 10 and one["sources"][0]["authority"] == "official_document"
     assert client.get("/api/knowledge?q=sponsor").json()
