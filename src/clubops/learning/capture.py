@@ -303,6 +303,7 @@ class Learner:
         prepared = [self._prepare(src, today) for src in request.sources]
         candidates: list[Candidate] = list(extra or [])
         skipped = 0
+        failed = 0
         texts = [p for p in prepared if p.text.strip()]
         if texts and self.client is not None:
             try:
@@ -318,8 +319,9 @@ class Learner:
                     budget,
                 )
             except CapabilityError:
+                # Nothing was learned here. That is not "off topic": the caller must retry it (F-168).
                 extraction = Extraction(facts=[])
-                skipped = len(texts)
+                failed = len(texts)
             for fact in extraction.facts:
                 candidate = self._candidate(fact, prepared, request, today)
                 if candidate is None:
@@ -328,7 +330,12 @@ class Learner:
                     candidates.append(candidate)
         candidates = self._dedupe(candidates)
         proposals = self._match(candidates, request.club_id, budget)
-        return CaptureResult(proposals=proposals, sources_seen=len(request.sources), sources_skipped=skipped)
+        return CaptureResult(
+            proposals=proposals,
+            sources_seen=len(request.sources),
+            sources_skipped=skipped,
+            sources_failed=failed,
+        )
 
     def learn(
         self, request: CaptureRequest, today: date, budget: Budget | None = None, extra: list[Candidate] | None = None

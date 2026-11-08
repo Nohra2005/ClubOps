@@ -134,7 +134,9 @@ def test_hidden_instructions_are_flagged_and_not_followed(store: KnowHowStore, t
 
 def test_when_the_model_fails_nothing_is_proposed(store: KnowHowStore, tmp_path: Path) -> None:
     result = capture(store, tmp_path, Provider("not json at all"), BLK)
-    assert result.proposals == [] and result.sources_skipped == 1
+    assert result.proposals == []
+    assert result.sources_failed == 1  # the caller must retry it
+    assert result.sources_skipped == 0  # not "off topic": nothing was read at all (F-168)
 
 
 def test_an_old_document_is_flagged_as_maybe_outdated() -> None:

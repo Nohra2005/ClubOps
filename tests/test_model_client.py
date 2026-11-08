@@ -384,3 +384,22 @@ def test_debug_log_records_every_attempt_and_stays_off_by_default(
         ("model_ok", None),
     ]
     assert "sk-test-secret" not in log_file.read_text()
+
+
+def test_an_answer_cut_off_at_the_length_limit_says_so(tmp_path: Path) -> None:
+    def truncated(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "choices": [{"message": {"content": GOOD[:20]}, "finish_reason": "length"}],
+                "usage": {"prompt_tokens": 10, "completion_tokens": 5},
+            },
+        )
+
+    with pytest.raises(CapabilityError) as exc:
+        ModelClient(settings(tmp_path, ModelMode.LIVE), transport=httpx.MockTransport(truncated)).complete(
+            REQUEST, Verdict
+        )
+    assert exc.value.code is ErrorCode.MALFORMED_MODEL_OUTPUT
+    assert "cut off" in exc.value.message
+    assert exc.value.usage is not None and exc.value.usage.tokens_out == 5
