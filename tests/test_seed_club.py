@@ -17,6 +17,7 @@ from clubops.contracts.common import Role
 from clubops.contracts.knowhow import ItemStatus
 from clubops.knowhow.backends import open_club_store_backend
 from clubops.knowhow.store import KnowHowStore
+from clubops.learning.capture import MAX_SOURCE_CHARS
 from clubops.model.client import ModelClient
 from tests.test_model_client import settings
 
@@ -64,7 +65,13 @@ def test_learn_then_review_on_a_sheet_then_apply(tmp_path: Path) -> None:
     chat = tmp_path / "chat.txt"
     chat.write_text(CHAT)
     s = settings(tmp_path, ModelMode.LIVE)
-    args = argparse.Namespace(club="running-club", data_dir=data, source=[f"{chat}:chat_message"], time_budget=999.0)
+    args = argparse.Namespace(
+        club="running-club",
+        data_dir=data,
+        source=[f"{chat}:chat_message"],
+        time_budget=999.0,
+        piece_chars=MAX_SOURCE_CHARS,
+    )
     learn(args, fake_client(tmp_path), s)
     learn(args, fake_client(tmp_path), s)  # resumed: the finished piece is skipped, nothing learned twice
     state = json.loads((data / "seed-running-club.json").read_text())
@@ -147,6 +154,7 @@ def test_learning_cost_and_counts_are_tracked_without_club_text(
         data_dir=tmp_path / "app",
         source=[f"{chat}:chat_message"],
         time_budget=999.0,
+        piece_chars=MAX_SOURCE_CHARS,
         track="onboarding",
         tag=["step=1"],
     )
@@ -155,3 +163,27 @@ def test_learning_cost_and_counts_are_tracked_without_club_text(
     assert name == "learn running-club" and tags == {"kind": "learning", "step": "1"}
     assert metrics["pieces"] == 1 and metrics["facts"] == 1 and metrics["cost_usd"] > 0
     assert "Green Field" not in json.dumps([params, tags])  # ids, hashes and counts only
+
+
+BYLAWS = (
+    "Preamble\nClubs create opportunities for students.\n\n"
+    "ARTICLE I\nMembership\nClubs keep at least 30 members.\n\n"
+    "ARTICLE II\nMeetings\nOne General Assembly is held in the Fall.\n"
+)
+
+
+def test_a_document_is_split_on_its_own_headings() -> None:
+    out = pieces(BYLAWS, 90)
+    assert [p.split("\n")[0] for p in out] == ["Preamble", "ARTICLE I", "ARTICLE II"]
+    assert "".join(out) == BYLAWS  # nothing is lost
+
+
+def test_a_section_longer_than_the_size_still_gets_split() -> None:
+    out = pieces(BYLAWS, 40)
+    assert len(out) > 3 and "".join(out) == BYLAWS
+
+
+def test_a_chat_without_headings_is_split_by_line() -> None:
+    chat = "".join(f"line {i} of the group chat\n" for i in range(10))
+    out = pieces(chat, 60)
+    assert len(out) > 1 and "".join(out) == chat

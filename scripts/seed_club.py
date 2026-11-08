@@ -57,8 +57,21 @@ SHEET_COLUMNS = [
 ]
 
 
-def pieces(text: str, size: int = MAX_SOURCE_CHARS) -> list[str]:
-    """Split on line breaks into pieces of at most ``size`` characters (a longer single line is cut)."""
+# A heading starts a new section: "ARTICLE IV", "Section 3", "3. Membership", "## Title".
+_HEADING = re.compile(r"^\s*(?:#{1,6}\s|(?:article|section)\s+[ivxlc\d]+\b|\d{1,2}[.)]\s+\S)", re.IGNORECASE)
+
+
+def _tail(out: list[str], rest: str) -> None:
+    """Keep what is left over: on its own if it says anything, else joined to the piece before it, so that
+    the pieces always add back up to the whole text."""
+    if rest.strip():
+        out.append(rest)
+    elif rest and out:
+        out[-1] += rest
+
+
+def _by_lines(text: str, size: int) -> list[str]:
+    """Pack whole lines into pieces of at most ``size`` characters (a longer single line is cut)."""
     out: list[str] = []
     current = ""
     for raw in text.splitlines(keepends=True):
@@ -73,8 +86,43 @@ def pieces(text: str, size: int = MAX_SOURCE_CHARS) -> list[str]:
             out.append(current)
             current = ""
         current += line
-    if current.strip():
-        out.append(current)
+    _tail(out, current)
+    return out
+
+
+def sections(text: str) -> list[str]:
+    """The document's own sections: a new one starts at each heading line. A chat has no headings, so it
+    comes back whole and is split by line instead."""
+    out: list[str] = []
+    current = ""
+    for raw in text.splitlines(keepends=True):
+        if _HEADING.match(raw) and current.strip():
+            out.append(current)
+            current = ""
+        current += raw
+    _tail(out, current)
+    return out
+
+
+def pieces(text: str, size: int = MAX_SOURCE_CHARS) -> list[str]:
+    """Split into pieces of at most ``size`` characters, on the document's own headings where it has them.
+
+    A rule cut in half is a rule lost, so a section is kept whole wherever it fits (LMDX, arXiv 2309.10952,
+    chunks on boundaries that entities rarely cross); a section too long for one piece is split by line.
+    """
+    out: list[str] = []
+    current = ""
+    for part in sections(text):
+        if len(current) + len(part) > size:
+            if len(part) > size:  # the section alone does not fit, so this one is split by line
+                out.extend(_by_lines(current + part, size))
+                current = ""
+                continue
+            if current.strip():
+                out.append(current)
+                current = ""
+        current += part
+    _tail(out, current)
     return out
 
 
@@ -118,13 +166,14 @@ def learn(args: argparse.Namespace, client: ModelClient | None = None, settings:
     learner = Learner(client or ModelClient(settings), store)
     started = time.monotonic()
     before = (len(done), facts, dropped, cost)
+    unread = 0  # pieces the model could not be read for: not marked done, so a rerun retries them (F-168)
     try:
         for spec in args.source:
             path, kind = parse_source(spec)
             text = path.read_text(encoding="utf-8", errors="replace")
             if kind is SourceKind.CHAT_MESSAGE:
                 text = clean_whatsapp(text)
-            for i, piece in enumerate(pieces(text)):
+            for i, piece in enumerate(pieces(text, args.piece_chars)):
                 key = f"{path.name}#{i}"
                 if key in done:
                     continue
@@ -144,11 +193,16 @@ def learn(args: argparse.Namespace, client: ModelClient | None = None, settings:
                 cost += budget.spent_usd
                 facts += len(result.proposals)
                 dropped += result.sources_skipped
-                done.append(key)
+                if result.sources_failed:  # leave it out of ``done`` so a rerun retries it
+                    unread += 1
+                    print(f"could not read {key}: nothing learned from it")
+                else:
+                    done.append(key)
                 state_path.write_text(
                     json.dumps({"done": done, "proposals": facts, "dropped": dropped, "cost": str(cost)})
                 )
-        print(f"all done: {len(done)} pieces, {facts} facts sent to Review, {dropped} dropped, ${cost:.4f}")
+        note = f", {unread} pieces unread (rerun to retry, --piece-chars smaller if it repeats)" if unread else ""
+        print(f"all done: {len(done)} pieces, {facts} facts sent to Review, {dropped} dropped, ${cost:.4f}{note}")
         _log_learning(args, settings, before, (len(done), facts, dropped, cost), started=started, status="done")
     finally:
         store.close()
@@ -296,6 +350,12 @@ def main() -> None:
             p.add_argument("--source", action="append", required=True, metavar="FILE[:KIND]")
             p.add_argument(
                 "--time-budget", type=float, default=float("inf"), help="stop after N seconds; rerun to resume"
+            )
+            p.add_argument(
+                "--piece-chars",
+                type=int,
+                default=MAX_SOURCE_CHARS,
+                help="characters per piece; lower it for a rule-dense document whose answers are cut off",
             )
             p.add_argument("--track", metavar="EXPERIMENT", default=None, help="log cost and counts to MLflow")
             p.add_argument("--tag", action="append", default=[], metavar="KEY=VALUE", help="e.g. step=2")

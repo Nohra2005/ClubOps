@@ -1,5 +1,5 @@
 {
-  "$comment": "clubops 0.2.2 \u00b7 capability calendar-items 0.1.0 \u00b7 generated",
+  "$comment": "clubops 0.2.3 \u00b7 capability calendar-items 0.1.0 \u00b7 generated",
   "$defs": {
     "CalendarItem": {
       "additionalProperties": false,

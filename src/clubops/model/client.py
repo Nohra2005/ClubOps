@@ -87,6 +87,10 @@ def provider_schema(schema: Any) -> Any:
     return out
 
 
+# What a provider calls it when it stopped because the answer hit the length limit: OpenAI-style
+# "length", Anthropic-style "max_tokens", Gemini's "MAX_TOKENS" (compared lower-cased).
+TRUNCATED_STOPS = frozenset({"length", "max_tokens"})
+
 # Seconds to wait before each retry of a call that failed for a passing reason.
 RETRY_PAUSES_S = (2.0, 5.0)
 
@@ -232,7 +236,9 @@ class ModelClient:
 
         try:
             payload = response.json()
-            text = payload["choices"][0]["message"]["content"] or ""
+            choice = payload["choices"][0]
+            text = choice["message"]["content"] or ""
+            stop = str(choice.get("finish_reason") or "")
             tokens = payload.get("usage") or {}
             tokens_in = int(tokens.get("prompt_tokens", 0))
             tokens_out = int(tokens.get("completion_tokens", 0))
@@ -247,6 +253,15 @@ class ModelClient:
             tokens_out=tokens_out,
             cost_usd=self._cost(tokens_in, tokens_out),
         )
+        if stop.lower() in TRUNCATED_STOPS:
+            # The provider says it stopped at the answer-length limit, so the JSON is cut off. Say so, rather
+            # than the misleading "not JSON" that parsing it would raise (F-168).
+            raise CapabilityError(
+                ErrorCode.MALFORMED_MODEL_OUTPUT,
+                f"the model's answer was cut off at the {request.max_tokens}-token answer limit; "
+                "ask for less in one answer",
+                usage=usage,
+            )
         return text, usage
 
     def _post(self, body: dict[str, Any], headers: dict[str, str]) -> httpx.Response:
