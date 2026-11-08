@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from clubops.capabilities.runner import CapabilityError
 from clubops.contracts.common import Contract, ItemId, Slug, SourceKind, SourceRef, Untrusted
@@ -201,6 +201,24 @@ class ExtractedFact(Contract):
     source: int = Field(ge=0, description="index of the source the quote comes from")
     details: FlatDetails = Field(default_factory=FlatDetails, description="fill the fields of this fact's kind")
     tags: list[Slug] = Field(default_factory=list, max_length=5)
+
+    @field_validator("tags", mode="before")
+    @classmethod
+    def _tidy_tags(cls, value: object) -> object:
+        """Tags are only labels, so a tag the model wrote as "Article III" or "cabinet_roles" is tidied into a
+        slug rather than thrown away. Losing a whole piece of a document over the shape of a label is worse
+        than a tidied label (F-170)."""
+        if not isinstance(value, list):
+            return value
+        out: list[str] = []
+        for tag in value:
+            if not isinstance(tag, str):
+                continue
+            slug = re.sub(r"-{2,}", "-", re.sub(r"[^a-z0-9]+", "-", tag.lower())).strip("-")
+            if len(slug) > 1 and slug not in out:
+                out.append(slug[:64])
+        return out
+
     about: Literal["aub", "club"] = Field(
         default="club", description="aub: true for every AUB club; club: only about this club"
     )
@@ -312,7 +330,9 @@ class Learner:
                         EXTRACT_VERSION,
                         EXTRACT_SYSTEM,
                         self._extract_prompt(prepared),
-                        max_tokens=2500,
+                        # Room for the 20 facts the answer may hold: a rule-dense page needs far more than
+                        # a chat does, and an answer cut off here loses the whole piece (F-168).
+                        max_tokens=8000,
                         schema_in_prompt=True,
                     ),
                     Extraction,

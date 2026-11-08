@@ -39,7 +39,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -83,7 +83,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -133,7 +133,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -175,7 +175,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -218,7 +218,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -261,7 +261,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -304,7 +304,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -345,7 +345,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -386,7 +386,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -436,7 +436,89 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-communications-officer-materials",
+  "scope": "aub",
+  "club_id": null,
+  "title": "The Communications Officer owns the club's publicity",
+  "statement": "The Communications Officer designs or supervises posters, flyers and social media content, following the Student Announcements, Publicity, Marketing and Digital Media Policy, and is the club's liaison with the Communications Officer at the Office of Student Affairs.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "publicity"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "publicity-owner",
+     "kind": "restriction",
+     "name": "Promotional materials follow the publicity policy; the Communications Officer designs or supervises them"
+    }
+   ]
+  },
+  "tags": [
+   "publicity",
+   "comms-role"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "osa-clubs-societies-bylaws-2026",
+    "locator": "AUB OSA, Clubs & Societies Bylaws (2026)",
+    "quote": "Design or supervise the design of promotional materials (e.g., posters, flyers, social media content) in accordance with the Student Announcements, Publicity, Marketing and Digital Media Policy.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "verified",
+  "verified_by": "m-tatiana-nohra",
+  "verified_at": "2026-11-08T13:40:00+03:00",
+  "version": 1
+ },
+ {
+  "item_id": "kh-aub-records-within-one-week",
+  "scope": "aub",
+  "club_id": null,
+  "title": "Approved records go to OSA within one week",
+  "statement": "All key documentation and approved records must be submitted to the Department of Student Life & Activities within one week of approval.",
+  "details": {
+   "kind": "rule",
+   "triggers": [
+    "always"
+   ],
+   "requirements": [
+    {
+     "requirement_id": "records-to-osa",
+     "kind": "document",
+     "name": "Key documentation and approved records sent to OSA within one week of approval"
+    }
+   ]
+  },
+  "tags": [
+   "records",
+   "records"
+  ],
+  "sources": [
+   {
+    "kind": "document",
+    "source_id": "osa-clubs-societies-bylaws-2026",
+    "locator": "AUB OSA, Clubs & Societies Bylaws (2026)",
+    "quote": "All key documentation and approved records shall be submitted to the Department of Student Life & Activities within one week of approval.",
+    "observed_at": "2026-10-12T12:00:00+03:00"
+   }
+  ],
+  "support": {
+   "events": [],
+   "source_count": 1
+  },
+  "status": "verified",
+  "verified_by": "m-tatiana-nohra",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -485,7 +567,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -526,7 +608,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -569,7 +651,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -619,7 +701,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -669,7 +751,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -710,7 +792,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -753,7 +835,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -796,7 +878,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -846,7 +928,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -896,7 +978,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -939,7 +1021,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -982,7 +1064,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -1023,7 +1105,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -1065,7 +1147,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  },
  {
@@ -1106,7 +1188,7 @@
   },
   "status": "verified",
   "verified_by": "m-tatiana-nohra",
-  "verified_at": "2026-10-23T22:49:00+03:00",
+  "verified_at": "2026-11-08T13:40:00+03:00",
   "version": 1
  }
 ]

@@ -364,3 +364,11 @@ def test_the_date_of_the_quoted_line_is_read_day_first() -> None:
     assert source_date(chat, "we book the hall early", date(2026, 1, 1)) == date(2025, 4, 13)
     assert source_date("no dates here", "x", date(2026, 1, 1)) == date(2026, 1, 1)
     assert term_end(date(2026, 2, 1)) == date(2026, 5, 31) and term_end(date(2026, 7, 1)) == date(2026, 8, 31)
+
+
+def test_a_tag_the_model_wrote_loosely_is_tidied_not_thrown_away(store: KnowHowStore, tmp_path: Path) -> None:
+    """One label in the wrong shape used to fail the whole answer, so a page of rules was lost (F-170)."""
+    loose = {**LESSON, "tags": ["Article III", "cabinet_roles", "a", "Article III"]}
+    result = capture(store, tmp_path, Provider({"facts": [loose]}), BLK)
+    assert len(result.proposals) == 1
+    assert result.proposals[0].candidate.tags == ["article-iii", "cabinet-roles"]
