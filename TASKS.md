@@ -87,7 +87,7 @@ Reference documents:
 - Needs: T-12, T-18
 - What: Teach ClubOps the club's main tips, contacts and sponsors (president notes; old-chat import only if time allows).
 - Done when: Knowledge shows the club's core facts, approved.
-- Progress (2026-11-06): `scripts/seed_club.py` read the club's chats and files (107 pieces, $0.14): 161 facts wait in Review. Tatiana marks them on the review sheet (approve / reject / edit, and whether each is shared with all clubs), then `apply`. The first sheet held many one-time arrangements and personal opinions (F-167): learning now drops them (D-95), so the club is learned again on a fresh store before the review.
+- Progress (2026-11-06): `scripts/seed_club.py` read the club's chats and files (107 pieces, $0.14): 161 facts wait in Review. Tatiana marks them on the review sheet (approve / reject / edit, and whether each is shared with all clubs), then `apply`. The first sheet held many one-time arrangements and personal opinions (F-167): learning now drops them (D-95). The sheet was reviewed and applied on 2026-11-07 (38 of 161 approved). Learning the bylaws on top of it then surfaced F-168 (see T-45).
 
 ### T-10 Model client
 - Owner: tatiana
@@ -271,6 +271,13 @@ Reference documents:
 - Needs: T-35, J-20
 - What: For ASME, pick what a real new club would paste on day one (its rules or constitution, one past proposal, cabinet list), only material dated before its test events, and check none of it is where the ASME labels came from (no leak). Mark its onboarding facts on the sheet like a busy president would (no special care).
 - Done when: the ASME starter pack is in `data/private/asme/` and the leak check is written in `eval/FROZEN.md`.
+
+### T-45 A cut-off model answer is reported, not dropped in silence (F-168, F-169)
+- Owner: tatiana
+- Status: done
+- Needs: T-09
+- What: Learning the bylaws printed "all done" while only 1 of its 4 pieces had reached the model: the other answers were cut off at the answer limit, which looked like "not JSON", and the pieces were counted as empty and marked done. Read the provider's stop signal on every call, count such a piece as failed (not skipped) and leave it out of `done` so a rerun retries it; split documents on their own headings so a rule is not cut in half.
+- Done when: a cut-off answer says so, a failed piece is retried on the next run, and both have a regression test. (2026-11-08: done, D-98; contracts 0.2.3.)
 
 ## Christophe: frontend
 
