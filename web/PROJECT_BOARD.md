@@ -97,10 +97,10 @@ and [API guide](https://docs.github.com/en/issues/planning-and-tracking-with-pro
 
 | Proposed week (Asia/Beirut) | Tentative Christophe focus                                    | Actual team review        |
 | --------------------------- | ------------------------------------------------------------- | ------------------------- |
-| 2–8 November 2026           | C-21, C-27, C-29, C-31: setup, reproducibility, board         | No evidence recorded here |
-| 9–15 November 2026          | C-13, C-14, C-18, C-20: integration and configured deployment | No evidence recorded here |
-| 16–22 November 2026         | C-22, C-28, C-30: evaluation gates, demo, grading pointers    | No evidence recorded here |
-| 23–29 November 2026         | C-15: final demo support                                      | No evidence recorded here |
+| 4–10 November 2026          | C-21, C-27, C-29, C-31: setup, reproducibility, board         | No evidence recorded here |
+| 11–17 November 2026         | C-13, C-14, C-18, C-20: integration and configured deployment | No evidence recorded here |
+| 18–24 November 2026         | C-22, C-28, C-30: evaluation gates, demo, grading pointers    | No evidence recorded here |
+| 25 November–1 December 2026 | C-15: final demo support                                      | No evidence recorded here |
 
 Tatiana confirmed Wednesday reviews after office hours in #43. The sprint cadence
 is agreed; task allocations remain tentative. No meeting attendance or completed

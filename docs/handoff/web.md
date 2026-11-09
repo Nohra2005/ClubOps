@@ -77,7 +77,7 @@ No entries yet.
 **Additional pre-review check (3 November):** F-151 now has an explicit stale-tab reproduction, not a safety-pass claim. Final totals are 439 Python tests / 92.99% coverage and 18 setup cases, with the same frontend/tool/browser results above. The task remains incomplete pending the owner-approved question-token decision. PR #55 contains 20 focused commits after the final evidence update; no production wiring or board publication was claimed.
 
 
-## 2026-11-09 ? Christophe, with Codex (PR #55: ready for API integration)
+## 2026-11-09 — Christophe, with Codex (PR #55: ready for API integration)
 
 **Did:** Synced independent #55 with main `4b3f17e`, preserving additive logs. Read Tatiana's #43 reply: she will wire setup after draft removal, accepts the one-tab limit without a question-token extension, owns ASME seeding in T-09, and reports an existing ClubOps board with Christophe admin / Wednesday reviews from 4 November. Recorded that decision instead of extending contracts. Current CaptureResult.sources_failed now keeps setup retryable before any partial queue writes (F-174). Integration tests derive shared-rule counts from the sourced rulebook (now 27). C-31's local plan targets the existing Nohra2005/ClubOps board/cadence and explicitly requires inspection/adoption of manual content rather than creating a duplicate. C-29 architecture/memory/provenance docs reflect current published decisions and green main CI.
 
