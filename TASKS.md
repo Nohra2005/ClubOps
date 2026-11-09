@@ -83,10 +83,11 @@ Reference documents:
 
 ### T-09 Seed the Running Club know-how
 - Owner: tatiana
-- Status: todo
+- Status: doing
 - Needs: T-12, T-18
 - What: Teach ClubOps the club's main tips, contacts and sponsors (president notes; old-chat import only if time allows).
 - Done when: Knowledge shows the club's core facts, approved.
+- Progress (2026-11-06): `scripts/seed_club.py` read the club's chats and files (107 pieces, $0.14): 161 facts wait in Review. Tatiana marks them on the review sheet (approve / reject / edit, and whether each is shared with all clubs), then `apply`. The first sheet held many one-time arrangements and personal opinions (F-167): learning now drops them (D-95). The sheet was reviewed and applied on 2026-11-07 (38 of 161 approved). Learning the bylaws on top of it then surfaced F-168 (see T-45).
 
 ### T-10 Model client
 - Owner: tatiana
@@ -157,9 +158,9 @@ Reference documents:
 ### T-26 Run the final evaluation
 - Owner: tatiana
 - Status: todo
-- Needs: T-06, T-14, T-15, J-12, J-15, T-38, C-27, J-17, J-19
-- What: Plan the held-out events with every baseline and with ClubOps (3 runs each, report the spread), plus ClubOps with an empty club memory (rules-only score) and the ASME events (D-50); automatic check against what really happened (approvals, proposal fields; no human graders, D-82); chatbot test; learning test; cost per successful plan. The measured real-world constraint (brief: "identify and evaluate at least one") is cost: run ClubOps with a cheap and a stronger model through OpenRouter and report quality, latency and cost per plan for each, so the model choice is a measured comparison. Commit sample traces (metadata only) in `traces/samples/`. Fix what it finds and turn each failure into a regression test.
-- Done when: result tables in `results/` (including the cheap vs stronger model comparison), reproducible with `make eval`.
+- Needs: T-06, T-14, T-15, J-12, J-15, T-38, C-27, J-17, J-19, J-20, T-44
+- What: Plan the held-out events with every baseline and with ClubOps (3 runs each, report the spread), plus ClubOps with an empty club memory (rules-only score) and the ASME events (D-50); automatic check against what really happened (approvals, proposal fields; no human graders, D-82); chatbot test; learning test; cost per successful plan; both start settings (full and short start, D-92) with "found or flagged" next to false alarms, and model vs tool time per step; the new-club test and learning curve (J-20: ASME and synthetic clubs starting empty, D-91). The measured real-world constraint (brief: "identify and evaluate at least one") is cost: run ClubOps with a one model, Claude Haiku 5.5, chosen in a measured 4-model trial (`results/model-trial.md`, D-90); report its quality, latency and cost per plan. Commit sample traces (metadata only) in `traces/samples/`. Fix what it finds and turn each failure into a regression test.
+- Done when: result tables in `results/` (the model trial is in `results/model-trial.md`), reproducible with `make eval`.
 
 ### T-27 Report and evidence numbers
 - Owner: tatiana
@@ -203,7 +204,7 @@ Reference documents:
 
 ### T-35 ASME data (real second club)
 - Owner: tatiana
-- Status: doing
+- Status: done
 - Needs: none
 - What: Ask Alexis (ASME president) for 3-5 past proposals (ideally a workshop, trip or conference), what each really needed, his OK to use them privately, and a 10-minute setup chat later. Remove phone numbers and IDs.
 - Done when: ASME events and their real approvals are in the private eval folder.
@@ -219,7 +220,7 @@ Reference documents:
 
 ### T-38 Freeze the other-club test sets
 - Owner: tatiana
-- Status: todo
+- Status: done
 - Needs: T-35, J-14
 - What: Same as T-04 for the ASME events and the made-up events: held-out split, hashes in `eval/FROZEN.md` (Freeze 2).
 - Done when: Freeze 2 is filled in, before the generalization run in T-26.
@@ -241,6 +242,42 @@ Reference documents:
 - Done when: `main` is protected and the PR history shows reviews by teammates from then on.
 - Progress (2026-10-31): GitHub Student Developer Pack approved on 31 October; benefits (GitHub Pro, needed for branch protection on a private repo) become available after 72 hours, around 3 November. Then: protect `main`.
 ---
+
+### T-41 Shared AUB layer (any club, D-91)
+- Owner: tatiana
+- Status: done
+- Needs: T-18
+- What: Facts true for every AUB club (offices, forms, rooms, deadlines) are proposed for the shared layer; club-only facts stay in the club. Only a president approves a shared fact, can change ClubOps' guess either way (Review `shared`, seeding sheet `share_with_all_clubs`), and a club can never pull a shared fact into its own layer (F-163).
+- Done when: an approved AUB fact is seen by a brand-new club, with tests (`tests/test_shared_layer.py`).
+
+### T-42 Ask, don't guess, when a club knows little (D-91)
+- Owner: tatiana
+- Status: done
+- Needs: T-14
+- What: When memory has nothing approved, the planner is told to ask the user instead of guessing; an AUB tip learned from a club is labelled "not an official rule" (planner-v4). Learning from use already exists (after-event notes, teaching in chat).
+- Done when: `tests/test_planner_agent.py` covers both notes.
+- Also (2026-11-06, D-93): a plain-code self-check before finishing asks once about "not sure" rules while a fact is missing (planner-v5).
+
+### T-43 Prompts fit any club (D-91)
+- Owner: tatiana
+- Status: done
+- Needs: none
+- What: A test reads every app prompt from the code and fails if one names a club, a sport or a club's own places, so tuning on one club's events can't leak into the prompts (F-164).
+- Done when: `tests/test_prompt_neutrality.py` passes.
+
+### T-44 Onboarding material for the new-club test
+- Owner: tatiana
+- Status: todo
+- Needs: T-35, J-20
+- What: For ASME, pick what a real new club would paste on day one (its rules or constitution, one past proposal, cabinet list), only material dated before its test events, and check none of it is where the ASME labels came from (no leak). Mark its onboarding facts on the sheet like a busy president would (no special care).
+- Done when: the ASME starter pack is in `data/private/asme/` and the leak check is written in `eval/FROZEN.md`.
+
+### T-45 A cut-off model answer is reported, not dropped in silence (F-168, F-169)
+- Owner: tatiana
+- Status: done
+- Needs: T-09
+- What: Learning the bylaws printed "all done" while only 1 of its 4 pieces had reached the model: the other answers were cut off at the answer limit, which looked like "not JSON", and the pieces were counted as empty and marked done. Read the provider's stop signal on every call, count such a piece as failed (not skipped) and leave it out of `done` so a rerun retries it; split documents on their own headings so a rule is not cut in half.
+- Done when: a cut-off answer says so, a failed piece is retried on the next run, and both have a regression test. (2026-11-08: done, D-98; contracts 0.2.3.)
 
 ## Christophe: frontend
 
@@ -477,6 +514,20 @@ Reference documents:
 <!-- C-32 dropped on 2026-11-01 (D-82): no human graders, so no blind grading packets. -->
 
 
+### C-33 Starter onboarding for a new club (D-91)
+- Owner: christophe
+- Status: todo
+- Needs: C-21
+- What: Extend the setup flow into one short checklist every new club does the same way (about 10 minutes): add the cabinet, upload the club's rules or constitution, one past proposal, and its usual places and partners (`POST /api/cabinet`, `POST /api/documents`). Show what is done, and say plainly that ClubOps starts with the shared AUB know-how and learns the club as it is used.
+- Done when: a new club can finish the checklist in the deployed app, with a browser test on synthetic data.
+
+### C-34 Review screen guards (D-91)
+- Owner: christophe
+- Status: todo
+- Needs: T-41
+- What: On each Review card show the source quote, a "Shared with all AUB clubs" badge when `shared` is true, and a switch to change it (send `shared: true/false` with the decision; only presidents may approve shared facts, others get 403). Show disagreements first. Bulk approve skips shared facts, disagreements and warned facts (D-79).
+- Done when: the screen does this with tests, and the user guide explains sharing in two lines.
+
 ## Joey: calendar, reminders, drafts
 
 ### J-01 Read the calendar contract and set up Google
@@ -620,3 +671,10 @@ Reference documents:
 - Needs: J-12
 - What: Measure how close the proposal draft is to what the club really submitted: for each past event that has a real proposal (Tatiana gives the private files), compare the draft's answers field by field. Report correct, wrong, left for a person, and invented answers (filled in when the truth was unknown), plus form-check errors. Build and test it on synthetic proposals; Tatiana runs it on the real ones in T-26.
 - Done when: `scripts/eval_proposals.py` gives a result table on synthetic data, with tests, in replay mode.
+
+### J-20 New-club test and learning curve (D-91)
+- Owner: joey
+- Status: todo
+- Needs: J-14, T-41
+- What: Show ClubOps works for clubs it was not tuned on. `scripts/eval_new_club.py`: start a club empty (only the shared AUB layer), give it a starter pack of 0, 1, 3, then all onboarding documents, and plan its events after each step with `clubops.evaluation.plans` (approvals caught, false alarms, cost). Make 3 synthetic clubs of other kinds (academic, cultural, social; like J-14) with events and labels, and freeze them before running. Tatiana runs it on ASME (T-44) in T-26.
+- Done when: the script gives a curve table per club on synthetic data, with tests, in replay mode.

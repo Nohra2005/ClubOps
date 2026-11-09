@@ -282,6 +282,9 @@ class CaptureResult(Contract):
     proposals: list[KnowHowProposal]
     sources_seen: int = Field(ge=0)
     sources_skipped: int = Field(ge=0, description="e.g. off-topic or flagged as injection")
+    sources_failed: int = Field(
+        default=0, ge=0, description="the model could not be read for these: nothing was learned, so retry them"
+    )
 
 
 class VerifyDecision(StrEnum):

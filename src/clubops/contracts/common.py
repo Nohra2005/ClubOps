@@ -20,7 +20,7 @@ from typing import Annotated, Generic, Literal, Self, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
-SCHEMA_VERSION = "0.2.1"
+SCHEMA_VERSION = "0.2.3"
 
 # --------------------------------------------------------------------------- ids
 

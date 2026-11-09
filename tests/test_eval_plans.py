@@ -18,17 +18,20 @@ from clubops.agent.planner import Planner
 from clubops.config import ModelMode, Settings
 from clubops.evaluation.plans import (
     PLAIN_VERSION,
+    UNKNOWN_DATE,
     Case,
     ClubOpsSystem,
     Prediction,
     checklist,
     codes_by_rule,
     describe,
+    event_date,
     facts_before,
     load_cases,
     model_baseline,
     rulebook_text,
     score,
+    simulated_answer,
     table,
     truth_codes,
 )
@@ -243,5 +246,63 @@ def test_scores_count_misses_false_alarms_and_unsure_flags() -> None:
     assert (s.caught, s.missed, s.false_alarms, s.unsure_caught, s.errors, s.calls) == (2, 2, 1, 1, 1, 2)
     assert s.recall == 0.5 and s.precision == pytest.approx(2 / 3) and s.f1 == pytest.approx(4 / 7)
     assert s.rows[0]["missed"] == ["GUEST", "HOST"]
+    assert s.found_or_flagged == 0.75  # 2 caught + 1 missed but flagged, of 4
     out = table({"test": s}, 2)
-    assert "| test | 0.50 | 0.67 | 0.57 | 2 | 1 | 1 | 2 | 0.0100 | 0.0050 | 1 |" in out
+    assert "| test | 0.50 | 0.75 | 0.67 | 0.57 | 2 | 1 | 1 | 2 | 0.0100 | 0.0050 | 1 |" in out
+
+
+def test_partial_or_missing_dates_still_load() -> None:
+    assert event_date("2025-11-06 to 2025-11-07") == date(2025, 11, 6)
+    assert event_date("2025-12 (day not given)") == date(2025, 12, 15)
+    assert event_date("2026-09/10 (two days, ends 2026-10-01)") == date(2026, 9, 15)
+    assert event_date("not given") == UNKNOWN_DATE
+    assert "a date not given" in describe({**ROW, "date": "not given"})
+
+
+# ------------------------------------------------------------------ short start
+
+
+def test_short_start_gives_only_the_event_and_date(tmp_path: Path) -> None:
+    [c] = load_cases(write_csv(tmp_path / "events.csv", [ROW]), short_start=True)
+    assert c.description == "Sunrise fun run on 2026-03-14."
+    assert "Green Field" not in c.description and c.short_start
+
+
+def test_the_simulated_user_answers_only_what_was_asked_from_the_row(tmp_path: Path) -> None:
+    [c] = load_cases(write_csv(tmp_path / "events.csv", [ROW]), short_start=True)
+    assert simulated_answer(c, "Where will it be held?") == "Place: Green Field."
+    assert simulated_answer(c, "Can people from outside AUB come?") == "Outside guests: yes, friends."
+    assert simulated_answer(c, "Will there be sponsors or prizes?") == "I don't know."  # empty in the row
+    assert simulated_answer(c, "Will you serve food?") == "I don't know."  # no column: never invented
+    assert "SECRET" not in simulated_answer(c, "Anything in the notes about guests or approvals?")
+
+
+def test_full_start_keeps_repeating_the_description(tmp_path: Path) -> None:
+    [c] = load_cases(write_csv(tmp_path / "events.csv", [ROW]))
+    assert simulated_answer(c, "Where?") == f"That's all I know: {c.description}"
+
+
+def test_in_short_start_the_agent_gets_its_answer_from_the_row(tmp_path: Path) -> None:
+    from clubops.agent.planner import Tool
+    from tests.test_planner_agent import step
+
+    [c] = load_cases(write_csv(tmp_path / "events.csv", [ROW]), short_start=True)
+    guests = verified(rule()).model_copy(update={"tags": ["guests", "guest"]})
+    scripts: list[Script] = []
+
+    def store_for(_: Case) -> KnowHowStore:
+        store = KnowHowStore()
+        store.backend.append(guests)
+        return store
+
+    def make(store: KnowHowStore, directory: Directory, _: object) -> Planner:
+        first, *rest = full_plan()
+        scripts.append(Script(first, step(Tool.ASK_USER, question="Can outside guests come?"), *rest))
+        return Planner(scripts[0], store, directory)
+
+    system = ClubOpsSystem(
+        make, store_for, lambda x: Directory(tmp_path / x.case_id, "eval-club"), codes_by_rule([guests])
+    )
+    pred = system(c)
+    assert pred.error is None and pred.codes == {"GUEST"}
+    assert "- Outside guests: yes, friends." in scripts[0].prompts[-1]  # the row's answer, nothing more

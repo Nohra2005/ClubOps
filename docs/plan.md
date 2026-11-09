@@ -40,6 +40,22 @@ Cabinet ──> Web app (Christophe) ──API──> Backend (Tatiana)
 3. **Complete the loop:** handover (C-19), new-club setup (C-21), daily check (J-11), API (T-22), deploy (C-18); frontend connects (C-13, C-14); calendar on the server (J-09).
 4. **Prove it:** pilot event (T-32), final evaluation (T-26), evaluation in CI (C-22), docs, poster, demo, grader check (T-27, C-29, C-30, J-18, C-28).
 
+## Schedule to the deadline (set 6 November)
+
+Owners as in `TASKS.md`. Blockers of the final evaluation are marked **(blocker)**; if one is late by 3 days, Tatiana takes it or cuts it.
+
+| When | What | Tasks |
+|---|---|---|
+| 6 - 8 Nov | Review the Running Club's 161 learned facts on the sheet; merge open PRs | T-09 |
+| 9 Nov | ASME starter pack in date order, leak check against its labels | T-44 |
+| 9 - 10 Nov | Proposal draft and chatbot ready **(blocker)**; their test runners **(blocker)** | J-12, J-15, J-17, J-19 |
+| 10 Nov | AUB rules updated from OSA's latest rules (or kept as they are), each with the date it started; one practice run on 5 events, both start settings | T-08, T-26 |
+| 11 Nov | **ASME onboarding run:** ASME starts empty, gets its documents in date order; after each one, learning cost (MLflow `kind=learning`) and its later events planned (approvals caught, false alarms, time) = the learning curve | T-44, J-20 |
+| 12 - 18 Nov | Handover sessions with 8 volunteers | T-33 |
+| 19 - 22 Nov | Final evaluation, frozen, 3 runs per system, tracked in MLflow | T-26 |
+| 23 - 27 Nov | Report, poster, demo, evidence | T-27, J-18, C-28, T-29 |
+| 28 - 30 Nov | Buffer and submission | all |
+
 ## Rubric coverage (target 100/100 + bonus)
 
 Each row says what the grader must find, where it will be, and which tasks produce it. Keep [`rubric-map.md`](rubric-map.md) pointing at the real files as they appear.
@@ -60,6 +76,7 @@ Each row says what the grader must find, where it will be, and which tasks produ
 | Test sets made before the system, held out | `eval/FROZEN.md` with hashes and dates | T-01 to T-04 |
 | Baselines and clear metrics | Scored by code against the president's labels: approvals caught/missed/false alarms, proposal field accuracy, invented-answer rate, learning test, cost per plan (no human graders, D-82) | T-06, T-26, C-27, J-17, J-19 |
 | Honest variance | 3 runs per configuration, spread reported | T-26 |
+| Works for any club, not only the one we tuned on | Shared AUB layer, prompts free of club words (test), new-club test with a learning curve on ASME and 3 synthetic clubs starting empty (D-91) | T-41 to T-44, J-20, C-33, C-34 |
 | Failures become tests | `docs/failure-matrix.md` rows with regression tests | J-13, T-26, J-06 |
 | Reproducible numbers | `make eval` from recorded responses, no API keys | T-10, T-26 |
 
@@ -116,7 +133,7 @@ The brief asks for "evidence of use", not tool logos: a few practices done in de
 | Observability tooling | OpenTelemetry traces of each agent run (viewable in Jaeger or Langfuse), metadata only | C-25 |
 | Reproducible environment | Docker Compose for the whole app; Dockerfile and Render config (in place) | C-24, C-18 |
 | Production monitoring | Live on the deployed app: Grafana Cloud (hosted Prometheus + Grafana, fed by OpenTelemetry) or Sentry, Christophe's choice; dashboard or alerts, metadata only | C-26 |
-| Controlled evolution | Prompt and model versions in every trace; cheap vs stronger model compared with measured quality, latency and cost | T-26 |
+| Controlled evolution | Prompt and model versions in every trace; 4 models compared on measured quality, failures, latency and cost before choosing one (`results/model-trial.md`) | T-26 |
 | Advanced testing | API contract tests (in place), red-team set with a measured attack success rate | J-13, C-13 |
 
 ## Brief checklist (from the course announcement)
@@ -125,7 +142,7 @@ The brief asks for "evidence of use", not tool logos: a few practices done in de
 |---|---|
 | Problem before technology; real user; current workflow | `docs/problem.md`, interview notes (T-29) |
 | What stays deterministic or human-controlled | `docs/architecture.md`; approval gate; plain-code rule check and safety rules (C-29) |
-| At least one real-world constraint, evaluated | Cost (cheap vs stronger model, cost per plan) and human approval (T-26) |
+| At least one real-world constraint, evaluated | Cost (4-model trial, then cost per plan with the chosen model) and human approval (T-26) |
 | Tests beyond the happy path: invalid, ambiguous, tool failure, malformed, rate limit, malicious, unauthorized | `docs/failure-matrix.md` + tests; red-team set (J-13) |
 | Memory: scope, lifetime, retrieval, privacy | `docs/knowledge-base.md` (C-29) |
 | UI designed around the user, not chat by default | Events, Review, Calendar, Knowledge, Handover screens (done) |

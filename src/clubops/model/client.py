@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from dataclasses import dataclass
 from decimal import Decimal
 from typing import Any, TypeVar
@@ -25,6 +26,7 @@ from typing import Any, TypeVar
 import httpx
 from pydantic import BaseModel, ValidationError
 
+from clubops import debuglog
 from clubops.capabilities.runner import CapabilityError, Usage
 from clubops.config import ModelMode, Settings
 from clubops.contracts.common import ErrorCode
@@ -45,6 +47,9 @@ class ModelRequest:
     user: str
     max_tokens: int = 1500
     temperature: float = 0.0
+    # True for answer shapes known to be too big for providers' structured output: send the shape in the
+    # instructions and ask for plain JSON, instead of a request that is refused first (F-162).
+    schema_in_prompt: bool = False
 
     def messages(self) -> list[dict[str, str]]:
         return [{"role": "system", "content": self.system}, {"role": "user", "content": self.user}]
@@ -55,13 +60,48 @@ def _strip_fences(text: str) -> str:
     return match.group(1) if match else text.strip()
 
 
+_SCHEMA_REFUSED = re.compile(r"schema|grammar", re.IGNORECASE)
+
+
+def provider_schema(schema: Any) -> Any:
+    """The answer schema in the subset providers accept (F-162): ``oneOf`` becomes ``anyOf``; pydantic's
+    ``discriminator``, ``default`` and length/count/pattern limits are dropped; "X or null" becomes X (an
+    optional field is simply left out of ``required``). Smaller schemas also keep the provider's compiled
+    grammar under its size limit. Validation still uses the full pydantic model."""
+    if isinstance(schema, list):
+        return [provider_schema(v) for v in schema]
+    if not isinstance(schema, dict):
+        return schema
+    out: dict[str, Any] = {}
+    for key, value in schema.items():
+        if key in {"discriminator", "default", "maxItems", "minItems", "maxLength", "minLength", "pattern"}:
+            continue  # length and count limits blow up the provider's grammar; pydantic still enforces them
+        if key in {"anyOf", "oneOf"}:
+            options = [o for o in value if o != {"type": "null"}]
+            if len(options) == 1:
+                out.update(provider_schema(options[0]))
+                continue
+            out["anyOf"] = provider_schema(options)
+            continue
+        out[key] = provider_schema(value)
+    return out
+
+
+# What a provider calls it when it stopped because the answer hit the length limit: OpenAI-style
+# "length", Anthropic-style "max_tokens", Gemini's "MAX_TOKENS" (compared lower-cased).
+TRUNCATED_STOPS = frozenset({"length", "max_tokens"})
+
+# Seconds to wait before each retry of a call that failed for a passing reason.
+RETRY_PAUSES_S = (2.0, 5.0)
+
+
 class ModelClient:
     def __init__(
         self,
         settings: Settings,
         *,
         transport: httpx.BaseTransport | None = None,
-        timeout_s: float = 30.0,
+        timeout_s: float = 60.0,
     ) -> None:
         self.settings = settings
         self.recordings = RecordingStore(settings.recordings_dir)
@@ -94,12 +134,34 @@ class ModelClient:
                 budget.charge(usage)
             return self._parse(saved.text, output, usage), usage
 
-        if budget is not None:
-            budget.check()
-        text, usage = self._call(request, output)
-        if budget is not None:
-            budget.charge(usage)
-        parsed = self._parse(text, output, usage)
+        started = time.monotonic()
+        text = ""
+        try:
+            if budget is not None:
+                budget.check()
+            text, usage = self._call(request, output)
+            if budget is not None:
+                budget.charge(usage)
+            parsed = self._parse(text, output, usage)
+        except CapabilityError as err:
+            debuglog.log(
+                "model_error",
+                model=model,
+                prompt_version=request.prompt_version,
+                code=str(err.code),
+                message=err.message,
+                seconds=round(time.monotonic() - started, 2),
+                answer_head=text[:300],
+            )
+            raise
+        debuglog.log(
+            "model_ok",
+            model=model,
+            prompt_version=request.prompt_version,
+            seconds=round(time.monotonic() - started, 2),
+            tokens_in=usage.tokens_in,
+            tokens_out=usage.tokens_out,
+        )
         if self.settings.mode is ModelMode.RECORD:
             self.recordings.put(
                 Recording(
@@ -133,17 +195,37 @@ class ModelClient:
             "messages": request.messages(),
             "temperature": request.temperature,
             "max_tokens": request.max_tokens,
-            "response_format": {"type": "json_object"},
+            # The provider is given the exact answer shape, so the model fills our fields instead of
+            # inventing its own (seen on 2026-11-05 with mid-priced models, F-160). Validation below still decides.
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": output.__name__,
+                    "schema": provider_schema(output.model_json_schema()),
+                    "strict": False,
+                },
+            },
         }
+        if s.reasoning_effort:
+            if "generativelanguage.googleapis.com" in s.base_url:
+                body["reasoning_effort"] = s.reasoning_effort  # Gemini's OpenAI endpoint: top-level field
+            else:
+                body["reasoning"] = {"effort": s.reasoning_effort}
+        if "openrouter.ai" in s.base_url:
+            # Club text is redacted, but still: only providers that don't keep or train on prompts (D-88).
+            body["provider"] = {"data_collection": "deny"}
         headers = {"Authorization": f"Bearer {s.api_key.get_secret_value()}"}
-        try:
-            with httpx.Client(transport=self._transport, timeout=self._timeout_s) as http:
-                response = http.post(f"{s.base_url}/chat/completions", json=body, headers=headers)
-        except httpx.TimeoutException as exc:
-            raise CapabilityError(ErrorCode.UPSTREAM_TIMEOUT, "model provider timed out") from exc
-        except httpx.HTTPError as exc:
-            reason = f"could not reach the model provider: {type(exc).__name__}"
-            raise CapabilityError(ErrorCode.UPSTREAM_ERROR, reason) from exc
+        response = None if request.schema_in_prompt else self._post(body, headers)
+        if response is None or (response.status_code == 400 and _SCHEMA_REFUSED.search(response.text)):
+            # Some answer shapes are too big for the provider's structured output (F-162): ask for plain JSON
+            # and put the shape in the instructions instead.
+            schema = json.dumps(provider_schema(output.model_json_schema()), separators=(",", ":"))
+            messages = request.messages()
+            messages[0] = {
+                **messages[0],
+                "content": f"{messages[0]['content']}\n\nAnswer JSON matching this schema: {schema}",
+            }
+            response = self._post({**body, "messages": messages, "response_format": {"type": "json_object"}}, headers)
 
         if response.status_code == 429:
             raise CapabilityError(ErrorCode.RATE_LIMITED, "model provider rate limit")
@@ -154,7 +236,9 @@ class ModelClient:
 
         try:
             payload = response.json()
-            text = payload["choices"][0]["message"]["content"] or ""
+            choice = payload["choices"][0]
+            text = choice["message"]["content"] or ""
+            stop = str(choice.get("finish_reason") or "")
             tokens = payload.get("usage") or {}
             tokens_in = int(tokens.get("prompt_tokens", 0))
             tokens_out = int(tokens.get("completion_tokens", 0))
@@ -169,15 +253,69 @@ class ModelClient:
             tokens_out=tokens_out,
             cost_usd=self._cost(tokens_in, tokens_out),
         )
+        if stop.lower() in TRUNCATED_STOPS:
+            # The provider says it stopped at the answer-length limit, so the JSON is cut off. Say so, rather
+            # than the misleading "not JSON" that parsing it would raise (F-168).
+            raise CapabilityError(
+                ErrorCode.MALFORMED_MODEL_OUTPUT,
+                f"the model's answer was cut off at the {request.max_tokens}-token answer limit; "
+                "ask for less in one answer",
+                usage=usage,
+            )
         return text, usage
+
+    def _post(self, body: dict[str, Any], headers: dict[str, str]) -> httpx.Response:
+        """Send the request. Brief trouble at the provider (timeout, rate limit, 5xx) is retried twice:
+        one slow answer must not fail a whole plan. Anything else (bad key, bad request) fails at once."""
+        for attempt, pause in enumerate((*RETRY_PAUSES_S, None), start=1):
+            began = time.monotonic()
+            try:
+                with httpx.Client(transport=self._transport, timeout=self._timeout_s) as http:
+                    response = http.post(f"{self.settings.base_url}/chat/completions", json=body, headers=headers)
+            except httpx.TimeoutException as exc:
+                debuglog.log(
+                    "http_attempt", attempt=attempt, outcome="timeout", seconds=round(time.monotonic() - began, 2)
+                )
+                if pause is None:
+                    raise CapabilityError(ErrorCode.UPSTREAM_TIMEOUT, "model provider timed out") from exc
+            except httpx.HTTPError as exc:
+                debuglog.log(
+                    "http_attempt",
+                    attempt=attempt,
+                    outcome=type(exc).__name__,
+                    error=str(exc)[:200],
+                    seconds=round(time.monotonic() - began, 2),
+                )
+                if pause is None:
+                    reason = f"could not reach the model provider: {type(exc).__name__}"
+                    raise CapabilityError(ErrorCode.UPSTREAM_ERROR, reason) from exc
+            else:
+                debuglog.log(
+                    "http_attempt",
+                    attempt=attempt,
+                    outcome="http",
+                    status=response.status_code,
+                    seconds=round(time.monotonic() - began, 2),
+                    body_head=response.text[:300] if response.status_code >= 400 else "",
+                )
+                if pause is None or not (response.status_code == 429 or response.status_code >= 500):
+                    return response
+            time.sleep(pause)
+        raise AssertionError("unreachable")  # the last pass above always returns or raises
 
     @staticmethod
     def _parse(text: str, output: type[T], usage: Usage) -> T:
         try:
             return output.model_validate(json.loads(_strip_fences(text)))
-        except (json.JSONDecodeError, ValidationError) as exc:
+        except json.JSONDecodeError as exc:
+            raise CapabilityError(
+                ErrorCode.MALFORMED_MODEL_OUTPUT, f"model answer did not match {output.__name__}: not JSON", usage=usage
+            ) from exc
+        except ValidationError as exc:
+            first = exc.errors()[0]
+            where = ".".join(str(part) for part in first["loc"]) or "answer"
             raise CapabilityError(
                 ErrorCode.MALFORMED_MODEL_OUTPUT,
-                f"model answer did not match {output.__name__}",
+                f"model answer did not match {output.__name__}: {where}: {first['msg']}"[:200],
                 usage=usage,
             ) from exc

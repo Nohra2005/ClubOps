@@ -5,8 +5,16 @@ Four systems get the same event description (built from the frozen test row, nev
 2. plain      - one model call: the approval codes and what each means, but not when each is needed.
 3. rulebook   - one model call with the 25 AUB rules pasted in.
 4. clubops    - the planning agent with the rulebook and the club's memory, as in the app. A simulated user
-                answers its questions with the same description. Memory holds only facts learned from
-                events *before* the one being planned (no leakage, eval/FROZEN.md).
+                answers its questions (see below). Memory holds only facts learned from events *before* the
+                one being planned (no leakage, eval/FROZEN.md).
+
+Two settings:
+- full start (default): every system gets the whole description; the simulated user repeats it.
+- short start (``short_start=True``): every system gets only what a president types first (the event and
+  its date). The agent may ask; the simulated user answers each question only from the matching fields of
+  that event's row (place, people, guests, sponsors, money, partners), or "I don't know". It never uses the
+  notes or the labels, and never says more than the row. One-call systems cannot ask, which is the point:
+  it measures what asking adds.
 
 Scoring compares the predicted codes with the president's labels (`approvals_real`), on the codes she labels
 (SCORED). Codes outside that set (e.g. LOGO, RCPT) are ignored for every system alike.
@@ -16,15 +24,18 @@ from __future__ import annotations
 
 import csv
 import re
+import time
+import traceback
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
 from pydantic import Field
 
+from clubops import debuglog
 from clubops.agent.planner import Planner, RunState
 from clubops.contracts.agent import PlanEventRequest
 from clubops.contracts.common import Contract, SourceKind, SourceRef, Untrusted
@@ -69,6 +80,9 @@ class Case:
     on: date
     description: str
     truth: frozenset[str]
+    # The row's event fields (never notes or labels), for the simulated user's answers in short start.
+    details: tuple[tuple[str, str], ...] = ()
+    short_start: bool = False
 
 
 def truth_codes(label: str) -> frozenset[str]:
@@ -76,10 +90,25 @@ def truth_codes(label: str) -> frozenset[str]:
     return frozenset(m.group(2) for m in _CODE.finditer(label) if m.group(2) in SCORED and not m.group(1))
 
 
+_DAY = re.compile(r"(\d{4})-(\d{2})(?:-(\d{2}))?")
+PLANNING_LEAD = timedelta(days=30)  # the club starts planning about a month before (deadlines are then reachable)
+UNKNOWN_DATE = date(2026, 3, 16)  # mid-semester stand-in when a past event's date was never recorded
+
+
+def event_date(text: str) -> date:
+    """First date in the cell: '2026-10-07', '2025-11-06 to 2025-11-07' -> that day; '2025-12 (day not given)'
+    -> the 15th; 'not given' -> UNKNOWN_DATE. Only used as the planner's 'today' and for the no-leakage filter."""
+    m = _DAY.search(text or "")
+    if not m:
+        return UNKNOWN_DATE
+    return date(int(m.group(1)), int(m.group(2)), int(m.group(3) or 15))
+
+
 def describe(row: dict[str, str]) -> str:
     """The event as a cabinet member would type it. Never uses the notes or the labels."""
+    when = row["date"] if _DAY.search(row["date"] or "") else "a date not given"
     parts = [
-        f"{row['event']} on {row['date']}",
+        f"{row['event']} on {when}",
         f"Place: {row['place']}",
         f"People: {row['people']}",
         f"Outside guests: {row['outside_guests']}",
@@ -90,13 +119,54 @@ def describe(row: dict[str, str]) -> str:
     return ". ".join(p for p in parts if p and not p.endswith(": ")) + "."
 
 
-def load_cases(path: Path, label_column: str = "approvals_real (you fill)") -> list[Case]:
+DETAIL_FIELDS = {
+    "place": "Place",
+    "people": "People",
+    "outside_guests": "Outside guests",
+    "sponsors_prizes": "Sponsors or prizes",
+    "money": "Money",
+    "partners": "Partners",
+}
+# Which row field answers a question, by its words. Food has no column, so food questions get "I don't know".
+_ASKS: list[tuple[str, str]] = [
+    ("place", r"venue|where|place|location|room|field|hall|indoor|outdoor"),
+    ("people", r"how many|number of|participants|attend|size|expect"),
+    ("outside_guests", r"guest|outside|non-aub|external|public|open to|who can|audience|families"),
+    ("sponsors_prizes", r"sponsor|prize|award|gift|giveaway"),
+    ("money", r"money|cost|budget|fee|ticket|pay|price|fund|sell|sale|charge|spend|donat"),
+    ("partners", r"partner|collab|other club|societ|co-host|together with"),
+]
+
+
+def opening(row: dict[str, str]) -> str:
+    """What a president types first: the event and its date."""
+    when = row["date"] if _DAY.search(row["date"] or "") else "a date not given"
+    return f"{row['event']} on {when}."
+
+
+def simulated_answer(case: Case, question: str) -> str:
+    """The simulated president's reply: only the row fields the question is about, or "I don't know"."""
+    if not case.short_start:
+        return f"That's all I know: {case.description}"
+    known = dict(case.details)
+    q = question.lower()
+    parts = [
+        f"{DETAIL_FIELDS[name]}: {known[name]}"
+        for name, words in _ASKS
+        if re.search(words, q) and known.get(name, "").strip()
+    ]
+    return ". ".join(parts) + "." if parts else "I don't know."
+
+
+def load_cases(path: Path, label_column: str = "approvals_real (you fill)", *, short_start: bool = False) -> list[Case]:
     cases = []
     for row in csv.DictReader(path.open(encoding="utf-8")):
         label = row.get(label_column, "") or ""
         if not label.strip() or label.strip().upper().startswith("DROP"):
             continue
-        cases.append(Case(row["id"], date.fromisoformat(row["date"][:10]), describe(row), truth_codes(label)))
+        details = tuple((k, (row.get(k) or "").strip()) for k in DETAIL_FIELDS)
+        text = opening(row) if short_start else describe(row)
+        cases.append(Case(row["id"], event_date(row["date"]), text, truth_codes(label), details, short_start))
     return cases
 
 
@@ -112,6 +182,8 @@ class Prediction:
     cost_usd: Decimal = Decimal("0")
     calls: int = 0
     error: str | None = None
+    model_ms: int = 0  # time in model calls and in tools, from the agent's steps (ClubOps only)
+    tool_ms: int = 0
 
 
 _KEYWORDS: list[tuple[str, tuple[str, ...]]] = [
@@ -170,7 +242,7 @@ def model_baseline(client: ModelClient, rulebook_text: str | None, run: int = 1)
         budget = Budget(max_usd=Decimal("0.05"), max_steps=1)
         try:
             answer, usage = client.complete(
-                ModelRequest(version, system, f"<event>\n{case.description}\n</event>", max_tokens=600),
+                ModelRequest(version, system, f"<event>\n{case.description}\n</event>", max_tokens=1200),
                 CodesAnswer,
                 budget,
             )
@@ -206,17 +278,40 @@ class ClubOpsSystem:
         )
         try:
             state = planner.start(
-                PlanEventRequest(club_id="eval-club", description=words, today=case.on), f"run-{case.case_id.lower()}"
+                PlanEventRequest(club_id="eval-club", description=words, today=case.on - PLANNING_LEAD),
+                f"run-{case.case_id.lower()}",
             )
-            for _ in range(3):  # the simulated user repeats what it knows; the agent gets 3 answers at most
-                if state.run.status.value != "waiting_for_user":
+            answers, continued = 0, False
+            while True:  # the simulated user answers a few questions and clicks "continue" once, as in the app
+                status = state.run.status.value
+                if status == "waiting_for_user" and answers < (5 if case.short_start else 3):
+                    answers += 1
+                    state = planner.answer(state, simulated_answer(case, state.run.steps[-1].text))
+                elif status == "at_limit" and case.short_start and not continued:
+                    continued = True
+                    state = planner.keep_going(state)
+                else:
                     break
-                state = planner.answer(state, f"That's all I know: {case.description}")
         except Exception as err:
+            debuglog.log(
+                "case",
+                case=case.case_id,
+                status="exception",
+                error=repr(err)[:300],
+                trace=traceback.format_exc()[-1500:],
+            )
             return Prediction(frozenset(), error=type(err).__name__)
         finally:
             store.close()
             directory.close()
+        debuglog.log(
+            "case",
+            case=case.case_id,
+            status=str(state.run.status),
+            steps=[
+                f"{s.n} {s.tool} [{s.state}] model={s.model_ms}ms tool={s.tool_ms}ms: {s.text}" for s in state.run.steps
+            ],
+        )
         return self._codes(state)
 
     def _codes(self, state: RunState) -> Prediction:
@@ -234,6 +329,8 @@ class ClubOpsSystem:
             cost_usd=state.run.cost_usd,
             calls=state.run.steps_used,
             error=None if state.run.status.value == "done" else state.run.status.value,
+            model_ms=sum(st.model_ms or 0 for st in state.run.steps),
+            tool_ms=sum(st.tool_ms or 0 for st in state.run.steps),
         )
 
 
@@ -296,11 +393,20 @@ class Score:
     cost_usd: Decimal = Decimal("0")
     calls: int = 0
     errors: int = 0
+    seconds: float = 0.0
+    model_seconds: float = 0.0
+    tool_seconds: float = 0.0
     rows: list[dict[str, Any]] = field(default_factory=list)
 
     @property
     def recall(self) -> float:
         return self.caught / (self.caught + self.missed) if self.caught + self.missed else 0.0
+
+    @property
+    def found_or_flagged(self) -> float:
+        """Approvals caught, or missed but flagged "not sure" (a person is told to check). Read with false alarms."""
+        total = self.caught + self.missed
+        return (self.caught + self.unsure_caught) / total if total else 0.0
 
     @property
     def precision(self) -> float:
@@ -315,7 +421,9 @@ class Score:
 def score(cases: list[Case], predict: Predict) -> Score:
     s = Score()
     for case in cases:
+        started = time.monotonic()
         pred = predict(case)
+        s.seconds += time.monotonic() - started
         caught = pred.codes & case.truth
         missed = case.truth - pred.codes
         alarms = pred.codes - case.truth
@@ -326,6 +434,8 @@ def score(cases: list[Case], predict: Predict) -> Score:
         s.cost_usd += pred.cost_usd
         s.calls += pred.calls
         s.errors += pred.error is not None
+        s.model_seconds += pred.model_ms / 1000
+        s.tool_seconds += pred.tool_ms / 1000
         s.rows.append(
             {
                 "case": case.case_id,
@@ -340,14 +450,15 @@ def score(cases: list[Case], predict: Predict) -> Score:
 
 def table(results: dict[str, Score], n: int) -> str:
     lines = [
-        "| System | Recall | Precision | F1 | Missed | False alarms | Missed but flagged 'not sure' "
+        "| System | Recall | Found or flagged | Precision | F1 | Missed | False alarms | Missed but flagged 'not sure' "
         "| Model calls | Cost (USD) | Cost per event | Errors |",
-        "|---|---|---|---|---|---|---|---|---|---|---|",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for name, s in results.items():
         per = s.cost_usd / n if n else Decimal("0")
         lines.append(
-            f"| {name} | {s.recall:.2f} | {s.precision:.2f} | {s.f1:.2f} | {s.missed} | {s.false_alarms} | "
+            f"| {name} | {s.recall:.2f} | {s.found_or_flagged:.2f} | {s.precision:.2f} | {s.f1:.2f} | "
+            f"{s.missed} | {s.false_alarms} | "
             f"{s.unsure_caught} | {s.calls} | {s.cost_usd:.4f} | {per:.4f} | {s.errors} |"
         )
     return "\n".join(lines)

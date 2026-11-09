@@ -22,13 +22,13 @@ from clubops.config import ModelMode, Settings
 from clubops.contracts.agent import PlanEventRequest, RunStatus, StepState
 from clubops.contracts.common import ErrorCode, SourceKind, SourceRef, Untrusted
 from clubops.contracts.event import Audience, EventRecord, EventSpec, EventStatus, EventType, Venue, VenueKind
-from clubops.contracts.knowhow import Requirement, RequirementKind, RuleDetails
+from clubops.contracts.knowhow import Requirement, RequirementKind, RuleDetails, Scope
 from clubops.contracts.rules import Applicability
 from clubops.knowhow.directory import Directory
 from clubops.knowhow.store import KnowHowStore
 from clubops.model.budget import Budget
 from clubops.model.client import ModelClient
-from tests.factories import CLUB, NOW, rule, verified
+from tests.factories import CLUB, NOW, item, rule, verified
 
 TODAY = date(2026, 10, 1)
 START = datetime(2026, 10, 25, 6, 0, tzinfo=UTC)
@@ -234,6 +234,13 @@ def test_an_unreadable_model_answer_is_a_failed_step_not_a_crash(memory: KnowHow
     assert state.run.status is RunStatus.DONE and state.run.steps_used == 6
 
 
+def test_the_model_is_told_why_its_last_answer_was_rejected(memory: KnowHowStore, directory: Directory) -> None:
+    bad = CapabilityError(ErrorCode.MALFORMED_MODEL_OUTPUT, "model answer did not match NextStep: facts.venue: bad")
+    script = Script(bad, *full_plan())
+    planner(memory, directory, script).start(request(), "run-k3")
+    assert "your last answer was rejected (facts.venue: bad)" in script.prompts[1]
+
+
 def test_when_the_model_cannot_be_reached_the_run_fails_cleanly(memory: KnowHowStore, directory: Directory) -> None:
     script = Script(CapabilityError(ErrorCode.UPSTREAM_TIMEOUT, "slow"))
     state = planner(memory, directory, script).start(request(), "run-l3")
@@ -354,3 +361,55 @@ def test_the_model_decider_uses_the_model_client(tmp_path: Path) -> None:
 def test_the_prompt_stays_short(memory: KnowHowStore, directory: Directory) -> None:
     state = planner(memory, directory, Script(*full_plan())).start(request(), "run-p7")
     assert len(build_prompt(RunState.model_validate(state.model_dump()))) < 3000
+
+
+def test_a_new_club_with_no_know_how_is_told_to_ask_not_guess(memory: KnowHowStore, directory: Directory) -> None:
+    script = Script(full_plan()[0], step(Tool.SEARCH_MEMORY, query="sponsor contact"), *full_plan()[2:])
+    state = planner(memory, directory, script).start(request(), "run-n6")
+    found = next(n for n in state.notes if n.startswith("memory 'sponsor contact'"))
+    assert "nothing approved found" in found and "never guess" in found
+
+
+def test_an_aub_tip_from_a_club_is_not_shown_as_an_official_rule(memory: KnowHowStore, directory: Directory) -> None:
+    tip = item("kh-west-hall", scope=Scope.AUB, club_id=None, title="West Hall rooms", tags=["west-hall"])
+    memory.backend.append(verified(tip))
+    script = Script(full_plan()[0], step(Tool.SEARCH_MEMORY, query="west hall"), *full_plan()[2:])
+    state = planner(memory, directory, script).start(request(), "run-n7")
+    found = next(n for n in state.notes if n.startswith("memory 'west hall'"))
+    assert "West Hall rooms (AUB tip learned from a club, not an official rule)" in found
+
+
+def test_each_step_records_model_and_tool_time(memory: KnowHowStore, directory: Directory) -> None:
+    state = planner(memory, directory, Script(*full_plan())).start(request(), "run-t1")
+    assert all(st.model_ms is not None and st.model_ms >= 0 for st in state.run.steps)
+    assert all(st.tool_ms is not None for st in state.run.steps if st.state.value == "done")
+
+
+def test_self_check_asks_before_finishing_when_a_rule_is_unsure_and_a_fact_is_missing(
+    memory: KnowHowStore, directory: Directory
+) -> None:
+    vague = FACTS.model_copy(update={"audience": None})  # who can come is unknown: the guest rule is unsure
+    script = Script(
+        step(Tool.UPDATE_EVENT, facts=vague),
+        step(Tool.CHECK_RULES),
+        step(Tool.PLAN_TASKS),
+        step(Tool.FINISH),  # refused once by the self-check
+        step(Tool.ASK_USER, question="Can people from outside AUB come?"),
+    )
+    state = planner(memory, directory, script).start(request(), "run-s1")
+    assert state.run.status.value == "waiting_for_user"
+    refused = next(n for n in state.notes if n.startswith("refused finish: Before finishing:"))
+    assert "audience" in refused and "kh-rule-guests" in refused
+
+
+def test_self_check_runs_once_so_the_agent_can_still_finish(memory: KnowHowStore, directory: Directory) -> None:
+    vague = FACTS.model_copy(update={"audience": None})
+    script = Script(
+        step(Tool.UPDATE_EVENT, facts=vague),
+        step(Tool.CHECK_RULES),
+        step(Tool.PLAN_TASKS),
+        step(Tool.FINISH),
+        step(Tool.FINISH),  # the user can't know: finishing is allowed the second time
+    )
+    state = planner(memory, directory, script).start(request(), "run-s2")
+    assert state.run.status.value == "done"
