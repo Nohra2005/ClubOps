@@ -38,6 +38,8 @@ def extracted() -> dict[str, Any]:
                 "title": fact.title,
                 "statement": fact.statement,
                 "quote": STATEMENT,
+                "lasting": "lasting",
+                "stated_as": "fact",
                 "source": 0,
                 "details": fact.details.model_dump(mode="json"),
             }
@@ -210,6 +212,57 @@ def review_arguments(path: Path, tmp_path: Path) -> list[str]:
         "--sheet",
         str(tmp_path / "review.csv"),
     ]
+
+
+@pytest.mark.usefixtures("environment")
+@pytest.mark.parametrize("kind", ["chat", "after_event_form", "forwarded_email"])
+def test_frozen_header_export_then_replay_with_shared_fact_column(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, kind: str
+) -> None:
+    path = tmp_path / "cases.csv"
+    with path.open("w", encoding="utf-8", newline="") as output:
+        writer = csv.writer(output)
+        writer.writerow(["l_id", "taught_by", "fact_id", "fact", "later_question"])
+        writer.writerow(["synthetic-001", kind, "fact-synthetic-001", STATEMENT, "How do we reserve the studio?"])
+    frozen = path.read_bytes()
+    args = [
+        *review_arguments(path, tmp_path),
+        "--id-column",
+        "l_id",
+        "--source-column",
+        "fact",
+        "--question-column",
+        "later_question",
+        "--expected-column",
+        "fact",
+        "--expected-format",
+        "text",
+        "--kind-column",
+        "taught_by",
+    ]
+    provider = Provider(extracted(), answer())
+    use_provider(monkeypatch, provider)
+    assert eval_learning.main([*args, "--mode", "record"]) == 0
+    assert read(tmp_path / "review.csv")[1] == [
+        "synthetic-001",
+        STATEMENT,
+        STATEMENT,
+        "How do we reserve the studio?",
+        STATEMENT,
+        "",
+        "",
+    ]
+    assert path.read_bytes() == frozen and len(provider.prompts) == 2
+    monkeypatch.setattr(eval_learning, "TrackedClient", CLIENT)
+    monkeypatch.setenv("CLUBOPS_API_KEY", "")
+
+    def no_network(*_: object, **__: object) -> None:
+        raise AssertionError("Replay attempted network access.")
+
+    monkeypatch.setattr(httpx.Client, "send", no_network)
+    replay = tmp_path / "replayed.csv"
+    assert eval_learning.main([*args, "--sheet", str(replay)]) == 0
+    assert read(replay) == read(tmp_path / "review.csv") and path.read_bytes() == frozen
 
 
 @pytest.mark.usefixtures("environment")
