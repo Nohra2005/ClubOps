@@ -22,7 +22,7 @@ import type {
 } from './types';
 
 import { ApiError } from './errors';
-import { readAgentRun, readAnswer, readDraft } from './contract-responses';
+import { readAgentRun, readAnswer, readDraft, readSetupStep } from './contract-responses';
 export { ApiError } from './errors';
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
@@ -164,8 +164,10 @@ export class ApiClient {
   usage() {
     return this.request<Usage>('/usage');
   }
-  setup(answer?: string) {
-    return this.post<SetupStep>('/setup/next', answer === undefined ? {} : { answer });
+  async setup(answer?: string): Promise<SetupStep> {
+    return readSetupStep(
+      await this.post<unknown>('/setup/next', answer === undefined ? {} : { answer }),
+    );
   }
   approval(event_id: string, approval_id: string, status: string) {
     return this.extension('approval', { event_id, approval_id, status });

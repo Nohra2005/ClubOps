@@ -16,6 +16,22 @@ const client = (club = 'running-club', role = 'president' as const) =>
   new ApiClient(createMockTransport(storage, { club, role }, { delay: 0 }), 'demo');
 
 describe('synthetic API safety boundaries', () => {
+  it('resumes setup without spending and skips without proposing or charging', async () => {
+    const api = client('asme');
+    const before = await api.usage();
+    expect((await api.setup()).index).toBe(1);
+    expect((await api.setup()).index).toBe(1);
+    expect((await api.setup('[skip]')).index).toBe(2);
+    expect(await api.review()).toEqual([]);
+    expect(await api.usage()).toEqual(before);
+    await expect(api.setup(' ')).rejects.toMatchObject({ status: 422 });
+    expect((await api.setup()).index).toBe(2);
+    await api.setup('Synthetic society in the example faculty.');
+    const restarted = client('asme');
+    expect((await restarted.setup()).index).toBe(3);
+    expect((await restarted.review())[0].status).toBe('pending');
+    expect((await api.usage()).calls).toBe(before.calls + 1);
+  });
   it('does not borrow another club’s chat answers or generated event tips', async () => {
     const asme = client('asme');
     expect((await asme.ask('What did we learn from the last run?')).kind).toBe('unknown');

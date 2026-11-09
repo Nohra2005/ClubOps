@@ -432,10 +432,13 @@ Reference documents:
 
 ### C-21 New-club setup (was T-20)
 - Owner: christophe
-- Status: todo
+- Status: doing
+- Onboarding decision (2026-11-09): per Tatiana's message relayed by Christophe, setup questions are the primary onboarding path; WhatsApp history import is dropped for onboarding because members have not consented. ASME is planned for Wednesday 11 November via this flow. #55 contains current main/contracts 0.2.3 and is mergeable; Tatiana will wire the API after merge. UI/guide say no chat history is required and use one tab (D-103). No professor privacy answer is claimed.
+- Owner response (2026-11-09): Tatiana's #43 reply requests #55 be made ready so she can wire the route and `/me`; she declines the question-token extension and accepts the documented one-tab limit (F-151). Actual ASME seed material belongs to T-09. Synced current main; reported `sources_failed` now leaves setup retryable before queueing any partial facts (F-174). Production wiring and real second-club verification remain pending.
 - Needs: none
 - What: The backend for the setup screen you built (C-11): `POST /api/setup/next {answer?}` walks a new club through about 10 questions (name, club or society and faculty, adviser, cabinet roles, signature events, usual venues, sponsors...) and turns each answer into a proposed fact in Review; the 25 AUB rules apply from day one (they are shared). Code in `src/clubops/api/setup.py` (yours); register it in place of the 501 route (one line; tell Tatiana). Tatiana gives you ASME's non-personal facts to seed ASME as the second club for the demo.
 - Done when: a new club can go through setup in the demo, and ASME is the second club.
+- Progress (2026-11-03): owned service/router and frontend in PR #55; durable per-club questions, Untrusted capture, retry outbox and Review-only writes. 18 synthetic service/HTTP/SQLite cases include one explicit reproduction of the unresolved stale-tab limit (F-151), plus desktop/phone setup tests. See `web/CLUB_SETUP.md`. Still doing: Tatiana must wire the public callbacks and `/me` completion field, approve decided-card retry semantics and provide sourced non-personal ASME seed facts. Existing answer-only contract's stale-tab limit is documented; no contract was silently extended.
 
 ### C-22 Evaluation in CI (was T-30)
 - Owner: christophe
@@ -476,9 +479,10 @@ Reference documents:
 
 ### C-27 Learning test runner
 - Owner: christophe
-- Status: review
+- Status: done
 - Review fixes (2026-11-09): addressed Tatiana's two blockers on #54: the frozen `fact` column can serve as source and expected fact; chat/after_event_form/forwarded_email map to the existing SourceKind values. Original CSV bytes stay unchanged, question stays separate, unknown kinds remain errors. Synced main `4b3f17e` and refreshed only synthetic prompt recordings. All 70 C-27 tests and full root gates pass (580 passed, 1 skipped; 92.69% coverage); 40 frontend units/build pass. Awaiting Tatiana's re-review, private run and ratings.
 - Needs: none
+- Merged (2026-11-09): #54 landed on main as 4bed33c after Tatiana confirmed both blockers were fixed and all five checks passed. Runner/blank export/offline scoring are complete; actual private ratings and measurements remain T-26.
 - What: Run the frozen learning cases through learning, sandbox approval and the follow-up question; export a private seven-column sheet (id, expected fact, actual saved facts, question, actual answer, blank learned/answer_ok). Tatiana marks yes/partly/no for the ten tests; a second offline command makes the category-count results table, preserving costs/errors. Build/test on synthetic data; Tatiana runs the private file in T-26. Exact-word matching is a smoke diagnostic only.
 - Done when: `scripts/eval_learning.py export` produces the blank review sheet and `score` summarizes completed ratings on synthetic data in replay mode, with tests.
 - Revision (2026-11-03): Tatiana's review relayed by Christophe replaces automatic exact-word quality scoring with a private review sheet: expected fact, learned fact, question and actual answer, plus blank learned/answer_ok ratings (yes/partly/no). A second offline command summarizes the completed sheet. Exact matching is retained only as an explicitly named technical smoke diagnostic, not learning/answer correctness.
@@ -495,6 +499,7 @@ Reference documents:
 ### C-29 Keep the docs true (was T-31)
 - Owner: christophe
 - Status: doing
+- Progress (2026-11-09): refreshed owned architecture, memory and provenance docs against main `4b3f17e`: green main CI evidence, lasting/this-term filtering, failed-source retries, wrong-replacement review limit, shared-scope approval and private debug/review-sheet content. Setup's accepted one-tab limit and owner integration are explicit. Fresh teammate setup and final deployed verification remain open.
 - Needs: T-22
 - What: Update `docs/architecture.md`, `docs/data-provenance.md`, `docs/knowledge-base.md` and the README setup to the new scope (agent loop, learning, web app, deployment, monitoring). Ask Tatiana when unsure how the backend works. Setup must work from a fresh clone in one command. Write the report sections on architecture, the web app, deployment and monitoring.
 - Done when: Joey sets the project up from the README alone; report sections handed to Tatiana.
@@ -508,10 +513,13 @@ Reference documents:
 
 ### C-31 GitHub Projects board and weekly sprints (bonus)
 - Owner: christophe
-- Status: todo
+- Status: blocked
+- Owner response (2026-11-09): Tatiana reports the existing ClubOps board is in the repo's Projects tab with Christophe as admin; weekly sprints start 4 November and reviews are Wednesdays after office hours. Local plan now targets Nohra2005/ClubOps and that cadence; no duplicate board should be created. Current-main dry run reads 85 tasks. Projects scope is still missing; live owner/number/access/fields/cards/iterations and safe adoption of any manual cards must be inspected before sync. No actual weekly review is claimed here.
 - Needs: none
 - What: A GitHub Projects board fed by `TASKS.md` (one card per task, columns = status), so ownership is visible on GitHub. One-week sprints (a Projects iteration per week with the tasks planned for it); a 10-minute review with the team each week, noted in one line under T-28.
 - Done when: the board matches `TASKS.md` and 3 weekly sprints are recorded.
+- Progress (2026-11-03): PR #55 adds the pinned TASKS.md plan, private Projects v2 create/sync CLI, board fields, proposed weekly iterations and read-back verification. 12 synthetic tool tests run in web CI; dry run reads 77 tasks from main. See `web/PROJECT_BOARD.md`.
+- Blocker (updated 2026-11-09): Projects scope is now enabled for chrs-005, but full read-only discovery returns no visible boards under Nohra2005, chrs-005 or the repository. Need Tatiana's direct board URL/access before inspecting and adopting the existing board; do not create a duplicate. Three actual weekly team reviews still need evidence under T-28; planned iterations are not completed-review evidence.
 
 <!-- C-32 dropped on 2026-11-01 (D-82): no human graders, so no blind grading packets. -->
 

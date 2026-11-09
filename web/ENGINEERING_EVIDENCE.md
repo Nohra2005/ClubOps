@@ -52,6 +52,46 @@ started and what remains; do not call a tool installation proof of use. Reply in
 to coordinate overlapping workflow/API/telemetry work. Assistants in separate sessions
 cannot be directly messaged through this session's agent tools.
 
+## 3 November 2026 — setup and board evidence (PR #55)
+
+- C-21: owned service/router, explicit untrusted source/approval boundary, durable
+  progress and extraction outbox; 18 cases including real authenticated SQLite
+  Review storage. The test adapter is explicit; production registration remains with
+  Tatiana. No actual ASME facts were supplied or invented.
+- C-31: exact-commit TASKS.md plan, private Projects adapter and proposed weekly
+  iterations. Twelve stateful/offline tests cover pagination, retries, identity
+  conflicts, unsafe targets and preserved iteration IDs. They run in the existing
+  web quality job through `npm run check`, with no token or remote writes.
+- Local evidence: 439 Python tests, 92.99% coverage; full root static/schema/task gates;
+  42 frontend units; four setup demo and six HTTP browser cases across desktop/phone.
+  Reproducible commands and limits are in `VERIFICATION.md`, `CLUB_SETUP.md` and
+  `PROJECT_BOARD.md`. Current-head check links and small commits are on PR #55.
+- F-151 reproduces the answer-only stale-tab limit; a passing reproduction is not a safety guarantee. Its owner-approved question-token fix remains pending.
+- Process evidence still missing: Projects scope/publication/team access, three real
+  weekly reviews, and independent review of this PR. Tentative iterations are not
+  attendance or completion evidence. Record only actual reviews under T-28.
+
+The older #45 warning above is superseded by #47 and the four clean Caddy/API cases
+recorded on 2 November in PR #54. That separate PR also records C-23/C-24 merged/main
+verification and remains open for review; its source changes are not bundled here.
+
+## 9 November 2026 — ready setup integration and existing board (PR #55)
+
+Tatiana's #43 feedback is now reflected in the owned setup/board docs. Returned
+source failures cannot advance setup or queue partial facts (F-174); the one-tab
+limit remains explicit and accepted by the API owner (F-151/D-102). Validation:
+20 setup cases; 530 Python tests passed, 1 skipped, 92.73% coverage and root gates;
+42 frontend units, 12 board-tool tests and production build. These totals exclude
+independent #54, whose five checks are green on c33be79.
+
+The board plan targets Tatiana's reported existing ClubOps project with Wednesday
+weeks from 4 November; current-main dry run pins 85 tasks at 4b3f17e. No Projects
+scope means no live read-back/sync claim. Manual board content must be inspected
+and safely reconciled before the importer can claim verified. Three actual reviews
+still need evidence; planned dates and owner reports are not invented attendance.
+
+**9 November final onboarding copy check:** setup now states to use one tab and that no chat history is required (D-103). Repeated frontend check passes (42 units, 12 board-tool tests, lint/format/types/build), and all four existing desktop/phone setup browser flows pass. Projects scope is now enabled, but full discovery returns no visible existing board; direct board URL/access is still required.
+
 ## 3 November 2026 — human review correction (C-27, PR #54)
 
 At Tatiana's request, `export` now produces the requested seven-column private review
@@ -67,7 +107,7 @@ ratings in tests prove mechanics only; Tatiana's real ten-case grades remain pen
 Commands, privacy, CSV import and limits are in `LEARNING_EVALUATION.md`; latest GitHub
 checks and review evidence are on PR #54. No private sheet or source row is committed.
 
-## 9 November 2026 ? C-27 reviewer blockers addressed
+## 9 November 2026 — C-27 reviewer blockers addressed
 
 Tatiana's #54 review identified actual frozen-file incompatibilities. Boundary fixes
 allow source/expected `fact` sharing and translate the three documented source labels
@@ -78,3 +118,5 @@ prompt required an explicit synthetic cassette refresh; no live provider was cal
 Full root gates pass: 580 passed, 1 skipped, 92.69% coverage; frontend gates/40 units
 also pass. See `LEARNING_EVALUATION.md` for the runnable private-header command.
 Actual private grades and quality/cost measurements remain T-26, not these fixtures.
+
+**After #54 merged on 9 November:** #55 now contains main 4bed33c and both task histories. Shared evidence/handoff conflicts preserve all entries. Combined root gates pass: 600 passed, 1 skipped, 92.68% coverage; Ruff/format (138 files), strict package types (76 files), CLI typing, schema/task checks. Frontend check passes with 42 units and 12 board-tool tests. Remote checks for the new merge head are on #55; previous 3e0180a had all five green. No production setup wiring or real private evaluation is implied.

@@ -107,6 +107,54 @@ Google identity or provider evaluation; new planning needs recordings/provider s
 Public hosting, OTel export, deployed monitoring, real measured cost/quality, branch
 protection and weekly sprint history have not been represented as complete.
 
+## 3 November 2026 — C-21/C-31, PR #55
+
+This branch starts from main `d5dfb17` and is independent of the still-open C-27
+PR #54. Test totals therefore describe this branch, not the union of both PRs.
+
+| Check             | Observed result                                                                                                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Root gates        | Ruff check/format: 125 files; strict mypy: 73 source files; schema/task checks pass; 439 tests, 92.99% coverage                                                         |
+| Setup regressions | 18 synthetic cases: service/router/real-auth/SQLite checks and one unresolved stale-tab reproduction (F-151); no automatic approval                                     |
+| Frontend          | `npm run check` passes: lint, format, 42 unit tests, 12 board-tool tests, strict types and production build                                                             |
+| Setup browsers    | 4 demo cases and 6 intercepted HTTP cases pass across desktop and phone: completion, skip/resume, reload, failed/malformed responses and adviser access                 |
+| Board preview     | Default dry run reads all 77 main tasks and proposes four seven-day iterations; exact source commit and input hash recorded in ignored `output/project-board-plan.json` |
+| GitHub schema     | Current Projects field/view/iteration inputs checked by authenticated public introspection; this does not establish live-board access or successful publication         |
+
+Actual API/SQLite tests explicitly replace the placeholder in a test app; main's
+production setup route remains 501 until Tatiana wires the callbacks and `/me`
+completion field. Decided-card retry semantics and sourced ASME facts remain owner
+integration work. See [CLUB_SETUP.md](CLUB_SETUP.md).
+
+The Projects token still lacks access; the browser host is unavailable. No board,
+team access or completed weekly review was fabricated. Board API tests use a stateful
+synthetic double (including 123 paginated cards), not live GitHub mutations. See
+[PROJECT_BOARD.md](PROJECT_BOARD.md) for the concrete publishing command and limits.
+Final-head CI is recorded on [PR #55](https://github.com/Nohra2005/ClubOps/pull/55);
+independent review and a merge commit are required before merge.
+
+For the earlier SQLite finding above: #45 was closed by Tatiana's #47. The 2 November
+recheck recorded with PR #54 passed all four Caddy/API cases without server exceptions.
+That supersedes the older unresolved note; public deployment still remains open.
+
+## 9 November 2026 — C-21/C-31/C-29 follow-up (PR #55)
+
+Synced main `4b3f17e` independently of #54. Root gates pass: **530 passed, 1 skipped;
+92.73% coverage**, Ruff/format (132 files), strict types (75 files), schema/task checks.
+All **20 setup cases** pass, including returned failed-source results with/without
+partial proposals: no progress/queue writes survive and an explicit retry succeeds.
+Shared-rule integration checks now follow the current 27-rule sourced rulebook.
+Frontend `npm run check` passes with **42 units, 12 board-tool tests**, lint/format/
+types/build. Current-main board dry run reads **85 tasks**, without remote writes.
+
+Tatiana accepted F-151's one-tab setup limit and requested #55 leave draft for her
+API wiring. Setup production registration and /me are still not wired by this PR.
+D-102/F-174 record the compatibility/failure fix. Existing board/admin access and
+Wednesday cadence come from her #43 reply; scope still prevents live inspection.
+No duplicate board, altered manual cards, completed sprint or private data is claimed.
+
+**9 November final onboarding copy check:** setup now states to use one tab and that no chat history is required (D-103). Repeated frontend check passes (42 units, 12 board-tool tests, lint/format/types/build), and all four existing desktop/phone setup browser flows pass. Projects scope is now enabled, but full discovery returns no visible existing board; direct board URL/access is still required.
+
 ## Merged progress and learning evaluation — 2 November 2026 (C-27)
 
 Pulled main `d5dfb17`: PR #44 is merged with the original 17 commits preserved, and
@@ -164,7 +212,7 @@ learning/answer accuracy. They now require the explicit `smoke` subcommand. D-87
 F-152–F-159 record the revised design/failure evidence. No real private case, actual
 human-study grade or T-26 result is claimed. Final-head CI/review is on PR #54.
 
-## 9 November 2026 ? frozen learning CSV compatibility (C-27)
+## 9 November 2026 — frozen learning CSV compatibility (C-27)
 
 Synced main through `4b3f17e` and addressed Tatiana's #54 review: shared source/expected
 `fact`, original `l_id`, separate `later_question`, and all three `taught_by` aliases.
@@ -180,3 +228,5 @@ learner prompts; replay remains network-forbidden and ratings remain blank.
 
 D-101/F-172/F-173 document the regression evidence. Tatiana's re-review and final-head
 GitHub checks remain on #54; earlier dated counts above are historical.
+
+**After #54 merged on 9 November:** #55 now contains main 4bed33c and both task histories. Shared evidence/handoff conflicts preserve all entries. Combined root gates pass: 600 passed, 1 skipped, 92.68% coverage; Ruff/format (138 files), strict package types (76 files), CLI typing, schema/task checks. Frontend check passes with 42 units and 12 board-tool tests. Remote checks for the new merge head are on #55; previous 3e0180a had all five green. No production setup wiring or real private evaluation is implied.

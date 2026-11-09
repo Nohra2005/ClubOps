@@ -1,6 +1,6 @@
 /** Published capability contracts -> screen models. HTTP endpoint envelopes remain part of T-22. */
 import { ApiError } from './errors';
-import type { AgentRun, AgentStep, ChatReply, Draft, DraftType, Source } from './types';
+import type { AgentRun, AgentStep, ChatReply, Draft, DraftType, SetupStep, Source } from './types';
 
 const incompatible = () =>
   new ApiError(
@@ -87,6 +87,32 @@ export const runStatuses = {
   failed: 'failed',
 } as const satisfies Record<string, AgentRun['status']>;
 export const stepStates = ['running', 'done', 'question', 'failed'] as const;
+
+export function readSetupStep(value: unknown): SetupStep {
+  const data = object(value);
+  const index = decimal(data.index);
+  const total = decimal(data.total);
+  const rulesCount = decimal(data.rules_count);
+  if (
+    !Number.isInteger(index) ||
+    !Number.isInteger(total) ||
+    !Number.isInteger(rulesCount) ||
+    total < 1 ||
+    total > 100 ||
+    index < 1 ||
+    index > total ||
+    typeof data.done !== 'boolean' ||
+    (data.done && index !== total)
+  )
+    throw incompatible();
+  return {
+    question: text(data.question, 1000, 1),
+    index,
+    total,
+    done: data.done,
+    rules_count: rulesCount,
+  };
+}
 
 export function readAgentRun(value: unknown, expectedId: string): AgentRun {
   const { data, fallback, needsInput } = payload(value, true);

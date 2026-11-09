@@ -4,7 +4,7 @@ import { ArrowRight, BookOpen, Check, MessageCircle, ShieldCheck } from 'lucide-
 import { useApp } from '../AppContext';
 import { storage } from '../api';
 import type { SetupStep } from '../api/types';
-import { PageHeading, ErrorNotice, Loading } from '../components/ui';
+import { PageHeading, ErrorNotice } from '../components/ui';
 import { useAction, useResource } from '../hooks';
 
 export default function Setup() {
@@ -15,7 +15,6 @@ export default function Setup() {
   const [answer, setAnswer] = useState('');
   const [history, setHistory] = useState<{ question: string; answer: string }[]>([]);
   const action = useAction();
-  const proposals = useResource(() => api.review('facts'), [api, step?.done]);
   if (!isPresident) return <Navigate to="/events" replace />;
   async function next(value?: string) {
     const result = await action.run(() => api.setup(value));
@@ -26,7 +25,9 @@ export default function Setup() {
           { question: step.question, answer: value === '[skip]' ? 'Skipped for now' : value },
         ]);
       setStep(result.value);
-      setAnswer('');
+      if (value !== undefined || result.value.index !== step?.index || result.value.done)
+        setAnswer('');
+      storage.setItem(`clubops.setup.paused.${me.club.id}`, 'no');
       if (result.value.done) refresh();
     }
   }
@@ -47,15 +48,29 @@ export default function Setup() {
         }
         description="Start with shared rules. Add your club's own people, places and lessons."
       />
+      {!step?.done && (
+        <p className="inline-note">
+          Complete setup in one tab so each answer stays with its question. No chat history is
+          required.
+        </p>
+      )}
       {!step ? (
         <section className="panel setup-welcome">
           <div className="setup-welcome-icon">
             <BookOpen size={31} />
           </div>
-          <h2>You already have the AUB rules.</h2>
+          <h2>Shared rules are the starting point.</h2>
           <p>
-            <strong>{rules.value?.length ?? '…'} shared rule examples</strong> are ready in this
-            demo. Real rules must come from verified official sources.
+            {rules.loading ? (
+              'Checking the shared rulebook…'
+            ) : api.mode === 'demo' ? (
+              <>{rules.value?.length ?? 0} synthetic rule examples are available in this demo.</>
+            ) : rules.value?.length ? (
+              <>{rules.value.length} approved shared AUB rules are available to this club.</>
+            ) : (
+              'No approved shared rules are available yet. Ask your president to load the sourced rulebook.'
+            )}{' '}
+            Setup answers never create or approve AUB rules.
           </p>
           <div className="setup-promises">
             <div>
@@ -73,7 +88,7 @@ export default function Setup() {
           </div>
           <div className="form-actions">
             <button className="button primary" disabled={action.pending} onClick={() => next()}>
-              {action.pending ? 'Opening setup…' : 'Start club setup'}
+              {action.pending ? 'Opening setup…' : 'Start or resume club setup'}
               <ArrowRight size={14} />
             </button>
             <button className="text-button" onClick={stop}>
@@ -88,25 +103,11 @@ export default function Setup() {
             <Check size={28} />
           </span>
           <h2>Your club is ready to start.</h2>
-          <p>What you shared is proposed knowledge. Check it before the club relies on it.</p>
-          {proposals.loading ? (
-            <Loading rows={1} />
-          ) : (
-            <div className="setup-proposals">
-              <h3>Proposed facts</h3>
-              {proposals.value
-                ?.filter((card) => card.group === `${me.club.name} setup`)
-                .map((card) => (
-                  <div key={card.id}>
-                    <span />
-                    {card.statement}
-                  </div>
-                ))}
-              {!proposals.value?.some((card) => card.group === `${me.club.name} setup`) && (
-                <p>No new facts were recorded. You can teach the club later in Chat.</p>
-              )}
-            </div>
-          )}
+          <p>
+            Setup is complete. Any facts extracted from your answers are waiting in Review; none
+            were approved here. Skipped or uninformative answers may produce no facts.
+          </p>
+          <p>You can add more knowledge later in Chat. Setup does not change cabinet accounts.</p>
           <div className="form-actions">
             <Link className="button primary" to="/review">
               Review what we learned <ArrowRight size={14} />
@@ -176,13 +177,24 @@ export default function Setup() {
                 </button>
               </div>
               <ErrorNotice message={action.error} />
+              {action.error && (
+                <button
+                  className="text-button"
+                  type="button"
+                  disabled={action.pending}
+                  onClick={() => next()}
+                >
+                  Resume saved setup
+                </button>
+              )}
             </form>
           </section>
           <button className="text-button stop-setup" onClick={stop} disabled={action.pending}>
-            Stop for now · your answers are kept
+            Stop for now · saved progress is kept
           </button>
           <p className="inline-note">
-            AI runs when you choose Next question or Skip. Nothing runs while you type.
+            Next question may use AI to propose facts. Skipping or resuming does not call AI.
+            Nothing runs while you type. Omit personal contact details and private links.
           </p>
         </>
       )}

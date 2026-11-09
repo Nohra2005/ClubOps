@@ -1,6 +1,6 @@
 # Knowledge base and working memory
 
-Updated 1 November 2026. The memory model separates proposed knowledge, verified knowledge and event/run working state. Public interfaces are in `src/clubops/contracts/`; availability is in `docs/api.md`.
+Updated 9 November 2026. The memory model separates proposed knowledge, verified knowledge and event/run working state. Public interfaces are in `src/clubops/contracts/`; availability is in `docs/api.md`.
 
 ## Stores, scope and lifetime
 
@@ -20,6 +20,19 @@ No automatic raw-data, history, recording or trace purge is claimed. Retention/d
 ## Knowledge lifecycle
 
 A source is untrusted input. Learning extracts source-supported candidates and submits proposals. Existing knowledge can lead to a create, merge, update or contradiction proposal; a model cannot verify its own output. Human decisions create the verified view, while retired, superseded, expired and unapproved items stay out of current knowledge.
+
+Under D-95, extraction must identify how long a fact holds and whether it is stated
+as fact/agreement or opinion/suggestion/question. One-time arrangements and personal
+views are dropped; this-term facts have an expiry. The model supplies these labels,
+so the filter is not proof that every surviving fact is correct. A cut-off/unreadable
+model response is a failed source, not an off-topic source; retry it rather than
+mark it learned (D-98/F-168).
+
+Reviewers must inspect the existing fact beside a proposed replacement. F-171 records
+a real wrong-match limit: accepting an unrelated replacement could retire useful
+knowledge. Quote checks do not prove that two statements concern the same rule.
+For shared AUB facts, approval/sharing requires a president and replacements retain
+the shared layer (D-91/F-163).
 
 Instruction warnings and old-document flags are visible in Review and excluded from bulk approval. They remain available for an individual source check. Official status cannot be acquired merely by uploading a document or typing an instruction into a chat.
 
