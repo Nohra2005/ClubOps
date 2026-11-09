@@ -15,7 +15,9 @@ uv run python scripts/eval_learning.py export --cases tests/fixtures/learning.sy
 
 Each row runs the public learner -> individual sandbox approval -> follow-up answer
 once, in a new empty in-memory store. The question is also checked before teaching.
-Labels never enter model prompts. Nothing touches production knowledge.
+Expected-only labels are not added to model prompts. When source and expected fact
+share a column, that fact is deliberately the teaching input. Nothing touches
+production knowledge.
 
 The CSV has exactly these seven columns:
 
@@ -98,6 +100,29 @@ Default input headers are `source`, `question`, `expected_facts` (JSON array), o
 The default source kind is `user_input` and club is the isolated `eval-club`; optional
 kind/club headers can also be mapped. The export preserves original IDs and hashes
 the exact input snapshot. It never writes to the frozen CSV.
+
+Tatiana confirmed her frozen headers in the PR review: `l_id`, `taught_by`,
+`fact_id`, `fact`, `later_question`. The same `fact` cell can be both the teaching
+input and expected fact; the question must remain a separate column. Use:
+
+```sh
+uv run python scripts/eval_learning.py export --cases PRIVATE_CSV_PATH --as-of YYYY-MM-DD --id-column l_id --source-column fact --question-column later_question --expected-column fact --expected-format text --kind-column taught_by --recordings data/private/learning-recordings --sheet data/private/learning-review.csv
+```
+
+Replace the path/date; replay still needs recordings for that exact model, date and
+input. A deliberate first provider run uses the configured model and `--mode record`.
+`fact_id` is not needed for collection or grading and remains in the original CSV.
+Source labels are mapped only at import:
+
+| Frozen label     | ClubOps SourceKind |
+| ---------------- | ------------------ |
+| chat             | chat_message       |
+| after_event_form | form               |
+| forwarded_email  | email              |
+
+Every canonical SourceKind value remains accepted; an empty/missing kind defaults
+to `user_input`. Unknown nonempty labels fail with a sanitized row error. No frozen
+rows, canonical contracts or private evidence are changed by this mapping (D-101).
 
 **Review CSVs intentionally contain private evidence.** For private datasets, repo-
 local sheets/companions must live in ignored `data/private/` or `results/tmp/`, or
