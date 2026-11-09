@@ -25,6 +25,13 @@ The explicit `smoke` subcommand retains exact-word plumbing diagnostics only; it
 not the semantic quality scorer. The replay tests fail on incompatible prompt changes
 rather than silently regenerating recordings.
 
+On 2026-11-09, the three recordings were explicitly refreshed through the public
+CLI with `httpx.MockTransport` after syncing main through `4b3f17e`. The synthetic
+extraction now includes `lasting: lasting` and `stated_as: fact` (D-95), and its
+request fingerprint matches the current learner prompt. The CSV, date, model and
+expected outcome are unchanged. No live provider, private input or human rating
+was used. Tests still require successful replay with network access forbidden.
+
 Never put real recordings here. Keep frozen/private evaluation inputs and recordings
 private; map their columns explicitly without changing the frozen CSV. Scoring rules,
 human-rating workflow and limitations are documented in `web/LEARNING_EVALUATION.md`.
