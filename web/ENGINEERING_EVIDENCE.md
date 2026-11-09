@@ -80,3 +80,5 @@ weeks from 4 November; current-main dry run pins 85 tasks at 4b3f17e. No Project
 scope means no live read-back/sync claim. Manual board content must be inspected
 and safely reconciled before the importer can claim verified. Three actual reviews
 still need evidence; planned dates and owner reports are not invented attendance.
+
+**9 November final onboarding copy check:** setup now states to use one tab and that no chat history is required (D-103). Repeated frontend check passes (42 units, 12 board-tool tests, lint/format/types/build), and all four existing desktop/phone setup browser flows pass. Projects scope is now enabled, but full discovery returns no visible existing board; direct board URL/access is still required.

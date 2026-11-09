@@ -7,7 +7,10 @@ and Wednesday-start weeks from 4 November. The owner/number, private visibility,
 existing fields/cards and iteration IDs still need live read-back after authorization.
 Her report is not a claim that this CLI has verified or synced the board.
 
-The CLI token still lacks Projects access. No token belongs in this repository, CI
+Projects authorization was enabled on 9 November for `chrs-005`. Read-only discovery
+then returned no visible boards under `Nohra2005`, `chrs-005` or the repository
+(all connections fully read). The direct board URL/access must be confirmed with
+Tatiana before live sync; a repository URL does not identify a project. No token belongs in this repository, CI
 secrets or a chat message. The GitHub connector exposes no Projects tools here.
 
 ## Preview and inspect the existing board
@@ -84,7 +87,8 @@ next action and refuses a different authenticated owner.
   are rejected. Historical iteration IDs are preserved when new weeks are appended.
 - Projects access is needed only by the operator; CI runs synthetic API doubles with
   no token or network writes. The live adapter has not been exercised against a board
-  while authorization is missing. Its schema fields were checked by introspection.
+  while the existing board is not visible to this account. Its schema fields were
+  checked by introspection.
 
 The implementation follows GitHub's current [Projects API reference](https://docs.github.com/en/graphql/reference/projects)
 and [API guide](https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects).

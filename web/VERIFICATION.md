@@ -152,3 +152,5 @@ API wiring. Setup production registration and /me are still not wired by this PR
 D-102/F-174 record the compatibility/failure fix. Existing board/admin access and
 Wednesday cadence come from her #43 reply; scope still prevents live inspection.
 No duplicate board, altered manual cards, completed sprint or private data is claimed.
+
+**9 November final onboarding copy check:** setup now states to use one tab and that no chat history is required (D-103). Repeated frontend check passes (42 units, 12 board-tool tests, lint/format/types/build), and all four existing desktop/phone setup browser flows pass. Projects scope is now enabled, but full discovery returns no visible existing board; direct board URL/access is still required.
