@@ -6,6 +6,7 @@ callback boundary for the API owner; it does not claim app.py is wired yet.
 
 from __future__ import annotations
 
+import json
 from datetime import date
 from pathlib import Path
 
@@ -95,12 +96,15 @@ def setup_app(data_dir: Path, adapter: Adapter) -> FastAPI:
 
 def test_adapter_uses_real_auth_shared_rules_review_and_club_separation(tmp_path: Path) -> None:
     adapter = Adapter(tmp_path)
+    rulebook = Path(__file__).resolve().parents[1] / "data/rulebook/aub-rules.json"
+    expected_rules = len(json.loads(rulebook.read_text(encoding="utf-8")))
+    assert expected_rules > 0
     with TestClient(setup_app(tmp_path, adapter)) as client:
         endpoint = "/api/setup/next"
         assert client.post(endpoint, json={}, headers=HEADERS).status_code == 401
         assert client.post("/api/auth/dev", json={"email": "president@example.com"}, headers=HEADERS).status_code == 200
         first = client.post(endpoint, json={}, headers=HEADERS)
-        assert first.status_code == 200 and first.json()["rules_count"] == 25
+        assert first.status_code == 200 and first.json()["rules_count"] == expected_rules
         answered = client.post(endpoint, json={"answer": "Synthetic club runs design workshops."}, headers=HEADERS)
         assert answered.status_code == 200, answered.text
         assert answered.json()["index"] == 2
@@ -115,7 +119,7 @@ def test_adapter_uses_real_auth_shared_rules_review_and_club_separation(tmp_path
         client.post("/api/auth/dev", json={"email": "other@example.com"}, headers=HEADERS)
         assert client.post(endpoint, json={}, headers=HEADERS).json()["index"] == 1
         assert client.get("/api/review").json() == []
-        assert client.post(endpoint, json={}, headers=HEADERS).json()["rules_count"] == 25
+        assert client.post(endpoint, json={}, headers=HEADERS).json()["rules_count"] == expected_rules
 
 
 def test_real_sqlite_queue_retry_is_idempotent_after_a_partial_failure(tmp_path: Path) -> None:
