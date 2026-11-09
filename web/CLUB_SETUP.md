@@ -46,7 +46,10 @@ without another extraction; changing the answer while that retry is outstanding
 returns 409. Once queued, active progress fields no longer retain the proposal copy.
 This is not a promise of secure deletion from SQLite pages, backups or storage.
 
-Model/extraction failure leaves the question unchanged. The screen keeps the draft
+Model/extraction failure leaves the question unchanged. A returned `sources_failed`
+also rejects the whole result before any partial facts are queued (F-174); retry the
+answer explicitly. Off-topic results with no failures may still advance normally.
+The screen keeps the draft
 and offers an explicit resume action. Skips, typing and ordinary resume do not call
 a model. All source text is `Untrusted`, tagged as an interview/setup question; the
 learner must apply the usual redaction/injection safeguards. Questions ask for roles,
@@ -55,12 +58,12 @@ Real application state and any outbox copies stay out of Git, logs and screensho
 
 An answer-only request has no question token. A delayed response retry or second tab
 can therefore answer a later question accidentally after the first request completed.
-Use one setup tab; an owner-approved question token/If-Match extension was requested
-in #43. No silent HTTP-contract extension was introduced here.
+Use one setup tab. In #43, Tatiana declined the question-token/If-Match extension:
+setup is president-only and one-time, and she accepts the documented two-tab limit.
+No HTTP-contract extension is planned for this task.
 F-151 and `test_answer_only_contract_reproduces_the_unresolved_stale_tab_limit`
 preserve an explicit reproduction. A passing reproduction test is not a claim that
-stale answers are rejected; replace it with rejection assertions after the owner
-agrees the contract change.
+stale answers are rejected. Keep the reproduction while the accepted limit exists.
 
 ## Second-club demo and remaining work
 

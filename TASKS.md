@@ -432,6 +432,7 @@ Reference documents:
 ### C-21 New-club setup (was T-20)
 - Owner: christophe
 - Status: doing
+- Owner response (2026-11-09): Tatiana's #43 reply requests #55 be made ready so she can wire the route and `/me`; she declines the question-token extension and accepts the documented one-tab limit (F-151). Actual ASME seed material belongs to T-09. Synced current main; reported `sources_failed` now leaves setup retryable before queueing any partial facts (F-174). Production wiring and real second-club verification remain pending.
 - Needs: none
 - What: The backend for the setup screen you built (C-11): `POST /api/setup/next {answer?}` walks a new club through about 10 questions (name, club or society and faculty, adviser, cabinet roles, signature events, usual venues, sponsors...) and turns each answer into a proposed fact in Review; the 25 AUB rules apply from day one (they are shared). Code in `src/clubops/api/setup.py` (yours); register it in place of the 501 route (one line; tell Tatiana). Tatiana gives you ASME's non-personal facts to seed ASME as the second club for the demo.
 - Done when: a new club can go through setup in the demo, and ASME is the second club.
