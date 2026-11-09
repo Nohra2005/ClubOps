@@ -106,3 +106,77 @@ local API with dev sign-in, not the browser-storage demo. It has no configured r
 Google identity or provider evaluation; new planning needs recordings/provider setup.
 Public hosting, OTel export, deployed monitoring, real measured cost/quality, branch
 protection and weekly sprint history have not been represented as complete.
+
+## Merged progress and learning evaluation — 2 November 2026 (C-27)
+
+Pulled main `d5dfb17`: PR #44 is merged with the original 17 commits preserved, and
+main's Web/Container/Python workflows pass. Tatiana's PR #47 fixes issue #45 with a
+shared-connection lock and F-131 concurrency regression. Re-running the previously
+failing Caddy/API suite now gives **4 passed**, with no ASGI/SQLite exceptions in
+`output/sqlite-fixed-flow.log`. C-23/C-24 are done; deployed C-13 remains open.
+
+C-27 is proposed in PR #54. The scorer depends on published contracts; its assigned
+CLI composes the public learner/store/ask interfaces in new per-case sandboxes.
+
+| Check              | Result                                                                                                                                                           |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Root gates         | Ruff check/format (127 files), strict mypy (73 source files), schema/task checks pass; 441 tests, 92.99% coverage                                                |
+| CLI typing         | `mypy scripts/eval_learning.py` passes in addition to the package gate                                                                                           |
+| C-27 regressions   | 20 synthetic tests: CSV/alias validation, scope/current facts, duplicates, errors/failed spend, label privacy, real record/replay and checked-in offline example |
+| Actual offline CLI | The documented fixture command runs without a key/network, with 2 completed cases, 1 expected/learned fact, 1 supported new-fact citation and 0 errors           |
+| Frontend           | `npm run check` passes, including all 40 unit tests; no app-screen behavior changed by C-27                                                                      |
+
+The fixture response/token values are synthetic and the replay budget cost is zero.
+Neither is a provider-quality or operating-cost result. Reports expose mode, model,
+configured token rates, scoring version and the exact dataset-snapshot hash, but no
+source/fact/answer text or raw errors. Runtime errors return a nonzero status rather
+than becoming valid zero-quality measurements. Explicit mappings support frozen
+plain-text labels without rewriting their CSV.
+
+Use [LEARNING_EVALUATION.md](LEARNING_EVALUATION.md) for the exact command, metrics
+and limits. The replay regression runs automatically in root CI; real private-set
+results and final held-out thresholds remain T-26/C-22. Alias sets must not be tuned
+after seeing model outputs. Sandbox verification is simulation, not user acceptance.
+
+## 3 November 2026 — C-27 human review revision
+
+Tatiana's feedback replaces automatic exact-word grading for learning/answer quality
+with the two-command workflow in [LEARNING_EVALUATION.md](LEARNING_EVALUATION.md).
+The new CSV deliberately contains the private expected/saved facts, question and
+actual answer; only learned/answer_ok start blank. Keep real sheets and companions
+in ignored private locations. Result Markdown/JSON remains free of evidence text.
+
+Verified after updating to main `22c4dae` and its locked dependencies:
+
+- Root gates pass: Ruff check/format (128 files), strict package typing (73 source
+  files), explicit CLI typing, schema/task checks; **469 tests, 92.93% coverage**.
+- **48 C-27 tests** cover actual record/replay, a paraphrased saved fact accepted by
+  supplied human yes labels, blank/invalid grades, row completeness/provenance,
+  literal spreadsheet text, output protection and a model/configuration-free scorer.
+- Frontend `npm run check` passes, including 40 units, lint/format/types/build.
+- The documented synthetic replay actually produced two review rows, zero errors
+  and both rating columns blank. No API key/network or real provider charge was used.
+- Linux CI caught a test relying on the local Windows temporary-folder location;
+  the regression now sets an explicit repository boundary without weakening the guard.
+
+Earlier exact-label totals above are historical **smoke diagnostics**, not semantic
+learning/answer accuracy. They now require the explicit `smoke` subcommand. D-87 and
+F-152–F-159 record the revised design/failure evidence. No real private case, actual
+human-study grade or T-26 result is claimed. Final-head CI/review is on PR #54.
+
+## 9 November 2026 ? frozen learning CSV compatibility (C-27)
+
+Synced main through `4b3f17e` and addressed Tatiana's #54 review: shared source/expected
+`fact`, original `l_id`, separate `later_question`, and all three `taught_by` aliases.
+The input bytes are unchanged. Unknown types still produce sanitized errors. Three
+synthetic cassettes were deliberately refreshed through MockTransport for current
+learner prompts; replay remains network-forbidden and ratings remain blank.
+
+- C-27: **70 tests pass**, including full frozen-header record/replay for each alias.
+- Full root gates pass: **580 passed, 1 skipped; 92.69% coverage**; Ruff/format
+  (135 files), strict package typing (75 source files), CLI typing, schemas/tasks.
+- Frontend `npm run check` passes with **40 units**, lint/format/types/build.
+- No real private CSV, human-study result or paid provider call was used.
+
+D-101/F-172/F-173 document the regression evidence. Tatiana's re-review and final-head
+GitHub checks remain on #54; earlier dated counts above are historical.

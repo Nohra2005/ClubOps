@@ -374,6 +374,7 @@ Reference documents:
 - Unblocked (2026-10-24): T-22 part 1 is live. `docs/api.md` answers `web/API_NOTES.md` (conventions, sign-in, what is live and what answers 501). Always send `X-Requested-With: ClubOps` on changes, also without a body.
 - Progress (2026-10-26): available planning, approval, calendar, handover, usage and session flows pass against the local API and production router. Google credential exchange is implemented; real Google/deployed verification needs configuration. Remaining 501 features depend on J-15/T-18/C-21/J-07 and the API owner.
 - Progress (2026-11-01): integrated T-18 warning/outdated fields, supported uploads and no-fact replies. A real Caddy/API repeat exposed intermittent SQLite member-lookup errors (issue #45, API owner); production-flow completion remains open despite passing scripted/Vite and container checks.
+- Progress (2026-11-02): #47 fixes the SQLite connection race; the same Caddy/API suite now passes all 4 cases with no ASGI/SQLite exceptions in the captured log. Deployed Google/every-screen verification remains pending.
 
 ### C-14 Deploy the frontend
 - Owner: christophe
@@ -445,19 +446,19 @@ Reference documents:
 
 ### C-23 Frontend checks in CI (bonus)
 - Owner: christophe
-- Status: review
+- Status: done
 - Needs: none
 - What: Add a CI job for `web/`: install from the lockfile, lint, type check, unit tests and a production build, so a broken screen fails the PR like broken Python does.
 - Done when: the CI workflow runs the web job on every PR and it is green on `main`.
-- PR #44: separate quality and synthetic browser/API jobs pass on GitHub; real BuildKit context checks are included. Main completion waits for reviewed merge.
+- PR #44 merged with individual commits preserved; quality/browser/API/BuildKit checks are green on main `d5dfb17` (2026-11-02).
 
 ### C-24 Docker Compose (bonus)
 - Owner: christophe
-- Status: review
+- Status: done
 - Needs: C-18
 - What: A `docker-compose.yml` that starts the whole app locally (API + web, data on a volume, settings from `.env`) with one command, matching the deployed setup. Document it in the README.
 - Done when: `docker compose up` on a fresh clone gives a working app with dev sign-in.
-- PR #44: `docker compose up --build` starts the complete local app on loopback with a volume and synthetic cabinet account. Desktop/phone login and routing plus actual container replacement/data/session persistence verified. Dedicated CI gate added; public deployment remains C-18/C-14.
+- PR #44 merged: `docker compose up --build` starts the complete local app on loopback with a volume and synthetic cabinet account. Desktop/phone login/routing and actual container replacement/data/session persistence are verified locally and green in main CI. Public deployment remains C-18/C-14.
 
 ### C-25 OpenTelemetry traces (bonus)
 - Owner: christophe
@@ -475,10 +476,14 @@ Reference documents:
 
 ### C-27 Learning test runner
 - Owner: christophe
-- Status: todo
+- Status: review
+- Review fixes (2026-11-09): addressed Tatiana's two blockers on #54: the frozen `fact` column can serve as source and expected fact; chat/after_event_form/forwarded_email map to the existing SourceKind values. Original CSV bytes stay unchanged, question stays separate, unknown kinds remain errors. Synced main `4b3f17e` and refreshed only synthetic prompt recordings. All 70 C-27 tests and full root gates pass (580 passed, 1 skipped; 92.69% coverage); 40 frontend units/build pass. Awaiting Tatiana's re-review, private run and ratings.
 - Needs: none
-- What: A script like `scripts/eval_plans.py` for the learning test (`learning-test.csv`, frozen in T-04): feed each source to the learning code (`src/clubops/learning/`), approve what it proposes, then ask the matching question and check the answer uses the new fact. Report facts learned, wrong facts, missed facts, cost. Build and test it on synthetic rows (`tests/factories.py`); Tatiana runs it on the private file in T-26.
-- Done when: `scripts/eval_learning.py` gives a result table on synthetic data, with tests, in replay mode.
+- What: Run the frozen learning cases through learning, sandbox approval and the follow-up question; export a private seven-column sheet (id, expected fact, actual saved facts, question, actual answer, blank learned/answer_ok). Tatiana marks yes/partly/no for the ten tests; a second offline command makes the category-count results table, preserving costs/errors. Build/test on synthetic data; Tatiana runs the private file in T-26. Exact-word matching is a smoke diagnostic only.
+- Done when: `scripts/eval_learning.py export` produces the blank review sheet and `score` summarizes completed ratings on synthetic data in replay mode, with tests.
+- Revision (2026-11-03): Tatiana's review relayed by Christophe replaces automatic exact-word quality scoring with a private review sheet: expected fact, learned fact, question and actual answer, plus blank learned/answer_ok ratings (yes/partly/no). A second offline command summarizes the completed sheet. Exact matching is retained only as an explicitly named technical smoke diagnostic, not learning/answer correctness.
+- Implementation (2026-11-02): isolated capture -> sandbox verification -> cited follow-up; exact pre-labelled statement/alias scoring, wrong/missed/duplicate facts and budget costs. Frozen column mappings and plain-text labels are supported without rewriting input. Checked-in synthetic replay runs with no key/network; 20 evaluator tests cover the real pipeline, privacy, failure accounting and replay. See `web/LEARNING_EVALUATION.md`; real private T-26 results are not claimed.
+- Revised implementation (2026-11-03): `export` writes the exact seven-column private CSV and two empty rating columns, preserving original IDs and actual saved facts/answers; `score` validates completed yes/partly/no labels and makes an offline results table. Partly is unweighted; every original case, operational error and failed spend remains visible. Exact-word metrics require explicit `smoke`. All 48 C-27 tests pass; real Tatiana ratings and private T-26 measurements remain pending. D-87 supersedes D-83 for quality scoring.
 
 ### C-28 Demo script and backup video
 - Owner: christophe

@@ -27,11 +27,20 @@ Current results and conditions are in `VERIFICATION.md`; the PR's Checks tab is 
 authority for its latest head. The deployed/pilot/evaluation tasks stay open until their
 own completion evidence exists.
 
-**Open integration finding:** [issue #45](https://github.com/Nohra2005/ClubOps/issues/45)
-records a reproduced intermittent SQLite member-lookup exception in the local real-API
-Caddy path. A run with four passing assertions still emitted server exceptions, and a
-focused repeat failed. This is referred to the API owner; green Linux/unit/container
-checks are not being used to claim that the backend finding is fixed.
+**2 November follow-up:** PR #44 is merged with its 17 original commits preserved;
+Web, Container and Python workflows are green on main `d5dfb17`. GitHub's PR #44 review
+list has no review records, so independent-review evidence remains a T-40 process gap,
+not something this document claims happened retroactively.
+
+Tatiana fixed [issue #45](https://github.com/Nohra2005/ClubOps/issues/45) in PR #47
+with a shared-connection lock and concurrency regression (F-131). The same local
+Caddy/API suite now passes all 4 cases with no ASGI/SQLite errors in its captured log.
+Public deployment/Google verification remains open.
+
+[PR #54](https://github.com/Nohra2005/ClubOps/pull/54) adds C-27's isolated learning
+evaluation and full synthetic record/replay regression. The command and limits are in
+[LEARNING_EVALUATION.md](LEARNING_EVALUATION.md). This runs in root CI without keys;
+it is not T-26's real private-set results or C-22's final held-out thresholds.
 
 ## Instructions for teammate agents
 
@@ -42,3 +51,30 @@ Record an actual command, result, run/review link and limitation. Tell your user
 started and what remains; do not call a tool installation proof of use. Reply in #43
 to coordinate overlapping workflow/API/telemetry work. Assistants in separate sessions
 cannot be directly messaged through this session's agent tools.
+
+## 3 November 2026 — human review correction (C-27, PR #54)
+
+At Tatiana's request, `export` now produces the requested seven-column private review
+CSV with actual saved facts/answers and two blank ratings. `score` reads completed
+yes/partly/no labels offline; no wording comparator or model assigns semantic grades.
+Partly stays separate. The exact-word path is an explicit technical `smoke` only.
+D-87 supersedes D-83's quality use, not planning's separate automatic evaluation.
+
+File-backed checks: 48 evaluator regressions, 469 full Python tests / 92.93% coverage,
+strict source/CLI typing and root gates; 40 frontend units and production build. The
+actual synthetic replay exported two blank-rated rows with no key/network. Synthetic
+ratings in tests prove mechanics only; Tatiana's real ten-case grades remain pending.
+Commands, privacy, CSV import and limits are in `LEARNING_EVALUATION.md`; latest GitHub
+checks and review evidence are on PR #54. No private sheet or source row is committed.
+
+## 9 November 2026 ? C-27 reviewer blockers addressed
+
+Tatiana's #54 review identified actual frozen-file incompatibilities. Boundary fixes
+allow source/expected `fact` sharing and translate the three documented source labels
+without editing the frozen CSV or contracts. D-101/F-172/F-173 link those decisions
+to regressions. All 70 evaluator tests pass, including record/replay of her headers
+using synthetic evidence and a forbidden network during replay. Current main's learner
+prompt required an explicit synthetic cassette refresh; no live provider was called.
+Full root gates pass: 580 passed, 1 skipped, 92.69% coverage; frontend gates/40 units
+also pass. See `LEARNING_EVALUATION.md` for the runnable private-header command.
+Actual private grades and quality/cost measurements remain T-26, not these fixtures.

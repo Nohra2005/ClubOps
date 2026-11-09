@@ -95,6 +95,9 @@ Updated 6 November 2026. Deadline: 30 November 2026. Live task list: [`TASKS.md`
 
 ## Documentation
 
+Learning evaluation (C-27): [offline command, CSV mappings and metric limits](web/LEARNING_EVALUATION.md).
+The checked-in replay example uses only synthetic data and no API key; real private-set results remain T-26.
+
 | | |
 |---|---|
 | [Architecture](docs/architecture.md) | Components, agentic vs deterministic vs human, trust boundaries |
