@@ -65,8 +65,8 @@ class Columns:
 
     def __post_init__(self) -> None:
         required = (self.source, self.question, self.expected)
-        if len(set(required)) != 3 or any(not name.strip() for name in required):
-            raise ValueError("Source, question and expected-fact columns must be distinct and nonempty.")
+        if any(not name.strip() for name in required) or self.question in (self.source, self.expected):
+            raise ValueError("Columns must be nonempty; the question must be separate from source and expected facts.")
         if self.expected_format not in ("json", "text"):
             raise ValueError("Unknown expected-fact format.")
 

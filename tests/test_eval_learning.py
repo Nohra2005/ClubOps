@@ -61,8 +61,35 @@ def test_existing_plain_fact_column_can_be_mapped_without_rewriting_the_frozen_f
         path, Columns(source="excerpt", question="follow_up", expected="fact", expected_format="text")
     )
     assert loaded.expected == (("Use the example form.",),) and path.read_bytes() == before
-    with pytest.raises(ValueError, match="distinct"):
-        Columns(source="labels", expected="labels")
+
+
+def test_taught_and_expected_fact_can_share_a_frozen_column(tmp_path: Path) -> None:
+    path = tmp_path / "original.csv"
+    path.write_text(
+        "l_id,fact,later_question\nsynthetic-001,Use the example form.,Which form do we use?\n", encoding="utf-8"
+    )
+    before = path.read_bytes()
+    [loaded] = load_cases(
+        path,
+        Columns(source="fact", question="later_question", expected="fact", expected_format="text", id="l_id"),
+    )
+    assert loaded.source == loaded.expected[0][0] == "Use the example form."
+    assert loaded.case_id == "synthetic-001" and path.read_bytes() == before
+
+
+@pytest.mark.parametrize(
+    "columns",
+    [
+        {"source": "question"},
+        {"expected": "question"},
+        {"source": ""},
+        {"question": " "},
+        {"expected": ""},
+    ],
+)
+def test_question_stays_separate_and_required_column_names_stay_nonempty(columns: dict[str, str]) -> None:
+    with pytest.raises(ValueError, match="nonempty.*question.*separate"):
+        Columns(**columns)
 
 
 def test_private_case_ids_are_preserved_for_review_but_not_public_refs(tmp_path: Path) -> None:
