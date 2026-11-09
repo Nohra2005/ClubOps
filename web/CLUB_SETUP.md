@@ -1,5 +1,13 @@
 # New-club setup (C-21)
 
+Setup questions are now the primary onboarding path, as Tatiana confirmed through
+Christophe on 9 November. WhatsApp history import has been dropped for onboarding:
+members have not consented to those messages being read, and clubs need a path
+that does not require handing over chats. Ask the president for organizational
+facts directly, then review extracted proposals. This team decision is in D-103;
+Tatiana is taking the broader privacy question to the professor. No professor
+approval or third-party consent is inferred here.
+
 The owned service/router is in `src/clubops/api/setup.py`. The screen uses the
 existing `POST /api/setup/next {answer?}` response fields: `question`, `index`,
 `total`, `done`, `rules_count`. Empty requests resume; `[skip]` advances without
@@ -65,7 +73,7 @@ F-151 and `test_answer_only_contract_reproduces_the_unresolved_stale_tab_limit`
 preserve an explicit reproduction. A passing reproduction test is not a claim that
 stale answers are rejected. Keep the reproduction while the accepted limit exists.
 
-## Second-club demo and remaining work
+## ASME onboarding and remaining work
 
 The frontend's ASME workspace is visibly synthetic. Both HTTP adapter tests use
 synthetic accounts and facts. Tatiana must provide/seed the actual non-personal ASME

@@ -48,6 +48,12 @@ export default function Setup() {
         }
         description="Start with shared rules. Add your club's own people, places and lessons."
       />
+      {!step?.done && (
+        <p className="inline-note">
+          Complete setup in one tab so each answer stays with its question. No chat history is
+          required.
+        </p>
+      )}
       {!step ? (
         <section className="panel setup-welcome">
           <div className="setup-welcome-icon">

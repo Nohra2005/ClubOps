@@ -16,6 +16,12 @@ Updated 9 November 2026. Sources must be public, authorized or synthetic. A sour
 
 ## Before processing a real source
 
+For new-club onboarding, use C-21's president interview; WhatsApp message-history
+import is no longer the onboarding path (D-103, confirmed by Tatiana through
+Christophe on 9 November). Do not ask ASME to hand over member chats. Existing
+historical experiments do not establish consent for future use. Tatiana owns the
+professor discussion and any resulting policy; no answer from him is claimed here.
+
 Record who authorized it, its source type/date, permitted purpose and club, and any required deletion restriction in a private provenance record. Do not put personal authorization records or raw source contents in the public ledger. Only genuinely public policy belongs in the shared AUB scope; a forwarded message claiming to be policy is not automatically authoritative.
 
 The redaction component hides phone numbers, AUB IDs, emails and links before model calls. Automatic removal of every personal name is **not** claimed. Review names and identifying context manually according to the source's consent. Extraction checks quoted support, but redaction and quote validation do not replace authorization or human verification.

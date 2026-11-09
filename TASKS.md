@@ -432,6 +432,7 @@ Reference documents:
 ### C-21 New-club setup (was T-20)
 - Owner: christophe
 - Status: doing
+- Onboarding decision (2026-11-09): per Tatiana's message relayed by Christophe, setup questions are the primary onboarding path; WhatsApp history import is dropped for onboarding because members have not consented. ASME is planned for Wednesday 11 November via this flow. #55 contains current main/contracts 0.2.3 and is mergeable; Tatiana will wire the API after merge. UI/guide say no chat history is required and use one tab (D-103). No professor privacy answer is claimed.
 - Owner response (2026-11-09): Tatiana's #43 reply requests #55 be made ready so she can wire the route and `/me`; she declines the question-token extension and accepts the documented one-tab limit (F-151). Actual ASME seed material belongs to T-09. Synced current main; reported `sources_failed` now leaves setup retryable before queueing any partial facts (F-174). Production wiring and real second-club verification remain pending.
 - Needs: none
 - What: The backend for the setup screen you built (C-11): `POST /api/setup/next {answer?}` walks a new club through about 10 questions (name, club or society and faculty, adviser, cabinet roles, signature events, usual venues, sponsors...) and turns each answer into a proposed fact in Review; the 25 AUB rules apply from day one (they are shared). Code in `src/clubops/api/setup.py` (yours); register it in place of the 501 route (one line; tell Tatiana). Tatiana gives you ASME's non-personal facts to seed ASME as the second club for the demo.
@@ -512,7 +513,7 @@ Reference documents:
 - What: A GitHub Projects board fed by `TASKS.md` (one card per task, columns = status), so ownership is visible on GitHub. One-week sprints (a Projects iteration per week with the tasks planned for it); a 10-minute review with the team each week, noted in one line under T-28.
 - Done when: the board matches `TASKS.md` and 3 weekly sprints are recorded.
 - Progress (2026-11-03): PR #55 adds the pinned TASKS.md plan, private Projects v2 create/sync CLI, board fields, proposed weekly iterations and read-back verification. 12 synthetic tool tests run in web CI; dry run reads 77 tasks from main. See `web/PROJECT_BOARD.md`.
-- Blocker: current CLI token lacks Projects scope; browser host is unavailable. Christophe was asked to run `gh auth refresh -s project`. No live board or team access has been verified. Three actual weekly team reviews still need to happen and be recorded under T-28; planned iterations are not completed-review evidence.
+- Blocker (updated 2026-11-09): Projects scope is now enabled for chrs-005, but full read-only discovery returns no visible boards under Nohra2005, chrs-005 or the repository. Need Tatiana's direct board URL/access before inspecting and adopting the existing board; do not create a duplicate. Three actual weekly team reviews still need evidence under T-28; planned iterations are not completed-review evidence.
 
 <!-- C-32 dropped on 2026-11-01 (D-82): no human graders, so no blind grading packets. -->
 
