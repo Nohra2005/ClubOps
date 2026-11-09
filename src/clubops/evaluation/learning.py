@@ -85,6 +85,18 @@ def _labels(raw: str) -> tuple[tuple[str, ...], ...]:
 
 
 DEFAULT_COLUMNS = Columns()
+SOURCE_KIND_ALIASES = {
+    "chat": SourceKind.CHAT_MESSAGE,
+    "after_event_form": SourceKind.FORM,
+    "forwarded_email": SourceKind.EMAIL,
+}
+
+
+def _source_kind(raw: str) -> SourceKind:
+    """Translate frozen evaluation labels at the input boundary, keeping contracts unchanged."""
+    if raw in SOURCE_KIND_ALIASES:
+        return SOURCE_KIND_ALIASES[raw]
+    return SourceKind(raw or "user_input")
 
 
 def load_cases(path: Path, columns: Columns = DEFAULT_COLUMNS) -> list[Case]:
@@ -120,7 +132,7 @@ def parse_cases(content: str, columns: Columns = DEFAULT_COLUMNS) -> list[Case]:
                             if row[columns.expected].strip()
                             else ()
                         ),
-                        kind=SourceKind(row.get(columns.kind) or "user_input"),
+                        kind=_source_kind(row.get(columns.kind) or ""),
                         club_id=row.get(columns.club) or "eval-club",
                         case_id=(row.get(columns.id) or "").strip(),
                     )

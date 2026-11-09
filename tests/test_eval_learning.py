@@ -88,7 +88,7 @@ def test_taught_and_expected_fact_can_share_a_frozen_column(tmp_path: Path) -> N
     ],
 )
 def test_question_stays_separate_and_required_column_names_stay_nonempty(columns: dict[str, str]) -> None:
-    with pytest.raises(ValueError, match="nonempty.*question.*separate"):
+    with pytest.raises(ValueError, match=r"nonempty.*question.*separate"):
         Columns(**columns)
 
 
@@ -101,6 +101,26 @@ def test_private_case_ids_are_preserved_for_review_but_not_public_refs(tmp_path:
         output.write('Another synthetic source,Question?,"[]",private-001\n')
     with pytest.raises(ValueError, match="private values omitted"):
         load_cases(path)
+
+
+@pytest.mark.parametrize(
+    ("label", "kind"),
+    [("chat", SourceKind.CHAT_MESSAGE), ("after_event_form", SourceKind.FORM), ("forwarded_email", SourceKind.EMAIL)]
+    + [(kind.value, kind) for kind in SourceKind]
+    + [("", SourceKind.USER_INPUT)],
+)
+def test_frozen_source_kind_aliases_and_contract_values(tmp_path: Path, label: str, kind: SourceKind) -> None:
+    path = dataset(tmp_path / "cases.csv", ["Synthetic expected fact"], taught_by=label)
+    frozen = path.read_bytes()
+    [loaded] = load_cases(path, Columns(kind="taught_by"))
+    assert loaded.kind is kind and path.read_bytes() == frozen
+
+
+def test_unknown_source_kind_is_rejected_without_echoing_private_values(tmp_path: Path) -> None:
+    path = dataset(tmp_path / "cases.csv", [], taught_by="PRIVATE UNKNOWN KIND")
+    with pytest.raises(ValueError, match="CSV row 2; private values omitted") as error:
+        load_cases(path, Columns(kind="taught_by"))
+    assert "PRIVATE UNKNOWN KIND" not in str(error.value)
 
 
 def test_case_rejects_scope_escape_and_invalid_lengths() -> None:
