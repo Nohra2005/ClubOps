@@ -173,6 +173,8 @@ class SetupService:
 
     @staticmethod
     def _validate(result: CaptureResult, club_id: str) -> None:
+        if result.sources_failed:
+            raise ValueError("Setup could not read the answer. Retry without advancing the question.")
         if any(
             proposal.candidate.scope is not Scope.CLUB
             or proposal.candidate.club_id != club_id

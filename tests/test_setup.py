@@ -95,7 +95,7 @@ def test_an_empty_initializing_file_is_incomplete_not_a_server_error(tmp_path: P
 
 
 def test_answer_only_contract_reproduces_the_unresolved_stale_tab_limit(tmp_path: Path) -> None:
-    """Reproduction, not a safety claim: replace after an owner-approved question token."""
+    """Accepted owner limit (#43): one setup tab; this test does not claim rejection."""
     service, backend = SetupService(tmp_path), Backend()
     old_tab = advance(service, backend)
     assert old_tab.index == 1
@@ -160,6 +160,28 @@ def test_extraction_failure_does_not_advance_or_persist_the_answer(tmp_path: Pat
     with pytest.raises(RuntimeError):
         service.next(actor(), "Synthetic answer", now=NOW, rules_count=25, capture=fail, submit=backend.submit)
     assert advance(service, backend).index == 1 and not backend.queued
+
+
+@pytest.mark.parametrize("partial", [False, True])
+def test_reported_source_failure_keeps_setup_retryable_without_queueing_partial_facts(
+    tmp_path: Path, partial: bool
+) -> None:
+    service, backend = SetupService(tmp_path), Backend()
+
+    def fail(_: CaptureRequest) -> CaptureResult:
+        return CaptureResult(
+            proposals=[proposal(item())] if partial else [],
+            sources_seen=1,
+            sources_skipped=0,
+            sources_failed=1,
+        )
+
+    with pytest.raises(ValueError, match="could not read"):
+        service.next(actor(), "Synthetic answer", now=NOW, rules_count=25, capture=fail, submit=backend.submit)
+    restarted = SetupService(tmp_path)
+    assert advance(restarted, backend).index == 1 and not backend.queued and not backend.inputs
+    assert advance(restarted, backend, "Synthetic retry").index == 2
+    assert len(backend.queued) == len(backend.inputs) == 1
 
 
 def test_router_enforces_auth_csrf_validation_and_sanitizes_errors(tmp_path: Path) -> None:
