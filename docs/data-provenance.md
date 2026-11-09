@@ -1,12 +1,12 @@
 # Data provenance
 
-Updated 3 November 2026. Sources must be public, authorized or synthetic. A source's existence is not evidence that consent, a pilot or an evaluation has happened.
+Updated 9 November 2026. Sources must be public, authorized or synthetic. A source's existence is not evidence that consent, a pilot or an evaluation has happened.
 
 ## Source inventory
 
 | Material | Provenance and authorization | Storage/evidence |
 |---|---|---|
-| AUB rules | Public OSA/AUB documents; each rule records its source and quote. The review decision is recorded separately in the design log | `data/rulebook/aub-rules.json`, D-65/D-66 |
+| AUB rules | Public OSA/AUB documents; each rule records its source and quote. The review decision is recorded separately in the design log; D-100 adds reviewed 2026 bylaws material | `data/rulebook/aub-rules.json`, D-65/D-66/D-100 |
 | OSA proposal structure | Public 2026-2027 form transcribed as versioned fields, including conditional materials/catering sections; no filled personal answers | `data/forms/osa_event_proposal_2026_2027.json`, D-76 |
 | Running Club histories, messages and interviews | Private cabinet material; the responsible teammate must record authorization/consent before use | Ignored `data/raw/` or external private storage; T-09/T-29, not public fixtures |
 | ASME and other-club material | Separately authorized sources with their own club identity; do not treat Running Club facts as ASME evidence | T-35/T-38; no claim that collection or seeding is complete |
@@ -28,6 +28,14 @@ The redaction component hides phone numbers, AUB IDs, emails and links before mo
 - Source-derived facts wait in Review. Only an authorized person's decision makes knowledge verified; flagged sources need individual frontend review.
 - Retention and source deletion are operational responsibilities, not an implemented automatic purge. Do not claim that all raw sources have already been deleted, or that traces expire after a fixed interval, without an actual job and evidence. Private evaluation recordings may need to remain available for reproducibility under their authorization.
 - A volume is persistence, not backup/recovery evidence. Keep private SQLite backups outside git and verify restoration before a production recovery claim.
+
+The learner's debugging log is private runtime data, separate from the metadata-only
+report sink. D-99 enables it by default in the data directory for diagnosing failed
+extraction. Treat debug output and recordings as potentially source-derived sensitive
+content; never attach them wholesale to CI, public issues or reports. Redaction is
+not a guarantee that all identifying context is gone. C-27 review sheets likewise
+contain expected/learned facts, questions and answers; keep actual human ratings and
+their companion files private under the evaluation's authorization.
 
 ## Limits on conclusions
 

@@ -1,6 +1,6 @@
 # Architecture
 
-Updated 3 November 2026 from the published contracts, plan and API table. Local integration and container checks are recorded in `web/VERIFICATION.md`; public deployment and live provider measurements remain pending.
+Updated 9 November 2026 from the published contracts, decisions and API table. Local integration and container checks are recorded in `web/VERIFICATION.md`; provider/evaluation evidence belongs in `results/` and `docs/evidence.md`. Public deployment remains pending.
 
 ## Request and approval flow
 
@@ -32,7 +32,7 @@ The planner can choose its own steps inside a user-started run. It cannot approv
 |---|---|---|
 | Planner | Model chooses tools and asks questions; code checks valid transitions and enforces each explicit allowance of 8 steps / $0.05 | `AgentRun`, event contracts, API run endpoints, `tests/test_api.py` |
 | Rule check | Plain code evaluates explicit facts; a bounded model call handles description-dependent conditions. Missing/failed evidence stays uncertain | Rule/verdict contracts, `docs/plan.md`, `tests/test_rulebook.py` |
-| Learning | Model proposes from redacted input; code validates quoted support and candidate shape. Expense spreadsheets have a deterministic price-list path | Capture/know-how contracts, `tests/test_learning.py` |
+| Learning | Model proposes from redacted input; code validates quoted support and candidate shape, drops one-time facts and personal opinions, and expires this-term facts. Expense spreadsheets have a deterministic price-list path | Capture/know-how contracts, D-95, `tests/test_learning.py` |
 | Memory approval | A person verifies, rejects or edits proposals. Warnings and outdated sources require individual frontend review rather than batch approval | Verify contracts, Review API, `web/e2e/contracts.spec.ts` |
 | Plan approval | Server checks the submitted revision before creating internal calendar items | Event/API contracts, `web/e2e/live-api.spec.ts` |
 | Handover | Existing plain-code assembly becomes a view retaining current sources and explicit gaps; no model call | Handover contracts, `tests/test_handover_view.py`, `tests/test_handover_endpoint.py` |
@@ -58,7 +58,7 @@ The separate Compose `local` target compiles an explicit dev sign-in form, boots
 ## Current operations and limits
 
 - Python CI checks lint, strict types, coverage and schema drift; dependency auditing remains active.
-- PR #44 adds frontend quality/browser gates and container/persistence checks. A teammate review and green main run are still required before claiming the new gates are established on main.
+- Frontend quality/browser and container/persistence checks are established on main after #44/#46. Current main `4b3f17e` has successful [CI](https://github.com/Nohra2005/ClubOps/actions/runs/42501653494), [Web](https://github.com/Nohra2005/ClubOps/actions/runs/42501653484) and [Container](https://github.com/Nohra2005/ClubOps/actions/runs/42501653554) runs. These checks are separate from evidence of independent teammate review; AGENTS/CONTRIBUTING require that review and merge commits.
 - OpenTelemetry export, deployed monitoring/alerts and final evaluation thresholds remain C-25/C-26/C-22 work. Metadata fields alone do not prove those systems are running.
 - Runs execute in-process; a single worker/instance is the supported deployment configuration. Finish active planning before a restart. Durable job recovery and horizontal scaling are not claimed.
 - Real provider quality, production OAuth, persistent hosting recovery and real-world pilot outcomes are not established by scripted tests.
@@ -76,4 +76,6 @@ Tatiana; main's setup endpoint remains 501. Real-auth/SQLite tests explicitly in
 a reference adapter and use synthetic extraction, not production wiring or measured
 model quality. The submit callback must preserve earlier Review decisions on retry.
 See [the integration guide](../web/CLUB_SETUP.md) for the exact boundary and current
-answer-only contract's stale-tab limitation. Sourced ASME seeding is still pending.
+answer-only contract's stale-tab limitation, accepted by Tatiana in #43 for one-time,
+president-only setup. Reported extraction failures (`sources_failed`) cannot advance
+progress or queue partial facts. Sourced ASME seeding remains T-09 work.
