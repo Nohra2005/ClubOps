@@ -506,6 +506,7 @@ Reference documents:
 ### C-31 GitHub Projects board and weekly sprints (bonus)
 - Owner: christophe
 - Status: blocked
+- Owner response (2026-11-09): Tatiana reports the existing ClubOps board is in the repo's Projects tab with Christophe as admin; weekly sprints start 4 November and reviews are Wednesdays after office hours. Local plan now targets Nohra2005/ClubOps and that cadence; no duplicate board should be created. Current-main dry run reads 85 tasks. Projects scope is still missing; live owner/number/access/fields/cards/iterations and safe adoption of any manual cards must be inspected before sync. No actual weekly review is claimed here.
 - Needs: none
 - What: A GitHub Projects board fed by `TASKS.md` (one card per task, columns = status), so ownership is visible on GitHub. One-week sprints (a Projects iteration per week with the tasks planned for it); a 10-minute review with the team each week, noted in one line under T-28.
 - Done when: the board matches `TASKS.md` and 3 weekly sprints are recorded.
