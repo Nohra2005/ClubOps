@@ -6,9 +6,11 @@ no network, no API key, no cost.
 
 from __future__ import annotations
 
+import dataclasses
 import json
 from decimal import Decimal
 from pathlib import Path
+from typing import Any
 
 import httpx
 import pytest
@@ -18,6 +20,11 @@ from clubops.capabilities.runner import CapabilityError
 from clubops.config import ModelMode, Settings
 from clubops.contracts.common import ErrorCode
 from clubops.model import Budget, ModelClient, ModelRequest
+
+
+@pytest.fixture(autouse=True)
+def _no_waiting(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("clubops.model.client.time.sleep", lambda _seconds: None)
 
 
 class Verdict(BaseModel):
@@ -166,6 +173,44 @@ def test_provider_timeout_is_an_upstream_timeout(tmp_path: Path) -> None:
     assert exc.value.code is ErrorCode.UPSTREAM_TIMEOUT
 
 
+@pytest.mark.parametrize("trouble", [503, 429, "timeout"])
+def test_a_passing_provider_problem_is_retried(tmp_path: Path, trouble: object) -> None:
+    calls = {"n": 0}
+
+    def flaky(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        if calls["n"] == 1:
+            if trouble == "timeout":
+                raise httpx.ReadTimeout("too slow", request=request)
+            return httpx.Response(int(str(trouble)), json={"error": "busy"})
+        return httpx.Response(
+            200,
+            json={"choices": [{"message": {"content": GOOD}}], "usage": {"prompt_tokens": 10, "completion_tokens": 5}},
+        )
+
+    answer, _ = ModelClient(settings(tmp_path, ModelMode.LIVE), transport=httpx.MockTransport(flaky)).complete(
+        REQUEST, Verdict
+    )
+    assert answer.applies is True
+    assert calls["n"] == 2
+
+
+def test_gemini_gets_the_thinking_setting_as_a_top_level_field(tmp_path: Path) -> None:
+    transport, seen = provider()
+    gemini = settings(tmp_path, ModelMode.LIVE, base_url="https://generativelanguage.googleapis.com/v1beta/openai")
+    ModelClient(gemini, transport=transport).complete(REQUEST, Verdict)
+    body = json.loads(seen[0].content)
+    assert body["reasoning_effort"] == "low"
+    assert "reasoning" not in body
+
+
+def test_a_refused_key_is_not_retried(tmp_path: Path) -> None:
+    transport, seen = provider(status=401)
+    with pytest.raises(CapabilityError):
+        ModelClient(settings(tmp_path, ModelMode.LIVE), transport=transport).complete(REQUEST, Verdict)
+    assert len(seen) == 1
+
+
 def test_unreachable_provider_is_an_upstream_error(tmp_path: Path) -> None:
     def down(request: httpx.Request) -> httpx.Response:
         raise httpx.ConnectError("no route", request=request)
@@ -228,3 +273,133 @@ def test_replayed_calls_still_count_as_steps(tmp_path: Path) -> None:
     with pytest.raises(CapabilityError) as exc:
         client.complete(REQUEST, Verdict, budget)
     assert exc.value.code is ErrorCode.BUDGET_EXCEEDED
+
+
+def test_openrouter_requests_ask_for_providers_that_do_not_keep_prompts(tmp_path: Path) -> None:
+    transport, seen = provider()
+    s = settings(tmp_path, ModelMode.LIVE, base_url="https://openrouter.ai/api/v1")
+    ModelClient(s, transport=transport).complete(REQUEST, Verdict)
+    assert json.loads(seen[0].content)["provider"] == {"data_collection": "deny"}
+
+    other, other_seen = provider()
+    ModelClient(settings(tmp_path, ModelMode.LIVE), transport=other).complete(REQUEST, Verdict)
+    assert "provider" not in json.loads(other_seen[0].content)
+
+
+def test_the_provider_is_given_the_exact_answer_shape(tmp_path: Path) -> None:
+    transport, seen = provider()
+    ModelClient(settings(tmp_path, ModelMode.LIVE), transport=transport).complete(REQUEST, Verdict)
+    rf = json.loads(seen[0].content)["response_format"]
+    assert rf["type"] == "json_schema"
+    assert rf["json_schema"]["name"] == "Verdict"
+    assert set(rf["json_schema"]["schema"]["properties"]) == {"applies", "reason"}
+
+
+def test_a_wrong_shape_says_which_field_was_wrong(tmp_path: Path) -> None:
+    transport, _ = provider(content=json.dumps({"applies": "maybe", "reason": "x"}))
+    with pytest.raises(CapabilityError) as exc:
+        ModelClient(settings(tmp_path, ModelMode.LIVE), transport=transport).complete(REQUEST, Verdict)
+    assert exc.value.code is ErrorCode.MALFORMED_MODEL_OUTPUT
+    assert "applies" in exc.value.message
+
+
+def test_thinking_models_are_asked_to_think_briefly_unless_turned_off(tmp_path: Path) -> None:
+    transport, seen = provider()
+    ModelClient(settings(tmp_path, ModelMode.LIVE), transport=transport).complete(REQUEST, Verdict)
+    assert json.loads(seen[0].content)["reasoning"] == {"effort": "low"}
+
+    off, off_seen = provider()
+    ModelClient(settings(tmp_path, ModelMode.LIVE, reasoning_effort=None), transport=off).complete(REQUEST, Verdict)
+    assert "reasoning" not in json.loads(off_seen[0].content)
+
+
+def test_answer_schemas_are_simplified_for_providers() -> None:
+    from clubops.model.client import provider_schema
+
+    raw = {
+        "type": "object",
+        "properties": {
+            "a": {"anyOf": [{"type": "string", "maxLength": 5}, {"type": "null"}], "default": None},
+            "b": {"oneOf": [{"type": "integer"}, {"type": "string"}], "discriminator": {"propertyName": "k"}},
+            "c": {"type": "array", "items": {"type": "string", "pattern": "^x$"}, "maxItems": 20},
+        },
+    }
+    assert provider_schema(raw) == {
+        "type": "object",
+        "properties": {
+            "a": {"type": "string"},
+            "b": {"anyOf": [{"type": "integer"}, {"type": "string"}]},
+            "c": {"type": "array", "items": {"type": "string"}},
+        },
+    }
+
+
+def test_a_refused_schema_is_retried_as_plain_json_with_the_shape_in_the_instructions(tmp_path: Path) -> None:
+    seen: list[dict[str, Any]] = []
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        seen.append(body)
+        if body["response_format"]["type"] == "json_schema":
+            return httpx.Response(400, json={"error": {"message": "The compiled grammar is too large"}})
+        return httpx.Response(200, json={"choices": [{"message": {"content": GOOD}}], "usage": {}})
+
+    client = ModelClient(settings(tmp_path, ModelMode.LIVE), transport=httpx.MockTransport(handle))
+    answer, _ = client.complete(REQUEST, Verdict)
+    assert answer.applies is not None
+    assert [b["response_format"]["type"] for b in seen] == ["json_schema", "json_object"]
+    assert "Answer JSON matching this schema" in seen[1]["messages"][0]["content"]
+
+    seen.clear()
+    client.complete(dataclasses.replace(REQUEST, schema_in_prompt=True, prompt_version="v-direct"), Verdict)
+    assert [b["response_format"]["type"] for b in seen] == ["json_object"]  # no request that is refused first
+
+
+def test_debug_log_records_every_attempt_and_stays_off_by_default(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    log_file = tmp_path / "debug.jsonl"
+    calls = {"n": 0}
+
+    def flaky(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return httpx.Response(503, json={"error": "busy"})
+        return httpx.Response(
+            200,
+            json={"choices": [{"message": {"content": GOOD}}], "usage": {"prompt_tokens": 10, "completion_tokens": 5}},
+        )
+
+    client = ModelClient(settings(tmp_path, ModelMode.LIVE), transport=httpx.MockTransport(flaky))
+    client.complete(REQUEST, Verdict)
+    assert not log_file.exists()
+
+    calls["n"] = 0
+    monkeypatch.setenv("CLUBOPS_DEBUG_LOG", str(log_file))
+    client.complete(REQUEST, Verdict)
+    lines = [json.loads(line) for line in log_file.read_text().splitlines()]
+    assert [(x["kind"], x.get("status")) for x in lines] == [
+        ("http_attempt", 503),
+        ("http_attempt", 200),
+        ("model_ok", None),
+    ]
+    assert "sk-test-secret" not in log_file.read_text()
+
+
+def test_an_answer_cut_off_at_the_length_limit_says_so(tmp_path: Path) -> None:
+    def truncated(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "choices": [{"message": {"content": GOOD[:20]}, "finish_reason": "length"}],
+                "usage": {"prompt_tokens": 10, "completion_tokens": 5},
+            },
+        )
+
+    with pytest.raises(CapabilityError) as exc:
+        ModelClient(settings(tmp_path, ModelMode.LIVE), transport=httpx.MockTransport(truncated)).complete(
+            REQUEST, Verdict
+        )
+    assert exc.value.code is ErrorCode.MALFORMED_MODEL_OUTPUT
+    assert "cut off" in exc.value.message
+    assert exc.value.usage is not None and exc.value.usage.tokens_out == 5

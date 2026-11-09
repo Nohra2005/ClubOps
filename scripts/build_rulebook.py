@@ -16,7 +16,7 @@ from typing import Any
 OUT = Path("data/rulebook/aub-rules.json")
 SEEN = "2026-10-12T12:00:00+03:00"
 REVIEWER = "m-tatiana-nohra"  # Running Club president; read all 25 rules on 2026-10-23
-REVIEWED_AT = "2026-10-23T22:49:00+03:00"
+REVIEWED_AT = "2026-11-08T13:40:00+03:00"  # bylaws rules read by the president on 2026-11-08
 
 FIN = ("document", "osa-financial-policy", "aub.edu.lb/SAO/activities/Documents/Financial Policy.pdf")
 POSTERS = ("document", "osa-poster-policy", "aub.edu.lb/SAO/activities/Documents/poster-policy.pdf")
@@ -29,6 +29,7 @@ DIGITAL = ("document", "aub-communications-digital", "aub.edu.lb/communications/
 ROOMS = ("document", "osa-room-reservation", "aub.edu.lb/SAO/activities/Pages/RoomReservation.aspx")
 IMPACT = ("form", "osa-impact-report-2026-2027", "Microsoft Form, Post-Event Impact Report 2026/27")
 PRESIDENT = ("user_input", "running-club-president-2026-10", "stated by the Running Club president")
+BYLAWS = ("document", "osa-clubs-societies-bylaws-2026", "AUB OSA, Clubs & Societies Bylaws (2026)")
 
 Source = tuple[str, str, str]
 
@@ -202,11 +203,64 @@ RULES = [
         "poster-approval",
         "Posters and flyers need the OSA stamp",
         "Posters need OSA approval and a stamp before posting (official boards only, max A3, 75 per event); "
-        "flyer distribution needs approval in advance. Sponsor logos max 3 x 3 cm.",
-        ["publicity"],
+        "flyer distribution needs approval in advance. Sponsor logos max 3 x 3 cm. Every club event is "
+        "promoted on the club's Instagram, and any Instagram post counts as a poster: attach it to the proposal.",
+        ["always"],
         [req("poster-approval", "approval", "OSA approval and stamp for posters and flyers", TWO_WEEKS, True)],
-        [(POSTERS, "OSA approval + stamp before posting; submitted to West Hall 112.")],
+        [
+            (POSTERS, "OSA approval + stamp before posting; submitted to West Hall 112."),
+            (PRESIDENT, "Every club event is promoted on Instagram; any Instagram post should be in the proposal."),
+        ],
         ["publicity"],
+    ),
+    rule(
+        "COMMS-ROLE",
+        "communications-officer-materials",
+        "The Communications Officer owns the club's publicity",
+        "The Communications Officer designs or supervises posters, flyers and social media content, following the "
+        "Student Announcements, Publicity, Marketing and Digital Media Policy, and is the club's liaison with the "
+        "Communications Officer at the Office of Student Affairs.",
+        ["publicity"],
+        [
+            req(
+                "publicity-owner",
+                "restriction",
+                "Promotional materials follow the publicity policy; the Communications Officer designs or "
+                "supervises them",
+            )
+        ],
+        [
+            (
+                BYLAWS,
+                "Design or supervise the design of promotional materials (e.g., posters, flyers, social media "
+                "content) in accordance with the Student Announcements, Publicity, Marketing and Digital Media "
+                "Policy.",
+            ),
+        ],
+        ["publicity"],
+    ),
+    rule(
+        "RECORDS",
+        "records-within-one-week",
+        "Approved records go to OSA within one week",
+        "All key documentation and approved records must be submitted to the Department of Student Life & "
+        "Activities within one week of approval.",
+        ["always"],
+        [
+            req(
+                "records-to-osa",
+                "document",
+                "Key documentation and approved records sent to OSA within one week of approval",
+            )
+        ],
+        [
+            (
+                BYLAWS,
+                "All key documentation and approved records shall be submitted to the Department of Student Life "
+                "& Activities within one week of approval.",
+            ),
+        ],
+        ["records"],
     ),
     rule(
         "LOGO",

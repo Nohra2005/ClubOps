@@ -5,7 +5,7 @@
 1. Every piece of work is a task in [`TASKS.md`](TASKS.md), with an owner. Read [`AGENTS.md`](AGENTS.md) for the team protocol.
 2. Branch from `main`: `feat/<area>-<short-name>`, `fix/…`, `eval/…`, `docs/…`.
 3. Open a pull request early. Fill in the template.
-4. **One approving review from a teammate** and a green CI before merging. Squash-merge.
+4. **One approving review from a teammate** and a green CI before merging. Merge: **Squash and merge** for your own PR; **Create a merge commit** for a teammate's PR, so their commits keep their name (AGENTS.md rule 10).
 5. Nobody pushes to `main` directly. Branch protection isn't available on a free private repo (GitHub returns 403), so this is by agreement.
 
 ## Contract changes

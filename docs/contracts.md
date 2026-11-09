@@ -59,7 +59,7 @@ The mapping is `ERROR_BEHAVIOR` in `contracts/common.py`; the runner applies it.
 
 ## 6. Versioning and change process
 
-- `SCHEMA_VERSION` (currently 0.2.1) covers all contracts; each capability also has its own version.
+- `SCHEMA_VERSION` (currently 0.2.2) covers all contracts; each capability also has its own version.
 - **Frozen** capabilities change only through a PR labelled `contract-change` that bumps the version, regenerates schemas (`make schemas`), updates tests, and is reviewed by the contracts owner. **Provisional** ones may change freely until their phase starts.
 - While on 0.x: a breaking change bumps the minor version; a compatible addition bumps the patch.
 - CI fails if `schemas/` or `capabilities.md` do not match the code.

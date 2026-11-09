@@ -1,5 +1,5 @@
 {
-  "$comment": "clubops 0.2.1 \u00b7 capability capture 0.1.0 \u00b7 generated",
+  "$comment": "clubops 0.2.3 \u00b7 capability capture 0.1.0 \u00b7 generated",
   "$defs": {
     "CaptureResult": {
       "additionalProperties": false,
@@ -10,6 +10,13 @@
           },
           "title": "Proposals",
           "type": "array"
+        },
+        "sources_failed": {
+          "default": 0,
+          "description": "the model could not be read for these: nothing was learned, so retry them",
+          "minimum": 0,
+          "title": "Sources Failed",
+          "type": "integer"
         },
         "sources_seen": {
           "minimum": 0,

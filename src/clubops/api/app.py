@@ -58,7 +58,7 @@ from clubops.contracts.knowhow import CaptureRequest, ItemStatus, Kind, KnowHowI
 from clubops.knowhow.backends import open_club_store_backend
 from clubops.knowhow.directory import Directory
 from clubops.knowhow.handover import build_handover
-from clubops.knowhow.store import KnowHowStore
+from clubops.knowhow.store import KnowHowStore, rescoped
 from clubops.learning.capture import Candidate, Learner, price_list, rows_to_text
 from clubops.model.client import ModelClient
 from clubops.reports.runs import record_run
@@ -138,6 +138,8 @@ class DecisionBody(BaseModel):
     decision: Literal["approve", "reject", "edit"]
     edited_text: str | None = Field(default=None, max_length=1500)
     reason: str | None = Field(default=None, max_length=300)
+    # None keeps ClubOps' suggestion; True shares the fact with every AUB club, False keeps it in this club (D-91).
+    shared: bool | None = None
     opened_at: str | None = None
     decided_at: str | None = None
 
@@ -540,11 +542,19 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
                 if not body.edited_text:
                     raise HTTPException(422, "Write the corrected fact first.")
                 edited = proposal.candidate.model_copy(update={"statement": body.edited_text})
+            if body.shared is not None and body.decision != "reject":
+                if proposal.candidate.kind is Kind.RULE and not body.shared:
+                    raise HTTPException(422, "AUB rules are always shared with every club.")
+                edited = rescoped(edited or proposal.candidate, member.club_id, shared=body.shared)
+                if edited == proposal.candidate:
+                    edited = None
             decision = {
                 "approve": VerifyDecision.ACCEPT,
                 "reject": VerifyDecision.REJECT,
                 "edit": VerifyDecision.ACCEPT_EDITED,
             }[body.decision]
+            if edited is not None and decision is VerifyDecision.ACCEPT:
+                decision = VerifyDecision.ACCEPT_EDITED  # only the sharing changed
             outcome = store.verify(
                 VerifyRequest(proposal=proposal, decision=decision, edited_candidate=edited, reason=body.reason),
                 member.actor(),
