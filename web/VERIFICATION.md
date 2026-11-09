@@ -163,3 +163,20 @@ Earlier exact-label totals above are historical **smoke diagnostics**, not seman
 learning/answer accuracy. They now require the explicit `smoke` subcommand. D-87 and
 F-152–F-159 record the revised design/failure evidence. No real private case, actual
 human-study grade or T-26 result is claimed. Final-head CI/review is on PR #54.
+
+## 9 November 2026 ? frozen learning CSV compatibility (C-27)
+
+Synced main through `4b3f17e` and addressed Tatiana's #54 review: shared source/expected
+`fact`, original `l_id`, separate `later_question`, and all three `taught_by` aliases.
+The input bytes are unchanged. Unknown types still produce sanitized errors. Three
+synthetic cassettes were deliberately refreshed through MockTransport for current
+learner prompts; replay remains network-forbidden and ratings remain blank.
+
+- C-27: **70 tests pass**, including full frozen-header record/replay for each alias.
+- Full root gates pass: **580 passed, 1 skipped; 92.69% coverage**; Ruff/format
+  (135 files), strict package typing (75 source files), CLI typing, schemas/tasks.
+- Frontend `npm run check` passes with **40 units**, lint/format/types/build.
+- No real private CSV, human-study result or paid provider call was used.
+
+D-101/F-172/F-173 document the regression evidence. Tatiana's re-review and final-head
+GitHub checks remain on #54; earlier dated counts above are historical.

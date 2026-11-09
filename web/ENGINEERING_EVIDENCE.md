@@ -66,3 +66,15 @@ actual synthetic replay exported two blank-rated rows with no key/network. Synth
 ratings in tests prove mechanics only; Tatiana's real ten-case grades remain pending.
 Commands, privacy, CSV import and limits are in `LEARNING_EVALUATION.md`; latest GitHub
 checks and review evidence are on PR #54. No private sheet or source row is committed.
+
+## 9 November 2026 ? C-27 reviewer blockers addressed
+
+Tatiana's #54 review identified actual frozen-file incompatibilities. Boundary fixes
+allow source/expected `fact` sharing and translate the three documented source labels
+without editing the frozen CSV or contracts. D-101/F-172/F-173 link those decisions
+to regressions. All 70 evaluator tests pass, including record/replay of her headers
+using synthetic evidence and a forbidden network during replay. Current main's learner
+prompt required an explicit synthetic cassette refresh; no live provider was called.
+Full root gates pass: 580 passed, 1 skipped, 92.69% coverage; frontend gates/40 units
+also pass. See `LEARNING_EVALUATION.md` for the runnable private-header command.
+Actual private grades and quality/cost measurements remain T-26, not these fixtures.
