@@ -136,3 +136,19 @@ independent review and a merge commit are required before merge.
 For the earlier SQLite finding above: #45 was closed by Tatiana's #47. The 2 November
 recheck recorded with PR #54 passed all four Caddy/API cases without server exceptions.
 That supersedes the older unresolved note; public deployment still remains open.
+
+## 9 November 2026 ? C-21/C-31/C-29 follow-up (PR #55)
+
+Synced main `4b3f17e` independently of #54. Root gates pass: **530 passed, 1 skipped;
+92.73% coverage**, Ruff/format (132 files), strict types (75 files), schema/task checks.
+All **20 setup cases** pass, including returned failed-source results with/without
+partial proposals: no progress/queue writes survive and an explicit retry succeeds.
+Shared-rule integration checks now follow the current 27-rule sourced rulebook.
+Frontend `npm run check` passes with **42 units, 12 board-tool tests**, lint/format/
+types/build. Current-main board dry run reads **85 tasks**, without remote writes.
+
+Tatiana accepted F-151's one-tab setup limit and requested #55 leave draft for her
+API wiring. Setup production registration and /me are still not wired by this PR.
+D-102/F-174 record the compatibility/failure fix. Existing board/admin access and
+Wednesday cadence come from her #43 reply; scope still prevents live inspection.
+No duplicate board, altered manual cards, completed sprint or private data is claimed.

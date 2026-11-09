@@ -65,3 +65,18 @@ cannot be directly messaged through this session's agent tools.
 The older #45 warning above is superseded by #47 and the four clean Caddy/API cases
 recorded on 2 November in PR #54. That separate PR also records C-23/C-24 merged/main
 verification and remains open for review; its source changes are not bundled here.
+
+## 9 November 2026 ? ready setup integration and existing board (PR #55)
+
+Tatiana's #43 feedback is now reflected in the owned setup/board docs. Returned
+source failures cannot advance setup or queue partial facts (F-174); the one-tab
+limit remains explicit and accepted by the API owner (F-151/D-102). Validation:
+20 setup cases; 530 Python tests passed, 1 skipped, 92.73% coverage and root gates;
+42 frontend units, 12 board-tool tests and production build. These totals exclude
+independent #54, whose five checks are green on c33be79.
+
+The board plan targets Tatiana's reported existing ClubOps project with Wednesday
+weeks from 4 November; current-main dry run pins 85 tasks at 4b3f17e. No Projects
+scope means no live read-back/sync claim. Manual board content must be inspected
+and safely reconciled before the importer can claim verified. Three actual reviews
+still need evidence; planned dates and owner reports are not invented attendance.
