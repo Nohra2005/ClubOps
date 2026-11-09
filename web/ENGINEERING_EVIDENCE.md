@@ -91,6 +91,7 @@ and safely reconciled before the importer can claim verified. Three actual revie
 still need evidence; planned dates and owner reports are not invented attendance.
 
 **9 November final onboarding copy check:** setup now states to use one tab and that no chat history is required (D-103). Repeated frontend check passes (42 units, 12 board-tool tests, lint/format/types/build), and all four existing desktop/phone setup browser flows pass. Projects scope is now enabled, but full discovery returns no visible existing board; direct board URL/access is still required.
+
 ## 3 November 2026 — human review correction (C-27, PR #54)
 
 At Tatiana's request, `export` now produces the requested seven-column private review
@@ -117,3 +118,5 @@ prompt required an explicit synthetic cassette refresh; no live provider was cal
 Full root gates pass: 580 passed, 1 skipped, 92.69% coverage; frontend gates/40 units
 also pass. See `LEARNING_EVALUATION.md` for the runnable private-header command.
 Actual private grades and quality/cost measurements remain T-26, not these fixtures.
+
+**After #54 merged on 9 November:** #55 now contains main 4bed33c and both task histories. Shared evidence/handoff conflicts preserve all entries. Combined root gates pass: 600 passed, 1 skipped, 92.68% coverage; Ruff/format (138 files), strict package types (76 files), CLI typing, schema/task checks. Frontend check passes with 42 units and 12 board-tool tests. Remote checks for the new merge head are on #55; previous 3e0180a had all five green. No production setup wiring or real private evaluation is implied.

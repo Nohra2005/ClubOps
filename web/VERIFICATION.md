@@ -154,6 +154,7 @@ Wednesday cadence come from her #43 reply; scope still prevents live inspection.
 No duplicate board, altered manual cards, completed sprint or private data is claimed.
 
 **9 November final onboarding copy check:** setup now states to use one tab and that no chat history is required (D-103). Repeated frontend check passes (42 units, 12 board-tool tests, lint/format/types/build), and all four existing desktop/phone setup browser flows pass. Projects scope is now enabled, but full discovery returns no visible existing board; direct board URL/access is still required.
+
 ## Merged progress and learning evaluation — 2 November 2026 (C-27)
 
 Pulled main `d5dfb17`: PR #44 is merged with the original 17 commits preserved, and
@@ -227,3 +228,5 @@ learner prompts; replay remains network-forbidden and ratings remain blank.
 
 D-101/F-172/F-173 document the regression evidence. Tatiana's re-review and final-head
 GitHub checks remain on #54; earlier dated counts above are historical.
+
+**After #54 merged on 9 November:** #55 now contains main 4bed33c and both task histories. Shared evidence/handoff conflicts preserve all entries. Combined root gates pass: 600 passed, 1 skipped, 92.68% coverage; Ruff/format (138 files), strict package types (76 files), CLI typing, schema/task checks. Frontend check passes with 42 units and 12 board-tool tests. Remote checks for the new merge head are on #55; previous 3e0180a had all five green. No production setup wiring or real private evaluation is implied.

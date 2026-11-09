@@ -479,9 +479,10 @@ Reference documents:
 
 ### C-27 Learning test runner
 - Owner: christophe
-- Status: review
+- Status: done
 - Review fixes (2026-11-09): addressed Tatiana's two blockers on #54: the frozen `fact` column can serve as source and expected fact; chat/after_event_form/forwarded_email map to the existing SourceKind values. Original CSV bytes stay unchanged, question stays separate, unknown kinds remain errors. Synced main `4b3f17e` and refreshed only synthetic prompt recordings. All 70 C-27 tests and full root gates pass (580 passed, 1 skipped; 92.69% coverage); 40 frontend units/build pass. Awaiting Tatiana's re-review, private run and ratings.
 - Needs: none
+- Merged (2026-11-09): #54 landed on main as 4bed33c after Tatiana confirmed both blockers were fixed and all five checks passed. Runner/blank export/offline scoring are complete; actual private ratings and measurements remain T-26.
 - What: Run the frozen learning cases through learning, sandbox approval and the follow-up question; export a private seven-column sheet (id, expected fact, actual saved facts, question, actual answer, blank learned/answer_ok). Tatiana marks yes/partly/no for the ten tests; a second offline command makes the category-count results table, preserving costs/errors. Build/test on synthetic data; Tatiana runs the private file in T-26. Exact-word matching is a smoke diagnostic only.
 - Done when: `scripts/eval_learning.py export` produces the blank review sheet and `score` summarizes completed ratings on synthetic data in replay mode, with tests.
 - Revision (2026-11-03): Tatiana's review relayed by Christophe replaces automatic exact-word quality scoring with a private review sheet: expected fact, learned fact, question and actual answer, plus blank learned/answer_ok ratings (yes/partly/no). A second offline command summarizes the completed sheet. Exact matching is retained only as an explicitly named technical smoke diagnostic, not learning/answer correctness.

@@ -118,3 +118,12 @@ No entries yet.
 **Next:** Tatiana can use the exact frozen-header command in `web/LEARNING_EVALUATION.md`, complete both human ratings, then run offline score. Do not rewrite her frozen CSV. Keep the sheet/companion private and together. Re-review #54 and merge with a merge commit when green/approved. Next return to #55: Tatiana's #43 response requests making it ready so she can wire C-21, declines question-token extension, and says the existing ClubOps board has Wednesday reviews from 4 November.
 
 **Open questions / blockers:** The private ten-case run/ratings remain Tatiana's work. GitHub CLI still lacks Projects access, so no live board read/sync or completed sprint evidence is claimed. #55 integration/access remains separate; the documented two-tab setup limit is accepted by the API owner, not fixed by changing contracts. `output/` stays untracked.
+
+
+## 2026-11-09 - Christophe, with Codex (PR #55: sync after #54 landed)
+
+**Did:** #54 merged as main 4bed33c while the previous #55 head's fifth check was completing. Merged new main immediately, resolving fresh additive conflicts in design/failure logs, web handoff and verification/evidence; retained all C-27 and C-21 entries. No application code conflict or contract change. Marked the merged C-27 runner done; actual private ratings remain T-26.
+
+**State:** Combined root gates pass: 600 passed, 1 skipped, 92.68% coverage; Ruff/format (138 files), strict package types (76 files), explicit CLI typing, schema/task checks. Frontend check passes with 42 units, 12 board-tool tests and build. The earlier head 3e0180a had all five remote checks green; new merged-head checks are tracked on #55. Both setup and learning regressions now run together. C-21 integration remains with Tatiana after merge; C-31 still needs direct board URL/access despite enabled Projects scope.
+
+**Next:** Tatiana independently reviews and merges #55 with Create a merge commit, then wires setup route and /me for ASME on 11 November. Do not squash the remaining small setup commits. Keep the recorded primary-interview/no-chat onboarding decision, accepted one-tab limit and retry failure guard. No real-data or paid calls were introduced. Runtime output remains untracked.
