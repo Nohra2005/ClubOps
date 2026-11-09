@@ -1,29 +1,29 @@
 {
   "repository": "Nohra2005/ClubOps",
-  "owner": "chrs-005",
-  "title": "ClubOps tasks and weekly sprints",
+  "owner": "Nohra2005",
+  "title": "ClubOps",
   "sprints": [
     {
       "title": "Week 1: setup and reproducibility",
-      "startDate": "2026-11-02",
+      "startDate": "2026-11-04",
       "duration": 7,
       "tasks": ["C-21", "C-27", "C-29", "C-31"]
     },
     {
       "title": "Week 2: integration and deployment",
-      "startDate": "2026-11-09",
+      "startDate": "2026-11-11",
       "duration": 7,
       "tasks": ["C-13", "C-14", "C-18", "C-20"]
     },
     {
       "title": "Week 3: evaluation and demo",
-      "startDate": "2026-11-16",
+      "startDate": "2026-11-18",
       "duration": 7,
       "tasks": ["C-22", "C-28", "C-30"]
     },
     {
       "title": "Week 4: final handoff",
-      "startDate": "2026-11-23",
+      "startDate": "2026-11-25",
       "duration": 7,
       "tasks": ["C-15"]
     }
