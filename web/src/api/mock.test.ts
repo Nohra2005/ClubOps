@@ -16,6 +16,13 @@ const client = (club = 'running-club', role = 'president' as const) =>
   new ApiClient(createMockTransport(storage, { club, role }, { delay: 0 }), 'demo');
 
 describe('synthetic API safety boundaries', () => {
+  it('accepts a starter text document as unverified and leaves its proposed contents in Review', async () => {
+    const api = client('asme');
+    const result = await api.upload(new File(['Synthetic club constitution'], 'constitution.md'));
+    expect(result.tab).toBe('documents');
+    expect(result.status).toBe('may_be_outdated');
+    expect((await api.review()).some((card) => card.status === 'pending')).toBe(true);
+  });
   it('resumes setup without spending and skips without proposing or charging', async () => {
     const api = client('asme');
     const before = await api.usage();

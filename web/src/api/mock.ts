@@ -735,9 +735,9 @@ export function createMockTransport(
       if (
         !(file instanceof File) ||
         file.size > 10 * 1024 * 1024 ||
-        !/\.(pdf|txt)$/i.test(file.name)
+        !/\.(pdf|txt|md|csv|eml|xlsx)$/i.test(file.name)
       )
-        throw new ApiError('Choose a PDF or text file smaller than 10 MB.', 422);
+        throw new ApiError('Choose a supported synthetic document smaller than 10 MB.', 422);
       const document: KnowledgeItem = {
         item_id: id('kh-doc'),
         title: file.name,
