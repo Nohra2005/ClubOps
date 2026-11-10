@@ -92,3 +92,23 @@ def test_otlp_integer_overflow_rejected() -> None:
     call = replace(call, trace=call.trace.model_copy(update={"tokens_in": 2**63}))
     with pytest.raises(ValueError, match="Invalid telemetry observation"):
         build_batch(replace(value, calls=(call,)))
+
+
+def test_oversized_public_configuration_is_bounded() -> None:
+    value = observation()
+    model = "x" * 1_048_576
+    call = value.calls[0]
+    call = replace(call, trace=call.trace.model_copy(update={"model": model}))
+    labels = replace(LABELS, models=frozenset({model}))
+    with pytest.raises(ValueError, match="Telemetry batch exceeds size limit"):
+        build_batch(replace(value, calls=(call,)), labels)
+
+
+def test_optional_step_timings_are_metadata() -> None:
+    value = observation()
+    step = value.run.steps[0].model_copy(update={"model_ms": 200, "tool_ms": 300})
+    value = replace(value, run=value.run.model_copy(update={"steps": [step]}))
+    spans = json.loads(build_batch(value).body)["resourceSpans"][0]["scopeSpans"][0]["spans"]
+    attrs = {a["key"]: a["value"] for a in spans[1]["attributes"]}
+    assert attrs["clubops.step.model_ms"] == {"intValue": "200"}
+    assert attrs["clubops.step.tool_ms"] == {"intValue": "300"}

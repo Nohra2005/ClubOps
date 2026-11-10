@@ -85,6 +85,20 @@ def test_failed_call_requires_typed_error() -> None:
         validate_observation(replace(value, calls=(replace(call, error=None),)))
 
 
+def test_call_cannot_begin_before_its_declared_step() -> None:
+    value = observation()
+    window = replace(value.steps[0], started_at=value.calls[0].trace.started_at + timedelta(milliseconds=1))
+    with pytest.raises(ValueError, match="Invalid telemetry observation"):
+        validate_observation(replace(value, steps=(window,)))
+
+
+def test_step_cannot_extend_beyond_run() -> None:
+    value = observation()
+    window = replace(value.steps[0], ended_at=value.ended_at + timedelta(milliseconds=1))
+    with pytest.raises(ValueError, match="Invalid telemetry observation"):
+        validate_observation(replace(value, steps=(window,)))
+
+
 @pytest.mark.parametrize(
     "instant", [datetime(2026, 1, 1), datetime(1969, 1, 1, tzinfo=UTC), datetime.max.replace(tzinfo=UTC)]
 )
