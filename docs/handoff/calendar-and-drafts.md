@@ -155,3 +155,13 @@ No entries yet.
 **Next:** Continue J-19's synthetic proposal accuracy runner while the Google owner tasks proceed.
 
 **Open questions / blockers:** The existing calendar contract uses private role calendars for reminders; the user has deferred creating those. Tatiana and Joey must agree on any contract change before claiming role-specific Google reminders work.
+
+## 2026-11-10 — J-21 review request
+
+**Did:** Opened PR #79 from `feat/j21-calendar-sharing` into `main` and requested Tatiana and Christophe as reviewers. The PR body points to T-46, T-47 and C-35 as owner-specific follow-up work.
+
+**State:** J-21 is in review. The adapter has synthetic coverage; the live Google test needs Tatiana's OAuth integration and the private Running Club calendar ID.
+
+**Next:** Address review comments, then run the cabinet-approved local test once the owner-side API is connected.
+
+**Open questions / blockers:** CI still has the shared schema drift on `docs/capabilities.md`; no real Calendar access rule has been changed.
