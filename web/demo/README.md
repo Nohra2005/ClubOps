@@ -93,6 +93,13 @@ matching proof together; label any edited/narrated export separately with a new 
 
 ## Remaining final acceptance
 
+The [local proof](evidence/local-proof.json) records an actual 301.56-second silent
+take on 10 November, with a matching file hash and six passing chapters. The
+[question frame](evidence/question.png) and [warning frame](evidence/warning.png)
+were extracted from that take and inspected. The source revision and the later
+bare-API-prefix guard are distinguished in the proof. Raw footage stays local;
+its hash is historical evidence, not an expected byte-for-byte result of a new take.
+
 Tatiana/Joey review the script and replace scripted scenes with observed real
 backend outcomes, using synthetic accounts/documents and a declared provider mode.
 C-14/C-18 provide the verified deployed link. Rehearse with the team once, time it,

@@ -1,0 +1,50 @@
+{
+  "task": "C-28",
+  "kind": "synthetic HTTP/UI rehearsal; not deployed or backend/model/security evidence",
+  "sha256": "edc6e8dde7abdfd0fe1f25ef2d300422ff17549b3a9ed89e40f1dbd2310b748b",
+  "bytes": 28294899,
+  "duration_seconds": 301.56,
+  "chapters": [
+    {
+      "id": "context",
+      "passed": true
+    },
+    {
+      "id": "plan-question-approval",
+      "passed": true
+    },
+    {
+      "id": "limit",
+      "passed": true
+    },
+    {
+      "id": "untrusted-document",
+      "passed": true
+    },
+    {
+      "id": "restricted-role",
+      "passed": true
+    },
+    {
+      "id": "limits-and-next",
+      "passed": true
+    }
+  ],
+  "unexpected_requests": 0,
+  "actions": {
+    "plans": 1,
+    "answers": 1,
+    "approvals": 1,
+    "uploads": 1,
+    "rejections": 1,
+    "denied": 1
+  },
+  "recording_source_revision": "e47db05",
+  "note": "Synthetic silent UI rehearsal. Deployed/backend/security/team/narrated acceptance pending.",
+  "visually_inspected_frames_seconds": [45, 100, 125, 180, 245],
+  "committed_frames": {
+    "question.png": 45,
+    "warning.png": 180
+  },
+  "later_changes": "Bare /api is also intercepted in the final fast guards; the recorded scenes are unchanged."
+}
