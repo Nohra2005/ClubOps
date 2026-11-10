@@ -138,7 +138,7 @@ No entries yet.
 
 ## 2026-11-10 — J-21 shared-calendar cabinet access
 
-**Did:** Added a Google Calendar ACL adapter that grants named cabinet members reader access and revokes only their reader rule. It is safe to repeat and preserves manually elevated roles. Added synthetic tests, D-107 and F-192. The user confirmed the ClubOps account, Cloud APIs, OAuth sign-in client and Running Club shared calendar exist, but supplied no calendar ID or tokens.
+**Did:** Added a Google Calendar ACL adapter that grants named cabinet members reader access and revokes only their reader rule. It is safe to repeat and preserves manually elevated roles. Added synthetic tests, D-110 and F-198. The user confirmed the ClubOps account, Cloud APIs, OAuth sign-in client and Running Club shared calendar exist, but supplied no calendar ID or tokens.
 
 **State:** Branch `feat/j21-calendar-sharing` was committed and pushed. Adapter tests and full pytest suite pass (602 passed, 1 skipped); Ruff and mypy pass. The repository's existing `docs/capabilities.md` schema drift prevents the `make check` equivalent from passing, and `make` is not installed on this machine. No live Google operation was made. The connected GitHub PR creation endpoint returned 404; open the PR from the pushed branch.
 

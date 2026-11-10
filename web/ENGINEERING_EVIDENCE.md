@@ -120,3 +120,18 @@ also pass. See `LEARNING_EVALUATION.md` for the runnable private-header command.
 Actual private grades and quality/cost measurements remain T-26, not these fixtures.
 
 **After #54 merged on 9 November:** #55 now contains main 4bed33c and both task histories. Shared evidence/handoff conflicts preserve all entries. Combined root gates pass: 600 passed, 1 skipped, 92.68% coverage; Ruff/format (138 files), strict package types (76 files), CLI typing, schema/task checks. Frontend check passes with 42 units and 12 board-tool tests. Remote checks for the new merge head are on #55; previous 3e0180a had all five green. No production setup wiring or real private evaluation is implied.
+
+## 10 November 2026 - C-34 source and sharing review
+
+C-34 makes the existing T-41 shared scope visible and president-controlled. Code
+checks scope independently of card type; individual scope choices are sent only on
+confirmation. All disagreements precede ordinary source groups, both comparison
+quotes are shown, and failed requests preserve drafts. Bulk approval never silently
+applies an unsaved sharing choice. D-104/F-175-F-178 link this to frontend regressions.
+
+Verified: 600 Python tests passed, 1 skipped / 92.68% coverage and all root gates;
+46 frontend units, 12 tool tests/build; 8 HTTP + 2 demo review browser cases and
+2 accessibility cases across all 11 routes on desktop/phone. No live provider,
+private data or backend-contract edit. `REVIEW_GUIDE.md` explains shared versus
+club knowledge in two opening sentences and records the authorization limits.
+Independent review/merge-commit evidence and final-head CI belong to the PR.

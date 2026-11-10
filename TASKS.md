@@ -547,7 +547,9 @@ Reference documents:
 
 ### C-34 Review screen guards (D-91)
 - Owner: christophe
-- Status: todo
+- Status: review
+- Progress (2026-11-10): shared badges and president scope switches send the existing boolean only on confirmed individual decisions; quotes are visible on both sides of comparisons, missing quotes explicit, all disagreements grouped first. Bulk approval skips shared/flagged/disputed cards and unsaved sharing choices. Denied requests preserve edits/choice. Demo matches current T-41 president approval. Guide: `web/REVIEW_GUIDE.md`. Verified: 46 frontend units, 12 board-tool tests, 8 HTTP review cases, 2 demo review cases, 2 full-screen accessibility cases; full root gates with 600 passed, 1 skipped and 92.68% coverage. Awaiting independent PR review; no backend/contract or deployment change.
+- Progress (2026-11-09): starting the ready frontend task after T-41 and #55 merged. Implementing shared-scope review controls against the published task/API tests, source quotes on comparisons, disagreement-first grouping and conservative bulk approval. Backend implementation/contracts remain unchanged; setup app wiring stays with Tatiana.
 - Needs: T-41
 - What: On each Review card show the source quote, a "Shared with all AUB clubs" badge when `shared` is true, and a switch to change it (send `shared: true/false` with the decision; only presidents may approve shared facts, others get 403). Show disagreements first. Bulk approve skips shared facts, disagreements and warned facts (D-79).
 - Done when: the screen does this with tests, and the user guide explains sharing in two lines.
