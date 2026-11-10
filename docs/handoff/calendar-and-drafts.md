@@ -145,3 +145,13 @@ No entries yet.
 **Next:** Build the 0/1/3/all-document planning curve runner in replay mode and test its score table on synthetic predictions.
 
 **Open questions / blockers:** The real ASME starter-pack run stays with Tatiana in T-44/T-26.
+
+## 2026-11-10 — J-20 staged runner
+
+**Did:** Built `scripts/eval_new_club.py` to reuse frozen synthetic labels, isolate each club's starter facts, and score planning at 0, 1, 3 and 4 documents through the shared evaluation scorer. Added synthetic tests for stages, isolation, freeze drift and missing replays. Recorded D-109 and F-197 after checking other open branches' numbers.
+
+**State:** The deterministic checklist pipeline produces a 12-row table. The ClubOps path is replay-only and refuses a result if model recordings are missing. Full tests pass (604 passed, 1 skipped; 92.68% coverage), as do Ruff and mypy. The existing `docs/capabilities.md` drift still blocks schema check. J-20 remains doing until complete synthetic replay produces a measured curve.
+
+**Next:** Prepare complete synthetic replay recordings with Tatiana's model setup, then run and review the ClubOps curve before marking J-20 done.
+
+**Open questions / blockers:** No actual ClubOps learning improvement is claimed from the checklist pipeline. The ASME run remains Tatiana's T-44/T-26 work.

@@ -14,3 +14,10 @@ before every evaluated event. The run uses prefixes of 0, 1, 3 and 4 documents.
 Changing either file requires a new dated freeze entry; do not silently replace a
 hash. On Windows, normalize checked-out CRLF to LF before comparing with these
 committed-file hashes.
+
+Run a free pipeline check with `uv run python scripts/eval_new_club.py --system checklist`.
+For a ClubOps curve, use `CLUBOPS_MODEL_MODE=replay uv run python
+scripts/eval_new_club.py --system clubops --out <private-result-path>` after
+synthetic model recordings exist. The runner refuses to write a ClubOps result
+if any replay case lacks its recording. Checklist output is a pipeline check,
+not evidence that onboarding improved planning.
