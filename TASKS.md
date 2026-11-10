@@ -684,9 +684,10 @@ Reference documents:
 
 ### J-20 New-club test and learning curve (D-91)
 - Owner: joey
-- Status: doing
+- Status: review
 - Needs: J-14, T-41
 - What: Show ClubOps works for clubs it was not tuned on. `scripts/eval_new_club.py`: start a club empty (only the shared AUB layer), give it a starter pack of 0, 1, 3, then all onboarding documents, and plan its events after each step with `clubops.evaluation.plans` (approvals caught, false alarms, cost). Make 3 synthetic clubs of other kinds (academic, cultural, social; like J-14) with events and labels, and freeze them before running. Tatiana runs it on ASME (T-44) in T-26.
 - Done when: the script gives a curve table per club on synthetic data, with tests, in replay mode.
 - Progress (2026-11-10): three synthetic club starter packs and six reused frozen event labels pinned in `eval/new-club-FROZEN.md` before the runner is built.
 - Progress (2026-11-10): staged runner and synthetic tests built; checklist pipeline yields a table. ClubOps replay needs matching model recordings before a measured curve can be reported.
+- Progress (2026-11-10): draft PR #81 is open with Tatiana requested for review; it stays draft until the synthetic ClubOps replay is complete.

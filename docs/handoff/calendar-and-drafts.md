@@ -155,3 +155,13 @@ No entries yet.
 **Next:** Prepare complete synthetic replay recordings with Tatiana's model setup, then run and review the ClubOps curve before marking J-20 done.
 
 **Open questions / blockers:** No actual ClubOps learning improvement is claimed from the checklist pipeline. The ASME run remains Tatiana's T-44/T-26 work.
+
+## 2026-11-10 — J-20 draft review
+
+**Did:** Opened draft PR #81 from `eval/j20-new-club-curve` and requested Tatiana's review of the frozen dataset, isolation and replay gate. Flagged the D-107 collision between PR #79 and Christophe's C-28 branch in a PR #79 comment to both owners.
+
+**State:** J-20 is in review; the draft PR remains pending synthetic model recordings. Its checklist output is explicitly a pipeline check. No private data or model-quality result was published.
+
+**Next:** Resolve review comments and prepare complete replay recordings before presenting a measured new-club curve.
+
+**Open questions / blockers:** The existing `docs/capabilities.md` schema drift still blocks the full check gate.
