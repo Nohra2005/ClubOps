@@ -140,7 +140,7 @@ No entries yet.
 
 **Did:** Added a deterministic runner that builds drafts from versioned proposal requests, checks them against the form and verified per-field truth, and outputs only category counts and safe case IDs. Synthetic tests cover category boundaries, incomplete truth rejection and a CLI replay. Recorded D-108 and F-193.
 
-**State:** J-19 is done against synthetic data. Full pytest passes (602 passed, 1 skipped; 92.72% coverage), as do Ruff and mypy. The pre-existing `docs/capabilities.md` schema drift still prevents the full check gate. The private submitted proposals remain with Tatiana for T-26. No private form answer was committed or printed by the runner.
+**State:** J-19's synthetic acceptance check is met on pushed branch `eval/j19-proposal-accuracy`; PR and teammate review remain. Full pytest passes (602 passed, 1 skipped; 92.72% coverage), as do Ruff and mypy. The pre-existing `docs/capabilities.md` schema drift still prevents the full check gate. The private submitted proposals remain with Tatiana for T-26. No private form answer was committed or printed by the runner.
 
 **Next:** Tatiana maps each private proposal to a versioned request and complete truth map, then runs `uv run python scripts/eval_proposals.py --cases <private-json> --out <private-result>` during T-26.
 
