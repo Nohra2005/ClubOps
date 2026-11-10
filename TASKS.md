@@ -492,7 +492,7 @@ Reference documents:
 ### C-28 Demo script and backup video
 - Owner: christophe
 - Status: doing
-- Progress (2026-11-10): preparing the five-minute script, synthetic local rehearsal and clearly labelled backup walkthrough. C-14/C-18 deployment and team rehearsal remain pending; local fixture footage is not final deployed/backend/security evidence.
+- Progress (2026-11-10): five-minute presenter script and isolated synthetic HTTP/UI rehearsal prepared. Desktop/phone checks pass; a 301.56-second silent take has six passing chapters, zero unexpected requests, a verified video checksum and inspected frames (web/demo/evidence). Fresh checked output paths preserve previous takes. C-14/C-18 deployment, real backend/model/security outcomes, team rehearsal and final narrated backup remain pending; this stays doing.
 - Needs: C-14, C-18
 - What: `docs/demo-script.md`: 5 minutes on the deployed app, showing what the brief asks: one normal plan, then edge cases (missing facts → the agent asks; the step limit; a hidden instruction in an uploaded document; a member without rights trying to approve). Seed a demo club with synthetic data only. Record a backup video in case the network fails on demo day.
 - Done when: the script runs start to end on the deployed app, rehearsed once with the team, video saved.

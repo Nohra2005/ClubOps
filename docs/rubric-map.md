@@ -25,7 +25,7 @@ Kept current in every PR that changes what a row points to. The plan for coverin
 | Threat model | [threat-model.md](threat-model.md) | in place |
 | **5. Software engineering (10%)** | | |
 | Modular repo, typing, central configuration, no dead code | `src/clubops/`; ruff + strict mypy in CI | in place (`config.py`) |
-| **6. Poster & demo (10%)** | `docs/demo-script.md` (edge cases shown live) | planned (Phase 4) |
+| **6. Poster & demo (10%)** | [five-minute script](demo-script.md), [synthetic rehearsal commands](../web/demo/README.md), [actual local recording proof](../web/demo/evidence/local-proof.json) | script + disclosed synthetic UI rehearsal in place; deployed/backend outcomes, team rehearsal and final narrated video pending (C-28) |
 | **7. Documentation & reproducibility (10%)** | | |
 | Setup, one-command checks | [README](../README.md), `make check` | in place |
 | Reproduce results without API keys | recorded model responses replayed in `make eval` | planned (Phase 2) |
