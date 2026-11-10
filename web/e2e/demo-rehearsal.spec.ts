@@ -236,6 +236,8 @@ test('blocks external requests and refuses unscripted API actions', async ({
     async () => (await fetch('/api/unregistered-rehearsal-action')).status,
   );
   expect(status).toBe(501);
+  const bare = await page.evaluate(async () => (await fetch('/api')).status);
+  expect(bare).toBe(501);
   const blocked = await page.evaluate(async () => {
     try {
       await fetch('https://rehearsal-egress.invalid/probe');
@@ -245,6 +247,10 @@ test('blocks external requests and refuses unscripted API actions', async ({
     }
   });
   expect(blocked).toBe(true);
-  expect(fixture.violations).toEqual(['Unregistered API action.', 'External request blocked.']);
+  expect(fixture.violations).toEqual([
+    'Unregistered API action.',
+    'Unregistered API action.',
+    'External request blocked.',
+  ]);
   expect(fixture.scene.counts.plans).toBe(0);
 });

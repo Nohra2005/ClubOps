@@ -19,7 +19,7 @@ export async function installRehearsal(context: BrowserContext, baseURL: string)
       await route.abort('blockedbyclient');
       return;
     }
-    if (!url.pathname.startsWith('/api/')) {
+    if (url.pathname !== '/api' && !url.pathname.startsWith('/api/')) {
       await route.continue();
       return;
     }
