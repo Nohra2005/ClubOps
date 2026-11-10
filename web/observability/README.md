@@ -131,6 +131,8 @@ The owner must test those producer guarantees when adding the hook.
   preserve exact values. They do not establish that a real provider was billed.
 - Limits: 64 steps, 256 calls, 1 MiB encoded request, 64 KiB decoded response.
   These are exporter resource limits, not new agent budget limits.
+  Responses must use identity encoding (requested explicitly); compression is
+  rejected before decoding so a compressed response cannot bypass the bound.
 - `accepted` means the collector acknowledged all spans, not durable storage.
   Empty default `partialSuccess` is also accepted (verified with Jaeger 2.23.0).
   Nonzero rejection returns `partial`; zero rejected with a message returns

@@ -35,6 +35,7 @@ def test_disabled_without_endpoint_never_builds_or_connects(monkeypatch: pytest.
         "http://localhost:99999",
         "http://localhost:0",
         "https://collector.invalid/a\nsecret",
+        "https://\ud800.invalid/v1/traces",
     ],
 )
 def test_invalid_endpoints_never_connect(endpoint: str) -> None:
@@ -104,13 +105,23 @@ def test_http_failures_no_redirect_or_automatic_retry(status: int, retryable: bo
     assert "private canary" not in repr(result)
 
 
-@pytest.mark.parametrize("kind", ["timeout", "html", "oversized", "bad-json"])
+@pytest.mark.parametrize("kind", ["timeout", "html", "oversized", "bad-json", "compressed"])
 def test_transport_and_response_limits(kind: str) -> None:
     def collector(request: httpx.Request) -> httpx.Response:
         if kind == "timeout":
             raise httpx.ReadTimeout("private canary", request=request)
         if kind == "html":
             return httpx.Response(200, text="private canary", headers={"Content-Type": "text/html"})
+        if kind == "compressed":
+            # Never attempt decoding, even when an identity-only request was ignored.
+            return httpx.Response(
+                200,
+                stream=httpx.ByteStream(b"not valid gzip"),
+                headers={
+                    "Content-Type": "application/json",
+                    "Content-Encoding": "gzip",
+                },
+            )
         content = b"x" * 70_000 if kind == "oversized" else b"not JSON: private canary"
         return httpx.Response(200, content=content, headers={"Content-Type": "application/json"})
 

@@ -44,6 +44,7 @@ class ExportResult:
 def _endpoint_valid(endpoint: str) -> bool:
     try:
         value = urlsplit(endpoint)
+        httpx.URL(endpoint)  # validate IDNA/URL syntax before constructing a client
         if len(endpoint) > 4096 or any(c.isspace() or ord(c) < 32 for c in endpoint):
             return False
         if value.username is not None or value.password is not None or value.query or value.fragment:
@@ -53,7 +54,7 @@ def _endpoint_valid(endpoint: str) -> bool:
         return value.scheme == "https" or (
             value.scheme == "http" and value.hostname in {"localhost", "127.0.0.1", "::1"}
         )
-    except ValueError:
+    except (ValueError, httpx.InvalidURL):
         return False
 
 
@@ -128,6 +129,8 @@ def export_run(
                     retryable=response.status_code in {429, 502, 503, 504},
                 )
             if response.headers.get("content-type", "").split(";", 1)[0].strip() != "application/json":
+                return ExportResult("invalid_response", batch.trace_id, batch.span_count)
+            if response.headers.get("content-encoding", "identity").strip().lower() != "identity":
                 return ExportResult("invalid_response", batch.trace_id, batch.span_count)
             body = bytearray()
             for chunk in response.iter_bytes(chunk_size=8192):
