@@ -58,3 +58,20 @@ export function checkStarterUpload(value: unknown) {
     );
   }
 }
+
+export function starterCabinetCount(value: unknown): number {
+  if (
+    !Array.isArray(value) ||
+    !value.every(
+      (member: unknown) =>
+        member &&
+        typeof member === 'object' &&
+        'member_id' in member &&
+        typeof member.member_id === 'string' &&
+        member.member_id.trim(),
+    )
+  ) {
+    throw new Error('The server did not return a cabinet list. Retry before confirming this step.');
+  }
+  return value.length;
+}

@@ -6,9 +6,16 @@ import {
   readStarter,
   saveStarter,
   starterKey,
+  starterCabinetCount,
 } from './starter-progress';
 
 describe('starter checklist metadata and upload boundaries', () => {
+  it('does not treat a malformed cabinet response as a reviewed empty list', () => {
+    for (const value of [null, {}, { detail: 'private' }, [null], [{ member_id: '' }]])
+      expect(() => starterCabinetCount(value)).toThrow('server did not return a cabinet list');
+    expect(starterCabinetCount([])).toBe(0);
+    expect(starterCabinetCount([{ member_id: 'm-example' }])).toBe(1);
+  });
   it('isolates progress by club, account and transport mode without retaining private evidence', () => {
     const values = new Map<string, string>();
     const storage = {

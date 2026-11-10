@@ -9,6 +9,7 @@ import {
   saveStarter,
   starterKey,
   starterSteps,
+  starterCabinetCount,
   type StarterStep,
 } from '../api/starter-progress';
 import { useAction, useResource } from '../hooks';
@@ -93,7 +94,7 @@ function Checklist() {
       active.current = false;
     };
   }, []);
-  const members = useResource(() => api.cabinet(), [api]);
+  const members = useResource(async () => starterCabinetCount(await api.cabinet()), [api]);
   const mark = (step: StarterStep, value: boolean) => {
     if (!active.current) return;
     current.current = { ...current.current, [step]: value };
@@ -120,7 +121,7 @@ function Checklist() {
         <li className="starter-step">
           <h3>1. Check your cabinet</h3>
           <Resource loading={members.loading} error={members.error} retry={members.reload}>
-            <p>{members.value?.length ?? 0} cabinet accounts are listed by the server.</p>
+            <p>{members.value ?? 0} cabinet accounts are listed by the server.</p>
             <Link className="button small" to="/settings#cabinet">
               Add or check cabinet members
             </Link>
