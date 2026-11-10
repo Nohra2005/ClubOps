@@ -165,3 +165,13 @@ No entries yet.
 **Next:** Address review comments, then run the cabinet-approved local test once the owner-side API is connected.
 
 **Open questions / blockers:** CI still has the shared schema drift on `docs/capabilities.md`; no real Calendar access rule has been changed.
+
+## 2026-11-10 — J-01 manual Google setup confirmed
+
+**Did:** Recorded the user's completed Google setup in J-01 and added a placeholder for `CLUBOPS_GOOGLE_RUNNING_CLUB_CALENDAR_ID` to `.env.example`. The real value remains only in the user's ignored local `.env`.
+
+**State:** J-01 remains blocked at its live-test acceptance gate. T-46, T-47 and C-35 still need owner-side authorization and UI flows; no live Calendar or Gmail permission was granted by this documentation change.
+
+**Next:** Work on J-20 with synthetic clubs and replay mode while owner integrations proceed.
+
+**Open questions / blockers:** The user does not require manual Calendar sharing. The private role-calendar reminder architecture remains an explicit contract decision for Tatiana and Joey before live reminders are claimed.

@@ -567,7 +567,8 @@ Reference documents:
 - Needs: none
 - What: Read `docs/calendar-contract.md`. Create the Google Cloud project, turn on the Calendar API, create the shared club calendar. Secrets never go in the repo.
 - Done when: a test item appears in the shared calendar from your code.
-- Blocked: Google Cloud and a sign-in OAuth web client exist, and the Running Club shared calendar was created. The private calendar ID, separate event/ACL authorization flow (T-46), and cabinet-approved live test are still needed. The adapter and setup steps are in `src/clubops/calendar/README.md`.
+- Progress (2026-11-10): manual Google setup complete: Calendar and Gmail APIs enabled, External OAuth test users and web client configured, Running Club calendar created, and its ID stored only in local `.env`. No manual calendar sharing is required.
+- Blocked: T-46's separate Calendar authorization and backend sync, C-35's connection UI, and a cabinet-approved live test are still needed before a test item can appear in Google Calendar. The adapter and setup steps are in `src/clubops/calendar/README.md`.
 
 ### J-02 Sync calendar items
 - Owner: joey
