@@ -68,7 +68,9 @@ def test_explicit_environment_export_is_json_and_private(monkeypatch: pytest.Mon
     [
         ({"partialSuccess": {"rejectedSpans": "1", "errorMessage": "private canary"}}, "partial", 1),
         ({"partialSuccess": {"rejectedSpans": 0, "errorMessage": "private canary"}}, "warning", 0),
-        ({"partialSuccess": {}}, "warning", 0),
+        ({"partialSuccess": {}}, "accepted", 0),
+        ({"partialSuccess": {"rejectedSpans": "0", "errorMessage": ""}}, "accepted", 0),
+        ({"partialSuccess": {"errorMessage": 42}}, "invalid_response", 0),
         ({"partialSuccess": {"rejectedSpans": True}}, "invalid_response", 0),
         ({"partialSuccess": {"rejectedSpans": "99"}}, "invalid_response", 0),
         ({"partialSuccess": {"rejectedSpans": "-1"}}, "invalid_response", 0),

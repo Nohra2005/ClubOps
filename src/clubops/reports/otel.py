@@ -73,8 +73,13 @@ def _success(body: bytes, batch: ExportBatch) -> ExportResult:
         if not str(count).isdigit() or not 0 <= int(count) <= batch.span_count:
             raise ValueError
         rejected = int(count)
-        # Any partial-success field is surfaced, including warning-only replies.
-        return ExportResult("partial" if rejected else "warning", batch.trace_id, batch.span_count, rejected)
+        message = partial.get("errorMessage", "")
+        if not isinstance(message, str):
+            raise ValueError
+        # Some collectors serialize an empty default message. It has no rejection
+        # or warning; do not turn that into a false delivery failure.
+        outcome: Outcome = "partial" if rejected else ("warning" if message else "accepted")
+        return ExportResult(outcome, batch.trace_id, batch.span_count, rejected)
     except (ValueError, TypeError):
         return ExportResult("invalid_response", batch.trace_id, batch.span_count)
 
