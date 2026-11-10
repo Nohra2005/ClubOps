@@ -510,3 +510,120 @@ test('HTTP draft rejects a sent result and then accepts a matching published dra
   await expect(card.getByRole('textbox')).toHaveValue('A synthetic announcement for human review.');
   await expect(card).toContainText('Draft · not sent');
 });
+
+test('starter checklist uploads require confirmation, reject failed acknowledgements and preserve retry files', async ({
+  page,
+}) => {
+  const workspace = createWorkspace('running-club');
+  await page.route('**/api/knowledge?*', (route) => route.fulfill({ json: [] }));
+  await page.route('**/api/cabinet', (route) => route.fulfill({ json: workspace.members }));
+  await page.route('**/api/setup/next', (route) =>
+    route.fulfill({
+      json: { question: 'Synthetic done', index: 10, total: 10, done: true, rules_count: 27 },
+    }),
+  );
+  let uploads = 0;
+  await page.route('**/api/documents', (route) => {
+    uploads++;
+    expect(route.request().headers()['x-requested-with']).toBe('ClubOps');
+    expect(route.request().postDataBuffer()?.toString()).toContain('Synthetic source');
+    if (uploads === 1) return route.fulfill({ json: { detail: 'Not a document acknowledgement' } });
+    if (uploads === 2) return route.fulfill({ status: 503, json: { detail: 'Synthetic failure' } });
+    return route.fulfill({ json: { item_id: 'kh-synthetic-document', tab: 'documents' } });
+  });
+  await page.goto('/setup');
+  await page.getByRole('button', { name: 'Start or resume club setup' }).click();
+  const checklist = page.getByRole('region', { name: "Your club's starter checklist" });
+  await expect(checklist).toContainText('0 of 4');
+  const file = checklist.getByLabel('Club rules or constitution file');
+  await file.setInputFiles({
+    name: 'synthetic-rules.txt',
+    mimeType: 'text/plain',
+    buffer: Buffer.from('Synthetic source'),
+  });
+  expect(uploads).toBe(0);
+  const send = checklist.getByRole('button', { name: 'Upload club rules for Review' });
+  await send.evaluate((button) => {
+    (button as HTMLButtonElement).click();
+    (button as HTMLButtonElement).click();
+  });
+  await expect(checklist.getByRole('alert')).toContainText('server did not confirm');
+  await expect(file).toHaveValue(/synthetic-rules.txt$/);
+  await expect(checklist).toContainText('0 of 4');
+  await send.click();
+  await expect(checklist.getByRole('alert')).toBeVisible();
+  await expect(checklist).toContainText('0 of 4');
+  await send.click();
+  await expect(checklist).toContainText('1 of 4');
+  expect(uploads).toBe(3);
+  await expect(checklist).toContainText('contents still need Review');
+  await page.reload();
+  await page.getByRole('button', { name: 'Start or resume club setup' }).click();
+  await expect(checklist).toContainText('1 of 4');
+  expect(uploads).toBe(3);
+  const ticks = await page.evaluate(() =>
+    Object.entries(localStorage)
+      .filter(([key]) => key.startsWith('clubops.starter.v1.'))
+      .map(([, value]) => value),
+  );
+  expect(ticks.join('')).not.toContain('synthetic-rules');
+  expect(ticks.join('')).not.toContain('Synthetic source');
+});
+
+test('starter cabinet action uses the existing API and local checks do not call learning', async ({
+  page,
+}) => {
+  const workspace = createWorkspace('running-club');
+  let members = workspace.members;
+  let added = 0;
+  let learned = 0;
+  await page.route('**/api/knowledge?*', (route) => route.fulfill({ json: [] }));
+  await page.route('**/api/calendar?*', (route) =>
+    route.fulfill({ json: { connected: false, items: [] } }),
+  );
+  await page.route('**/api/usage', (route) => route.fulfill({ json: workspace.usage }));
+  await page.route('**/api/cabinet', (route) => {
+    if (route.request().method() === 'POST') {
+      added++;
+      expect(route.request().headers()['x-requested-with']).toBe('ClubOps');
+      const member = { ...route.request().postDataJSON(), member_id: 'm-starter-example' };
+      members = [...members, member];
+      return route.fulfill({ json: member });
+    }
+    return route.fulfill({ json: members });
+  });
+  await page.route('**/api/setup/next', (route) =>
+    route.fulfill({
+      json: { question: 'Synthetic done', index: 10, total: 10, done: true, rules_count: 27 },
+    }),
+  );
+  await page.route('**/api/chat/teach', (route) => {
+    learned++;
+    return route.fulfill({ status: 500 });
+  });
+  await page.route('**/api/documents', (route) => {
+    learned++;
+    return route.fulfill({ status: 500 });
+  });
+  await page.goto('/setup');
+  await page.getByRole('button', { name: 'Start or resume club setup' }).click();
+  await page.getByRole('link', { name: 'Add or check cabinet members' }).click();
+  await expect(page).toHaveURL(/\/settings#cabinet$/);
+  await page.getByRole('button', { name: 'Add member', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByLabel('Name', { exact: true }).fill('Synthetic Starter Member');
+  await dialog.getByLabel('Email', { exact: true }).fill('starter@example.com');
+  await dialog.getByRole('button', { name: 'Add member', exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  expect(added).toBe(1);
+  await page.goto('/setup');
+  await page.getByRole('button', { name: 'Start or resume club setup' }).click();
+  await page.getByLabel('I have checked the cabinet list').check();
+  await page
+    .getByLabel('I have checked places and partners, including anything still unknown')
+    .check();
+  await expect(page.getByRole('region', { name: "Your club's starter checklist" })).toContainText(
+    '2 of 4',
+  );
+  expect(learned).toBe(0);
+});
