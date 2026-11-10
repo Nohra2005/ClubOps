@@ -412,7 +412,8 @@ export default function Review() {
         reload();
       }
     });
-    if (result.ok) notify(`${result.value} facts approved. Shared rules were not included.`);
+    if (result.ok)
+      notify(`${result.value} facts approved. Only unchanged, unflagged club facts were included.`);
   }
   return (
     <>
@@ -433,7 +434,7 @@ export default function Review() {
           <strong>Your club's memory has a front door.</strong>
           <p>
             Check the source. Make the call. Nothing here becomes a fact until a cabinet member
-            approves it.
+            approves it. A president reviews knowledge shared with all AUB clubs.
           </p>
         </div>
       </div>
