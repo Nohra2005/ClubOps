@@ -102,8 +102,9 @@ def export_run(
     except (ValueError, TypeError, OverflowError):
         return ExportResult("invalid_observation")
     try:
-        with httpx.Client(timeout=3.0, follow_redirects=False, trust_env=False, transport=_transport) as client:
-            with client.stream(
+        with (
+            httpx.Client(timeout=3.0, follow_redirects=False, trust_env=False, transport=_transport) as client,
+            client.stream(
                 "POST",
                 target,
                 content=batch.body,
@@ -112,21 +113,22 @@ def export_run(
                     "Accept": "application/json",
                     "Accept-Encoding": "identity",
                 },
-            ) as response:
-                if response.status_code != 200:
-                    return ExportResult(
-                        "http_error",
-                        batch.trace_id,
-                        batch.span_count,
-                        retryable=response.status_code in {429, 502, 503, 504},
-                    )
-                if response.headers.get("content-type", "").split(";", 1)[0].strip() != "application/json":
+            ) as response,
+        ):
+            if response.status_code != 200:
+                return ExportResult(
+                    "http_error",
+                    batch.trace_id,
+                    batch.span_count,
+                    retryable=response.status_code in {429, 502, 503, 504},
+                )
+            if response.headers.get("content-type", "").split(";", 1)[0].strip() != "application/json":
+                return ExportResult("invalid_response", batch.trace_id, batch.span_count)
+            body = bytearray()
+            for chunk in response.iter_bytes(chunk_size=8192):
+                body.extend(chunk)
+                if len(body) > MAX_RESPONSE_BYTES:
                     return ExportResult("invalid_response", batch.trace_id, batch.span_count)
-                body = bytearray()
-                for chunk in response.iter_bytes(chunk_size=8192):
-                    body.extend(chunk)
-                    if len(body) > MAX_RESPONSE_BYTES:
-                        return ExportResult("invalid_response", batch.trace_id, batch.span_count)
-                return _success(bytes(body), batch)
+            return _success(bytes(body), batch)
     except httpx.HTTPError:
         return ExportResult("transport_error", batch.trace_id, batch.span_count, retryable=True)
