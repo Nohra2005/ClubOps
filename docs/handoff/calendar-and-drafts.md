@@ -138,7 +138,7 @@ No entries yet.
 
 ## 2026-11-10 — J-19 proposal accuracy runner
 
-**Did:** Added a deterministic runner that builds drafts from versioned proposal requests, checks them against the form and verified per-field truth, and outputs only category counts and safe case IDs. Synthetic tests cover category boundaries, incomplete truth rejection and a CLI replay. Recorded D-108 and F-193.
+**Did:** Added a deterministic runner that builds drafts from versioned proposal requests, checks them against the form and verified per-field truth, and outputs only category counts and safe case IDs. Synthetic tests cover category boundaries, incomplete truth rejection and a CLI replay. Recorded D-108 and F-199.
 
 **State:** J-19's synthetic acceptance check is met on pushed branch `eval/j19-proposal-accuracy`; PR and teammate review remain. Full pytest passes (602 passed, 1 skipped; 92.72% coverage), as do Ruff and mypy. The pre-existing `docs/capabilities.md` schema drift still prevents the full check gate. The private submitted proposals remain with Tatiana for T-26. No private form answer was committed or printed by the runner.
 

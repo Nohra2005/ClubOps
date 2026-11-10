@@ -237,9 +237,11 @@ export interface ReviewCard {
   decided_at?: string;
   warning?: string;
   outdated?: boolean;
+  shared?: boolean;
 }
 export interface ReviewDecision {
   decision: string;
+  shared?: boolean;
   edited_text?: string;
   reason?: string;
   opened_at: string;
