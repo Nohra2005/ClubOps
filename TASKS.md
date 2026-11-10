@@ -526,7 +526,8 @@ Reference documents:
 
 ### C-33 Starter onboarding for a new club (D-91)
 - Owner: christophe
-- Status: todo
+- Status: doing
+- Progress (2026-11-10): building the frontend checklist against the existing cabinet/document/setup API while C-21 production wiring and hosting remain pending. Browser-local checklist acknowledgements and accepted uploads will be labelled separately from server interview progress and approved knowledge. No new backend contract or WhatsApp import.
 - Needs: C-21
 - What: Extend the setup flow into one short checklist every new club does the same way (about 10 minutes): add the cabinet, upload the club's rules or constitution, one past proposal, and its usual places and partners (`POST /api/cabinet`, `POST /api/documents`). Show what is done, and say plainly that ClubOps starts with the shared AUB know-how and learns the club as it is used.
 - Done when: a new club can finish the checklist in the deployed app, with a browser test on synthetic data.
