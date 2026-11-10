@@ -135,3 +135,13 @@ No entries yet.
 **Next:** Expand the corpus after J-15 chat and J-10 inbox integration, then run and record both configurations with Tatiana.
 
 **Open questions / blockers:** Results belong in Tatiana's `results/` area; coordinate the measured run and evidence before poster claims.
+
+## 2026-11-10 — J-20 dataset freeze
+
+**Did:** Prepared three synthetic clubs (academic, cultural and social), each with four dated starter documents. Reused six existing frozen synthetic event labels and pinned the new starter set before writing or running the evaluator.
+
+**State:** J-20 is doing; `eval/new-club-FROZEN.md` records the committed-file hashes. No real club data or new AUB policy labels entered the set.
+
+**Next:** Build the 0/1/3/all-document planning curve runner in replay mode and test its score table on synthetic predictions.
+
+**Open questions / blockers:** The real ASME starter-pack run stays with Tatiana in T-44/T-26.
