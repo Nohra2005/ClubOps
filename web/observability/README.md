@@ -88,6 +88,8 @@ model call: do not relabel a whole capability's end-to-end latency as model time
 Steps with no model call are allowed. Cross-club/run calls, duplicate trace IDs,
 missing/duplicate windows, naive/reversed/out-of-range times and calls outside
 their step are rejected with a sanitized error. Windows must fit inside the run.
+The published `steps_used` budget counter is preserved; the exporter does not
+assume it equals the number of visible steps or recompute it from those steps.
 
 Only completed snapshots (`done`, `failed`, or an explicitly finalized `at_limit`)
 are accepted. Do not export an intermediate limit stop if it will be continued,

@@ -112,3 +112,12 @@ def test_optional_step_timings_are_metadata() -> None:
     attrs = {a["key"]: a["value"] for a in spans[1]["attributes"]}
     assert attrs["clubops.step.model_ms"] == {"intValue": "200"}
     assert attrs["clubops.step.tool_ms"] == {"intValue": "300"}
+
+
+def test_published_budget_counter_is_not_recomputed_from_visible_steps() -> None:
+    value = observation()
+    value = replace(value, run=value.run.model_copy(update={"steps_used": 0}))
+    spans = json.loads(build_batch(value).body)["resourceSpans"][0]["scopeSpans"][0]["spans"]
+    attrs = {a["key"]: a["value"] for a in spans[0]["attributes"]}
+    assert attrs["clubops.run.steps_used"] == {"intValue": "0"}
+    assert len([s for s in spans if s["name"] == "agent.step"]) == 1

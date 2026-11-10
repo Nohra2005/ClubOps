@@ -33,7 +33,6 @@ def test_snapshot_and_exact_timestamps() -> None:
         "duplicate-step",
         "running",
         "step-running",
-        "count",
         "too-many",
         "bad-contract",
         "error",
@@ -65,8 +64,6 @@ def test_invalid_observations_have_sanitized_errors(case: str) -> None:
     elif case == "step-running":
         step = value.run.steps[0].model_copy(update={"state": StepState.RUNNING})
         value = replace(value, run=value.run.model_copy(update={"steps": [step]}))
-    elif case == "count":
-        value = replace(value, run=value.run.model_copy(update={"steps_used": 0}))
     elif case == "too-many":
         value = replace(value, calls=value.calls * 257)
     elif case == "bad-contract":

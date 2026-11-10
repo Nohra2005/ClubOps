@@ -56,7 +56,7 @@ def validate_observation(value: RunObservation) -> RunObservation:
         run = AgentRun.model_validate(value.run.model_dump())
         if run.status not in {RunStatus.DONE, RunStatus.FAILED, RunStatus.AT_LIMIT}:
             raise ValueError
-        if run.steps_used != len(run.steps) or len(run.steps) > 64 or len(value.calls) > 256:
+        if len(run.steps) > 64 or len(value.calls) > 256:
             raise ValueError
         start, end = unix_nanos(value.started_at), unix_nanos(value.ended_at)
         if start > end or {s.n for s in value.steps} != {s.n for s in run.steps}:
