@@ -230,3 +230,21 @@ D-101/F-172/F-173 document the regression evidence. Tatiana's re-review and fina
 GitHub checks remain on #54; earlier dated counts above are historical.
 
 **After #54 merged on 9 November:** #55 now contains main 4bed33c and both task histories. Shared evidence/handoff conflicts preserve all entries. Combined root gates pass: 600 passed, 1 skipped, 92.68% coverage; Ruff/format (138 files), strict package types (76 files), CLI typing, schema/task checks. Frontend check passes with 42 units and 12 board-tool tests. Remote checks for the new merge head are on #55; previous 3e0180a had all five green. No production setup wiring or real private evaluation is implied.
+
+## 10 November 2026 - C-33 starter checklist
+
+Based on main 106baa7 independently of #75. Root gates pass: 600 passed, 1 skipped,
+92.68% coverage; Ruff/format (138 files), strict types (76 files), schemas/tasks.
+Frontend check passes with 48 units, 12 board-tool tests and build.
+
+Actual focused browser checks: 6 HTTP starter cases (explicit/no-auto upload,
+malformed/503 retry, rapid double click, cabinet action and malformed cabinet list)
+and 6 demo/setup cases, including complete/reloaded starter checks, pending Review,
+unverified documents, accessibility and phone width. Default Playwright outputs
+collided when suites were run concurrently; the stable demo suite was rerun alone
+and all 6 passed. Run the commands in STARTER_CHECKLIST.md sequentially.
+
+D-105/F-179-F-182 record the privacy/completion boundaries. Metadata-only local ticks
+never set server setup_complete or approve knowledge. Actual C-21 wiring and deployed
+new-club/ASME verification remain open. No private source or paid model call. These
+numbers do not include the independent C-34 branch's frontend additions.
