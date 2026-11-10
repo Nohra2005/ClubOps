@@ -5,7 +5,7 @@ import { dirname, resolve } from 'node:path';
 import { mkdirSync, mkdtempSync, realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import process from 'node:process';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, URL } from 'node:url';
 
 const flags = process.argv.slice(2);
 if (flags.length > 1 || (flags.length === 1 && flags[0] !== '--list')) {
