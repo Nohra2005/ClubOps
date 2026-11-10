@@ -145,3 +145,13 @@ No entries yet.
 **Next:** Tatiana adds server-side Calendar OAuth with `calendar.events` and `calendar.acls`, private token refresh and retryable cabinet add/remove triggers. Christophe connects Settings to real connection and sharing status. Then run a cabinet-approved live test and mark J-21 done.
 
 **Open questions / blockers:** Calendar ID must be supplied privately. Google does not guarantee that ACL sharing automatically adds the calendar to each member's sidebar. Current role-specific reminder calendars remain a separate integration decision; the shared-calendar reader adapter does not implement them.
+
+## 2026-11-10 — Google integration owner handoff
+
+**Did:** Recorded T-46 for Tatiana's Calendar OAuth, sync and cabinet sharing triggers; T-47 for her Gmail OAuth and human-click Review path; and C-35 for Christophe's Settings and inbox UI. Updated J-01's blocker to reflect the Google setup the user completed. These task descriptions are the team handoff; no private credential or calendar ID was added to the repo.
+
+**State:** Joey still needs the Running Club calendar ID stored privately, owner-side OAuth routes, a cabinet-approved live Calendar and mail test, approved style examples, and J-08 cabinet feedback. The Google ACL adapter is ready for T-46 integration, but J-21 is not complete until the live test.
+
+**Next:** Continue J-19's synthetic proposal accuracy runner while the Google owner tasks proceed.
+
+**Open questions / blockers:** The existing calendar contract uses private role calendars for reminders; the user has deferred creating those. Tatiana and Joey must agree on any contract change before claiming role-specific Google reminders work.

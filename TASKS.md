@@ -279,6 +279,20 @@ Reference documents:
 - What: Learning the bylaws printed "all done" while only 1 of its 4 pieces had reached the model: the other answers were cut off at the answer limit, which looked like "not JSON", and the pieces were counted as empty and marked done. Read the provider's stop signal on every call, count such a piece as failed (not skipped) and leave it out of `done` so a rerun retries it; split documents on their own headings so a rule is not cut in half.
 - Done when: a cut-off answer says so, a failed piece is retried on the next run, and both have a regression test. (2026-11-08: done, D-98; contracts 0.2.3.)
 
+### T-46 Connect Google Calendar on the backend
+- Owner: tatiana
+- Status: todo
+- Needs: T-22
+- What: Keep Google sign-in separate from Calendar authorization. Add president-only connect/disconnect and OAuth callback endpoints with state validation, server-side encrypted refresh-token storage and refresh/reconnect handling. Use the private club calendar ID, `calendar.events` and `calendar.acls` scopes. After an approved plan is saved, drain Joey's sync queue to Google and report pending/error/connected status. On cabinet add/remove, use Joey's J-21 reader ACL adapter with retryable failures; never grant writer or owner access. Agree the endpoint response fields with Christophe before changing the UI contract.
+- Done when: synthetic API tests prove unauthorized users cannot connect, unapproved plans never sync, retries do not duplicate events, and cabinet add/remove grants/revokes only reader access; a cabinet-approved local Google test completes after J-01's private calendar ID is supplied.
+
+### T-47 Connect Gmail intake to human Review
+- Owner: tatiana
+- Status: todo
+- Needs: T-18
+- What: Add a separately authorized, server-side Gmail read connection for `clubops.agent@gmail.com` with encrypted refresh-token storage. Poll through Joey's J-10 queue without AI; show pending mail to an authorized cabinet member, and call the learner only on that member's explicit capture click. Save proposed facts in Review before acknowledging the queued message. Report connection, expired authorization and processing errors to Christophe's Settings/Review screens. Agree API fields before wiring the UI.
+- Done when: synthetic API tests prove wrong-club and outsider mail never reach capture, duplicate polling is safe, a click creates Review proposals without approval, and a private cabinet-approved forward works after Gmail authorization.
+
 ## Christophe: frontend
 
 ### C-01 Read the UI spec and pick the stack
@@ -538,6 +552,13 @@ Reference documents:
 - What: On each Review card show the source quote, a "Shared with all AUB clubs" badge when `shared` is true, and a switch to change it (send `shared: true/false` with the decision; only presidents may approve shared facts, others get 403). Show disagreements first. Bulk approve skips shared facts, disagreements and warned facts (D-79).
 - Done when: the screen does this with tests, and the user guide explains sharing in two lines.
 
+### C-35 Google connection and inbox status in Settings
+- Owner: christophe
+- Status: todo
+- Needs: C-13
+- What: Replace the demo Calendar toggle and placeholder inbox text with the agreed T-46/T-47 API states. Let a president start Calendar authorization and see the club's connected/pending/error state and shared-calendar access status; show the club's plus-address and pending forwarded mail with an explicit capture action. Keep client IDs public and all tokens and secrets on the server. Develop against fake API responses until the backend endpoints land.
+- Done when: synthetic frontend tests cover disconnected, connected, pending, expired and failed states, and the local app uses the real endpoints after T-46/T-47 are ready.
+
 ## Joey: calendar, reminders, drafts
 
 ### J-01 Read the calendar contract and set up Google
@@ -546,7 +567,7 @@ Reference documents:
 - Needs: none
 - What: Read `docs/calendar-contract.md`. Create the Google Cloud project, turn on the Calendar API, create the shared club calendar. Secrets never go in the repo.
 - Done when: a test item appears in the shared calendar from your code.
-- Blocked: OAuth client, club calendar IDs and a cabinet-approved live test are not available yet. The adapter and setup steps are in `src/clubops/calendar/README.md`.
+- Blocked: Google Cloud and a sign-in OAuth web client exist, and the Running Club shared calendar was created. The private calendar ID, separate event/ACL authorization flow (T-46), and cabinet-approved live test are still needed. The adapter and setup steps are in `src/clubops/calendar/README.md`.
 
 ### J-02 Sync calendar items
 - Owner: joey
