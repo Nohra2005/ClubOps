@@ -24,7 +24,7 @@ fixture/target tests are also included in `npm test`; the runner is type-checked
 `npm run check` and is outside the shipped `src/` bundle.
 
 Run browser suites sequentially: normal suites share `web/test-results`, which
-Playwright clears. The dedicated recording uses a new timestamp/process-specific
+Playwright clears. The dedicated recording uses a new uniquely allocated
 directory under root `output/`, without overwriting earlier recordings.
 
 ## Record the silent five-minute walkthrough
@@ -59,8 +59,11 @@ actions can add time; the test has a 390-second cap and no automatic retry. The
 video is **silent**, so use it to rehearse with the script. It is not the final
 narrated/deployed backup and should not be submitted as one.
 
-Find the new `output/demo-rehearsal-<timestamp>-<process>` directory at the repository
-root. Inside its test subdirectory:
+The launcher prints its new `output/demo-rehearsal-<unique>` directory at the
+repository root and checks that it stays inside the workspace. It passes the same
+absolute output path to every worker. Use `npm run demo:record`, rather than calling
+the recording config directly. `npm run demo:record -- --list` checks the configuration
+without starting a server or recording. Inside the take's test subdirectory:
 
 - `backup-rehearsal.webm`: validated silent take when recording succeeds.
 - `rehearsal-proof.json`: disclosure, six passing chapters, fixture request/action

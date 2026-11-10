@@ -14,7 +14,7 @@
     "test:e2e": "playwright test",
     "test:e2e:http": "playwright test --config playwright.http.config.ts",
     "demo:check": "playwright test --config playwright.http.config.ts demo-rehearsal.spec.ts",
-    "demo:record": "playwright test --config playwright.demo.config.ts",
+    "demo:record": "node scripts/demo-record.mjs",
     "typecheck:rehearsal": "tsc --project tsconfig.rehearsal.json --noEmit",
     "test:e2e:live": "playwright test --config playwright.live.config.ts",
     "test:e2e:production": "playwright test --config playwright.production.config.ts",

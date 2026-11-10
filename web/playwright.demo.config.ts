@@ -10,7 +10,6 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
-  outputDir: `../output/demo-rehearsal-${Date.now()}-${process.pid}`,
   projects: [{ name: 'recording', use: { viewport: { width: 1440, height: 1000 } } }],
   use: {
     ...base.use,

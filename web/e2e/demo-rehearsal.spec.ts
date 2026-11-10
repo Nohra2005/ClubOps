@@ -189,6 +189,7 @@ test('rehearses the five-minute demo with explicit fixture provenance', async ({
   );
   await page.screenshot({ path: info.outputPath('rehearsal-summary.png') });
   await context.close(); // finish the isolated recording before hashing/saving it
+  expect(fixture.violations).toEqual([]); // include late requests during the final narration pause
   let recordingProof: { file: string; sha256: string; bytes: number } | null = null;
   if (recording) {
     expect(video, 'Recording mode must produce a video.').toBeTruthy();
