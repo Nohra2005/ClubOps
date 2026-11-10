@@ -34,6 +34,16 @@ both. The sync is safe to repeat after network failures.
 The implementation and fake-Google tests are ready. Live setup still needs the Cloud
 project, OAuth callback, per-club calendar IDs, and a cabinet member's test approval.
 
+Shared-calendar cabinet access can be managed by `GoogleCalendarSharing`: the backend
+calls `grant_reader(calendar_id, email)` after adding a cabinet member and
+`revoke_reader(calendar_id, email)` after removal. Both require a server-held token
+authorized as the calendar owner with the separate `calendar.acls` scope. Reader
+access does not grant ClubOps approval rights. Existing writer or owner access is
+left for a person to review. Google may send a sharing notification, and the member
+may still need to add the calendar to their own Calendar list. The backend API and
+Settings wiring are owned by Tatiana and Christophe respectively; this adapter
+does not create or refresh OAuth tokens.
+
 API references: [Events insert](https://developers.google.com/workspace/calendar/api/v3/reference/events/insert),
 [Events update](https://developers.google.com/workspace/calendar/api/v3/reference/events/update),
 [Reminders](https://developers.google.com/workspace/calendar/api/concepts/reminders).

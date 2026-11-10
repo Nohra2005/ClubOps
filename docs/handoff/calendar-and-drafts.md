@@ -135,3 +135,13 @@ No entries yet.
 **Next:** Expand the corpus after J-15 chat and J-10 inbox integration, then run and record both configurations with Tatiana.
 
 **Open questions / blockers:** Results belong in Tatiana's `results/` area; coordinate the measured run and evidence before poster claims.
+
+## 2026-11-10 — J-21 shared-calendar cabinet access
+
+**Did:** Added a Google Calendar ACL adapter that grants named cabinet members reader access and revokes only their reader rule. It is safe to repeat and preserves manually elevated roles. Added synthetic tests, D-107 and F-192. The user confirmed the ClubOps account, Cloud APIs, OAuth sign-in client and Running Club shared calendar exist, but supplied no calendar ID or tokens.
+
+**State:** Adapter tests and full pytest suite pass (602 passed, 1 skipped); Ruff and mypy pass. The repository's existing `docs/capabilities.md` schema drift prevents the `make check` equivalent from passing, and `make` is not installed on this machine. No live Google operation was made.
+
+**Next:** Tatiana adds server-side Calendar OAuth with `calendar.events` and `calendar.acls`, private token refresh and retryable cabinet add/remove triggers. Christophe connects Settings to real connection and sharing status. Then run a cabinet-approved live test and mark J-21 done.
+
+**Open questions / blockers:** Calendar ID must be supplied privately. Google does not guarantee that ACL sharing automatically adds the calendar to each member's sidebar. Current role-specific reminder calendars remain a separate integration decision; the shared-calendar reader adapter does not implement them.
