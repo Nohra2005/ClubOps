@@ -35,10 +35,12 @@ function ReviewItem({
   card,
   reload,
   highlighted,
+  scopeChanged,
 }: {
   card: ReviewCard;
   reload: () => void;
   highlighted: boolean;
+  scopeChanged: (id: string, changed: boolean) => void;
 }) {
   const { api, canEdit, isPresident, notify } = useApp();
   const action = useAction();
@@ -162,7 +164,10 @@ function ReviewItem({
               role="switch"
               checked={shared}
               disabled={action.pending}
-              onChange={(event) => setShared(event.target.checked)}
+              onChange={(event) => {
+                setShared(event.target.checked);
+                scopeChanged(card.id, event.target.checked !== isShared(card));
+              }}
               aria-label="Share with all AUB clubs"
             />{' '}
             Share with all AUB clubs
@@ -370,6 +375,15 @@ export default function Review() {
   const filter = (search.get('filter') ?? 'all') as ReviewFilter;
   const review = useResource(() => api.review(filter), [api, filter]);
   const batch = useAction();
+  const [scopeDrafts, setScopeDrafts] = useState<Set<string>>(new Set());
+  const batchEligible = (card: ReviewCard) => canBatchApprove(card) && !scopeDrafts.has(card.id);
+  const scopeChanged = (id: string, changed: boolean) =>
+    setScopeDrafts((previous) => {
+      const next = new Set(previous);
+      if (changed) next.add(id);
+      else next.delete(id);
+      return next;
+    });
   const groupOpenedAt = useRef(new Date().toISOString());
   const groups = reviewGroups(review.value ?? []);
   const reload = () => {
@@ -381,7 +395,7 @@ export default function Review() {
       document.getElementById(search.get('item')!)?.scrollIntoView({ block: 'center' });
   }, [review.value, search]);
   async function approveGroup(cards: ReviewCard[]) {
-    const eligible = cards.filter(canBatchApprove);
+    const eligible = cards.filter(batchEligible);
     const result = await batch.run(async () => {
       let count = 0;
       try {
@@ -452,7 +466,7 @@ export default function Review() {
                     {cards.length} {cards.length === 1 ? 'item' : 'items'}
                   </span>
                 </h2>
-                {canEdit && cards.some(canBatchApprove) && (
+                {canEdit && cards.some(batchEligible) && (
                   <button
                     className="text-button"
                     disabled={batch.pending}
@@ -467,6 +481,7 @@ export default function Review() {
                   key={card.id}
                   card={card}
                   highlighted={search.get('item') === card.id}
+                  scopeChanged={scopeChanged}
                   reload={reload}
                 />
               ))}

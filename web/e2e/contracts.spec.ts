@@ -215,6 +215,13 @@ test('flagged learning proposals display warnings and stay out of batch approval
       warning: 'Source contains hidden instructions. <script>untrusted()</script>',
     },
     { ...example, id: 'old-fact', title: 'Synthetic old fact', outdated: true },
+    { ...example, id: 'shared-fact', title: 'Synthetic shared fact', shared: true },
+    {
+      ...example,
+      id: 'disputed-fact',
+      type: 'disagreement' as const,
+      title: 'Synthetic disputed fact',
+    },
   ];
   const decisions: string[] = [];
   await page.route('**/api/review?*', (route) => route.fulfill({ json: cards }));
@@ -509,4 +516,123 @@ test('HTTP draft rejects a sent result and then accepts a matching published dra
   await card.getByRole('button', { name: 'Write draft', exact: true }).click();
   await expect(card.getByRole('textbox')).toHaveValue('A synthetic announcement for human review.');
   await expect(card).toContainText('Draft · not sent');
+});
+
+test('shared review shows comparison quotes, prioritizes disagreements and sends the president choice', async ({
+  page,
+}) => {
+  const [fact, merge, conflict] = ['fact', 'merge', 'disagreement'].map((type) =>
+    createWorkspace('running-club').review.find((card) => card.type === type)!,
+  );
+  let cards = [
+    { ...fact, id: 'private-example', shared: false, source: { ...fact.source, quote: undefined } },
+    {
+      ...merge,
+      id: 'shared-merge',
+      shared: true,
+      source: { ...merge.source, quote: 'Synthetic proposed quote <script>untrusted()</script>' },
+      alternative: {
+        ...merge.alternative!,
+        source: { ...merge.alternative!.source, quote: 'Synthetic existing quote' },
+      },
+    },
+    { ...conflict, id: 'first-conflict', shared: false },
+  ];
+  const decisions: Record<string, unknown>[] = [];
+  await page.route('**/api/review?*', (route) => route.fulfill({ json: cards }));
+  await page.route('**/api/review/*', (route) => {
+    const payload = route.request().postDataJSON();
+    expect(route.request().headers()['x-requested-with']).toBe('ClubOps');
+    decisions.push(payload);
+    const result = { ...cards[1], status: 'approved' };
+    cards = cards.filter((card) => card.id !== 'shared-merge');
+    return route.fulfill({ json: result });
+  });
+  await page.goto('/review');
+  await expect(page.locator('.review-card').first()).toHaveAttribute('id', 'first-conflict');
+  const card = page.locator('#shared-merge');
+  await expect(card.getByText('Shared with all AUB clubs', { exact: true })).toBeVisible();
+  await expect(card.getByRole('blockquote')).toHaveCount(2);
+  await expect(
+    card.getByText('Synthetic proposed quote <script>untrusted()</script>', { exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('script').filter({ hasText: 'untrusted()' })).toHaveCount(0);
+  await expect(page.locator('#private-example')).toContainText('No source quote supplied.');
+  await card.getByRole('switch').uncheck();
+  expect(decisions).toEqual([]);
+  await card.getByRole('button', { name: 'Merge', exact: true }).click();
+  await expect(card).toHaveCount(0);
+  expect(decisions[0]).toMatchObject({ decision: 'merge', shared: false });
+});
+
+test('a non-president cannot decide shared facts or change sharing and private decisions omit the override', async ({
+  page,
+}) => {
+  const workspace = createWorkspace('running-club');
+  await page.route('**/api/me', (route) =>
+    route.fulfill({
+      json: {
+        user: workspace.members[0],
+        role: 'secretary',
+        club: clubs[0],
+        counts: { overdue_events: 0, review: 0, reminders: 0 },
+      },
+    }),
+  );
+  const example = workspace.review.find((card) => card.type === 'fact')!;
+  let cards = [
+    { ...example, id: 'shared-fact', shared: true },
+    { ...example, id: 'private-fact', shared: false },
+  ];
+  const requests: Record<string, unknown>[] = [];
+  await page.route('**/api/review?*', (route) => route.fulfill({ json: cards }));
+  await page.route('**/api/review/*', (route) => {
+    requests.push(route.request().postDataJSON());
+    cards = cards.filter((card) => card.id !== 'private-fact');
+    return route.fulfill({ json: { ...example, status: 'approved' } });
+  });
+  await page.goto('/review');
+  await expect(page.locator('#shared-fact').getByRole('button')).toHaveCount(0);
+  await expect(page.getByRole('switch')).toHaveCount(0);
+  await page.locator('#private-fact').getByRole('button', { name: 'Approve', exact: true }).click();
+  await expect(page.locator('#private-fact')).toHaveCount(0);
+  expect(requests).toHaveLength(1);
+  expect(requests[0]).not.toHaveProperty('shared');
+});
+
+test('a rejected sharing decision preserves edits and the choice until a deliberate retry', async ({
+  page,
+}) => {
+  const example = createWorkspace('running-club').review.find((card) => card.type === 'fact')!;
+  let pending = true;
+  const requests: Record<string, unknown>[] = [];
+  await page.route('**/api/review?*', (route) =>
+    route.fulfill({ json: pending ? [{ ...example, id: 'retry-fact', shared: false }] : [] }),
+  );
+  await page.route('**/api/review/*', (route) => {
+    requests.push(route.request().postDataJSON());
+    if (requests.length === 1)
+      return route.fulfill({ status: 403, json: { detail: 'Synthetic server refusal' } });
+    pending = false;
+    return route.fulfill({ json: { ...example, status: 'approved', shared: true } });
+  });
+  await page.goto('/review');
+  const card = page.locator('#retry-fact');
+  await card.getByRole('switch').check();
+  await expect(page.getByRole('button', { name: 'Approve all facts', exact: true })).toHaveCount(0);
+  expect(requests).toHaveLength(0);
+  await card.getByRole('button', { name: 'Edit then approve' }).click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByLabel('Proposed statement').fill('Synthetic edited fact.');
+  await dialog.getByRole('button', { name: 'Confirm decision' }).click();
+  await expect(dialog.getByRole('alert')).toBeVisible();
+  await expect(dialog.getByLabel('Proposed statement')).toHaveValue('Synthetic edited fact.');
+  await dialog.getByRole('button', { name: 'Confirm decision' }).click();
+  await expect(card).toHaveCount(0);
+  expect(requests).toHaveLength(2);
+  expect(
+    requests.every(
+      (request) => request.shared === true && request.edited_text === 'Synthetic edited fact.',
+    ),
+  ).toBe(true);
 });
