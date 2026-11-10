@@ -145,3 +145,13 @@ No entries yet.
 **Next:** Tatiana maps each private proposal to a versioned request and complete truth map, then runs `uv run python scripts/eval_proposals.py --cases <private-json> --out <private-result>` during T-26.
 
 **Open questions / blockers:** Real historical proposals may need field-by-field transcription before scoring; this is evaluation data work, not a reason to invent missing truth.
+
+## 2026-11-10 — J-19 review request
+
+**Did:** Opened PR #80 from `eval/j19-proposal-accuracy` into `main` and requested Tatiana's review. The PR body records the private-data boundary and T-26 handoff.
+
+**State:** J-19 is in review. CI and teammate approval remain before merge.
+
+**Next:** Address review findings and keep the runner's output free of proposal answer text.
+
+**Open questions / blockers:** The shared `docs/capabilities.md` schema drift still blocks the local full check gate and needs its owner to resolve.
