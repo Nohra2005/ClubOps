@@ -677,10 +677,11 @@ Reference documents:
 
 ### J-19 Proposal accuracy runner
 - Owner: joey
-- Status: todo
+- Status: done
 - Needs: J-12
 - What: Measure how close the proposal draft is to what the club really submitted: for each past event that has a real proposal (Tatiana gives the private files), compare the draft's answers field by field. Report correct, wrong, left for a person, and invented answers (filled in when the truth was unknown), plus form-check errors. Build and test it on synthetic proposals; Tatiana runs it on the real ones in T-26.
 - Done when: `scripts/eval_proposals.py` gives a result table on synthetic data, with tests, in replay mode.
+- Progress (2026-11-10): deterministic JSON-case runner and synthetic CLI tests pass. It prints counts and case IDs only; Tatiana supplies private submitted proposals for T-26.
 
 ### J-20 New-club test and learning curve (D-91)
 - Owner: joey
