@@ -38,3 +38,7 @@ Attacks on AUB's own systems, on GitHub, or on the model provider.
 ## J-13 adversarial test status (2026-10-31)
 
 `tests/security/test_attack_boundaries.py` uses synthetic inputs against the real API, learning, planner prompt and budget boundaries. It covers a forged session, adviser approval attempt, cross-club event access, an instruction in forwarded text, an unverified fake rule, and step/cost exhaustion. These checks exercise existing controls; they do not establish an injection success rate. The measured defense-off and defense-on run still needs a frozen attack set, recorded model responses, and Tatiana's results review. No rate should appear on the poster until that run exists in `results/`.
+
+## J-13 frozen corpus (2026-11-10)
+
+`tests/security/CORPUS.md` pins ten synthetic attacks and defines a strict scorer for independently reviewed outcomes. Every attack currently triggers the plain-code injection flag regression. That is a detector check, not a model attack success rate. The scorer refuses partial evidence and keeps attack text out of output (F-200). Tatiana must run and review the defense-off/on model comparison in a private environment, then own the `results/` evidence before any rate is reported.
