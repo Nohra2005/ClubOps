@@ -465,7 +465,8 @@ Reference documents:
 
 ### C-25 OpenTelemetry traces (bonus)
 - Owner: christophe
-- Status: todo
+- Status: doing
+- Progress (2026-11-10): starting a metadata-only OTLP exporter/local viewer proof in the owned reports folder. C-20 real-provider validation remains open, so correlation is explicit and tested on synthetic contract data; no run/step relationships inferred from unrelated JSONL records. Production producer hooks remain with the API/agent owners.
 - Needs: C-20
 - What: Export the existing trace records (metadata only: capability, prompt version, model, latency, tokens, cost, retries, status; never prompts or personal data) as OpenTelemetry spans, one trace per agent run with a span per step and per model call, so they can be viewed in a tool such as Jaeger or Langfuse. Off unless an exporter endpoint is set.
 - Done when: a local run shows one agent run as a trace with its steps, and a test checks no prompt text or personal data is exported.
