@@ -230,3 +230,22 @@ D-101/F-172/F-173 document the regression evidence. Tatiana's re-review and fina
 GitHub checks remain on #54; earlier dated counts above are historical.
 
 **After #54 merged on 9 November:** #55 now contains main 4bed33c and both task histories. Shared evidence/handoff conflicts preserve all entries. Combined root gates pass: 600 passed, 1 skipped, 92.68% coverage; Ruff/format (138 files), strict package types (76 files), CLI typing, schema/task checks. Frontend check passes with 42 units and 12 board-tool tests. Remote checks for the new merge head are on #55; previous 3e0180a had all five green. No production setup wiring or real private evaluation is implied.
+
+## 10 November 2026 - C-34 shared Review guards
+
+Current main 106baa7 plus C-34 passes all local root gates: **600 passed, 1 skipped,
+92.68% coverage**, Ruff/format (138 files), strict mypy (76 source files), schemas/tasks.
+`npm run check` passes with **46 frontend units, 12 board-tool tests** and build.
+
+Actual browser verification: **8 HTTP review cases**, **2 persistent-demo review
+cases**, and **2 accessibility cases covering 11 routes each** on desktop/375px phone.
+Tests cover shared facts with ordinary type, source quotes/missing evidence/literal
+HTML-like text, all disagreements first, explicit true/false decisions, non-president
+restrictions, 403 edit/choice retention and no batching of unsaved scope changes.
+The demo now matches T-41's single-president shared approval; historical waiting
+responses remain display-compatible.
+
+D-104/F-175-F-178 and `REVIEW_GUIDE.md` record behavior and limits. Existing public
+`tests/test_shared_layer.py` runs in root checks; no backend code/contracts changed.
+HTTP UI checks use synthetic intercepted responses, not a deployed service or user
+study. Final-head CI and independent teammate review are on the C-34 PR.
