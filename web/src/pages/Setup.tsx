@@ -6,6 +6,7 @@ import { storage } from '../api';
 import type { SetupStep } from '../api/types';
 import { PageHeading, ErrorNotice } from '../components/ui';
 import { useAction, useResource } from '../hooks';
+import StarterChecklist from '../components/StarterChecklist';
 
 export default function Setup() {
   const { api, me, isPresident, refresh } = useApp();
@@ -98,25 +99,29 @@ export default function Setup() {
           <ErrorNotice message={action.error || rules.error} />
         </section>
       ) : step.done ? (
-        <section className="panel setup-complete">
-          <span className="setup-check">
-            <Check size={28} />
-          </span>
-          <h2>Your club is ready to start.</h2>
-          <p>
-            Setup is complete. Any facts extracted from your answers are waiting in Review; none
-            were approved here. Skipped or uninformative answers may produce no facts.
-          </p>
-          <p>You can add more knowledge later in Chat. Setup does not change cabinet accounts.</p>
-          <div className="form-actions">
-            <Link className="button primary" to="/review">
-              Review what we learned <ArrowRight size={14} />
-            </Link>
-            <Link className="button" to="/events">
-              Open Events
-            </Link>
-          </div>
-        </section>
+        <>
+          <section className="panel setup-complete">
+            <span className="setup-check">
+              <Check size={28} />
+            </span>
+            <h2>Your club interview is complete.</h2>
+            <p>
+              The interview is complete. Any facts extracted from your answers are waiting in
+              Review; none were approved here. Skipped or uninformative answers may produce no
+              facts.
+            </p>
+            <p>You can add more knowledge later in Chat. Setup does not change cabinet accounts.</p>
+            <div className="form-actions">
+              <Link className="button primary" to="/review">
+                Review what we learned <ArrowRight size={14} />
+              </Link>
+              <Link className="button" to="/events">
+                Open Events
+              </Link>
+            </div>
+          </section>
+          <StarterChecklist />
+        </>
       ) : (
         <>
           <div className="setup-progress">

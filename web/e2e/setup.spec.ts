@@ -9,7 +9,9 @@ test('new-club setup is skippable and leaves learned facts unapproved', async ({
   await page.getByRole('button', { name: 'Next question', exact: true }).click();
   for (let i = 0; i < 9; i++)
     await page.getByRole('button', { name: 'Skip this question', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Your club is ready to start.' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Your club interview is complete.' }),
+  ).toBeVisible();
   await expect(page.getByText('none were approved here.', { exact: false })).toBeVisible();
   const workspace = await page.evaluate(() =>
     JSON.parse(localStorage.getItem('clubops.demo.workspace.v1.asme')!),
