@@ -627,3 +627,27 @@ test('starter cabinet action uses the existing API and local checks do not call 
   );
   expect(learned).toBe(0);
 });
+
+test('starter cabinet confirmation waits for a valid server list', async ({ page }) => {
+  const workspace = createWorkspace('running-club');
+  let valid = false;
+  await page.route('**/api/knowledge?*', (route) => route.fulfill({ json: [] }));
+  await page.route('**/api/cabinet', (route) =>
+    route.fulfill({ json: valid ? workspace.members : { detail: 'Synthetic malformed list' } }),
+  );
+  await page.route('**/api/setup/next', (route) =>
+    route.fulfill({
+      json: { question: 'Synthetic done', index: 10, total: 10, done: true, rules_count: 27 },
+    }),
+  );
+  await page.goto('/setup');
+  await page.getByRole('button', { name: 'Start or resume club setup' }).click();
+  const checklist = page.getByRole('region', { name: "Your club's starter checklist" });
+  await expect(checklist.getByRole('alert')).toContainText('server did not return a cabinet list');
+  await expect(checklist.getByLabel('I have checked the cabinet list')).toHaveCount(0);
+  await expect(checklist).toContainText('0 of 4');
+  valid = true;
+  await checklist.getByRole('button', { name: 'Try again', exact: true }).click();
+  await checklist.getByLabel('I have checked the cabinet list').check();
+  await expect(checklist).toContainText('1 of 4');
+});
