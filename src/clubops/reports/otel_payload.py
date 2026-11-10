@@ -118,7 +118,12 @@ def build_batch(observation: RunObservation, labels: PublicLabels = DEFAULT_LABE
             if number is not None:
                 attrs[f"clubops.step.{name}"] = number
         parents[step.n] = span(
-            "agent.step", unix_nanos(window.started_at), unix_nanos(window.ended_at), step.state.value, attrs, parent=root
+            "agent.step",
+            unix_nanos(window.started_at),
+            unix_nanos(window.ended_at),
+            step.state.value,
+            attrs,
+            parent=root,
         )
     for call in value.calls:
         trace = call.trace
