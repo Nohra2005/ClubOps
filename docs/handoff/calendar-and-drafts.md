@@ -165,3 +165,11 @@ No entries yet.
 **Next:** Resolve review comments and prepare complete replay recordings before presenting a measured new-club curve.
 
 **Open questions / blockers:** The existing `docs/capabilities.md` schema drift still blocks the full check gate.
+
+## 2026-11-11 - J-20 interview-first review update
+
+**Did:** Responded to Tatiana's PR #81 review by freezing three synthetic president interviews before changing the runner. The five stages per club now add approved interview facts before starter documents. Added a freeze-drift test, stage/isolation tests, D-121 and F-206.
+
+**State:** The 15-row checklist run validates the pipeline only. ClubOps replay still requires complete synthetic model recordings; the PR remains draft and J-20 remains in review. No private club material or model-quality claim is in Git.
+
+**Next:** Tatiana: review the interview-first assumption and help prepare approved synthetic replay recordings. Joey: run the measured ClubOps curve, update evidence, then request final independent review.

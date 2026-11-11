@@ -1,4 +1,4 @@
-"""Measure planning at 0, 1, 3 and all synthetic onboarding documents (J-20).
+"""Measure planning across synthetic setup interview and document stages (J-20).
 
 The ClubOps run uses recorded model answers in replay mode only. With no matching
 recordings it fails instead of publishing a misleading learning curve. `--system
@@ -33,7 +33,8 @@ from clubops.model.client import ModelClient
 
 STARTERS_SHA = "4dcc774a8485e03907fbc403df2533635c0cb2e3ae065a4909420aef4b3a3e3d"
 EVENTS_SHA = "bcec66154ec2dbafcd65af0e2a9e46828c5cdab11e4cd681c4372f4432a84006"
-STAGES = (0, 1, 3, 4)
+INTERVIEWS_SHA = "f07ab1b2fcce319d652591b98d1da6fbe262344475fb8154fc313a082ffaf480"
+STAGES = ((0, 0), (1, 0), (3, 0), (4, 0), (4, 4))
 
 
 @dataclass(frozen=True)
@@ -48,6 +49,7 @@ class ClubPack:
     club_id: str
     kind: str
     event_ids: tuple[str, ...]
+    answers: tuple[StarterDocument, ...]
     documents: tuple[StarterDocument, ...]
 
 
@@ -55,6 +57,7 @@ class ClubPack:
 class CurveRow:
     club_id: str
     kind: str
+    answers: int
     documents: int
     events: int
     result: Score
@@ -64,10 +67,17 @@ def _frozen_hash(path: Path) -> str:
     return hashlib.sha256(path.read_bytes().replace(bytes([13, 10]), bytes([10]))).hexdigest()
 
 
-def load_packs(path: Path, events: Path) -> tuple[list[ClubPack], list[Case]]:
-    if _frozen_hash(path) != STARTERS_SHA or _frozen_hash(events) != EVENTS_SHA:
+def load_packs(path: Path, events: Path, interviews: Path) -> tuple[list[ClubPack], list[Case]]:
+    if any(
+        _frozen_hash(file) != digest
+        for file, digest in ((path, STARTERS_SHA), (events, EVENTS_SHA), (interviews, INTERVIEWS_SHA))
+    ):
         raise ValueError("synthetic new-club inputs changed since their freeze; review and re-freeze before running")
     raw = json.loads(path.read_text(encoding="utf-8"))
+    interview_raw = json.loads(interviews.read_text(encoding="utf-8"))
+    answers_by_club = {entry["club_id"]: entry["answers"] for entry in interview_raw["clubs"]}
+    if len(answers_by_club) != len(interview_raw["clubs"]):
+        raise ValueError("duplicate synthetic interview club")
     cases = load_cases(events)
     by_id = {case.case_id: case for case in cases}
     packs: list[ClubPack] = []
@@ -82,13 +92,23 @@ def load_packs(path: Path, events: Path) -> tuple[list[ClubPack], list[Case]]:
         )
         if len(docs) != 4 or any(doc.on >= min(by_id[case_id].on for case_id in ids) for doc in docs):
             raise ValueError("four starter documents must predate every evaluated event")
-        packs.append(ClubPack(entry["club_id"], entry["kind"], ids, docs))
+        answers = tuple(
+            StarterDocument(answer["id"], date.fromisoformat(answer["on"]), answer["statement"])
+            for answer in answers_by_club[entry["club_id"]]
+        )
+        if len(answers) != 4 or any(answer.on >= min(doc.on for doc in docs) for answer in answers):
+            raise ValueError("four setup answers must predate starter documents")
+        packs.append(ClubPack(entry["club_id"], entry["kind"], ids, answers, docs))
     if len(packs) != 3 or {pack.kind for pack in packs} != {"academic", "cultural", "social"}:
         raise ValueError("the frozen set needs academic, cultural and social clubs")
+    if set(answers_by_club) != {pack.club_id for pack in packs}:
+        raise ValueError("synthetic interview clubs must match starter clubs")
     return packs, cases
 
 
-PredictorFactory = Callable[[ClubPack, tuple[StarterDocument, ...]], Callable[[Case], Prediction]]
+PredictorFactory = Callable[
+    [ClubPack, tuple[StarterDocument, ...], tuple[StarterDocument, ...]], Callable[[Case], Prediction]
+]
 
 
 def run_curve(packs: list[ClubPack], cases: list[Case], make_predictor: PredictorFactory) -> list[CurveRow]:
@@ -96,13 +116,13 @@ def run_curve(packs: list[ClubPack], cases: list[Case], make_predictor: Predicto
     rows: list[CurveRow] = []
     for pack in packs:
         selected = [by_id[case_id] for case_id in pack.event_ids]
-        for count in STAGES:
-            result = score(selected, make_predictor(pack, pack.documents[:count]))
-            rows.append(CurveRow(pack.club_id, pack.kind, count, len(selected), result))
+        for answer_count, document_count in STAGES:
+            result = score(selected, make_predictor(pack, pack.answers[:answer_count], pack.documents[:document_count]))
+            rows.append(CurveRow(pack.club_id, pack.kind, answer_count, document_count, len(selected), result))
     return rows
 
 
-def _fact(pack: ClubPack, doc: StarterDocument) -> KnowHowItem:
+def _fact(pack: ClubPack, doc: StarterDocument, source_kind: str) -> KnowHowItem:
     observed = datetime.combine(doc.on, datetime.min.time(), tzinfo=UTC)
     return KnowHowItem.model_validate(
         {
@@ -111,8 +131,8 @@ def _fact(pack: ClubPack, doc: StarterDocument) -> KnowHowItem:
             "club_id": "eval-club",  # ClubOpsSystem's isolated synthetic request club
             "title": doc.statement[:80],
             "statement": doc.statement,
-            "details": {"kind": "decision", "decision": doc.statement[:300], "rationale": "synthetic starter document"},
-            "sources": [{"kind": "document", "source_id": f"{pack.club_id}/{doc.doc_id}", "observed_at": observed}],
+            "details": {"kind": "decision", "decision": doc.statement[:300], "rationale": "synthetic setup input"},
+            "sources": [{"kind": source_kind, "source_id": f"{pack.club_id}/{doc.doc_id}", "observed_at": observed}],
             "support": {"events": [], "source_count": 1},
             "status": "verified",
             "verified_by": "m-synthetic-president",
@@ -126,15 +146,19 @@ def clubops_predictor(client: ModelClient, work: Path) -> PredictorFactory:
     rules = read_rulebook()
     settings = load_settings()
 
-    def build(pack: ClubPack, documents: tuple[StarterDocument, ...]) -> Callable[[Case], Prediction]:
-        stage = len(documents)
+    def build(
+        pack: ClubPack, answers: tuple[StarterDocument, ...], documents: tuple[StarterDocument, ...]
+    ) -> Callable[[Case], Prediction]:
+        stage = f"answers-{len(answers)}-documents-{len(documents)}"
 
         def store_for(_: Case) -> KnowHowStore:
             store = KnowHowStore()
             for item in rules:
                 store.backend.append(item)
+            for answer in answers:
+                store.backend.append(_fact(pack, answer, "interview"))
             for doc in documents:
-                store.backend.append(_fact(pack, doc))
+                store.backend.append(_fact(pack, doc, "document"))
             return store
 
         def directory_for(case: Case) -> Directory:
@@ -157,13 +181,13 @@ def clubops_predictor(client: ModelClient, work: Path) -> PredictorFactory:
 
 def table(rows: list[CurveRow]) -> str:
     lines = [
-        "| Club | Kind | Documents | Events | Caught | Missed | False alarms | Cost (USD) | Errors |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|",
+        "| Club | Kind | Answers | Documents | Events | Caught | Missed | False alarms | Cost (USD) | Errors |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in rows:
         result = row.result
         lines.append(
-            f"| {row.club_id} | {row.kind} | {row.documents} | {row.events} | {result.caught} | "
+            f"| {row.club_id} | {row.kind} | {row.answers} | {row.documents} | {row.events} | {result.caught} | "
             f"{result.missed} | {result.false_alarms} | {result.cost_usd:.4f} | {result.errors} |"
         )
     return "\n".join(lines)
@@ -173,17 +197,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--starters", type=Path, default=Path("eval/new-club-starters.json"))
     parser.add_argument("--events", type=Path, default=Path("eval/synthetic-events.csv"))
+    parser.add_argument("--interviews", type=Path, default=Path("eval/new-club-interviews.json"))
     parser.add_argument("--system", choices=("clubops", "checklist"), default="clubops")
     parser.add_argument("--out", type=Path, help="write only aggregate scores to this file")
     args = parser.parse_args()
-    packs, cases = load_packs(args.starters, args.events)
+    packs, cases = load_packs(args.starters, args.events, args.interviews)
     if args.system == "clubops" and load_settings().mode is not ModelMode.REPLAY:
         raise ValueError("J-20 only runs ClubOps in replay mode; set CLUBOPS_MODEL_MODE=replay")
     with tempfile.TemporaryDirectory() as tmp:
         factory = (
             clubops_predictor(ModelClient(load_settings()), Path(tmp))
             if args.system == "clubops"
-            else lambda _pack, _docs: checklist
+            else lambda _pack, _answers, _docs: checklist
         )
         rows = run_curve(packs, cases, factory)
     if args.system == "clubops" and any(row.result.errors for row in rows):
