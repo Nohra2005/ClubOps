@@ -468,6 +468,7 @@ Reference documents:
 ### C-25 OpenTelemetry traces (bonus)
 - Owner: christophe
 - Status: doing
+- Progress (2026-11-10): optional metadata-only OTLP/HTTP JSON exporter and isolated Jaeger demo implemented in the owned reports folder. Actual local readback/UI show one synthetic run, two steps and two calls; see web/observability/README.md and its evidence. Export defaults off, checks explicit correlation/windows, and allowlists public labels. C-20 real-provider validation and real agent/model producer hooks remain with the owners; no production tracing/monitoring claim, so this stays doing.
 - Needs: C-20
 - What: Export the existing trace records (metadata only: capability, prompt version, model, latency, tokens, cost, retries, status; never prompts or personal data) as OpenTelemetry spans, one trace per agent run with a span per step and per model call, so they can be viewed in a tool such as Jaeger or Langfuse. Off unless an exporter endpoint is set.
 - Done when: a local run shows one agent run as a trace with its steps, and a test checks no prompt text or personal data is exported.
