@@ -136,7 +136,7 @@ No entries yet.
 
 **Open questions / blockers:** Results belong in Tatiana's `results/` area; coordinate the measured run and evidence before poster claims.
 
-## 2026-11-10 — J-12 form-version regression (test/j12-form-versions)
+## 2026-11-10 â€” J-12 form-version regression (test/j12-form-versions)
 
 **Did:** Added synthetic checks for the historical 33-field shape selected by field ID from the current form, plus the current 52-field catering branch. The legacy draft validates with its known values; the current conditional fields remain explicitly pending when the event lacks facts.
 
