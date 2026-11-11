@@ -48,6 +48,11 @@ The HTTP suite starts an isolated Vite instance on port 5174 with `VITE_API_MODE
 
 ## API connection and hosting
 
+For C-28's five-minute presenter script, fast synthetic desktop/phone rehearsal and
+optional silent recording, see [demo/README.md](demo/README.md). This uses isolated,
+intercepted HTTP fixtures and a persistent rehearsal label; it is not the deployed
+demo or backend/model/security evidence. The final team rehearsal remains pending.
+
 Copy `.env.example` to `.env.local`. Set `VITE_API_MODE=http`; `VITE_API_BASE` defaults to `/api`. Vite proxies local requests to port 8000 (override with server-only `CLUBOPS_API_PROXY`). Set public `VITE_GOOGLE_CLIENT_ID` to match the backend's `CLUBOPS_GOOGLE_CLIENT_ID`. Never put API keys, OAuth client secrets or other secrets in `VITE_*`: they are public build-time configuration. See [the published API](../docs/api.md) for backend startup and cabinet setup.
 
 See [API_NOTES.md](API_NOTES.md) for current integration coverage and remaining server features. Actions without an agreed endpoint work only in the demo and return an unavailable-action error in HTTP mode. Production chat history must be supplied by the backend; it does not use the demo cache.

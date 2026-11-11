@@ -59,7 +59,7 @@ The separate Compose `local` target compiles an explicit dev sign-in form, boots
 
 - Python CI checks lint, strict types, coverage and schema drift; dependency auditing remains active.
 - Frontend quality/browser and container/persistence checks are established on main after #44/#46. Current main `4b3f17e` has successful [CI](https://github.com/Nohra2005/ClubOps/actions/runs/42501653494), [Web](https://github.com/Nohra2005/ClubOps/actions/runs/42501653484) and [Container](https://github.com/Nohra2005/ClubOps/actions/runs/42501653554) runs. These checks are separate from evidence of independent teammate review; AGENTS/CONTRIBUTING require that review and merge commits.
-- OpenTelemetry export, deployed monitoring/alerts and final evaluation thresholds remain C-25/C-26/C-22 work. Metadata fields alone do not prove those systems are running.
+- C-25 has an optional closed-run metadata-only OTLP/HTTP JSON exporter and a synthetic local Jaeger proof in [`../web/observability/README.md`](../web/observability/README.md). It requires explicit real run/step/model-call timing and associations; it never infers them from unrelated JSONL records. Producer hooks remain with the agent/model owners, so real-run instrumentation, deployed monitoring/alerts and final evaluation thresholds remain C-25/C-26/C-22 work. The synthetic proof does not establish production operation.
 - Runs execute in-process; a single worker/instance is the supported deployment configuration. Finish active planning before a restart. Durable job recovery and horizontal scaling are not claimed.
 - Real provider quality, production OAuth, persistent hosting recovery and real-world pilot outcomes are not established by scripted tests.
 
