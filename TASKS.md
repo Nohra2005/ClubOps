@@ -438,6 +438,7 @@ Reference documents:
 - Needs: none
 - What: The backend for the setup screen you built (C-11): `POST /api/setup/next {answer?}` walks a new club through about 10 questions (name, club or society and faculty, adviser, cabinet roles, signature events, usual venues, sponsors...) and turns each answer into a proposed fact in Review; the 25 AUB rules apply from day one (they are shared). Code in `src/clubops/api/setup.py` (yours); register it in place of the 501 route (one line; tell Tatiana). Tatiana gives you ASME's non-personal facts to seed ASME as the second club for the demo.
 - Done when: a new club can go through setup in the demo, and ASME is the second club.
+- Progress (2026-11-11, Tatiana): production wiring done (D-112). `app.py` registers the setup router with the specified callbacks in place of the 501, and `/api/me` reports `setup_complete` from the service, with the Running Club marked as set up before C-21. The setup tests now run the production route with synthetic callbacks via `create_app(setup_overrides=...)`: deleting the route from `app.router.routes` no longer takes effect in FastAPI 0.162, so they had been exercising the production route. Decided-card retry: pending and approved proposals are skipped; a rejected one can reappear once (F-201, known limit). Remaining: ASME goes through setup in the demo.
 - Progress (2026-11-03): owned service/router and frontend in PR #55; durable per-club questions, Untrusted capture, retry outbox and Review-only writes. 18 synthetic service/HTTP/SQLite cases include one explicit reproduction of the unresolved stale-tab limit (F-151), plus desktop/phone setup tests. See `web/CLUB_SETUP.md`. Still doing: Tatiana must wire the public callbacks and `/me` completion field, approve decided-card retry semantics and provide sourced non-personal ASME seed facts. Existing answer-only contract's stale-tab limit is documented; no contract was silently extended.
 
 ### C-22 Evaluation in CI (was T-30)
@@ -492,7 +493,7 @@ Reference documents:
 
 ### C-28 Demo script and backup video
 - Owner: christophe
-- Status: todo
+- Status: doing
 - Needs: C-14, C-18
 - What: `docs/demo-script.md`: 5 minutes on the deployed app, showing what the brief asks: one normal plan, then edge cases (missing facts → the agent asks; the step limit; a hidden instruction in an uploaded document; a member without rights trying to approve). Seed a demo club with synthetic data only. Record a backup video in case the network fails on demo day.
 - Done when: the script runs start to end on the deployed app, rehearsed once with the team, video saved.
@@ -527,14 +528,16 @@ Reference documents:
 
 ### C-33 Starter onboarding for a new club (D-91)
 - Owner: christophe
-- Status: todo
+- Status: doing
 - Needs: C-21
 - What: Extend the setup flow into one short checklist every new club does the same way (about 10 minutes): add the cabinet, upload the club's rules or constitution, one past proposal, and its usual places and partners (`POST /api/cabinet`, `POST /api/documents`). Show what is done, and say plainly that ClubOps starts with the shared AUB know-how and learns the club as it is used.
 - Done when: a new club can finish the checklist in the deployed app, with a browser test on synthetic data.
 
 ### C-34 Review screen guards (D-91)
 - Owner: christophe
-- Status: todo
+- Status: done
+- Progress (2026-11-10): shared badges and president scope switches send the existing boolean only on confirmed individual decisions; quotes are visible on both sides of comparisons, missing quotes explicit, all disagreements grouped first. Bulk approval skips shared/flagged/disputed cards and unsaved sharing choices. Denied requests preserve edits/choice. Demo matches current T-41 president approval. Guide: `web/REVIEW_GUIDE.md`. Verified: 46 frontend units, 12 board-tool tests, 8 HTTP review cases, 2 demo review cases, 2 full-screen accessibility cases; full root gates with 600 passed, 1 skipped and 92.68% coverage. Awaiting independent PR review; no backend/contract or deployment change.
+- Progress (2026-11-09): starting the ready frontend task after T-41 and #55 merged. Implementing shared-scope review controls against the published task/API tests, source quotes on comparisons, disagreement-first grouping and conservative bulk approval. Backend implementation/contracts remain unchanged; setup app wiring stays with Tatiana.
 - Needs: T-41
 - What: On each Review card show the source quote, a "Shared with all AUB clubs" badge when `shared` is true, and a switch to change it (send `shared: true/false` with the decision; only presidents may approve shared facts, others get 403). Show disagreements first. Bulk approve skips shared facts, disagreements and warned facts (D-79).
 - Done when: the screen does this with tests, and the user guide explains sharing in two lines.

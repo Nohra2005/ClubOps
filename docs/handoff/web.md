@@ -140,3 +140,20 @@ No entries yet.
 **Open questions / blockers:** No production app hook, hosted monitoring/dashboard/alert, provider billing proof, real ASME run or bonus-grade result is claimed. C-18/OAuth/hosting, C-20 real-provider validation, C-22 measured thresholds and C-31 existing-board URL/access remain pending. The local unauthenticated memory viewer is only for synthetic data and loses traces when stopped. Temporary readback/browser/runtime files remain untracked under output; no real/private inputs or paid calls were used. Owner coordination is in #43, with a request to relay this scope to users/agents.
 
 **Contract review follow-up:** Removed an unsupported equality assumption between steps_used and the visible step list; the public contract does not require that relationship. Preserve both as supplied, with a regression and F-191. Full root gates reran green: 664 passed, 1 skipped, 92.99%; 64 telemetry cases remain. The prior PR head passed all five CI checks; the corrected fifteenth commit requires its own current-head checks.
+
+## 2026-11-10 - Christophe, with Codex (C-34 Review sharing)
+
+**Did:** Resumed from the interruption with only the task claim saved, pulled main 106baa7 and current locked dependencies, confirmed T-41 done and #55 merged with commit history preserved. Added shared-scope badges/president choices, explicit boolean decision payloads, quoted evidence for both comparison sides and missing-quote notices. All disagreements appear first; shared/disputed/warned/outdated cards and unsaved sharing choices never batch. Denied individual requests keep edits/choice for explicit retry. Demo follows the actual single-president T-41 path; legacy waiting responses remain display-compatible. Separate task/policy/UI/demo/browser/docs commits; no backend implementation/contracts changed.
+
+**State:** C-34 review. All root gates pass: 600 passed, 1 skipped, 92.68% coverage, Ruff/format (138 files), strict types (76 files), schema/task checks. Frontend check passes: 46 units, 12 board-tool tests and production build. Focused browser checks: 8 HTTP review cases and 2 demo review cases; 2 accessibility cases scan all 11 main routes on desktop/phone. D-104/F-175-F-178 are the new ranges; they were free on main and no PR was open at final fetch. Frontend failure rows use the existing frontend-covered classification; the root validator's covered label is Python-only. No real sources, paid model calls, deployed or real-user acceptance claim.
+
+**Next:** Publish C-34 for independent teammate review, then merge with Create a merge commit. Tatiana should add the existing shared fields to her docs/api.md and link the frontend evidence in docs/evidence.md/rubric-map.md. See web/REVIEW_GUIDE.md and web/API_NOTES.md for user guidance/API boundary. Current-head remote checks remain on the PR.
+
+**Open questions / blockers:** C-21 production wiring remains Tatiana's app.py task; C-33 depends on it. C-31 still needs the direct board URL/access: project scope is enabled but the last discovery returned no boards. No duplicate project or attendance record invented. HTTP browser checks intercept synthetic responses; existing T-41 tests enforce server authorization, while frontend controls do not replace it. Runtime output stays untracked.
+
+
+## 2026-11-11 - Christophe (C-25 review sync)
+
+Merged main afbdead into #77, preserving both teams' additive entries and original commits. Removed this PR's edits to docs/evidence.md and docs/rubric-map.md per Tatiana's ownership review; owned telemetry guide/proof remain available for her to link. C-34 is done; C-25/C-28/C-33 stay doing. No exporter, backend or contract implementation changed. Current-head checks and independent re-review are required.
+
+Verification on the synced C-25 branch: full root gates pass with 667 passed, 1 skipped, 92.79% coverage; web check has 46 units + 12 tools/build. The evidence/rubric files have zero diff from main. Original 64 telemetry cases remain; real producer integration is still pending.

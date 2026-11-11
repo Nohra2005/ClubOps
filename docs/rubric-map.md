@@ -39,5 +39,5 @@ Kept current in every PR that changes what a row points to. The plan for coverin
 | Prompt and model versioning | `TraceMeta.prompt_version`, capability versions, prompt versions in every agent call | in place |
 | Frontend checks in CI | web lint, types, tests, build | planned (C-23) |
 | Secret scanning and security linting | gitleaks + security linter in CI | planned (J-16) |
-| OpenTelemetry traces | [optional exporter + local Jaeger guide](../web/observability/README.md), [synthetic readback](../web/observability/evidence/local-proof.json), [viewer image](../web/observability/evidence/jaeger-synthetic.png) | synthetic local proof in place; real producer hooks pending (C-25 doing) |
+| OpenTelemetry traces | one trace per agent run (Jaeger / Langfuse) | planned (C-25) |
 | Docker Compose | `docker-compose.yml` | planned (C-24) |

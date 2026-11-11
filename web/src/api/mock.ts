@@ -1,4 +1,5 @@
 import { ApiError, type RequestOptions, type Transport } from './client';
+import { isShared } from './review-policy';
 import {
   clubs,
   createWorkspace,
@@ -540,7 +541,9 @@ export function createMockTransport(
         throw new ApiError('This item has already been reviewed.', 409);
       const decision = String(body.decision);
       if (card.type === 'plan') throw new ApiError('Approve this plan from its event page.', 422);
-      if (card.type === 'rule') mutateAllowed(true);
+      if (body.shared !== undefined && typeof body.shared !== 'boolean')
+        throw new ApiError('Choose whether this knowledge is shared.', 422);
+      if (card.type === 'rule' || isShared(card) || body.shared === true) mutateAllowed(true);
       if (
         !body.opened_at ||
         !body.decided_at ||
@@ -555,12 +558,8 @@ export function createMockTransport(
           : card.statement;
       card.opened_at = String(body.opened_at);
       card.decided_at = String(body.decided_at);
-      card.status =
-        decision === 'reject'
-          ? 'rejected'
-          : card.type === 'rule'
-            ? 'waiting_second_president'
-            : 'approved';
+      card.shared = typeof body.shared === 'boolean' ? body.shared : isShared(card);
+      card.status = decision === 'reject' ? 'rejected' : 'approved';
       if (decision === 'both' && card.alternative)
         card.statement += `\nAlso true: ${card.alternative.statement}\nContext: ${String(body.reason)}`;
       if (card.status === 'approved' && card.type === 'document') {
@@ -582,7 +581,7 @@ export function createMockTransport(
             decision === 'keep_b' && card.alternative ? card.alternative.statement : card.statement,
           tab: 'tips',
           kind: card.kind,
-          scope: 'club',
+          scope: card.shared ? 'aub' : 'club',
           sources: [card.source],
           last_checked: DEMO_TODAY,
           status: 'current',
