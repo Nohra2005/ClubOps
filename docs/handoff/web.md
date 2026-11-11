@@ -148,3 +148,10 @@ No entries yet.
 **Next:** Publish C-34 for independent teammate review, then merge with Create a merge commit. Tatiana should add the existing shared fields to her docs/api.md and link the frontend evidence in docs/evidence.md/rubric-map.md. See web/REVIEW_GUIDE.md and web/API_NOTES.md for user guidance/API boundary. Current-head remote checks remain on the PR.
 
 **Open questions / blockers:** C-21 production wiring remains Tatiana's app.py task; C-33 depends on it. C-31 still needs the direct board URL/access: project scope is enabled but the last discovery returned no boards. No duplicate project or attendance record invented. HTTP browser checks intercept synthetic responses; existing T-41 tests enforce server authorization, while frontend controls do not replace it. Runtime output stays untracked.
+
+
+## 2026-11-11 - Christophe (C-28 review revision)
+
+Synced main afbdead and retained both shared logs. Removed all edits to Tatiana-owned evidence/rubric files; owned demo guides/proofs remain for her to link. Added primary president onboarding before planning: one explicit synthetic name answer pending Review, stop/resume with no resubmission, then reject the practice fact. Interview stays incomplete/paused; no chat history or personal data. Seven chapters still budget 300 seconds. D-117/F-202 follow #90's D-113-D-116 and other PRs through F-201.
+
+Validation: root gates 603 passed, 1 skipped, 92.47%; web check 62 units + 12 tools/types/build; full HTTP 36 passed. Actual refreshed recording is 301.60 seconds, 29,148,641 bytes, SHA-256 db7c225ac858d4d4d9a1a94cdcfffeb1b382ea9dfb95b96702519421756c4abd. Seven chapters and onboarding counts (2 resumes, 1 answer, 1 rejection) verify; five frames inspected. New take/proof: output/demo-rehearsal-paE1hg; selected metadata/stills in web/demo/evidence. The 10 November six-chapter snapshot is explicitly historical. C-34 done; C-25/C-28/C-33 doing. Deployment, real backend/model/security outcomes, team rehearsal and final narration remain pending; current-head CI/re-review required.
