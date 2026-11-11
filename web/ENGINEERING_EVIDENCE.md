@@ -121,6 +121,22 @@ Actual private grades and quality/cost measurements remain T-26, not these fixtu
 
 **After #54 merged on 9 November:** #55 now contains main 4bed33c and both task histories. Shared evidence/handoff conflicts preserve all entries. Combined root gates pass: 600 passed, 1 skipped, 92.68% coverage; Ruff/format (138 files), strict package types (76 files), CLI typing, schema/task checks. Frontend check passes with 42 units and 12 board-tool tests. Remote checks for the new merge head are on #55; previous 3e0180a had all five green. No production setup wiring or real private evaluation is implied.
 
+## 10 November 2026 - C-33 explicit starter onboarding
+
+C-33 implements the existing cabinet/document API workflow without inventing a
+purpose-specific progress contract. Browser-local, identity-scoped ticks hold only
+booleans; accepted uploads remain separate from learned/approved facts. Selection
+makes no request, duplicate clicks are locked and failed/malformed responses preserve
+retry state. D-105/F-179-F-182 link these boundaries to synthetic regressions.
+
+Verification: all root gates, 600 passed / 1 skipped / 92.68% coverage; 48 frontend
+units, 12 board-tool tests/build; 6 HTTP and 6 demo/setup browser cases, including
+completed-checklist accessibility and phone overflow. A parallel artifact-folder
+collision was resolved by a clean standalone rerun, not by disabling a check.
+No real onboarding, deployed completion, consent or paid provider result is claimed.
+C-33 stays doing until C-21 wiring and actual deployed verification. See
+STARTER_CHECKLIST.md and the PR for commands, limits and independent review.
+
 ## 10 November 2026 - C-34 source and sharing review
 
 C-34 makes the existing T-41 shared scope visible and president-controlled. Code
