@@ -13,28 +13,52 @@ recording below is a silent, synthetic **UI rehearsal**, not that final recordin
 | `npm run demo:record` in `web/` | The same assertions plus an approximately five-minute, visibly labelled, silent recording and a file checksum | Team rehearsal, narration, production readiness or a real ASME onboarding |
 | Final team demo on the deployed app | Required acceptance once actual outcomes are observed and evidenced | Nothing may be inferred from the synthetic recording alone |
 
-The six chapters below total 300 seconds. Speak the suggested lines in your own
+The seven chapters below total 300 seconds. Speak the suggested lines in your own
 words; allow time for clicks and questions. All current input/source examples are
 invented and visibly marked synthetic. They are not AUB policies or club records.
 
-## 00:00-00:30: the problem and the approval boundary
+## 00:00-00:20: the problem and the approval boundary
 
 Open Events for the synthetic club. Show the saved workspace before clicking any
 AI action. For the final run, use a prepared synthetic cabinet account on the
 verified deployed URL; do not record another person's sign-in or Google account.
 
-Say: "A club's next cabinet needs more than a chat history: it needs the reasons,
-sources and unfinished work behind its events. ClubOps helps the cabinet plan an
-event and carries reviewed know-how forward. People still make the decisions.
-Opening this workspace should not start a model call, send a message or approve
-anything. This rehearsal uses scripted responses so we can practice the interface
-without spending money or using anyone's club data."
+Say: "ClubOps helps the next cabinet keep an event's reasons, sources and unfinished
+work. People make the decisions. This is an isolated synthetic UI rehearsal: its
+responses are scripted, with no real club data or provider calls."
 
 Point out the persistent rehearsal disclosure when using the local recording.
 For the final deployed run, state whether the model is recorded/replayed or live;
 never present replay tokens, latency or zero cost as a provider measurement.
 
-## 00:30-01:50: a normal plan, missing information and a human decision
+## 00:20-01:10: a new club starts with its president's interview
+
+Open Setup as the synthetic president. Point out **No chat history is required**:
+the president interview is the primary onboarding path (D-103), not WhatsApp import.
+Click **Start or resume club setup**, type **Synthetic Demo Club** into the first
+question and click **Next question**. Typing alone makes no learning request.
+
+Say: "A new club starts by answering short organizational questions. Personal
+contact details belong in Cabinet, not these answers. An answer can propose a
+fact for Review; it does not approve knowledge or create a cabinet account."
+
+Click **Stop for now**, reopen Setup and explicitly resume. The second question
+returns without resubmitting the first answer. Stop again and open Review. Show
+the synthetic club-name candidate as pending, then reject it so the practice fact
+is not retained. The remaining nine interview questions are **unfinished**; this
+short scene demonstrates the entry, approval boundary and resume, not full onboarding.
+The club stays marked incomplete and paused while we demonstrate planning.
+
+Say: "We can pause and come back. This is a scripted UI example of that boundary;
+the deployed run must show actual persisted progress and pending proposals."
+
+Tatiana wired the real route and `/me` completion logic in #87. For final acceptance,
+use the real API with synthetic organizational facts and an authorized test account;
+verify its actual Review entries and resume state. Do not supply member chats,
+real contacts or private ASME facts. Shared rules must come from sourced, approved
+records; this fixture has none and states that absence explicitly.
+
+## 01:10-02:10: a normal plan, missing information and a human decision
 
 Open New event. Enter exactly this **rehearsal** description:
 
@@ -62,7 +86,7 @@ Click **Approve plan**; show the approved state and approver. For the final run,
 also verify the real calendar before/after approval, as in the existing live API
 browser test. Do not claim this fixture's empty calendar proves server behavior.
 
-## 01:50-02:35: the run limit
+## 02:10-02:45: the run limit
 
 Local rehearsal: open `/events/new?run=run-c28-limit`. This is a scripted run with
 eight steps and zero model spend. On the final deployed app, use an owner-approved
@@ -79,7 +103,7 @@ approve it, and it does not send an invented stop request to the API."
 Click **Stop here**. For the final run, preserve the corresponding actual run
 metadata as evidence; the rehearsal's eight steps are not enforcement evidence.
 
-## 02:35-03:40: an instruction hidden in a document
+## 02:45-03:40: an instruction hidden in a document
 
 Upload the runner's `synthetic-rehearsal-note.txt` through Settings. Its whole
 content is synthetic:
@@ -101,7 +125,7 @@ Joey/Tatiana must supply the real defense regression/result before we claim the
 attack was blocked. Do not change real club records or silently label a scripted
 warning as a successful security experiment.
 
-## 03:40-04:25: someone without approval rights
+## 03:40-04:20: someone without approval rights
 
 The local runner switches its synthetic identity to **Adviser**, opens a separate
 unapproved event and checks that approval controls are absent. It then deliberately
@@ -117,7 +141,7 @@ Do not use a teammate's real login, fabricate an authorization result or claim t
 fixture is a penetration test. The final account must be synthetic and read-only;
 the API owner must confirm its setup and allowed action.
 
-## 04:25-05:00: evidence and limits
+## 04:20-05:00: evidence and limits
 
 Return to Events. Say: "The core loop is plan, inspect, approve and learn through
 Review. We have automated tests for the interface, contracts, failures and privacy.
