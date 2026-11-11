@@ -136,9 +136,9 @@ No entries yet.
 
 **Open questions / blockers:** Results belong in Tatiana's `results/` area; coordinate the measured run and evidence before poster claims.
 
-## 2026-11-10 — J-16 and Joey integration audit (docs/j16-owner-handoffs)
+## 2026-11-10 â€” J-16 and Joey integration audit (docs/j16-owner-handoffs)
 
-**Did:** Audited J-02–J-06, J-12 and J-17 against synthetic acceptance tests. The focused calendar, proposal and chat tests pass. Recorded the current 52-field proposal template and corrected the stale 33-field progress note. Published repo issues #83 (Tatiana) and #84 (Christophe) with concrete Google, Gmail, API, evaluation, scheduling, deployment and CI handoffs. J-16 is blocked on CI workflow ownership because `.github/workflows/` is outside Joey's assigned folders.
+**Did:** Audited J-02â€“J-06, J-12 and J-17 against synthetic acceptance tests. The focused calendar, proposal and chat tests pass. Recorded the current 52-field proposal template and corrected the stale 33-field progress note. Published repo issues #83 (Tatiana) and #84 (Christophe) with concrete Google, Gmail, API, evaluation, scheduling, deployment and CI handoffs. J-16 is blocked on CI workflow ownership because `.github/workflows/` is outside Joey's assigned folders.
 
 **State:** No teammate-owned code or private content changed. The fake-Google/calendar queue, proposal drafter and chat runner are testable; live Google/Gmail, private evaluations, complete proposal acceptance and the deployed scheduler are still open. J-20 draft PR #81 has no legitimate model recordings yet. PRs #79/#80 need independent review.
 
