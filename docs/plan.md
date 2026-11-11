@@ -50,7 +50,7 @@ Owners as in `TASKS.md`. Blockers of the final evaluation are marked **(blocker)
 | 9 Nov | ASME starter pack in date order, leak check against its labels | T-44 |
 | 9 - 10 Nov | Proposal draft and chatbot ready **(blocker)**; their test runners **(blocker)** | J-12, J-15, J-17, J-19 |
 | 10 Nov | AUB rules updated from OSA's latest rules (or kept as they are), each with the date it started; one practice run on 5 events, both start settings | T-08, T-26 |
-| 11 Nov | **ASME onboarding run:** ASME starts empty, gets its documents in date order; after each one, learning cost (MLflow `kind=learning`) and its later events planned (approvals caught, false alarms, time) = the learning curve | T-44, J-20 |
+| ~~11 Nov~~ **16 Nov** (moved by Tatiana on 11 Nov) | **ASME onboarding run:** ASME starts empty and its president answers the setup questions (D-103), then adds documents in date order; after each one, learning cost (MLflow `kind=learning`) and its later events planned (approvals caught, false alarms, time) = the learning curve | T-44, J-20 |
 | 12 - 18 Nov | Handover sessions with 8 volunteers | T-33 |
 | 19 - 22 Nov | Final evaluation, frozen, 3 runs per system, tracked in MLflow | T-26 |
 | 23 - 27 Nov | Report, poster, demo, evidence | T-27, J-18, C-28, T-29 |
