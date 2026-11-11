@@ -1,0 +1,7 @@
+# Synthetic/local viewer only. Memory storage is lost when Jaeger stops.
+services:
+  jaeger:
+    image: cr.jaegertracing.io/jaegertracing/jaeger:2.23.0@sha256:3823829974ccfc2485d2e48b165579091f32295022ae80ca49704e2f4834116e
+    ports:
+      - '127.0.0.1:16686:16686'
+      - '127.0.0.1:4318:4318'
