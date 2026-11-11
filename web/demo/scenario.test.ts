@@ -9,6 +9,8 @@ import {
   FILE_NAME,
   RehearsalScenario,
   RUN_ID,
+  SETUP_ANSWER,
+  SETUP_CARD_ID,
   validateLocalOrigin,
 } from './scenario';
 
@@ -33,6 +35,32 @@ describe('local-only rehearsal configuration', () => {
 });
 
 describe('strict synthetic screenplay', () => {
+  it('keeps an explicit interview answer pending Review and resumes without resubmitting it', () => {
+    const scene = new RehearsalScenario();
+    scene.beginOnboarding();
+    expect(scene.respond('GET', '/me').json).toMatchObject({ club: { setup_complete: false } });
+    expect(scene.setupCounts).toEqual({ resumes: 0, answers: 0, rejections: 0 });
+    expect(scene.respond('POST', '/setup/next', {}, 'ClubOps').json).toMatchObject({
+      index: 1,
+      done: false,
+    });
+    expect(
+      scene.respond('POST', '/setup/next', { answer: SETUP_ANSWER }, 'ClubOps').json,
+    ).toMatchObject({ index: 2, done: false });
+    expect(scene.respond('GET', '/review').json).toMatchObject([
+      { id: SETUP_CARD_ID, status: 'pending' },
+    ]);
+    expect(scene.counts.approvals).toBe(0);
+    expect(scene.respond('POST', '/setup/next', {}, 'ClubOps').json).toMatchObject({ index: 2 });
+    expect(scene.setupCounts.answers).toBe(1);
+    expect(scene.respond('POST', '/setup/next', { answer: SETUP_ANSWER }, 'ClubOps').status).toBe(
+      501,
+    );
+    scene.respond('POST', `/review/${SETUP_CARD_ID}`, { decision: 'reject' }, 'ClubOps');
+    expect(scene.respond('GET', '/review').json).toEqual([]);
+    expect(scene.setupCounts).toEqual({ resumes: 2, answers: 1, rejections: 1 });
+    expect(scene.respond('GET', '/me').json).toMatchObject({ club: { setup_complete: false } });
+  });
   it('makes no state change before a matching explicit action', () => {
     const scene = new RehearsalScenario();
     expect(scene.respond('GET', '/me').status).toBe(200);

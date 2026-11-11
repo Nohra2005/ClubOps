@@ -11,6 +11,8 @@ export const LIMIT_ID = 'run-c28-limit';
 export const EVENT_ID = 'ev-c28-workshop';
 export const DENIED_ID = 'ev-c28-restricted';
 export const CARD_ID = 'review-c28-document';
+export const SETUP_CARD_ID = 'review-c28-interview';
+export const SETUP_ANSWER = 'Synthetic Demo Club';
 
 const source = {
   item_id: 'kh-c28-example',
@@ -106,7 +108,45 @@ export class RehearsalScenario {
   private rejected = false;
   private normal = event(EVENT_ID);
   private restricted = event(DENIED_ID);
+  private onboarding = false;
+  private setupAnswered = false;
+  private setupRejected = false;
   readonly counts = { plans: 0, answers: 0, approvals: 0, uploads: 0, rejections: 0, denied: 0 };
+  readonly setupCounts = { resumes: 0, answers: 0, rejections: 0 };
+
+  beginOnboarding() {
+    this.onboarding = true;
+  }
+
+  private setupStep() {
+    return {
+      question: this.setupAnswered
+        ? 'Are you a club or a faculty society? If a society, which faculty?'
+        : "What is your club or society's official name?",
+      index: this.setupAnswered ? 2 : 1,
+      total: 10,
+      done: false,
+      rules_count: 0,
+    };
+  }
+
+  private setupCard(): ReviewCard {
+    return {
+      id: SETUP_CARD_ID,
+      type: 'fact',
+      title: 'Synthetic club name from setup',
+      statement: 'The club is called Synthetic Demo Club.',
+      source: {
+        item_id: 'kh-c28-interview',
+        label: 'Synthetic president interview',
+        kind: 'note',
+        quote: SETUP_ANSWER,
+      },
+      group: 'Synthetic interview',
+      kind: 'preference',
+      status: 'pending',
+    };
+  }
 
   setAdviser() {
     this.role = 'adviser';
@@ -125,9 +165,15 @@ export class RehearsalScenario {
         id: 'synthetic-club',
         name: 'Synthetic Demo Club',
         initials: 'SD',
-        setup_complete: true,
+        setup_complete: !this.onboarding,
       },
-      counts: { overdue_events: 0, review: this.uploaded && !this.rejected ? 1 : 0, reminders: 0 },
+      counts: {
+        overdue_events: 0,
+        review:
+          Number(this.uploaded && !this.rejected) +
+          Number(this.setupAnswered && !this.setupRejected),
+        reminders: 0,
+      },
     };
   }
 
@@ -217,7 +263,11 @@ export class RehearsalScenario {
       if (name === '/cabinet') return ok([this.me().user]);
       if (name === '/calendar') return ok({ items: [], connected: false });
       if (name === '/knowledge') return ok(this.uploaded ? [this.document()] : []);
-      if (name === '/review') return ok(this.uploaded && !this.rejected ? [this.review()] : []);
+      if (name === '/review')
+        return ok([
+          ...(this.setupAnswered && !this.setupRejected ? [this.setupCard()] : []),
+          ...(this.uploaded && !this.rejected ? [this.review()] : []),
+        ]);
       if (name === '/usage')
         return ok({
           month: '2026-11',
@@ -231,6 +281,22 @@ export class RehearsalScenario {
         });
     }
     if (method === 'POST') {
+      if (name === '/setup/next' && this.onboarding) {
+        if (data.answer === undefined) {
+          this.setupCounts.resumes++;
+          return ok(this.setupStep());
+        }
+        if (data.answer === SETUP_ANSWER && !this.setupAnswered) {
+          this.setupAnswered = true;
+          this.setupCounts.answers++;
+          return ok(this.setupStep());
+        }
+      }
+      if (name === `/review/${SETUP_CARD_ID}` && this.setupAnswered && data.decision === 'reject') {
+        this.setupRejected = true;
+        this.setupCounts.rejections++;
+        return ok({ ...this.setupCard(), status: 'rejected' });
+      }
       if (name === '/events/plan' && data.description === DESCRIPTION) {
         this.counts.plans++;
         return { status: 202, json: { run_id: RUN_ID } };

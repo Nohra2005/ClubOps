@@ -11,6 +11,8 @@ import {
   DOCUMENT,
   FILE_NAME,
   LIMIT_ID,
+  SETUP_ANSWER,
+  SETUP_CARD_ID,
 } from '../demo/scenario';
 
 test('rehearses the five-minute demo with explicit fixture provenance', async ({
@@ -42,8 +44,8 @@ test('rehearses the five-minute demo with explicit fixture provenance', async ({
 
   await chapter(
     'context',
-    '00:00–00:30 · Synthetic local UI rehearsal; no real club or provider.',
-    30,
+    '00:00–00:20 · Synthetic local UI rehearsal; no real club or provider.',
+    20,
     async () => {
       await go('/events');
       await expect(page.getByRole('heading', { name: 'Events', exact: true })).toBeVisible();
@@ -54,9 +56,56 @@ test('rehearses the five-minute demo with explicit fixture provenance', async ({
   );
 
   await chapter(
+    'president-onboarding',
+    '00:20–01:10 · President interview; no chat history. One answer, pause/resume and Review, not completion.',
+    50,
+    async () => {
+      fixture.scene.beginOnboarding();
+      await go('/setup');
+      await expect(page.getByText('No chat history is required.', { exact: false })).toBeVisible();
+      expect(fixture.scene.setupCounts).toEqual({ resumes: 0, answers: 0, rejections: 0 });
+      await page.getByRole('button', { name: 'Start or resume club setup' }).click();
+      await expect(
+        page.getByRole('heading', { name: "What is your club or society's official name?" }),
+      ).toBeVisible();
+      await page.getByLabel('Your setup answer').fill(SETUP_ANSWER);
+      expect(fixture.scene.setupCounts.answers).toBe(0);
+      await narrate(8);
+      await page.getByRole('button', { name: 'Next question', exact: true }).click();
+      const second = page.getByRole('heading', {
+        name: 'Are you a club or a faculty society? If a society, which faculty?',
+      });
+      await expect(second).toBeVisible();
+      await page.getByRole('button', { name: /Stop for now/ }).click();
+      await go('/setup');
+      await page.getByRole('button', { name: 'Start or resume club setup' }).click();
+      await expect(second).toBeVisible();
+      expect(fixture.scene.setupCounts.answers).toBe(1);
+      await narrate(8);
+      await page.getByRole('button', { name: /Stop for now/ }).click();
+      await go('/review');
+      const interview = page.locator(`#${SETUP_CARD_ID}`);
+      await expect(interview).toContainText('Synthetic club name from setup');
+      await expect(interview).toContainText('Needs review');
+      expect(fixture.scene.counts.approvals).toBe(0);
+      await narrate(8);
+      await interview.getByRole('button', { name: 'Reject', exact: true }).click();
+      await page
+        .getByLabel('Reason (optional)')
+        .fill('Synthetic example only; do not keep this candidate.');
+      await page
+        .getByRole('dialog')
+        .getByRole('button', { name: 'Reject proposal', exact: true })
+        .click();
+      await expect(page.getByRole('heading', { name: 'Nothing to review.' })).toBeVisible();
+      expect(fixture.scene.setupCounts).toEqual({ resumes: 2, answers: 1, rejections: 1 });
+    },
+  );
+
+  await chapter(
     'plan-question-approval',
-    '00:30–01:50 · Scripted missing-room question; explicit human approval.',
-    80,
+    '01:10–02:10 · Scripted missing-room question; explicit human approval.',
+    60,
     async () => {
       await go('/events/new');
       await page.getByLabel('Describe your event').fill(DESCRIPTION);
@@ -84,8 +133,8 @@ test('rehearses the five-minute demo with explicit fixture provenance', async ({
 
   await chapter(
     'limit',
-    '01:50–02:35 · Scripted eight-step limit; Stop leaves it paused.',
-    45,
+    '02:10–02:45 · Scripted eight-step limit; Stop leaves it paused.',
+    35,
     async () => {
       await go(`/events/new?run=${LIMIT_ID}`);
       await expect(page.getByText('This run reached its limit.', { exact: true })).toBeVisible();
@@ -102,8 +151,8 @@ test('rehearses the five-minute demo with explicit fixture provenance', async ({
 
   await chapter(
     'untrusted-document',
-    '02:35–03:40 · Fixture supplies a warning; UI keeps it out of bulk approval.',
-    65,
+    '02:45–03:40 · Fixture supplies a warning; UI keeps it out of bulk approval.',
+    55,
     async () => {
       await go('/settings');
       await page.getByLabel('Upload source document').setInputFiles({
@@ -140,8 +189,8 @@ test('rehearses the five-minute demo with explicit fixture provenance', async ({
 
   await chapter(
     'restricted-role',
-    '03:40–04:25 · Read-only UI + scripted HTTP 403; not a backend authorization test.',
-    45,
+    '03:40–04:20 · Read-only UI + scripted HTTP 403; not a backend authorization test.',
+    40,
     async () => {
       fixture.scene.setAdviser();
       await go(`/events/${DENIED_ID}`);
@@ -170,8 +219,8 @@ test('rehearses the five-minute demo with explicit fixture provenance', async ({
 
   await chapter(
     'limits-and-next',
-    '04:25–05:00 · Real deployment, model/defense evidence, team rehearsal and narration remain pending.',
-    35,
+    '04:20–05:00 · Real deployment, model/defense evidence, team rehearsal and narration remain pending.',
+    40,
     async () => {
       await go('/events');
       await expect(page.getByRole('heading', { name: 'Events', exact: true })).toBeVisible();
@@ -213,6 +262,7 @@ test('rehearses the five-minute demo with explicit fixture provenance', async ({
         chapters,
         fixture_requests: fixture.requestCount(),
         actions: fixture.scene.counts,
+        onboarding: fixture.scene.setupCounts,
         unexpected_requests: fixture.violations.length,
         recording: recordingProof,
         final_acceptance:
