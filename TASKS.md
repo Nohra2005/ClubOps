@@ -466,7 +466,7 @@ Reference documents:
 
 ### C-25 OpenTelemetry traces (bonus)
 - Owner: christophe
-- Status: todo
+- Status: doing
 - Needs: C-20
 - What: Export the existing trace records (metadata only: capability, prompt version, model, latency, tokens, cost, retries, status; never prompts or personal data) as OpenTelemetry spans, one trace per agent run with a span per step and per model call, so they can be viewed in a tool such as Jaeger or Langfuse. Off unless an exporter endpoint is set.
 - Done when: a local run shows one agent run as a trace with its steps, and a test checks no prompt text or personal data is exported.
@@ -492,7 +492,7 @@ Reference documents:
 
 ### C-28 Demo script and backup video
 - Owner: christophe
-- Status: todo
+- Status: doing
 - Needs: C-14, C-18
 - What: `docs/demo-script.md`: 5 minutes on the deployed app, showing what the brief asks: one normal plan, then edge cases (missing facts → the agent asks; the step limit; a hidden instruction in an uploaded document; a member without rights trying to approve). Seed a demo club with synthetic data only. Record a backup video in case the network fails on demo day.
 - Done when: the script runs start to end on the deployed app, rehearsed once with the team, video saved.
@@ -515,6 +515,7 @@ Reference documents:
 ### C-31 GitHub Projects board and weekly sprints (bonus)
 - Owner: christophe
 - Status: blocked
+- Progress (2026-11-11): Christophe supplied https://github.com/users/Nohra2005/projects/4. CLI viewer chrs-005 has project scope, but view/fields/items for Nohra2005 project 4 all return Could not resolve. Asked Tatiana to verify access/target in #43. No board changes or duplicate; adoption/sync and three actual weekly reviews remain unverified. See web/PROJECT_BOARD.md.
 - Owner response (2026-11-09): Tatiana reports the existing ClubOps board is in the repo's Projects tab with Christophe as admin; weekly sprints start 4 November and reviews are Wednesdays after office hours. Local plan now targets Nohra2005/ClubOps and that cadence; no duplicate board should be created. Current-main dry run reads 85 tasks. Projects scope is still missing; live owner/number/access/fields/cards/iterations and safe adoption of any manual cards must be inspected before sync. No actual weekly review is claimed here.
 - Needs: none
 - What: A GitHub Projects board fed by `TASKS.md` (one card per task, columns = status), so ownership is visible on GitHub. One-week sprints (a Projects iteration per week with the tasks planned for it); a 10-minute review with the team each week, noted in one line under T-28.
@@ -527,14 +528,14 @@ Reference documents:
 
 ### C-33 Starter onboarding for a new club (D-91)
 - Owner: christophe
-- Status: todo
+- Status: doing
 - Needs: C-21
 - What: Extend the setup flow into one short checklist every new club does the same way (about 10 minutes): add the cabinet, upload the club's rules or constitution, one past proposal, and its usual places and partners (`POST /api/cabinet`, `POST /api/documents`). Show what is done, and say plainly that ClubOps starts with the shared AUB know-how and learns the club as it is used.
 - Done when: a new club can finish the checklist in the deployed app, with a browser test on synthetic data.
 
 ### C-34 Review screen guards (D-91)
 - Owner: christophe
-- Status: review
+- Status: done
 - Progress (2026-11-10): shared badges and president scope switches send the existing boolean only on confirmed individual decisions; quotes are visible on both sides of comparisons, missing quotes explicit, all disagreements grouped first. Bulk approval skips shared/flagged/disputed cards and unsaved sharing choices. Denied requests preserve edits/choice. Demo matches current T-41 president approval. Guide: `web/REVIEW_GUIDE.md`. Verified: 46 frontend units, 12 board-tool tests, 8 HTTP review cases, 2 demo review cases, 2 full-screen accessibility cases; full root gates with 600 passed, 1 skipped and 92.68% coverage. Awaiting independent PR review; no backend/contract or deployment change.
 - Progress (2026-11-09): starting the ready frontend task after T-41 and #55 merged. Implementing shared-scope review controls against the published task/API tests, source quotes on comparisons, disagreement-first grouping and conservative bulk approval. Backend implementation/contracts remain unchanged; setup app wiring stays with Tatiana.
 - Needs: T-41

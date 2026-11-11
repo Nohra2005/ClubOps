@@ -7,11 +7,21 @@ and Wednesday-start weeks from 4 November. The owner/number, private visibility,
 existing fields/cards and iteration IDs still need live read-back after authorization.
 Her report is not a claim that this CLI has verified or synced the board.
 
-Projects authorization was enabled on 9 November for `chrs-005`. Read-only discovery
-then returned no visible boards under `Nohra2005`, `chrs-005` or the repository
-(all connections fully read). The direct board URL/access must be confirmed with
-Tatiana before live sync; a repository URL does not identify a project. No token belongs in this repository, CI
-secrets or a chat message. The GitHub connector exposes no Projects tools here.
+Christophe supplied the exact existing board URL on 11 November:
+**https://github.com/users/Nohra2005/projects/4** (owner `Nohra2005`, number `4`).
+This is the intended target, not a newly created or verified managed board.
+
+**Access check, 11 November:** GitHub CLI authenticates as `chrs-005`; the token's
+OAuth scopes include `project`. `gh project view 4`, `field-list 4` and `item-list 4`
+all return `Could not resolve to a ProjectV2 with the number 4`. Browser app access
+timed out, so no board contents were inferred from the UI. This error does not
+distinguish missing permission from a missing board.
+Tatiana must verify the target and access for `chrs-005` before inspection/adoption.
+No board fields, cards, visibility or collaborators have been changed, and no
+second project has been created. The request is in coordination issue #43.
+
+Projects authorization was already enabled; do not keep repeating the OAuth flow
+for this account. No token belongs in this repository, CI secrets or a chat message.
 
 ## Preview and inspect the existing board
 
@@ -28,19 +38,20 @@ Use `--ref HEAD` only for a deliberate feature-branch preview. The current-main 
 run on 9 November reads 85 tasks; it does not publish this branch's task-status edits.
 Sprint task assignments/titles remain proposals until reconciled with the live board.
 
-Enable Projects through GitHub's own authorization flow (include `project` after `-s`):
+For a **new operator** who lacks Projects scope, use GitHub's authorization flow
+(include `project` after `-s`). The current operator already has it:
 
 ```sh
 gh auth refresh -s project
 gh project list --owner Nohra2005 --format json
 ```
 
-Identify the existing ClubOps project number and inspect it first:
+After access is fixed, inspect the supplied existing target first:
 
 ```sh
-gh project view NUMBER --owner Nohra2005 --format json
-gh project field-list NUMBER --owner Nohra2005 --limit 100 --format json
-gh project item-list NUMBER --owner Nohra2005 --limit 100 --format json
+gh project view 4 --owner Nohra2005 --format json
+gh project field-list 4 --owner Nohra2005 --limit 100 --format json
+gh project item-list 4 --owner Nohra2005 --limit 100 --format json
 ```
 
 Those CLI lists are a first inspection; a 100-item list is not proof that a larger
@@ -59,7 +70,7 @@ After the existing board is safely reconciled with the importer, sync merged tas
 
 ```sh
 git fetch origin
-node web/scripts/project-board.mjs --apply --project-number NUMBER
+node web/scripts/project-board.mjs --apply --project-number 4
 ```
 
 Only matching read-back produces `verified: true` in `output/project-board-sync.json`.
@@ -86,8 +97,8 @@ next action and refuses a different authenticated owner.
   conflicting field types/options, duplicate task identities and changed sprint dates
   are rejected. Historical iteration IDs are preserved when new weeks are appended.
 - Projects access is needed only by the operator; CI runs synthetic API doubles with
-  no token or network writes. The live adapter has not been exercised against a board
-  while the existing board is not visible to this account. Its schema fields were
+  no token or network writes. The live adapter has not inspected or synced project #4 because
+  it remains invisible to this account. Its schema fields were
   checked by introspection.
 
 The implementation follows GitHub's current [Projects API reference](https://docs.github.com/en/graphql/reference/projects)

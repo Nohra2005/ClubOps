@@ -138,3 +138,10 @@ No entries yet.
 **Next:** Publish C-34 for independent teammate review, then merge with Create a merge commit. Tatiana should add the existing shared fields to her docs/api.md and link the frontend evidence in docs/evidence.md/rubric-map.md. See web/REVIEW_GUIDE.md and web/API_NOTES.md for user guidance/API boundary. Current-head remote checks remain on the PR.
 
 **Open questions / blockers:** C-21 production wiring remains Tatiana's app.py task; C-33 depends on it. C-31 still needs the direct board URL/access: project scope is enabled but the last discovery returned no boards. No duplicate project or attendance record invented. HTTP browser checks intercept synthetic responses; existing T-41 tests enforce server authorization, while frontend controls do not replace it. Runtime output stays untracked.
+
+
+## 2026-11-11 - Christophe (C-31 exact board target and access audit)
+
+Recorded the user-provided Nohra2005 project #4 URL in the owned guide/task. Current CLI viewer is chrs-005 and response scopes include project, but project view, field-list and item-list all fail to resolve #4. The error cannot prove whether the board is missing or private to another account. Asked Tatiana in #43 to verify target/access; no duplicate, permission/visibility change, marker adoption, card sync or review attendance invented. Gmail connector unavailable; browser app access timed out. C-31 stays blocked until actual read-back/inspection and eventual three weekly reviews. This is metadata/docs maintenance, with no new design/failure IDs or backend change.
+
+Checks for this C-31 documentation update: root gates 603 passed, 1 skipped, 92.47%; web check 46 units, 12 board-tool tests and build; targeted task/failure docs 8 passed. No new test implementation is needed for the reversible URL/documentation change. Current-head CI and teammate review remain required.
