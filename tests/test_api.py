@@ -320,7 +320,7 @@ def test_parts_not_built_yet_say_so(client: TestClient) -> None:
 
 def test_the_real_app_serves_setup_and_knows_which_clubs_are_set_up(client: TestClient) -> None:
     """The production route, not the test adapter: a new club gets the questions, the club set up by hand
-    before C-21 is not asked again (D-105)."""
+    before C-21 is not asked again (D-112)."""
     sign_in(client)  # the Running Club president
     assert client.get("/api/me").json()["club"]["setup_complete"] is True
 

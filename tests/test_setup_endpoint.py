@@ -2,7 +2,7 @@
 
 app.py now wires the setup route itself. These tests run that production route with
 synthetic capture/submit/rules callbacks, passed through create_app's setup_overrides
-(never by deleting routes: FastAPI 0.16x keeps serving a removed route, D-105).
+(never by deleting routes: FastAPI 0.16x keeps serving a removed route, D-112).
 """
 
 from __future__ import annotations

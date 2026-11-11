@@ -190,7 +190,7 @@ MAX_UPLOAD = 2 * 1024 * 1024
 
 
 # Clubs that were already set up by hand before the setup questions existed, so their president is
-# not asked to answer them again (D-105). Remove a club here only if it should go through setup.
+# not asked to answer them again (D-112). Remove a club here only if it should go through setup.
 SET_UP_BEFORE_C21 = frozenset({"running-club"})
 
 
@@ -775,7 +775,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
 
         A retry after a partial queue failure must not duplicate a card, nor bring back one already
         approved. A proposal the president *rejected* leaves no record in the store, so that one case
-        can still reappear once (F-179).
+        can still reappear once (F-201).
         """
         with club(proposed.candidate.club_id or "invalid") as (store, _, _, _):
             if proposed.proposal_id in store.pending:
@@ -790,7 +790,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             return sum(i.scope is Scope.AUB and i.kind is Kind.RULE for i in store.current(club_id, on))
 
     # Tests swap in synthetic callbacks here, never by deleting routes: in FastAPI 0.16x a route removed
-    # from app.router.routes is no longer listed but is still served (D-105).
+    # from app.router.routes is no longer listed but is still served (D-112).
     overrides = dict(setup_overrides or {})
     unknown = set(overrides) - {"capture", "submit", "rules_count"}
     if unknown:
