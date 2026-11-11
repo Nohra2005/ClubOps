@@ -6,6 +6,14 @@ Google calendar ID per club** and pass a short-lived OAuth access token to
 only its current holder subscribes. No credentials, calendar IDs, or real event data
 belong in git.
 
+The backend can parse `CLUBOPS_GOOGLE_CALENDAR_IDS_JSON` with
+`calendar_ids_from_json` and pass the returned club-to-ID map to `CalendarSync`.
+The `.env.example` value stays blank. On each machine, put the actual IDs only in
+private `.env` or host configuration. If an older local `.env` still uses
+`CLUBOPS_GOOGLE_RUNNING_CLUB_CALENDAR_ID`, move that value privately into the
+new map under `running-club`; add other clubs by slug. Never commit the map or
+print it in logs. T-46 owns loading this backend setting and OAuth tokens.
+
 1. In a Google Cloud project, enable the Calendar API and configure an OAuth consent
    screen. Create a web OAuth client for the backend's redirect URI. The backend owner
    (T-22) must store and refresh tokens server-side; the browser never receives a

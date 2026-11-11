@@ -175,3 +175,14 @@ No entries yet.
 **Next:** Work on J-20 with synthetic clubs and replay mode while owner integrations proceed.
 
 **Open questions / blockers:** The user does not require manual Calendar sharing. The private role-calendar reminder architecture remains an explicit contract decision for Tatiana and Joey before live reminders are claimed.
+
+
+## 2026-11-11 - J-21 per-club Calendar configuration (PR #79)
+
+**Did:** Merged current main and answered Tatiana's review with a private JSON map keyed by club slug. Added a parser and synthetic tests for two clubs, malformed/duplicate entries and generic errors; changed `.env.example` to a blank map setting. Recorded D-120 and F-205.
+
+**State:** Joey's existing local Running Club ID remains private but must be moved from the old single-club variable into `CLUBOPS_GOOGLE_CALENDAR_IDS_JSON` on his machine. T-46 still must load the map and implement OAuth, sync and cabinet triggers; C-35 still owns UI status. No live access test has run.
+
+**Next:** Tatiana reviews the map format and wires it in T-46; Christophe reviews Settings expectations. After both land, Joey performs a cabinet-approved multi-club isolation and reader-access test.
+
+**Open questions / blockers:** PR #90 proposes a one-calendar-per-club reminder decision. Coordinate any change to the calendar contract with Tatiana before changing Joey's role-reminder behavior.
