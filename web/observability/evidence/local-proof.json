@@ -1,0 +1,54 @@
+{
+  "task": "C-25",
+  "kind": "synthetic fixture; not real agent or provider performance",
+  "observed_at": "2026-11-10T08:45:58.464097+00:00",
+  "base_main": "106baa7",
+  "jaeger_version": "2.23.0",
+  "image_digest": "sha256:3823829974ccfc2485d2e48b165579091f32295022ae80ca49704e2f4834116e",
+  "transport": "OTLP/HTTP JSON",
+  "acknowledgement": "accepted",
+  "rejected_spans": 0,
+  "trace_id": "bb33b229aa322f7fd7100f88a04a8f68",
+  "readback_span_count": 5,
+  "hierarchy_validated": true,
+  "private_text_canaries_absent": true,
+  "ui_inspected": true,
+  "screenshot": "jaeger-synthetic.png",
+  "spans": [
+    {
+      "span_id": "8efabfcdc04a580d",
+      "name": "agent.run",
+      "parent_span_id": null,
+      "duration_us": 2000000
+    },
+    {
+      "span_id": "267e5ae3bfaab4bd",
+      "name": "agent.step",
+      "parent_span_id": "8efabfcdc04a580d",
+      "duration_us": 1000000
+    },
+    {
+      "span_id": "b18c47242e22d541",
+      "name": "agent.step",
+      "parent_span_id": "8efabfcdc04a580d",
+      "duration_us": 1000000
+    },
+    {
+      "span_id": "c3ad43826829714b",
+      "name": "model.call",
+      "parent_span_id": "267e5ae3bfaab4bd",
+      "duration_us": 200000
+    },
+    {
+      "span_id": "b8de8ea4003eac4b",
+      "name": "model.call",
+      "parent_span_id": "b18c47242e22d541",
+      "duration_us": 200000
+    }
+  ],
+  "limitations": [
+    "All timing/counts are synthetic fixtures, zero model cost and tokens.",
+    "Application producer hooks are pending.",
+    "Local memory storage; no production retention or monitoring evidence."
+  ]
+}

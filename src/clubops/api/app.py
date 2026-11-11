@@ -16,7 +16,7 @@ import io
 import os
 import re
 import uuid
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
@@ -46,15 +46,27 @@ from clubops.api.security import (
     read_session,
     sign_session,
 )
+from clubops.api.setup import SetupService
+from clubops.api.setup import router as setup_router
 from clubops.api.store import ApiStore, PlannedEvent
 from clubops.calendar.items import event_items, impact_form_item
 from clubops.capabilities.runner import CapabilityError
 from clubops.config import _read_dotenv, load_settings
 from clubops.contracts.agent import AgentRun, PlanEventRequest, RunStatus
-from clubops.contracts.common import ErrorCode, Role, SourceKind, SourceRef, Untrusted
+from clubops.contracts.common import Actor, ErrorCode, Role, SourceKind, SourceRef, Untrusted
 from clubops.contracts.event import Audience, EventSpec, EventStatus, Venue, VenueKind
 from clubops.contracts.handover import HandoverRequest
-from clubops.contracts.knowhow import CaptureRequest, ItemStatus, Kind, KnowHowItem, VerifyDecision, VerifyRequest
+from clubops.contracts.knowhow import (
+    CaptureRequest,
+    CaptureResult,
+    ItemStatus,
+    Kind,
+    KnowHowItem,
+    KnowHowProposal,
+    Scope,
+    VerifyDecision,
+    VerifyRequest,
+)
 from clubops.knowhow.backends import open_club_store_backend
 from clubops.knowhow.directory import Directory
 from clubops.knowhow.handover import build_handover
@@ -177,15 +189,23 @@ MAX_UPLOAD = 2 * 1024 * 1024
 # ---------------------------------------------------------------------- app
 
 
+# Clubs that were already set up by hand before the setup questions existed, so their president is
+# not asked to answer them again (D-112). Remove a club here only if it should go through setup.
+SET_UP_BEFORE_C21 = frozenset({"running-club"})
+
+
 def create_app(  # noqa: PLR0915 (one function per route below; kept together on purpose)
     config: ApiConfig,
     planner_factory: PlannerFactory = model_planner,
     clock: Callable[[], datetime] = lambda: datetime.now(UTC),
     google_transport: httpx.BaseTransport | None = None,
     model_client: Callable[[], ModelClient] = lambda: ModelClient(load_settings()),
+    *,
+    setup_overrides: Mapping[str, Callable[..., Any]] | None = None,
 ) -> FastAPI:
     app = FastAPI(title="ClubOps API", docs_url="/api/docs", openapi_url="/api/openapi.json")
     members = MemberStore(config.data_dir)
+    setup_service = SetupService(config.data_dir)
     starting: dict[str, str] = {}  # run_id -> club, between "plan" and the agent's first saved step
 
     def today() -> date:
@@ -296,7 +316,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
                 "id": member.club_id,
                 "name": name,
                 "initials": "".join(w[0] for w in name.split())[:3].upper(),
-                "setup_complete": True,
+                "setup_complete": member.club_id in SET_UP_BEFORE_C21 or setup_service.complete(member.club_id),
             },
             "counts": {
                 "overdue_events": sum(e["overdue_tasks"] > 0 for e in events),
@@ -739,16 +759,60 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             "look_in": None,
         }
 
+    # ----------------------------------------------------------- new-club setup (C-21)
+
+    def setup_actor(member: Member = Depends(signed_in)) -> Actor:  # noqa: B008
+        """The session's own actor. The club never comes from the body; the router checks president + CSRF."""
+        return member.actor()
+
+    def setup_capture(request: CaptureRequest) -> CaptureResult:
+        """The public learner's capture: proposals only. Nothing is approved here (D-41)."""
+        with club(request.club_id) as (store, _, _, _):
+            return Learner(model_client(), store).capture(request, today(), load_settings().new_budget())
+
+    def setup_submit(proposed: KnowHowProposal) -> None:
+        """Queue one proposal for Review, idempotently by id, and never verify it.
+
+        A retry after a partial queue failure must not duplicate a card, nor bring back one already
+        approved. A proposal the president *rejected* leaves no record in the store, so that one case
+        can still reappear once (F-201).
+        """
+        with club(proposed.candidate.club_id or "invalid") as (store, _, _, _):
+            if proposed.proposal_id in store.pending:
+                return  # already waiting for a decision
+            if store.latest(proposed.candidate.item_id) is not None:
+                return  # already approved into the club's knowledge
+            store.submit(proposed)
+
+    def setup_rules_count(club_id: str, on: date) -> int:
+        """Approved AUB-wide rules the club already has: read, never copied into the club (C-21)."""
+        with club(club_id) as (store, _, _, _):
+            return sum(i.scope is Scope.AUB and i.kind is Kind.RULE for i in store.current(club_id, on))
+
+    # Tests swap in synthetic callbacks here, never by deleting routes: in FastAPI 0.16x a route removed
+    # from app.router.routes is no longer listed but is still served (D-112).
+    overrides = dict(setup_overrides or {})
+    unknown = set(overrides) - {"capture", "submit", "rules_count"}
+    if unknown:
+        raise ValueError(f"unknown setup overrides: {sorted(unknown)}")
+    app.include_router(
+        setup_router(
+            setup_service,
+            actor_dependency=setup_actor,
+            capture=overrides.get("capture", setup_capture),
+            submit=overrides.get("submit", setup_submit),
+            rules_count=overrides.get("rules_count", setup_rules_count),
+            clock=clock,
+        )
+    )
+
     def not_yet(task: str) -> Callable[..., Any]:
         def handler(member: Member = Depends(signed_in)) -> None:  # noqa: B008
             raise HTTPException(501, f"This part of ClubOps isn't built yet ({task}).")
 
         return handler
 
-    for method, path, task in (
-        ("POST", "/api/events/{event_id}/drafts/{draft_type}", "J-07"),
-        ("POST", "/api/setup/next", "T-20"),
-    ):
+    for method, path, task in (("POST", "/api/events/{event_id}/drafts/{draft_type}", "J-07"),):
         app.add_api_route(path, not_yet(task), methods=[method])
 
     return app

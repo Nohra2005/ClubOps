@@ -41,4 +41,4 @@ Attacks on AUB's own systems, on GitHub, or on the model provider.
 
 ## J-13 frozen corpus (2026-11-10)
 
-`tests/security/CORPUS.md` pins ten synthetic attacks and defines a strict scorer for independently reviewed outcomes. Every attack currently triggers the plain-code injection flag regression. That is a detector check, not a model attack success rate. The scorer refuses partial evidence and keeps attack text out of output (F-200). Tatiana must run and review the defense-off/on model comparison in a private environment, then own the `results/` evidence before any rate is reported.
+`tests/security/CORPUS.md` pins ten synthetic attacks and defines a strict scorer for independently reviewed outcomes. Every attack currently triggers the plain-code injection flag regression. That is a detector check, not a model attack success rate. The scorer refuses partial evidence and keeps attack text out of output (F-203). Tatiana must run and review the defense-off/on model comparison in a private environment, then own the `results/` evidence before any rate is reported.

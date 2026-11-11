@@ -136,9 +136,9 @@ No entries yet.
 
 **Open questions / blockers:** Results belong in Tatiana's `results/` area; coordinate the measured run and evidence before poster claims.
 
-## 2026-11-10 — J-13 frozen attack corpus (test/j13-adversarial-corpus)
+## 2026-11-10 â€” J-13 frozen attack corpus (test/j13-adversarial-corpus)
 
-**Did:** Froze ten synthetic injections across five untrusted surfaces and added a scorer that accepts only complete, reviewed defense-off/on boolean outcomes. Added detector and scorer regressions, D-111 and F-200, and updated the threat model.
+**Did:** Froze ten synthetic injections across five untrusted surfaces and added a scorer that accepts only complete, reviewed defense-off/on boolean outcomes. Added detector and scorer regressions, D-118 and F-203, and updated the threat model.
 
 **State:** The corpus and static checks are ready. No model comparison or attack success rate has been recorded. This remains doing until Tatiana runs the isolated model configurations and reviews private outcomes.
 
