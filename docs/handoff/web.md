@@ -140,6 +140,15 @@ No entries yet.
 **Open questions / blockers:** No production app hook, hosted monitoring/dashboard/alert, provider billing proof, real ASME run or bonus-grade result is claimed. C-18/OAuth/hosting, C-20 real-provider validation, C-22 measured thresholds and C-31 existing-board URL/access remain pending. The local unauthenticated memory viewer is only for synthetic data and loses traces when stopped. Temporary readback/browser/runtime files remain untracked under output; no real/private inputs or paid calls were used. Owner coordination is in #43, with a request to relay this scope to users/agents.
 
 **Contract review follow-up:** Removed an unsupported equality assumption between steps_used and the visible step list; the public contract does not require that relationship. Preserve both as supplied, with a regression and F-191. Full root gates reran green: 664 passed, 1 skipped, 92.99%; 64 telemetry cases remain. The prior PR head passed all five CI checks; the corrected fifteenth commit requires its own current-head checks.
+## 2026-11-10 - Christophe, with Codex (C-33 starter checklist)
+
+**Did:** Started independently from main 106baa7 while #75 remains open. After the explicit completed interview response, added cabinet check/settings action, club constitution/rules upload, past proposal upload and places/partners acknowledgement. File selection makes no request; each upload needs a click and valid document acknowledgement. Strict file/cabinet/response checks preserve pending state on failures. Local ticks whitelist booleans only and isolate mode/club/member; no raw files, filenames, member details or answers are kept there. Interview completion wording no longer claims the whole club is ready. Demo accepts the supported starter formats as unverified documents. No backend implementation/contracts or account/host settings changed.
+
+**State:** C-33 stays doing because C-21 app wiring and deployed new-club verification remain open. Frontend check passes with 48 units, 12 board-tool tests and build. All root gates pass: 600 passed, 1 skipped, 92.68% coverage; Ruff/format (138 files), strict types (76 files), schemas/tasks. Focused browser checks: 6 HTTP starter cases and 6 demo/setup cases; the completed checklist is scanned for accessibility and horizontal overflow on desktop/375px phone. A local parallel Playwright run collided in their shared artifact folder; the demo suite was rerun alone and all 6 passed. Do not run default-output browser suites concurrently. D-105/F-179-F-182 reserve this change after #75's D-104/F-175-F-178; final fetch found no other open PR.
+
+**Next:** Publish for independent review; use Create a merge commit. Tatiana wires C-21 route and /me, then verify the actual deployed interview/checklist/Review and ASME onboarding. Purpose-specific durable cross-device checklist progress would need a separate agreed contract; current UI does not infer it. Guide: web/STARTER_CHECKLIST.md. Preserve both #75 and C-33 task/log/handoff entries if merging both.
+
+**Open questions / blockers:** No deployed URL/OAuth/provider setup or actual ASME source processing was introduced. C-21 remains the dependency; C-33 browser-local ticks are not server completion or approved knowledge. HTTP tests intercept synthetic responses; demo documents remain unverified and their facts pending Review. C-31 still needs direct board URL/access. Runtime output stays untracked; no real data or paid model calls.
 
 ## 2026-11-10 - Christophe, with Codex (C-34 Review sharing)
 
@@ -157,3 +166,8 @@ No entries yet.
 Merged main afbdead into #77, preserving both teams' additive entries and original commits. Removed this PR's edits to docs/evidence.md and docs/rubric-map.md per Tatiana's ownership review; owned telemetry guide/proof remain available for her to link. C-34 is done; C-25/C-28/C-33 stay doing. No exporter, backend or contract implementation changed. Current-head checks and independent re-review are required.
 
 Verification on the synced C-25 branch: full root gates pass with 667 passed, 1 skipped, 92.79% coverage; web check has 46 units + 12 tools/build. The evidence/rubric files have zero diff from main. Original 64 telemetry cases remain; real producer integration is still pending.
+## 2026-11-11 - Christophe (C-33 review sync)
+
+Merged main afbdead into #76 without squashing. Preserved all six distinct C-33/C-34 HTTP tests and both sides of additive logs/evidence. C-34 is done after #75 merged; C-25/C-28/C-33 stay doing while their PRs/acceptance remain open. Root gates: 603 passed, 1 skipped, 92.47%; web check 52 units + 12 tool tests/build; full HTTP 38 passed. Setup wiring from #87 is retained; deployed/real-club acceptance remains pending. No new shared IDs or backend implementation changed.
+
+The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C-33/C-21 acceptance is actual deployed/new-club verification, not the former 501 placeholder.
