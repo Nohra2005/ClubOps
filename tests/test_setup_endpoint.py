@@ -1,7 +1,8 @@
 """C-21 integration adapter: real auth/Review/SQLite, synthetic extraction.
 
-The test explicitly replaces the production 501 route. It demonstrates the
-callback boundary for the API owner; it does not claim app.py is wired yet.
+app.py now wires the setup route itself. These tests run that production route with
+synthetic capture/submit/rules callbacks, passed through create_app's setup_overrides
+(never by deleting routes: FastAPI 0.16x keeps serving a removed route, D-112).
 """
 
 from __future__ import annotations
@@ -10,15 +11,14 @@ import json
 from datetime import date
 from pathlib import Path
 
-from fastapi import FastAPI, Request
-from fastapi.routing import APIRoute
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from scripts.load_rulebook import load
 
 from clubops.api.app import ApiConfig, create_app
 from clubops.api.security import MemberStore
-from clubops.api.setup import QUESTIONS, SetupService, router
-from clubops.contracts.common import Actor, Role
+from clubops.api.setup import QUESTIONS, SetupService
+from clubops.contracts.common import Role
 from clubops.contracts.knowhow import CaptureRequest, CaptureResult, Kind, KnowHowProposal, Scope
 from clubops.knowhow.backends import open_club_store_backend
 from clubops.knowhow.store import KnowHowStore
@@ -68,30 +68,11 @@ def setup_app(data_dir: Path, adapter: Adapter) -> FastAPI:
     people.add("running-club", "Synthetic President", "president@example.com", Role.PRESIDENT)
     people.add("asme", "Synthetic Other President", "other@example.com", Role.PRESIDENT)
     people.close()
-    app = create_app(
-        ApiConfig(data_dir, "synthetic-setup-secret", dev_login=True, cookie_secure=False), clock=lambda: NOW
+    return create_app(
+        ApiConfig(data_dir, "synthetic-setup-secret", dev_login=True, cookie_secure=False),
+        clock=lambda: NOW,
+        setup_overrides={"capture": adapter.capture, "submit": adapter.submit, "rules_count": adapter.rules_count},
     )
-    # FastAPI's public dependency metadata exposes the already-registered auth boundary.
-    me = next(route for route in app.routes if isinstance(route, APIRoute) and route.path == "/api/me")
-    signed_in = me.dependant.dependencies[0].call
-    assert signed_in is not None
-
-    def current_actor(request: Request) -> Actor:
-        result: Actor = signed_in(request).actor()
-        return result
-
-    app.router.routes = [route for route in app.routes if getattr(route, "path", "") != "/api/setup/next"]
-    app.include_router(
-        router(
-            SetupService(data_dir),
-            actor_dependency=current_actor,
-            capture=adapter.capture,
-            submit=adapter.submit,
-            rules_count=adapter.rules_count,
-            clock=lambda: NOW,
-        )
-    )
-    return app
 
 
 def test_adapter_uses_real_auth_shared_rules_review_and_club_separation(tmp_path: Path) -> None:
