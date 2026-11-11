@@ -1,12 +1,16 @@
 {
   "task": "C-28",
   "kind": "synthetic HTTP/UI rehearsal; not deployed or backend/model/security evidence",
-  "sha256": "edc6e8dde7abdfd0fe1f25ef2d300422ff17549b3a9ed89e40f1dbd2310b748b",
-  "bytes": 28294899,
-  "duration_seconds": 301.56,
+  "sha256": "db7c225ac858d4d4d9a1a94cdcfffeb1b382ea9dfb95b96702519421756c4abd",
+  "bytes": 29148641,
+  "duration_seconds": 301.6,
   "chapters": [
     {
       "id": "context",
+      "passed": true
+    },
+    {
+      "id": "president-onboarding",
       "passed": true
     },
     {
@@ -39,12 +43,20 @@
     "rejections": 1,
     "denied": 1
   },
-  "recording_source_revision": "e47db05",
-  "note": "Synthetic silent UI rehearsal. Deployed/backend/security/team/narrated acceptance pending.",
-  "visually_inspected_frames_seconds": [45, 100, 125, 180, 245],
-  "committed_frames": {
-    "question.png": 45,
-    "warning.png": 180
+  "onboarding": {
+    "resumes": 2,
+    "answers": 1,
+    "rejections": 1
   },
-  "later_changes": "Bare /api is also intercepted in the final fast guards; the recorded scenes are unchanged."
+  "recording_source_revision": "4fa3d1e",
+  "note": "Synthetic silent UI rehearsal with president onboarding; one answer and pause/resume, not completed setup. Real deployed/backend/security/team/narrated acceptance pending.",
+  "date": "2026-11-11",
+  "base_main": "afbdead",
+  "visually_inspected_frames_seconds": [35, 45, 85, 140, 190],
+  "committed_frames": {
+    "onboarding.png": 35,
+    "interview-review.png": 45,
+    "question.png": 85,
+    "warning.png": 190
+  }
 }

@@ -19,7 +19,7 @@ npm run demo:check
 Use installed Chrome (the default) or the normal `PLAYWRIGHT_CHANNEL=bundled`
 configuration after installing Chromium. The check starts its own HTTP-mode Vite
 on `127.0.0.1:5174`, runs on desktop and phone, and exits nonzero if a scene or guard
-fails. The regular HTTP suite includes these checks in existing web CI. Fifteen
+fails. The regular HTTP suite includes these checks in existing web CI. Sixteen
 fixture/target tests are also included in `npm test`; the runner is type-checked by
 `npm run check` and is outside the shipped `src/` bundle.
 
@@ -66,7 +66,7 @@ the recording config directly. `npm run demo:record -- --list` checks the config
 without starting a server or recording. Inside the take's test subdirectory:
 
 - `backup-rehearsal.webm`: validated silent take when recording succeeds.
-- `rehearsal-proof.json`: disclosure, six passing chapters, fixture request/action
+- `rehearsal-proof.json`: disclosure, seven passing chapters, fixture request/action
   counts, zero unexpected requests, video byte size/SHA-256 and pending acceptance.
 - `rehearsal-summary.png`: the final disclosed frame.
 
@@ -86,19 +86,21 @@ $actual = (Get-FileHash (Join-Path $take $proof.recording.file) -Algorithm SHA25
 $actual.ToLowerInvariant() -eq $proof.recording.sha256
 ```
 
-The comparison must be `True`, all six chapters must pass and `unexpected_requests`
+The comparison must be `True`, all seven chapters must pass and `unexpected_requests`
 must be zero. Inspect the video/disclosure visually too; the manifest is operational
 evidence, not a security proof or authenticated review. Keep the full take and its
 matching proof together; label any edited/narrated export separately with a new hash.
 
 ## Remaining final acceptance
 
-The [local proof](evidence/local-proof.json) records an actual 301.56-second silent
-take on 10 November, with a matching file hash and six passing chapters. The
-[question frame](evidence/question.png) and [warning frame](evidence/warning.png)
-were extracted from that take and inspected. The source revision and the later
-bare-API-prefix guard are distinguished in the proof. Raw footage stays local;
-its hash is historical evidence, not an expected byte-for-byte result of a new take.
+The [current local proof](evidence/local-proof.json) records an actual 301.60-second
+seven-chapter take on 11 November, including president onboarding. Its file hash,
+chapter/action counts and zero unexpected requests were verified. The
+[onboarding](evidence/onboarding.png), [pending interview fact](evidence/interview-review.png),
+[question](evidence/question.png) and [warning](evidence/warning.png) frames were
+extracted from that take and inspected. The [10 November take](evidence/2026-11-10-historical.json)
+is historical: it had six chapters and omitted onboarding. Raw footage stays
+local; hashes identify the recorded files, not expected bytes of a new take.
 
 Tatiana/Joey review the script and replace scripted scenes with observed real
 backend outcomes, using synthetic accounts/documents and a declared provider mode.
