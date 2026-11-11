@@ -279,6 +279,20 @@ Reference documents:
 - What: Learning the bylaws printed "all done" while only 1 of its 4 pieces had reached the model: the other answers were cut off at the answer limit, which looked like "not JSON", and the pieces were counted as empty and marked done. Read the provider's stop signal on every call, count such a piece as failed (not skipped) and leave it out of `done` so a rerun retries it; split documents on their own headings so a rule is not cut in half.
 - Done when: a cut-off answer says so, a failed piece is retried on the next run, and both have a regression test. (2026-11-08: done, D-98; contracts 0.2.3.)
 
+### T-47 OSA e-mail reaches Review (D-113, D-114)
+- Owner: tatiana
+- Status: doing
+- Needs: J-10, T-39
+- What: Before the ASME demo. (1) A cabinet member adds an extra sending address (e.g. their AUB mail) on the setup screen and proves it: ClubOps shows a short code, the member e-mails it from that address to the club's `+tag` address, and the address is saved when the code arrives; this also proves forwarding works. Addresses are removed with the member. (2) Setup shows a step-by-step forwarding guide (Outlook rule, OSA senders only) with a "Test my forwarding" button. (3) Free checks before any model call: sender is a verified cabinet address; the original sender inside the forwarded text is on the OSA list kept by the operator (private data, never the repo); not read before; text cleaned (signatures, old replies, links, formatting). A skipped e-mail says why ("ClubOps only reads e-mails forwarded from OSA staff"). (4) Fetch is free (`fetch_into_queue`); reading is a paid model call the cabinet triggers with "Read this" (`GET /api/inbox`, `POST /api/inbox/{id}/capture`).
+- Done when: a real forwarded OSA e-mail becomes Review cards for its club, and synthetic tests cover: unverified sender, wrong code, original sender not on the OSA list, duplicate, a failed read stays queued. Each case has a failure-matrix row.
+
+### T-48 After ASME: deadlines, expiry and shared OSA rules (D-115, D-116)
+- Owner: tatiana
+- Status: todo
+- Needs: T-47
+- What: (1) Each card can carry an expiry date (the model suggests it, the reviewer can change it); on that date a plain rule moves it to an archive the planner never uses; the president can restore it; the archive is kept. (2) A deadline card has an "Add to calendar" box (ticked by default) and says who it is for; approving it creates an event with a reminder on the club's own calendar on `clubops.agent`, inviting only those people through their Gmail. Event invites are per event, cabinet by default. ClubOps never gets access to members' own calendars. (3) Cards are sorted AUB-wide or club-only; AUB-wide cards go to the operator now (later: live when two presidents approve), club-only cards to the president. (4) The same OSA e-mail sent to many clubs is read once. (5) Simple approved rules (date cut-offs) are checked by code in the planner. (6) Prompt caching for the fixed instructions. (7) Reading OSA e-mails without a click.
+- Done when: each part has synthetic tests and a design-log row; costs before and after (4)-(6) are measured.
+
 ## Christophe: frontend
 
 ### C-01 Read the UI spec and pick the stack
