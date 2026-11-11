@@ -153,3 +153,5 @@ No entries yet.
 ## 2026-11-11 - Christophe (C-33 review sync)
 
 Merged main afbdead into #76 without squashing. Preserved all six distinct C-33/C-34 HTTP tests and both sides of additive logs/evidence. C-34 is done after #75 merged; C-25/C-28/C-33 stay doing while their PRs/acceptance remain open. Root gates: 603 passed, 1 skipped, 92.47%; web check 52 units + 12 tool tests/build; full HTTP 38 passed. Setup wiring from #87 is retained; deployed/real-club acceptance remains pending. No new shared IDs or backend implementation changed.
+
+The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C-33/C-21 acceptance is actual deployed/new-club verification, not the former 501 placeholder.

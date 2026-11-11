@@ -42,7 +42,7 @@ does not guess document purposes from names or claim server persistence.
 
 ## Integration and verification
 
-C-21 still needs Tatiana's production route and `/me` wiring. C-33 remains doing
+Tatiana's merged #87 now wires the C-21 route and `/me` completion field. C-33 remains doing
 until the deployed new-club flow and actual ASME onboarding are verified. This PR
 changes only owned frontend files and shared evidence/task logs, not backend code
 or contracts. No real source, paid call or deployed completion was invented.

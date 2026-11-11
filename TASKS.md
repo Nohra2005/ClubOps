@@ -433,6 +433,7 @@ Reference documents:
 ### C-21 New-club setup (was T-20)
 - Owner: christophe
 - Status: doing
+- Progress (2026-11-11): #87 is merged and wires the route plus `/me` completion from the owned service. Local synthetic integration checks pass; actual new-club/deployed acceptance remains open. Earlier route-wiring blockers below are historical.
 - Onboarding decision (2026-11-09): per Tatiana's message relayed by Christophe, setup questions are the primary onboarding path; WhatsApp history import is dropped for onboarding because members have not consented. ASME is planned for Wednesday 11 November via this flow. #55 contains current main/contracts 0.2.3 and is mergeable; Tatiana will wire the API after merge. UI/guide say no chat history is required and use one tab (D-103). No professor privacy answer is claimed.
 - Owner response (2026-11-09): Tatiana's #43 reply requests #55 be made ready so she can wire the route and `/me`; she declines the question-token extension and accepts the documented one-tab limit (F-151). Actual ASME seed material belongs to T-09. Synced current main; reported `sources_failed` now leaves setup retryable before queueing any partial facts (F-174). Production wiring and real second-club verification remain pending.
 - Needs: none
