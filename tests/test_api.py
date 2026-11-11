@@ -17,6 +17,7 @@ from scripts.load_rulebook import load
 from clubops.agent.planner import EventFacts, NextStep, Planner, RunState, Tool
 from clubops.api.app import ApiConfig, create_app
 from clubops.api.security import MemberStore
+from clubops.api.setup import QUESTIONS
 from clubops.capabilities.runner import Usage
 from clubops.contracts.common import Role
 from clubops.contracts.event import Audience, EventType, Venue, VenueKind
@@ -309,7 +310,39 @@ def test_usage_adds_up_the_agent_runs(client: TestClient, scripts: Scripts) -> N
 
 def test_parts_not_built_yet_say_so(client: TestClient) -> None:
     sign_in(client)
-    assert client.post("/api/setup/next", json={}, headers=HEADERS).status_code == 501
     assert client.get("/api/handover/president").status_code == 200
     answer = client.post("/api/chat/ask", json={"text": "Who books Hostler?"}, headers=HEADERS).json()
     assert answer["known"] is False and answer["ask"]["who"]  # never a made-up answer (D-49)
+
+
+# ----------------------------------------------------------- new-club setup (C-21)
+
+
+def test_the_real_app_serves_setup_and_knows_which_clubs_are_set_up(client: TestClient) -> None:
+    """The production route, not the test adapter: a new club gets the questions, the club set up by hand
+    before C-21 is not asked again (D-105)."""
+    sign_in(client)  # the Running Club president
+    assert client.get("/api/me").json()["club"]["setup_complete"] is True
+
+    sign_in(client, "op04@mail.aub.edu")  # a president of a club that has never been set up
+    assert client.get("/api/me").json()["club"]["setup_complete"] is False
+    step = client.post("/api/setup/next", json={}, headers=HEADERS)
+    assert step.status_code == 200, step.text
+    body = step.json()
+    assert body["index"] == 1 and body["total"] == len(QUESTIONS) and not body["done"]
+    assert body["question"] and body["rules_count"] > 0  # shared AUB rules, read not copied
+
+
+def test_setup_skips_without_calling_the_model(client: TestClient) -> None:
+    """A skip moves on and never spends: nothing reaches the model (C-21)."""
+    sign_in(client, "op04@mail.aub.edu")
+    client.post("/api/setup/next", json={}, headers=HEADERS)
+    step = client.post("/api/setup/next", json={"answer": "[skip]"}, headers=HEADERS)
+    assert step.status_code == 200, step.text
+    assert step.json()["index"] == 2
+    assert client.get("/api/usage").json()["calls"] == 0
+
+
+def test_setup_is_for_the_president_only(client: TestClient) -> None:
+    sign_in(client, "te02@mail.aub.edu")  # a cabinet member who is not the president
+    assert client.post("/api/setup/next", json={}, headers=HEADERS).status_code in (401, 403)
