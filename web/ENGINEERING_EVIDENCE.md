@@ -136,3 +136,18 @@ collision was resolved by a clean standalone rerun, not by disabling a check.
 No real onboarding, deployed completion, consent or paid provider result is claimed.
 C-33 stays doing until C-21 wiring and actual deployed verification. See
 STARTER_CHECKLIST.md and the PR for commands, limits and independent review.
+
+## 10 November 2026 - C-34 source and sharing review
+
+C-34 makes the existing T-41 shared scope visible and president-controlled. Code
+checks scope independently of card type; individual scope choices are sent only on
+confirmation. All disagreements precede ordinary source groups, both comparison
+quotes are shown, and failed requests preserve drafts. Bulk approval never silently
+applies an unsaved sharing choice. D-104/F-175-F-178 link this to frontend regressions.
+
+Verified: 600 Python tests passed, 1 skipped / 92.68% coverage and all root gates;
+46 frontend units, 12 tool tests/build; 8 HTTP + 2 demo review browser cases and
+2 accessibility cases across all 11 routes on desktop/phone. No live provider,
+private data or backend-contract edit. `REVIEW_GUIDE.md` explains shared versus
+club knowledge in two opening sentences and records the authorization limits.
+Independent review/merge-commit evidence and final-head CI belong to the PR.

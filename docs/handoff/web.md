@@ -138,3 +138,18 @@ No entries yet.
 **Next:** Publish for independent review; use Create a merge commit. Tatiana wires C-21 route and /me, then verify the actual deployed interview/checklist/Review and ASME onboarding. Purpose-specific durable cross-device checklist progress would need a separate agreed contract; current UI does not infer it. Guide: web/STARTER_CHECKLIST.md. Preserve both #75 and C-33 task/log/handoff entries if merging both.
 
 **Open questions / blockers:** No deployed URL/OAuth/provider setup or actual ASME source processing was introduced. C-21 remains the dependency; C-33 browser-local ticks are not server completion or approved knowledge. HTTP tests intercept synthetic responses; demo documents remain unverified and their facts pending Review. C-31 still needs direct board URL/access. Runtime output stays untracked; no real data or paid model calls.
+
+## 2026-11-10 - Christophe, with Codex (C-34 Review sharing)
+
+**Did:** Resumed from the interruption with only the task claim saved, pulled main 106baa7 and current locked dependencies, confirmed T-41 done and #55 merged with commit history preserved. Added shared-scope badges/president choices, explicit boolean decision payloads, quoted evidence for both comparison sides and missing-quote notices. All disagreements appear first; shared/disputed/warned/outdated cards and unsaved sharing choices never batch. Denied individual requests keep edits/choice for explicit retry. Demo follows the actual single-president T-41 path; legacy waiting responses remain display-compatible. Separate task/policy/UI/demo/browser/docs commits; no backend implementation/contracts changed.
+
+**State:** C-34 review. All root gates pass: 600 passed, 1 skipped, 92.68% coverage, Ruff/format (138 files), strict types (76 files), schema/task checks. Frontend check passes: 46 units, 12 board-tool tests and production build. Focused browser checks: 8 HTTP review cases and 2 demo review cases; 2 accessibility cases scan all 11 main routes on desktop/phone. D-104/F-175-F-178 are the new ranges; they were free on main and no PR was open at final fetch. Frontend failure rows use the existing frontend-covered classification; the root validator's covered label is Python-only. No real sources, paid model calls, deployed or real-user acceptance claim.
+
+**Next:** Publish C-34 for independent teammate review, then merge with Create a merge commit. Tatiana should add the existing shared fields to her docs/api.md and link the frontend evidence in docs/evidence.md/rubric-map.md. See web/REVIEW_GUIDE.md and web/API_NOTES.md for user guidance/API boundary. Current-head remote checks remain on the PR.
+
+**Open questions / blockers:** C-21 production wiring remains Tatiana's app.py task; C-33 depends on it. C-31 still needs the direct board URL/access: project scope is enabled but the last discovery returned no boards. No duplicate project or attendance record invented. HTTP browser checks intercept synthetic responses; existing T-41 tests enforce server authorization, while frontend controls do not replace it. Runtime output stays untracked.
+
+
+## 2026-11-11 - Christophe (C-33 review sync)
+
+Merged main afbdead into #76 without squashing. Preserved all six distinct C-33/C-34 HTTP tests and both sides of additive logs/evidence. C-34 is done after #75 merged; C-25/C-28/C-33 stay doing while their PRs/acceptance remain open. Root gates: 603 passed, 1 skipped, 92.47%; web check 52 units + 12 tool tests/build; full HTTP 38 passed. Setup wiring from #87 is retained; deployed/real-club acceptance remains pending. No new shared IDs or backend implementation changed.

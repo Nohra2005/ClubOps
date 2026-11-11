@@ -101,17 +101,35 @@ describe('synthetic API safety boundaries', () => {
     await api.editEvent('ev-sunset-run', { title: 'Changed event' });
     await expect(api.approvePlan('ev-sunset-run', 1)).rejects.toMatchObject({ status: 409 });
   });
-  it('keeps AUB-wide rule proposals pending a second president', async () => {
+  it('uses the current president approval contract for shared proposals', async () => {
     const api = client();
     const card = await api.decide('review-rule', {
       decision: 'approve',
       opened_at: '2026-10-22T10:00:00Z',
       decided_at: '2026-10-22T10:01:00Z',
     });
-    expect(card.status).toBe('waiting_second_president');
-    expect((await api.review()).find((r) => r.id === card.id)?.status).toBe(
-      'waiting_second_president',
+    expect(card.status).toBe('approved');
+    expect(card.shared).toBe(true);
+    expect((await api.review()).find((r) => r.id === card.id)).toBeUndefined();
+  });
+  it('keeps a president choice private and rejects non-president sharing before mutation', async () => {
+    const api = client();
+    const dates = { opened_at: '2026-10-22T10:00:00Z', decided_at: '2026-10-22T10:01:00Z' };
+    const member = new ApiClient(
+      createMockTransport(storage, { club: 'running-club', role: 'secretary' }, { delay: 0 }),
+      'demo',
     );
+    await api.review();
+    await expect(
+      member.decide('review-coffee', { ...dates, decision: 'approve', shared: true }),
+    ).rejects.toMatchObject({ status: 403 });
+    await expect(
+      member.decide('review-rule', { ...dates, decision: 'approve', shared: false }),
+    ).rejects.toMatchObject({ status: 403 });
+    expect((await api.review()).find((r) => r.id === 'review-coffee')?.status).toBe('pending');
+    const kept = await api.decide('review-rule', { ...dates, decision: 'approve', shared: false });
+    expect(kept.shared).toBe(false);
+    expect((await api.knowledge('')).find((r) => r.title === kept.title)?.scope).toBe('club');
   });
   it('rejects adviser mutations and strips cabinet contact details', async () => {
     const api = new ApiClient(

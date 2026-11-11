@@ -248,3 +248,22 @@ D-105/F-179-F-182 record the privacy/completion boundaries. Metadata-only local 
 never set server setup_complete or approve knowledge. Actual C-21 wiring and deployed
 new-club/ASME verification remain open. No private source or paid model call. These
 numbers do not include the independent C-34 branch's frontend additions.
+
+## 10 November 2026 - C-34 shared Review guards
+
+Current main 106baa7 plus C-34 passes all local root gates: **600 passed, 1 skipped,
+92.68% coverage**, Ruff/format (138 files), strict mypy (76 source files), schemas/tasks.
+`npm run check` passes with **46 frontend units, 12 board-tool tests** and build.
+
+Actual browser verification: **8 HTTP review cases**, **2 persistent-demo review
+cases**, and **2 accessibility cases covering 11 routes each** on desktop/375px phone.
+Tests cover shared facts with ordinary type, source quotes/missing evidence/literal
+HTML-like text, all disagreements first, explicit true/false decisions, non-president
+restrictions, 403 edit/choice retention and no batching of unsaved scope changes.
+The demo now matches T-41's single-president shared approval; historical waiting
+responses remain display-compatible.
+
+D-104/F-175-F-178 and `REVIEW_GUIDE.md` record behavior and limits. Existing public
+`tests/test_shared_layer.py` runs in root checks; no backend code/contracts changed.
+HTTP UI checks use synthetic intercepted responses, not a deployed service or user
+study. Final-head CI and independent teammate review are on the C-34 PR.
