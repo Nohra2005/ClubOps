@@ -129,6 +129,16 @@ No entries yet.
 **Next:** Tatiana independently reviews and merges #55 with Create a merge commit, then wires setup route and /me for ASME on 11 November. Do not squash the remaining small setup commits. Keep the recorded primary-interview/no-chat onboarding decision, accepted one-tab limit and retry failure guard. No real-data or paid calls were introduced. Runtime output remains untracked.
 
 
+## 2026-11-10 - Christophe, with Codex (C-33 starter checklist)
+
+**Did:** Started independently from main 106baa7 while #75 remains open. After the explicit completed interview response, added cabinet check/settings action, club constitution/rules upload, past proposal upload and places/partners acknowledgement. File selection makes no request; each upload needs a click and valid document acknowledgement. Strict file/cabinet/response checks preserve pending state on failures. Local ticks whitelist booleans only and isolate mode/club/member; no raw files, filenames, member details or answers are kept there. Interview completion wording no longer claims the whole club is ready. Demo accepts the supported starter formats as unverified documents. No backend implementation/contracts or account/host settings changed.
+
+**State:** C-33 stays doing because C-21 app wiring and deployed new-club verification remain open. Frontend check passes with 48 units, 12 board-tool tests and build. All root gates pass: 600 passed, 1 skipped, 92.68% coverage; Ruff/format (138 files), strict types (76 files), schemas/tasks. Focused browser checks: 6 HTTP starter cases and 6 demo/setup cases; the completed checklist is scanned for accessibility and horizontal overflow on desktop/375px phone. A local parallel Playwright run collided in their shared artifact folder; the demo suite was rerun alone and all 6 passed. Do not run default-output browser suites concurrently. D-105/F-179-F-182 reserve this change after #75's D-104/F-175-F-178; final fetch found no other open PR.
+
+**Next:** Publish for independent review; use Create a merge commit. Tatiana wires C-21 route and /me, then verify the actual deployed interview/checklist/Review and ASME onboarding. Purpose-specific durable cross-device checklist progress would need a separate agreed contract; current UI does not infer it. Guide: web/STARTER_CHECKLIST.md. Preserve both #75 and C-33 task/log/handoff entries if merging both.
+
+**Open questions / blockers:** No deployed URL/OAuth/provider setup or actual ASME source processing was introduced. C-21 remains the dependency; C-33 browser-local ticks are not server completion or approved knowledge. HTTP tests intercept synthetic responses; demo documents remain unverified and their facts pending Review. C-31 still needs direct board URL/access. Runtime output stays untracked; no real data or paid model calls.
+
 ## 2026-11-10 - Christophe, with Codex (C-34 Review sharing)
 
 **Did:** Resumed from the interruption with only the task claim saved, pulled main 106baa7 and current locked dependencies, confirmed T-41 done and #55 merged with commit history preserved. Added shared-scope badges/president choices, explicit boolean decision payloads, quoted evidence for both comparison sides and missing-quote notices. All disagreements appear first; shared/disputed/warned/outdated cards and unsaved sharing choices never batch. Denied individual requests keep edits/choice for explicit retry. Demo follows the actual single-president T-41 path; legacy waiting responses remain display-compatible. Separate task/policy/UI/demo/browser/docs commits; no backend implementation/contracts changed.
@@ -138,3 +148,10 @@ No entries yet.
 **Next:** Publish C-34 for independent teammate review, then merge with Create a merge commit. Tatiana should add the existing shared fields to her docs/api.md and link the frontend evidence in docs/evidence.md/rubric-map.md. See web/REVIEW_GUIDE.md and web/API_NOTES.md for user guidance/API boundary. Current-head remote checks remain on the PR.
 
 **Open questions / blockers:** C-21 production wiring remains Tatiana's app.py task; C-33 depends on it. C-31 still needs the direct board URL/access: project scope is enabled but the last discovery returned no boards. No duplicate project or attendance record invented. HTTP browser checks intercept synthetic responses; existing T-41 tests enforce server authorization, while frontend controls do not replace it. Runtime output stays untracked.
+
+
+## 2026-11-11 - Christophe (C-33 review sync)
+
+Merged main afbdead into #76 without squashing. Preserved all six distinct C-33/C-34 HTTP tests and both sides of additive logs/evidence. C-34 is done after #75 merged; C-25/C-28/C-33 stay doing while their PRs/acceptance remain open. Root gates: 603 passed, 1 skipped, 92.47%; web check 52 units + 12 tool tests/build; full HTTP 38 passed. Setup wiring from #87 is retained; deployed/real-club acceptance remains pending. No new shared IDs or backend implementation changed.
+
+The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C-33/C-21 acceptance is actual deployed/new-club verification, not the former 501 placeholder.
