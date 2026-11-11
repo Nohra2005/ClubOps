@@ -15,6 +15,20 @@ Changing either file requires a new dated freeze entry; do not silently replace 
 hash. On Windows, normalize checked-out CRLF to LF before comparing with these
 committed-file hashes.
 
+## 2026-11-11 review-driven interview freeze
+
+Tatiana's PR #81 review identified that the president setup interview is now the
+primary onboarding path (D-103). Before changing the runner, we froze four
+synthetic interview answers per club in a separate file. They are club-only
+background, dated before the documents and events. Evaluation stages will be
+empty, 1 answer, 3 answers, all 4 answers, then all answers plus documents.
+The simulation treats each added answer as if a cabinet member approved its
+proposed fact in Review; it does not assert the live setup flow completed.
+
+| File | Items | SHA-256 (committed LF bytes) |
+|---|---:|---|
+| `eval/new-club-interviews.json` | 3 clubs, 12 synthetic answers | `f07ab1b2fcce319d652591b98d1da6fbe262344475fb8154fc313a082ffaf480` |
+
 Run a free pipeline check with `uv run python scripts/eval_new_club.py --system checklist`.
 For a ClubOps curve, use `CLUBOPS_MODEL_MODE=replay uv run python
 scripts/eval_new_club.py --system clubops --out <private-result-path>` after
