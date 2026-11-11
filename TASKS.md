@@ -397,6 +397,7 @@ Reference documents:
 - What: Deploy on the same free host as the backend.
 - Done when: the cabinet opens the app from a link on their phones.
 - Preparation: the shared Docker image and Caddy router are ready for a container build; see `web/DEPLOYMENT.md`. No deployed URL yet.
+- Note (2026-11-11, Tatiana): add the deployed app's address to "Authorized JavaScript origins" of the Google client "ClubOps Web Client" (it lists only http://localhost:5173), or Google sign-in fails on the live site.
 
 ### C-15 Demo support
 - Owner: christophe
