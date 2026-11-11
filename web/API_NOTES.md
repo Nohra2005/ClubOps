@@ -41,6 +41,27 @@ can call `clubops.reports.traces.record_trace(data_dir, club_id, meta, status, e
 with a known club context. The report never reads a global trace file, whose records lack
 club ownership. Existing legacy monthly planning spend remains intact.
 
+## Shared Review scope — 10 November 2026 (C-34)
+
+T-41 / `tests/test_shared_layer.py` publish the `shared` field on Review cards and
+the optional boolean `shared` on a decision. The frontend now preserves that field
+independently of card type. Presidents can explicitly send true/false on individual
+fact/merge/disagreement/rule decisions; ordinary cabinet decisions omit the override.
+Shared proposals are excluded from batching, including when their type is `fact`.
+Unsaved scope changes also require individual review. Source quotes on both sides
+of comparisons are displayed as untrusted text; missing quotes are explicit.
+
+The optional frontend field retains compatibility with older responses; legacy
+type=rule stays restricted. The demo now follows the current single-president API
+approval path rather than inventing a second-president requirement. Historical
+waiting states remain display-compatible. Failed requests retain the draft/scope
+choice for explicit retry. The API enforces authorization and prevents moving an
+existing shared fact into a club; frontend controls do not replace those checks.
+
+Tatiana: please add the already-supported `shared` fields to `docs/api.md` in your
+next API documentation update. C-34 changes no backend code or frozen contracts.
+See [REVIEW_GUIDE.md](REVIEW_GUIDE.md) and the synthetic HTTP tests for reproduction.
+
 ## Historical contracts 0.2.0 review — 23 October 2026 (C-17)
 
 The frontend branch includes `main` through `597685d` (T-13). Published contracts and generated schemas were read as interfaces; backend implementation and contract definitions were not modified. `src/api/contract-responses.ts` translates fields consumed by the screens and rejects incompatible responses. Backend schema validation, authorization and the HTTP API remain server responsibilities.

@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Check, CheckCheck, FileText, GitMerge, Scale, ShieldCheck, Upload, X } from 'lucide-react';
 import { useApp } from '../AppContext';
-import type { ReviewCard, ReviewDecision, ReviewFilter } from '../api/types';
-import { canBatchApprove } from '../api/review-policy';
+import type { ReviewCard, ReviewDecision, ReviewFilter, Source } from '../api/types';
+import { canBatchApprove, canReview, isShared, reviewGroups } from '../api/review-policy';
 import {
   PageHeading,
   EmptyState,
@@ -17,14 +17,30 @@ import {
 import { useAction, useResource } from '../hooks';
 
 const authority = { official_document: 3, office_email: 2, stated_by_president: 1 };
+function ReviewSource({ source }: { source: Source }) {
+  return (
+    <>
+      {source.quote ? (
+        <blockquote>{source.quote}</blockquote>
+      ) : (
+        <p className="inline-note">
+          No source quote supplied. Check the original source before approving.
+        </p>
+      )}
+      <SourceChip source={source} />
+    </>
+  );
+}
 function ReviewItem({
   card,
   reload,
   highlighted,
+  scopeChanged,
 }: {
   card: ReviewCard;
   reload: () => void;
   highlighted: boolean;
+  scopeChanged: (id: string, changed: boolean) => void;
 }) {
   const { api, canEdit, isPresident, notify } = useApp();
   const action = useAction();
@@ -33,6 +49,7 @@ function ReviewItem({
   const [dialog, setDialog] = useState<'edit' | 'reject' | 'both' | null>(null);
   const [text, setText] = useState(card.statement);
   const [reason, setReason] = useState('');
+  const [shared, setShared] = useState(isShared(card));
   const file = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -42,6 +59,7 @@ function ReviewItem({
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
+  const scopeChoice = ['fact', 'merge', 'disagreement', 'rule'].includes(card.type);
   async function decide(decision: string) {
     const payload: ReviewDecision = {
       decision,
@@ -49,6 +67,7 @@ function ReviewItem({
       decided_at: new Date().toISOString(),
       ...(dialog === 'edit' ? { edited_text: text } : {}),
       ...(reason.trim() ? { reason } : {}),
+      ...(scopeChoice && isPresident ? { shared } : {}),
     };
     const result = await action.run(() => api.decide(card.id, payload));
     if (result.ok) {
@@ -73,7 +92,7 @@ function ReviewItem({
           : card.type === 'document'
             ? FileText
             : CheckCheck;
-  const canDecide = canEdit && card.status === 'pending' && (card.type !== 'rule' || isPresident);
+  const canDecide = canReview(card, canEdit, isPresident);
   const strongerA =
     authority[card.source.authority ?? 'stated_by_president'] >
     authority[card.alternative?.source.authority ?? 'stated_by_president'];
@@ -88,6 +107,7 @@ function ReviewItem({
             {card.type === 'rule' ? 'AUB-WIDE RULE' : card.kind.toUpperCase()}
           </span>
           <h3>{card.title}</h3>
+          {isShared(card) && <span className="tiny-label">Shared with all AUB clubs</span>}
         </div>
         <StatusBadge status={card.status} />
       </div>
@@ -108,7 +128,7 @@ function ReviewItem({
               {card.type === 'disagreement' && strongerA && <span>Stronger source</span>}
             </div>
             <p>{card.statement}</p>
-            <SourceChip source={card.source} />
+            <ReviewSource source={card.source} />
           </div>
           <div>
             <div className="comparison-heading">
@@ -120,21 +140,46 @@ function ReviewItem({
                 )}
             </div>
             <p>{card.alternative.statement}</p>
-            <SourceChip source={card.alternative.source} />
+            <ReviewSource source={card.alternative.source} />
           </div>
         </div>
       ) : (
         <>
           <p className="review-statement">{card.statement}</p>
-          {card.source.quote && <blockquote>{card.source.quote}</blockquote>}
-          <SourceChip source={card.source} />
+          <ReviewSource source={card.source} />
         </>
       )}
-      {card.type === 'rule' && (
+      {isShared(card) && (
         <p className="rule-note">
-          <ShieldCheck size={13} /> A shared rule needs confirmation by a second president from
-          another club.
+          <ShieldCheck size={13} /> Only a president can approve knowledge shared with all AUB
+          clubs.
         </p>
+      )}
+      {scopeChoice && canDecide && isPresident && (
+        <label className="field">
+          <span>Knowledge sharing</span>
+          <span>
+            <input
+              type="checkbox"
+              role="switch"
+              checked={shared}
+              disabled={action.pending}
+              onChange={(event) => {
+                setShared(event.target.checked);
+                scopeChanged(card.id, event.target.checked !== isShared(card));
+              }}
+              aria-label="Share with all AUB clubs"
+            />{' '}
+            Share with all AUB clubs
+          </span>
+          <span className="inline-note">
+            {shared
+              ? 'Use for sourced knowledge that applies to every club.'
+              : 'Keep this knowledge in your club.'}{' '}
+            The choice is saved only when you confirm a decision. Existing shared knowledge stays
+            shared.
+          </span>
+        </label>
       )}
       {card.type === 'plan' ? (
         <div className="review-actions">
@@ -256,8 +301,8 @@ function ReviewItem({
             </>
           )}
         </div>
-      ) : !isPresident && card.type === 'rule' && canEdit ? (
-        <p className="inline-note">A president needs to confirm this shared rule.</p>
+      ) : !isPresident && (isShared(card) || card.type === 'rule') && canEdit ? (
+        <p className="inline-note">A president needs to review this shared knowledge.</p>
       ) : null}
       <ErrorNotice message={action.error} />
       <Modal
@@ -330,10 +375,17 @@ export default function Review() {
   const filter = (search.get('filter') ?? 'all') as ReviewFilter;
   const review = useResource(() => api.review(filter), [api, filter]);
   const batch = useAction();
+  const [scopeDrafts, setScopeDrafts] = useState<Set<string>>(new Set());
+  const batchEligible = (card: ReviewCard) => canBatchApprove(card) && !scopeDrafts.has(card.id);
+  const scopeChanged = (id: string, changed: boolean) =>
+    setScopeDrafts((previous) => {
+      const next = new Set(previous);
+      if (changed) next.add(id);
+      else next.delete(id);
+      return next;
+    });
   const groupOpenedAt = useRef(new Date().toISOString());
-  const groups = new Map<string, ReviewCard[]>();
-  for (const card of review.value ?? [])
-    groups.set(card.group, [...(groups.get(card.group) ?? []), card]);
+  const groups = reviewGroups(review.value ?? []);
   const reload = () => {
     review.reload();
     refresh();
@@ -343,7 +395,7 @@ export default function Review() {
       document.getElementById(search.get('item')!)?.scrollIntoView({ block: 'center' });
   }, [review.value, search]);
   async function approveGroup(cards: ReviewCard[]) {
-    const eligible = cards.filter(canBatchApprove);
+    const eligible = cards.filter(batchEligible);
     const result = await batch.run(async () => {
       let count = 0;
       try {
@@ -360,7 +412,8 @@ export default function Review() {
         reload();
       }
     });
-    if (result.ok) notify(`${result.value} facts approved. Shared rules were not included.`);
+    if (result.ok)
+      notify(`${result.value} facts approved. Only unchanged, unflagged club facts were included.`);
   }
   return (
     <>
@@ -381,7 +434,7 @@ export default function Review() {
           <strong>Your club's memory has a front door.</strong>
           <p>
             Check the source. Make the call. Nothing here becomes a fact until a cabinet member
-            approves it.
+            approves it. A president reviews knowledge shared with all AUB clubs.
           </p>
         </div>
       </div>
@@ -399,22 +452,22 @@ export default function Review() {
       />
       <ErrorNotice message={batch.error} />
       <Resource loading={review.loading} error={review.error} retry={review.reload}>
-        {groups.size === 0 ? (
+        {groups.length === 0 ? (
           <EmptyState
             title="Nothing to review."
             description="You're all caught up. New lessons and proposed changes will appear here."
           />
         ) : (
-          [...groups].map(([group, cards]) => (
-            <section className="review-group" key={group}>
+          groups.map(({ key, title, cards }) => (
+            <section className="review-group" key={key}>
               <div className="group-heading">
                 <h2>
-                  {group}
+                  {title}
                   <span>
                     {cards.length} {cards.length === 1 ? 'item' : 'items'}
                   </span>
                 </h2>
-                {canEdit && cards.some(canBatchApprove) && (
+                {canEdit && cards.some(batchEligible) && (
                   <button
                     className="text-button"
                     disabled={batch.pending}
@@ -429,6 +482,7 @@ export default function Review() {
                   key={card.id}
                   card={card}
                   highlighted={search.get('item') === card.id}
+                  scopeChanged={scopeChanged}
                   reload={reload}
                 />
               ))}
