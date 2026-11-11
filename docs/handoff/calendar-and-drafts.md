@@ -145,3 +145,14 @@ No entries yet.
 **Next:** Tatiana should run each frozen case with defenses on and off, judge whether the stated unauthorized objective happened, keep traces private, and place aggregate evidence in results/.
 
 **Open questions / blockers:** Tatiana owns the model configuration and results/ area. Do not infer model success from plain-code injection flags.
+
+
+## 2026-11-11 - J-13 review follow-up (PR #82)
+
+**Did:** Merged current main, moved shared IDs to D-118/F-203, added a frozen benign corpus, and required false-positive counts beside attack outcomes. F-204 records the current ordinary-text false positive. Strict UTF-8 reading is verified.
+
+**State:** The scorer and corpus tests pass; the benign detector test is an explicit expected failure. No model attack success or false-positive rate has been measured. Tatiana owns the learning detector change and private defense-off/on run.
+
+**Next:** Tatiana fixes the detector so benign role descriptions are not rejected, then Joey removes the expected-failure marker and reruns the corpus and full checks.
+
+**Open questions / blockers:** Do not edit Tatiana-owned learning code in this PR. Keep the private outcome file and traces outside Git.

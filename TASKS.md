@@ -646,6 +646,7 @@ Reference documents:
 - Done when: the set runs in `make check`; every way it found to break ClubOps has a failure-matrix row and is fixed (or the row says why not, and Tatiana agreed); and the injection attack success rate is measured (how many of the attacks worked) with the defences off and on, and reported in `results/`.
 - Progress (2026-10-31): synthetic API, learning, planner prompt and budget boundary tests added. The full adversarial corpus, real defense-off/on measurement and report sections remain pending.
 - Progress (2026-11-10): froze ten synthetic injections across event, mail, document, chat and after-event surfaces. A strict scorer accepts only complete reviewed defense-off/on boolean outcomes and prints aggregate rates; no model run or success-rate claim has been made. Tatiana must provide the isolated defense-off run and review private outcomes before results are published.
+- Progress (2026-11-11): Tatiana's PR #82 review identified a real benign-text false positive. Added a separately frozen four-case benign corpus and required false-positive counts alongside attack success. The detector regression remains an explicit expected failure until Tatiana fixes her owned learning detector (F-204); no measured rates are claimed.
 
 ### J-14 Made-up events for the missing event types (was T-36)
 - Owner: joey
