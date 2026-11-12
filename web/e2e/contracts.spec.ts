@@ -3,6 +3,34 @@ import { expect, test } from '@playwright/test';
 import { clubs, createWorkspace } from '../src/api/fixtures';
 import { todayInBeirut } from '../src/lib';
 
+test('HTTP C-35 stays unavailable without requesting unpublished inbox or lifecycle endpoints', async ({
+  page,
+}) => {
+  const unexpected: string[] = [];
+  await page.route('**/api/**', (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path === '/api/me') return route.fallback();
+    if (path === '/api/knowledge' || path === '/api/review') return route.fulfill({ json: [] });
+    unexpected.push(`${route.request().method()} ${path}`);
+    return route.fulfill({ status: 501, json: { detail: 'Unpublished route' } });
+  });
+  await page.goto('/inbox');
+  await expect(
+    page.getByText('Inbox integration is not available yet.', { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: /Read this|Confirm simulated read/ })).toHaveCount(
+    0,
+  );
+  await page.goto('/setup');
+  await expect(page.getByRole('region', { name: 'Forwarding setup' })).toContainText(
+    'not available on this server yet',
+  );
+  await expect(page.getByLabel('Sample sending address')).toHaveCount(0);
+  await page.goto('/review');
+  await expect(page.getByRole('region', { name: 'Deadline lifecycle preview' })).toHaveCount(0);
+  expect(unexpected).toEqual([]);
+});
+
 test.beforeEach(async ({ page }) => {
   const workspace = createWorkspace('running-club');
   await page.route('**/api/me', (route) =>
