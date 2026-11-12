@@ -15,6 +15,7 @@ import {
   StatusBadge,
 } from '../components/ui';
 import { useAction, useResource } from '../hooks';
+import CardLifecyclePreview from '../inbox/CardLifecyclePreview';
 
 const authority = { official_document: 3, office_email: 2, stated_by_president: 1 };
 function ReviewSource({ source }: { source: Source }) {
@@ -438,6 +439,7 @@ export default function Review() {
           </p>
         </div>
       </div>
+      <CardLifecyclePreview />
       <FilterTabs
         value={filter}
         onChange={(filter) => setSearch({ filter })}
