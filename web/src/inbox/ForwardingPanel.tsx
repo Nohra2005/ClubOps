@@ -38,7 +38,7 @@ function DemoForwarding() {
       <PreviewNotice />
       <div className="inbox-preview-grid">
         <div>
-          <h3>Club Google connection</h3>
+          <h3>Club inbox connection</h3>
           <p role="status">{connectionText[state.connection]}</p>
           <p className="inline-note">
             One club calendar. Members receive invites in Gmail; ClubOps does not access members’

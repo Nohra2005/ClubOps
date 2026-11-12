@@ -6,8 +6,10 @@ messages and a reserved `.example` forwarding address. They make no HTTP, Google
 email or model calls. They do not publish knowledge, change the actual Review queue,
 create calendar items or alter the server’s existing shared-approval policy.
 
-C-35 remains doing: T-47 #92 adds a free fetch CLI, J-22 #93 adds checks, and neither
-publishes the UI’s HTTP routes. T-48 and calendar-contract work remain with their
+C-35 remains doing: T-47 #92 adds a free fetch CLI and J-22 #93 adds checks.
+TASKS names `GET /api/inbox` and `POST /api/inbox/{id}/capture`, but their JSON,
+errors, retry behavior and verification/lifecycle routes are not published.
+T-48 and calendar-contract work remain with their
 owners. D-115/D-116’s live policy changes are explicitly after ASME. The existing
 Review controls and payloads are unchanged.
 
