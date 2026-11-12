@@ -145,3 +145,13 @@ No entries yet.
 **Next:** Christophe should identify the CI owner in #84 and implement pinned gitleaks/Bandit gates; Tatiana should specify integration fields and private evaluation inputs in #83. Joey then runs the live calendar/mail acceptance and cabinet draft review after those prerequisites land.
 
 **Open questions / blockers:** The existing Windows schema check reports `docs/capabilities.md` drift, while GitHub CI is green. Keep all calendar IDs, tokens, club examples and feedback out of Git.
+
+## 2026-11-12 - J-22 pre-read inbox guards
+
+**Did:** Added a private SQLite verification/read ledger and synthetic pre-paid-read guards in Joey's inbox folder. A member's extra sender address needs a salted six-digit code mailed to the club plus-address within ten minutes; five wrong attempts lock it, and removal revokes it. A forward needs a matching club tag, authorized forwarder and operator-supplied OSA original sender. Cleaned text remains untrusted. Global original-message fingerprints skip a read already completed for another club. Added D-123 and F-209 to F-213 with regression tests.
+
+**State:** Synthetic guard tests pass; no Google call, model call, real address or club content is in this PR. J-22 is in review. The existing Gmail fetch/queue path remains separate, and T-47 API integration/live acceptance has not happened.
+
+**Next:** Tatiana should call the guard from the human-click capture route, derive authorized senders from the cabinet plus verified entries, pass the private OSA list, claim the fingerprint before the paid call, save Review proposals, then mark it read. Release the claim on failure to keep the mail retryable and show the skip reason through C-35. Please resolve PR #92's explicit-role allowlist review first. Christophe should use T-47's published response/error shapes for the C-35 screens.
+
+**Open questions / blockers:** A live forward and cross-club read-once check need T-47 and cabinet approval. The claim expires after ten minutes so a crashed read can be retried; T-47 must handle that retry and avoid claiming before a person clicks. Do not commit the OSA sender list or codes.

@@ -727,10 +727,11 @@ Reference documents:
 
 ### J-22 Inbox checks before any paid read (D-113, D-114)
 - Owner: joey
-- Status: todo
+- Status: review
 - Needs: J-10
 - What: Finishes J-10. In `src/clubops/inbox/`: an extra sending address per cabinet member, proven by a short code e-mailed to the club's `+tag` address and removed with the member; the original sender inside the forwarded text must be on the OSA list (passed in, never committed); skip e-mails already read; clean the text before the model (signatures, old replies, links, formatting); every skipped e-mail returns its reason; the same OSA e-mail sent to many clubs is read once. No model call in this task.
 - Done when: synthetic tests cover unverified sender, wrong code, original sender not on the OSA list, duplicate, read-once across clubs, and an e-mail with instructions inside treated as data; each has a failure-matrix row. PR up by Thursday 12 Nov night; otherwise Tatiana takes it over.
+- Progress (2026-11-12): Joey-owned `inbox.guards` and synthetic tests cover the verification code, private OSA allowlist input, skip reasons, content cleaning and cross-club fingerprint. API wiring and live Gmail acceptance remain with Tatiana's T-47; the guard does not make model calls or send mail.
 
 ### J-23 Deadline cards on the club calendar (D-116)
 - Owner: joey
