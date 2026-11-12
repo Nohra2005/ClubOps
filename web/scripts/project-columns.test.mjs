@@ -69,6 +69,12 @@ test('horizontal grouping is never accepted as the status column field', async (
   await assert.rejects(configureColumns(f.api, f.rest, plan, 1), /refusing to overwrite/);
   assert.equal(f.calls.length, 0);
 });
+
+test('REST can omit unrelated built-in GraphQL fields while all required numeric identities are validated', async () => {
+  const f = fixture();
+  f.state.fields.nodes.push({ id: 'created-field', name: 'Created' });
+  assert.equal((await configureColumns(f.api, f.rest, plan, 1)).verified, true);
+});
 test('incomplete REST fields or invalid numeric identities refuse before creating a view', async () => {
   for (const kind of ['missing', 'invalid']) {
     const f = fixture();

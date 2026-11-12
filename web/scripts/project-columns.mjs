@@ -21,15 +21,15 @@ export async function configureColumns(api, rest, plan, number) {
   let created = false;
   if (!existing.length) {
     const rows = await rest(`/users/${plan.owner}/projectsV2/${number}/fields?per_page=100`, 'GET');
-    if (!Array.isArray(rows) || rows.length !== project.fields.nodes.length)
-      throw new Error('REST field listing is incomplete; no view created');
+    // REST omits some built-in GraphQL fields. Require every needed identity, not equal totals.
+    if (!Array.isArray(rows)) throw new Error('REST field listing is incomplete; no view created');
     const numeric = (nodeId) => {
-      const matches = rows.filter((row) => row.node_id === nodeId);
+      const matches = rows.filter((row) => row?.node_id === nodeId);
       if (matches.length !== 1 || !Number.isSafeInteger(matches[0].id) || matches[0].id <= 0)
         throw new Error('Unresolved numeric field ID; no view created');
       return matches[0].id;
     };
-    const titles = rows.filter((row) => row.data_type === 'title');
+    const titles = rows.filter((row) => row?.data_type === 'title');
     if (titles.length !== 1) throw new Error('Unresolved title field; no view created');
     await rest(`/users/${plan.owner}/projectsV2/${number}/views`, 'POST', {
       name: columnsView,
