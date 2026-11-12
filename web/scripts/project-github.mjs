@@ -117,7 +117,9 @@ export async function snapshot(api, owner, number) {
     `query Board($owner:String!,$number:Int!) { user(login:$owner) { projectV2(number:$number) {
       id title url public closed readme viewerCanUpdate
       fields(first:100) { nodes { ${fieldSelection} } pageInfo { hasNextPage } }
-      views(first:100) { nodes { id name layout } pageInfo { hasNextPage } }
+      views(first:100) { nodes { id name number layout
+        verticalGroupByFields(first:20) { nodes { ${fieldSelection} } pageInfo { hasNextPage } }
+      } pageInfo { hasNextPage } }
     } } }`,
     { owner, number },
   );
@@ -125,6 +127,8 @@ export async function snapshot(api, owner, number) {
   if (!project) throw new Error('Project not found');
   if (project.fields.pageInfo.hasNextPage || project.views.pageInfo.hasNextPage)
     throw new Error('Unexpectedly large project configuration; refusing a partial sync');
+  if (project.views.nodes.some((view) => view.verticalGroupByFields?.pageInfo?.hasNextPage))
+    throw new Error('Incomplete view column fields; refusing a partial sync');
   const items = await pages(
     api,
     `query BoardItems($id:ID!,$cursor:String) { node(id:$id) { ... on ProjectV2 {

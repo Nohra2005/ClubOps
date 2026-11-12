@@ -9,6 +9,7 @@ test('defaults to a read-only plan and requires an explicit target for writes', 
   assert.equal(options(['--apply', '--project-number', '1']).number, 1);
   assert.equal(options(['--adopt', '--project-number', '4']).apply, false);
   assert.equal(options(['--adopt', '--apply', '--project-number', '4']).adopt, true);
+  assert.equal(options(['--apply', '--columns', '--project-number', '4']).columns, true);
   for (const args of [
     ['--apply'],
     ['--create'],
@@ -19,6 +20,8 @@ test('defaults to a read-only plan and requires an explicit target for writes', 
     ['--unknown'],
     ['--adopt'],
     ['--adopt', '--create', '--apply'],
+    ['--columns', '--project-number', '4'],
+    ['--columns', '--apply', '--create'],
   ])
     assert.throws(() => options(args));
 });

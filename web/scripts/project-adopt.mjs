@@ -1,6 +1,7 @@
 /** Explicit additive adoption. Never rename/reconfigure a human field or replace README text. */
 import { batch, inspectProject, operation, snapshot } from './project-github.mjs';
 import { validateConfiguration } from './project-fields.mjs';
+import { columnsView } from './project-columns.mjs';
 import {
   additive,
   adoptionBlock,
@@ -22,7 +23,7 @@ export function inspectAdoption(project, plan, number) {
   if (
     !profile &&
     (project.fields.nodes.some((field) => Object.values(additive.fields).includes(field.name)) ||
-      project.views.nodes.some((view) => view.name === additive.view))
+      project.views.nodes.some((view) => [additive.view, columnsView].includes(view.name)))
   )
     throw new Error(
       'An unmarked board already uses the reserved ClubOps namespace; inspect before adoption',
