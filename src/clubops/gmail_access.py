@@ -10,6 +10,8 @@ from pathlib import Path
 
 import httpx
 
+from clubops.contracts.common import CABINET_ROLES
+
 TOKEN_URL = "https://oauth2.googleapis.com/token"  # noqa: S105 - a public endpoint, not a secret
 RENEW_HINT = (
     "Gmail key expired or was revoked. In Testing mode Google cancels it every 7 days: "
@@ -73,19 +75,19 @@ def parse_extra_senders(value: str | None) -> dict[str, set[str]]:
 
 
 def cabinet_senders(data_dir: Path, extra: Mapping[str, set[str]] | None = None) -> dict[str, set[str]]:
-    """Every club's cabinet e-mails (members and advisers excluded), plus any extra forwarding addresses."""
+    """Every club's cabinet e-mails (exact cabinet roles only), plus any extra forwarding addresses."""
     senders: dict[str, set[str]] = {}
     database = data_dir / "general.db"
     if database.is_file():
         with closing(sqlite3.connect(database)) as db:
             try:
-                rows = db.execute(
-                    "SELECT club_id, email FROM members WHERE role NOT IN ('member', 'adviser')"
-                ).fetchall()
+                rows = db.execute("SELECT club_id, email, role FROM members").fetchall()
             except sqlite3.OperationalError:
                 rows = []
-        for club_id, email in rows:
-            senders.setdefault(str(club_id), set()).add(str(email).casefold())
+        allowed = {role.value for role in CABINET_ROLES}
+        for club_id, email, role in rows:
+            if str(role) in allowed:  # exact cabinet roles only: an unknown role is never a sender
+                senders.setdefault(str(club_id), set()).add(str(email).casefold())
     for club_id, addresses in (extra or {}).items():
         senders.setdefault(club_id, set()).update(a.casefold() for a in addresses)
     return senders

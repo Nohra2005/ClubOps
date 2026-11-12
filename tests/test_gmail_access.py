@@ -40,7 +40,7 @@ def test_extra_senders_parse_per_club() -> None:
     assert parsed == {"running-club": {"a@example.org", "b@example.org"}, "asme": {"c@example.org"}}
 
 
-def test_cabinet_senders_exclude_members_and_advisers(tmp_path: Path) -> None:
+def test_cabinet_senders_are_exact_cabinet_roles_only(tmp_path: Path) -> None:
     with sqlite3.connect(tmp_path / "general.db") as db:
         db.execute("CREATE TABLE members (member_id, club_id, name, email, role)")
         db.executemany(
@@ -49,6 +49,8 @@ def test_cabinet_senders_exclude_members_and_advisers(tmp_path: Path) -> None:
                 ("m1", "demo-club", "P", "president@example.org", "president"),
                 ("m2", "demo-club", "M", "member@example.org", "member"),
                 ("m3", "demo-club", "A", "adviser@example.org", "adviser"),
+                ("m4", "demo-club", "U", "unknown@example.org", "superuser"),
+                ("m5", "demo-club", "B", "blank@example.org", ""),
             ],
         )
     senders = cabinet_senders(tmp_path, {"demo-club": {"Forward@Example.org"}})
