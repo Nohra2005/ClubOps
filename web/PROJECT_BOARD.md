@@ -22,9 +22,11 @@ Status uses **Backlog, Ready, In progress, In review, Done**. There is an
 marker. These differ from the dedicated importer’s canonical task statuses and
 fields. Normal `--apply` must keep refusing this layout: do not overwrite the README,
 reset options/iteration IDs, relabel existing cards or create a duplicate board.
-The next step is an additive adoption adapter with synthetic refusal/retry tests and
-complete before/after read-back. Preserve all three issue cards and manual history.
-Inspect existing iteration dates before proposing/publishing assignments. Three
+An explicit additive adapter is now implemented with synthetic refusal/retry tests
+and complete before/after read-back. The 12 November read-only preview identifies
+90 tasks and three manual cards; nothing is published by preview. The original
+Iteration has no active or completed entries. Preserve all three issue cards and
+manual history. Three
 actual weekly reviews remain unrecorded; planned dates are not completed reviews.
 
 **Historical check, 11 November (resolved):** GitHub CLI authenticates as `chrs-005`; the token's
@@ -75,12 +77,33 @@ board was fully read. The sync adapter paginates all cards. Verify the returned 
 URL, private/open status, access, existing task identities, fields and sprint dates.
 Reconcile the local config to actual iterations while preserving existing IDs.
 
-**Current importer limit:** normal sync requires the dedicated management marker and
-rejects unmarked task cards or incompatible status fields. A manually created board
-may need an additive adoption adapter after inspection. Do not stamp a marker over
-unreviewed content, replace a README, reset live fields, delete cards, change visibility
-or create a duplicate board to bypass a refusal. Inspect and adapt the importer first;
-record the actual board URL and read-back evidence when that work is complete.
+**Explicit adoption:** normal sync still rejects an unmarked board. Inspect an
+existing target without writes first:
+
+```sh
+node web/scripts/project-board.mjs --adopt --project-number 4 --out output/adoption-preview.json
+```
+
+This checks exact owner/number/title, private/open/write access, every item page,
+duplicate task identities, reserved namespace collisions and incompatible views.
+Only an explicit `--apply` can append a project/repository-bound marker to the
+existing README and create the separate managed fields/view:
+
+```sh
+node web/scripts/project-board.mjs --adopt --apply --project-number 4
+```
+
+The five new fields are **ClubOps status**, **ClubOps owner**, **ClubOps task id**,
+**ClubOps needs**, **ClubOps sprint**. Existing Status, Iteration, views and manual
+cards stay intact. Existing README text remains an exact prefix. If a reserved name
+already exists on an unmarked board, adoption refuses rather than claiming it.
+Partial field/card writes resume via normal sync without a second marker or duplicate.
+
+In the new **ClubOps tasks by status** view, select **Group by → ClubOps status** in
+GitHub and save the view. The API’s view configuration only supports visible fields,
+so the receipt explicitly requires this UI verification. Optionally filter the view
+to task cards using the UI; the three original manual cards have no ClubOps status.
+Do not change their original Status or claim an API card check proves visual grouping.
 
 After the existing board is safely reconciled with the importer, sync merged task PRs:
 
@@ -92,7 +115,7 @@ node web/scripts/project-board.mjs --apply --project-number 4
 Only matching read-back produces `verified: true` in `output/project-board-sync.json`.
 Partial failure is retryable; existing marked cards are reused. The tool does not delete
 cards, change collaborators or create repository issues. Tatiana reports Christophe
-is admin; live access and Joey's visibility still need verification. Keep it private.
+is admin; current viewerCanUpdate is true, while Joey's visibility still needs verification. Keep it private.
 `--create` remains available for new dedicated projects, but is not this project's
 next action and refuses a different authenticated owner.
 
@@ -100,7 +123,8 @@ next action and refuses a different authenticated owner.
 
 - One draft card per active task in `TASKS.md`; dropped commented-out tasks are omitted.
 - Status columns exactly match `todo`, `doing`, `blocked`, `review`, `done`.
-- Custom Owner, Task ID, Needs and Sprint fields make responsibility and blockers visible.
+- The adopted board uses the ClubOps-prefixed fields above. Dedicated boards retain
+  the original Status/Owner/Task ID/Needs/Sprint names.
 - Edit task status in `TASKS.md` through the reviewed PR workflow, then sync; don't
   independently maintain a contradictory status in Projects. Owners are task roles,
   not unapproved assignments to teammates' accounts.
@@ -109,13 +133,13 @@ next action and refuses a different authenticated owner.
 - Use one sync operator at a time. Crash/retry idempotence is tested; simultaneous
   writers from separate machines have no distributed lease. Duplicate identities
   cause a safe refusal and require reconciliation, not automatic deletion.
-- Only the dedicated managed project is accepted. Public/closed/unmanaged projects,
+- Only a dedicated or explicitly adopted managed project is accepted. Public/closed/unmanaged projects,
   conflicting field types/options, duplicate task identities and changed sprint dates
   are rejected. Historical iteration IDs are preserved when new weeks are appended.
 - Projects access is needed only by the operator; CI runs synthetic API doubles with
   no token or network writes. Read-only inspection now works, but the live write/sync
   adapter has not been exercised on this manual board. Its schema fields were
-  checked by introspection; the marker/layout refusal remains intentional.
+  checked by introspection; normal unmarked-board refusal remains intentional.
 
 The implementation follows GitHub's current [Projects API reference](https://docs.github.com/en/graphql/reference/projects)
 and [API guide](https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects).
@@ -149,6 +173,7 @@ npm run test:tools
 npm run check
 ```
 
-The stateful synthetic API tests cover 123 cards across pages, partial-write recovery,
-no changes on a second sync, unsafe-target refusal, unrelated-card preservation and
-iteration identity preservation. The plan validates against the real task file too.
+The 22 stateful synthetic tool tests cover 123 tasks plus three manual cards across
+pages, interrupted field/card creation, repeat-sync no-ops, unsafe-target refusal,
+manual content/field/view preservation, read-back tampering and cyclic pagination.
+The plan validates against the real task file too. They make no GitHub writes.
