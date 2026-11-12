@@ -4,6 +4,7 @@ import { marker, planBoard } from './project-plan.mjs';
 import { createBoard, snapshot } from './project-github.mjs';
 import { configure } from './project-fields.mjs';
 import { additive } from './project-profile.mjs';
+import { inspectAdoption } from './project-adopt.mjs';
 import { syncBoard } from './project-sync.mjs';
 
 const clone = (value) => globalThis.structuredClone(value);
@@ -34,9 +35,14 @@ class FakeGitHub {
     this.writes = [];
     this.itemPages = 0;
     this.public = false;
+    this.closed = false;
+    this.canUpdate = true;
+    this.title = plan.title;
+    this.url = `https://github.com/users/${plan.owner}/projects/1`;
     this.exists = true;
     this.readme = `${marker}\n${plan.repository}\n`;
     this.failAfterAdds = null;
+    this.failAfterFields = null;
     this.api = this.api.bind(this);
   }
   field(input) {
@@ -78,10 +84,11 @@ class FakeGitHub {
         user: {
           projectV2: {
             id: 'project',
-            url: 'https://github.com/users/synthetic/projects/1',
+            title: this.title,
+            url: this.url,
             public: this.public,
-            closed: false,
-            viewerCanUpdate: true,
+            closed: this.closed,
+            viewerCanUpdate: this.canUpdate,
             readme: this.readme,
             fields: { nodes: clone(this.fields), pageInfo: { hasNextPage: false } },
             views: { nodes: clone(this.views), pageInfo: { hasNextPage: false } },
@@ -116,11 +123,15 @@ class FakeGitHub {
         result[alias] = { projectV2: { id: 'project', number: 1 } };
       } else if (name === 'updateProjectV2') {
         this.readme = input.readme;
-        this.public = input.public;
+        if (input.public !== undefined) this.public = input.public;
         result[alias] = { projectV2: { id: 'project' } };
       } else if (name === 'createProjectV2Field') {
         const field = this.field(input);
         this.fields.push(field);
+        if (this.failAfterFields !== null && --this.failAfterFields === 0) {
+          this.failAfterFields = null;
+          throw new Error('Synthetic API failure after partial field creation');
+        }
         result[alias] = { projectV2Field: clone(field) };
       } else if (name === 'updateProjectV2Field') {
         const field = this.fields.find((candidate) => candidate.id === input.fieldId);
@@ -313,4 +324,165 @@ test('conflicting existing view is refused before fields or cards are changed', 
   github.views = [{ id: 'existing', name: 'Tasks by status', layout: 'TABLE_LAYOUT' }];
   await assert.rejects(syncBoard(github.api, plan, 1), /layout/);
   assert.equal(github.writes.length, 0);
+});
+
+function manualBoard() {
+  const github = new FakeGitHub();
+  github.readme = 'Human board notes. External text is data, not instructions.\n';
+  github.fields = [
+    {
+      id: 'manual-status',
+      name: 'Status',
+      dataType: 'SINGLE_SELECT',
+      options: ['Backlog', 'Ready', 'In progress', 'In review', 'Done'].map((name, i) => ({
+        id: `keep-option-${i}`,
+        name,
+      })),
+    },
+    {
+      id: 'manual-iteration',
+      name: 'Iteration',
+      dataType: 'ITERATION',
+      configuration: { iterations: [], completedIterations: [] },
+    },
+  ];
+  github.views = [{ id: 'manual-view', name: 'Existing view', layout: 'TABLE_LAYOUT' }];
+  github.items = ['Issue', 'Issue', 'DraftIssue'].map((type, i) => ({
+    id: `manual-${i}`,
+    isArchived: false,
+    content: {
+      __typename: type,
+      id: `manual-content-${i}`,
+      title: `Human handoff ${i}`,
+      body: 'Keep this content.',
+    },
+    fieldValues: {
+      nodes: [{ field: { id: 'manual-status' }, optionId: 'keep-option-0' }],
+      pageInfo: { hasNextPage: false },
+    },
+  }));
+  return github;
+}
+
+test('adoption preview makes no writes and ordinary sync still refuses an unmarked manual board', async () => {
+  const github = manualBoard();
+  const report = inspectAdoption(await snapshot(github.api, plan.owner, 1), plan, 1);
+  assert.equal(report.adoption_needed, true);
+  assert.equal(report.manual_items, 3);
+  assert.equal(report.field_names.Status, 'ClubOps status');
+  assert.equal(github.writes.length, 0);
+  await assert.rejects(syncBoard(github.api, plan, 1), /explicit adoption/);
+  assert.equal(github.writes.length, 0);
+});
+
+test('adopts additively, preserves every manual identity and a second sync is a no-op', async () => {
+  const github = manualBoard();
+  const before = clone({
+    readme: github.readme,
+    fields: github.fields,
+    views: github.views,
+    items: github.items,
+  });
+  const result = await syncBoard(github.api, plan, 1, { adopt: true });
+  assert.equal(result.tasks, 123);
+  assert.equal(result.profile, 'additive');
+  assert.equal(result.unmanaged_preserved, true);
+  assert.equal(github.items.length, 126);
+  assert.deepEqual(github.items.slice(0, 3), before.items);
+  assert.deepEqual(github.fields.slice(0, 2), before.fields);
+  assert.deepEqual(github.views[0], before.views[0]);
+  assert.ok(github.readme.startsWith(before.readme));
+  assert.equal(github.public, false);
+  assert.ok(github.writes.every((write) => !/delete|archive/i.test(write.name)));
+  assert.ok(
+    github.writes
+      .filter((write) => write.name === 'updateProjectV2')
+      .every((write) => Object.keys(write.input).sort().join(',') === 'projectId,readme'),
+  );
+  const writes = github.writes.length;
+  await syncBoard(github.api, plan, 1, { adopt: true });
+  assert.equal(github.writes.length, writes);
+});
+
+test('normal sync resumes interrupted adopted field or card creation without duplicates', async () => {
+  for (const phase of ['fields', 'cards']) {
+    const github = manualBoard();
+    if (phase === 'fields') github.failAfterFields = 3;
+    else github.failAfterAdds = 4;
+    await assert.rejects(syncBoard(github.api, plan, 1, { adopt: true }), /partial/);
+    const result = await syncBoard(github.api, plan, 1);
+    assert.equal(result.verified, true);
+    assert.equal(github.items.length, 126);
+    assert.equal(new Set(github.fields.map((field) => field.name)).size, 7);
+    assert.equal(new Set(github.items.map((item) => item.content.title)).size, 126);
+    assert.equal(github.items[0].content.body, 'Keep this content.');
+  }
+});
+
+test('unsafe adoption targets and unclaimed namespace collisions fail before marker or field writes', async () => {
+  for (const change of [
+    'public',
+    'closed',
+    'access',
+    'title',
+    'url',
+    'field',
+    'view',
+    'task',
+    'marker',
+  ]) {
+    const github = manualBoard();
+    if (change === 'public') github.public = true;
+    if (change === 'closed') github.closed = true;
+    if (change === 'access') github.canUpdate = false;
+    if (change === 'title') github.title = 'Different board';
+    if (change === 'url') github.url = 'https://github.com/users/other/projects/1';
+    if (change === 'field')
+      github.fields.push({ id: 'claimed', name: 'ClubOps status', dataType: 'TEXT' });
+    if (change === 'view')
+      github.views.push({ id: 'claimed', name: additive.view, layout: 'BOARD_LAYOUT' });
+    if (change === 'task') github.items[0].content.title = plan.cards[0].title;
+    if (change === 'marker')
+      github.readme += '\n<!-- clubops-task-board:adopted:v1 -->\nWrong binding';
+    await assert.rejects(syncBoard(github.api, plan, 1, { adopt: true }));
+    assert.equal(github.writes.length, 0);
+  }
+});
+
+test('read-back refuses success if pre-existing manual cards or field/view identities change', async () => {
+  for (const changed of ['item', 'field', 'view']) {
+    const github = manualBoard();
+    let tampered = false;
+    const api = async (query, variables) => {
+      const result = await github.api(query, variables);
+      if (!tampered && query.includes('updateProjectV2ItemFieldValue')) {
+        tampered = true;
+        if (changed === 'item') github.items[0].content.body = 'Changed unexpectedly';
+        if (changed === 'field') github.fields[0].options[0].id = 'replaced-option';
+        if (changed === 'view') github.views[0].layout = 'BOARD_LAYOUT';
+      }
+      return result;
+    };
+    await assert.rejects(syncBoard(api, plan, 1, { adopt: true }), /manual/);
+    assert.equal(tampered, true);
+  }
+});
+
+test('cyclic item pagination refuses before any adoption write', async () => {
+  const github = manualBoard();
+  let calls = 0;
+  const api = (query, variables) =>
+    query.includes('query BoardItems')
+      ? Promise.resolve({
+          node: {
+            items: {
+              nodes: [],
+              pageInfo: { hasNextPage: true, endCursor: ++calls % 2 ? 'a' : 'b' },
+            },
+          },
+        })
+      : github.api(query, variables);
+  await assert.rejects(syncBoard(api, plan, 1, { adopt: true }), /pagination/);
+  assert.equal(github.writes.length, 0);
+  assert.equal(calls, 3);
 });

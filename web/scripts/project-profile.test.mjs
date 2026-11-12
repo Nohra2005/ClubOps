@@ -53,11 +53,11 @@ test('additive markers bind a single project/repository without claiming ordinar
 });
 test('read-back proves existing manual content and identities are intact', () => {
   const baseline = preserveUnmanaged(project, additive);
-  const expanded = structuredClone(baseline);
+  const expanded = globalThis.structuredClone(baseline);
   expanded.items.push({ id: 'new-manual-card', content: { title: 'New note' } });
   assert.doesNotThrow(() => assertPreserved(baseline, expanded));
   for (const key of ['fields', 'views', 'items']) {
-    const changed = structuredClone(expanded);
+    const changed = globalThis.structuredClone(expanded);
     changed[key][0].id = 'replaced-id';
     assert.throws(() => assertPreserved(baseline, changed), /manual/);
   }
