@@ -56,6 +56,7 @@ export async function githubRest(path, method, body) {
       method,
       '-H',
       'X-GitHub-Api-Version: 2026-03-10',
+      ...(method === 'GET' ? ['--paginate', '--slurp'] : []),
       ...(body ? ['--input', '-'] : []),
     ],
     body ? JSON.stringify(body) : undefined,
@@ -67,7 +68,13 @@ export async function githubRest(path, method, body) {
     response = null;
   }
   if (result.status !== 0 || response === null) throw publicFailure(result, null);
-  return response;
+  return method === 'GET' ? restListPages(response) : response;
+}
+
+export function restListPages(pages) {
+  if (!Array.isArray(pages) || !pages.every(Array.isArray))
+    throw new Error('Expected complete REST list pages; refusing a partial field mapping');
+  return pages.flat();
 }
 
 export function options(args) {

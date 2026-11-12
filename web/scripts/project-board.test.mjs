@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { options } from './project-board.mjs';
+import { options, restListPages } from './project-board.mjs';
 
 test('defaults to a read-only plan and requires an explicit target for writes', () => {
   assert.equal(options([]).apply, false);
@@ -24,4 +24,10 @@ test('defaults to a read-only plan and requires an explicit target for writes', 
     ['--columns', '--apply', '--create'],
   ])
     assert.throws(() => options(args));
+});
+
+test('REST field pages are flattened completely, not mistaken for one partial response', () => {
+  assert.deepEqual(restListPages([[{ id: 1 }], [{ id: 2 }]]), [{ id: 1 }, { id: 2 }]);
+  assert.throws(() => restListPages([{ id: 1 }]), /complete REST/);
+  assert.throws(() => restListPages([[{ id: 1 }], { error: 'unexpected shape' }]), /complete REST/);
 });
