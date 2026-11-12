@@ -49,8 +49,23 @@ export async function github(query, variables) {
       throw new Error(
         'GitHub Projects access is missing. Run gh auth refresh -s project and complete authorization; do not paste a token into this tool.',
       );
+    const throttled = /rate.?limit|submitted too quickly|abuse detection|secondary limit/i.test(
+      diagnostics,
+    );
+    const timedOut = /timeout|timed out/i.test(`${diagnostics}\n${result.stdout}`);
+    const kinds = [
+      ...new Set(
+        (response?.errors ?? [])
+          .map((entry) => entry.type)
+          .filter((kind) => typeof kind === 'string' && /^[A-Z_]{1,40}$/.test(kind)),
+      ),
+    ].join(', ');
     throw new Error(
-      'GitHub rejected the operation or returned incomplete data. Check account access/schema and rerun; completed task cards are reconciled without deletion.',
+      timedOut
+        ? 'GitHub timed out while applying the batch. Resume after read-back; do not blindly repeat mutations.'
+        : throttled
+          ? 'GitHub temporarily throttled board writes. Wait before resuming; existing cards are reconciled without duplication.'
+          : `GitHub rejected the operation${kinds ? ` (${kinds})` : ''} or returned incomplete data. Check account access/schema and rerun; completed task cards are reconciled without deletion.`,
     );
   }
   return response.data;

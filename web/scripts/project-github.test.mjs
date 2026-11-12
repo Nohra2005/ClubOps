@@ -112,7 +112,10 @@ class FakeGitHub {
       };
     }
     assert.match(query, /mutation BoardWrite/);
-    assert.ok(Object.keys(variables).length <= 20);
+    assert.ok(
+      Object.keys(variables).length <= 5,
+      'mutation batches must stay within the live-tested bound',
+    );
     const result = {};
     for (const [key, input] of Object.entries(variables)) {
       const alias = key.replace('i', 'm');

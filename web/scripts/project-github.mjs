@@ -35,8 +35,10 @@ async function pages(api, query, variables, connection) {
 
 export async function batch(api, operations) {
   const results = [];
-  for (let start = 0; start < operations.length; start += 20) {
-    const group = operations.slice(start, start + 20);
+  // Creation aliases can outlast GitHub's execution window while applying a partial batch.
+  // Keep every request small; a failed request is reconciled by read-back, never replayed blindly.
+  for (let start = 0; start < operations.length; start += 5) {
+    const group = operations.slice(start, start + 5);
     const variables = Object.fromEntries(group.map((op, i) => [`i${i}`, op.input]));
     const declarations = group.map((op, i) => `$i${i}:${op.type}!`).join(',');
     const body = group.map((op, i) => `m${i}:${op.name}(input:$i${i}){${op.selection}}`).join('\n');
