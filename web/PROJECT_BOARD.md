@@ -4,19 +4,35 @@ Tatiana reports in #43 that she already created **ClubOps** in the repository's
 Projects tab and gave Christophe admin access. Use that existing board; do not
 create a second project. The prepared config now targets `Nohra2005` / `ClubOps`
 and Wednesday-start weeks from 4 November. The owner/number, private visibility,
-existing fields/cards and iteration IDs still need live read-back after authorization.
-Her report is not a claim that this CLI has verified or synced the board.
+fields and three existing cards were read back on 12 November. Iteration dates/IDs,
+safe adoption and sync still need reconciliation; read access does not prove sync.
 
 Christophe supplied the exact existing board URL on 11 November:
 **https://github.com/users/Nohra2005/projects/4** (owner `Nohra2005`, number `4`).
 This is the intended target, not a newly created or verified managed board.
 
-**Access check, 11 November:** GitHub CLI authenticates as `chrs-005`; the token's
+**Current audit, 12 November:** access now works for `chrs-005`. Project #4 is
+**ClubOps**, owned by `Nohra2005`, private and open. Read-back returns 17 fields and
+three repository issue cards: #43 (coordination), #83 (Tatiana handoff),
+#84 (Christophe handoff). All three are in Backlog; they are manual issue cards,
+not managed task drafts. No cards, fields, visibility or collaborators were changed.
+
+Status uses **Backlog, Ready, In progress, In review, Done**. There is an
+**Iteration** field, not the importer's **Sprint**, and the README has no management
+marker. These differ from the dedicated importer’s canonical task statuses and
+fields. Normal `--apply` must keep refusing this layout: do not overwrite the README,
+reset options/iteration IDs, relabel existing cards or create a duplicate board.
+The next step is an additive adoption adapter with synthetic refusal/retry tests and
+complete before/after read-back. Preserve all three issue cards and manual history.
+Inspect existing iteration dates before proposing/publishing assignments. Three
+actual weekly reviews remain unrecorded; planned dates are not completed reviews.
+
+**Historical check, 11 November (resolved):** GitHub CLI authenticates as `chrs-005`; the token's
 OAuth scopes include `project`. `gh project view 4`, `field-list 4` and `item-list 4`
 all return `Could not resolve to a ProjectV2 with the number 4`. Browser app access
 timed out, so no board contents were inferred from the UI. This error does not
 distinguish missing permission from a missing board.
-Tatiana must verify the target and access for `chrs-005` before inspection/adoption.
+The 12 November read-back above supersedes that access blocker.
 No board fields, cards, visibility or collaborators have been changed, and no
 second project has been created. The request is in coordination issue #43.
 
@@ -46,7 +62,7 @@ gh auth refresh -s project
 gh project list --owner Nohra2005 --format json
 ```
 
-After access is fixed, inspect the supplied existing target first:
+Re-inspect the supplied existing target before adoption:
 
 ```sh
 gh project view 4 --owner Nohra2005 --format json
@@ -97,9 +113,9 @@ next action and refuses a different authenticated owner.
   conflicting field types/options, duplicate task identities and changed sprint dates
   are rejected. Historical iteration IDs are preserved when new weeks are appended.
 - Projects access is needed only by the operator; CI runs synthetic API doubles with
-  no token or network writes. The live adapter has not inspected or synced project #4 because
-  it remains invisible to this account. Its schema fields were
-  checked by introspection.
+  no token or network writes. Read-only inspection now works, but the live write/sync
+  adapter has not been exercised on this manual board. Its schema fields were
+  checked by introspection; the marker/layout refusal remains intentional.
 
 The implementation follows GitHub's current [Projects API reference](https://docs.github.com/en/graphql/reference/projects)
 and [API guide](https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects).
