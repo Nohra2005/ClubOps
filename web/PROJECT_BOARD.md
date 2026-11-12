@@ -1,30 +1,46 @@
 # Task board and weekly sprints (C-31)
 
+**Live result, 12 November:** the existing private board now has **90 task drafts +
+the three original manual cards (93 total)**. Source is merged main `2fff794`.
+All task fields were read back and verified; the next sync created **0** cards and
+made **0** updates. Metadata-only evidence: [`board/evidence/live-sync.json`](board/evidence/live-sync.json).
+Original Status/Iteration fields and manual content remain intact; five separate
+ClubOps fields and the **ClubOps tasks by status** view were added. No collaborator
+or visibility change and no duplicate project.
+
+**One visual step remains:** open that view, choose **Group by → ClubOps status**,
+then save. Read-only API inspection confirms view #7 is a board with no grouping
+yet. Browser control stopped because it could not verify Chrome's URL, so no visual
+completion is claimed. The API cannot set grouping through its supported view input.
+C-31 remains doing until this step and **three actual weekly team reviews** are evidenced.
+GitHub automatically categorizing a past iteration as completed is not a team review.
+Statuses in unmerged PRs are not published; merge them, then sync main again.
+
 Tatiana reports in #43 that she already created **ClubOps** in the repository's
 Projects tab and gave Christophe admin access. Use that existing board; do not
 create a second project. The prepared config now targets `Nohra2005` / `ClubOps`
 and Wednesday-start weeks from 4 November. The owner/number, private visibility,
 fields and three existing cards were read back on 12 November. Iteration dates/IDs,
-safe adoption and sync still need reconciliation; read access does not prove sync.
+were inspected before adoption; read access alone did not prove sync.
 
 Christophe supplied the exact existing board URL on 11 November:
 **https://github.com/users/Nohra2005/projects/4** (owner `Nohra2005`, number `4`).
-This is the intended target, not a newly created or verified managed board.
+This is the existing target; it was adopted in place, not recreated.
 
-**Current audit, 12 November:** access now works for `chrs-005`. Project #4 is
+**Pre-adoption audit, 12 November:** access works for `chrs-005`. Project #4 is
 **ClubOps**, owned by `Nohra2005`, private and open. Read-back returns 17 fields and
 three repository issue cards: #43 (coordination), #83 (Tatiana handoff),
 #84 (Christophe handoff). All three are in Backlog; they are manual issue cards,
-not managed task drafts. No cards, fields, visibility or collaborators were changed.
+not managed task drafts. At that inspection no remote state had been changed.
 
 Status uses **Backlog, Ready, In progress, In review, Done**. There is an
 **Iteration** field, not the importer's **Sprint**, and the README has no management
 marker. These differ from the dedicated importer’s canonical task statuses and
-fields. Normal `--apply` must keep refusing this layout: do not overwrite the README,
+fields. Normal `--apply` refused this unmarked layout: do not overwrite the README,
 reset options/iteration IDs, relabel existing cards or create a duplicate board.
 An explicit additive adapter is now implemented with synthetic refusal/retry tests
-and complete before/after read-back. The 12 November read-only preview identifies
-90 tasks and three manual cards; nothing is published by preview. The original
+and complete before/after read-back. Its read-only preview identified
+90 tasks and three manual cards; preview alone published nothing. The original
 Iteration has no active or completed entries. Preserve all three issue cards and
 manual history. Three
 actual weekly reviews remain unrecorded; planned dates are not completed reviews.
@@ -122,7 +138,8 @@ next action and refuses a different authenticated owner.
 ## Source of truth and limits
 
 - One draft card per active task in `TASKS.md`; dropped commented-out tasks are omitted.
-- Status columns exactly match `todo`, `doing`, `blocked`, `review`, `done`.
+- ClubOps status values exactly match `todo`, `doing`, `blocked`, `review`, `done`;
+  the visual columns require the grouping step above.
 - The adopted board uses the ClubOps-prefixed fields above. Dedicated boards retain
   the original Status/Owner/Task ID/Needs/Sprint names.
 - Edit task status in `TASKS.md` through the reviewed PR workflow, then sync; don't
@@ -137,9 +154,9 @@ next action and refuses a different authenticated owner.
   conflicting field types/options, duplicate task identities and changed sprint dates
   are rejected. Historical iteration IDs are preserved when new weeks are appended.
 - Projects access is needed only by the operator; CI runs synthetic API doubles with
-  no token or network writes. Read-only inspection now works, but the live write/sync
-  adapter has not been exercised on this manual board. Its schema fields were
-  checked by introspection; normal unmarked-board refusal remains intentional.
+  no token or network writes. Live write/read-back and repeat-sync no-op are now
+  verified on the actual board; supported schema fields were checked by introspection.
+  Normal unmarked-board refusal remains intentional.
 
 The implementation follows GitHub's current [Projects API reference](https://docs.github.com/en/graphql/reference/projects)
 and [API guide](https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects).
@@ -173,7 +190,11 @@ npm run test:tools
 npm run check
 ```
 
-The 22 stateful synthetic tool tests cover 123 tasks plus three manual cards across
+The 25 synthetic tool tests cover 123 tasks plus three manual cards across
 pages, interrupted field/card creation, repeat-sync no-ops, unsafe-target refusal,
 manual content/field/view preservation, read-back tampering and cyclic pagination.
-The plan validates against the real task file too. They make no GitHub writes.
+The plan validates against the real task file too. Error tests keep raw diagnostics
+out of output. They make no GitHub writes. The live request size is bounded at five
+mutations: the earlier larger batches stopped after partial creations. Read-back
+recovered 29 existing task drafts; the completed attempt created the remaining 61
+and applied 372 field updates. A second sync verified zero changes.
