@@ -9,6 +9,7 @@ test('HTTP C-35 stays unavailable without requesting unpublished inbox or lifecy
   const unexpected: string[] = [];
   await page.route('**/api/**', (route) => {
     const path = new URL(route.request().url()).pathname;
+    if (!path.startsWith('/api/')) return route.fallback();
     if (path === '/api/me') return route.fallback();
     if (path === '/api/knowledge' || path === '/api/review') return route.fulfill({ json: [] });
     unexpected.push(`${route.request().method()} ${path}`);
