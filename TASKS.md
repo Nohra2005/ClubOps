@@ -591,6 +591,7 @@ Reference documents:
 - Needs: J-05
 - What: Tests with a fake Google (no real calls in `make check`); a Failure Matrix row for each failure mode (Google down, item sent twice, role with no person).
 - Done when: `make check` passes with your tests.
+- Progress (2026-11-10): fake-Google tests cover approval gating, stable IDs, move, done/cancel, missing-role fallback, all-cabinet private reminders, queue retry and club-wide items. Focused tests pass. Live plan approval, Google sync and role access still require T-46/C-35 and J-01/J-09 acceptance.
 
 ### J-07 Draft templates
 - Owner: joey
@@ -599,6 +600,7 @@ Reference documents:
 - What: Templates for: WhatsApp announcement, reminder message, sponsor email, Instagram caption, poster text (never logos), expense form, volunteer shifts, impact report. Match the club's real style (look at past announcements).
 - Done when: each template produces a draft a cabinet member would send without edits.
 - Progress (2026-10-31): all eight draft types have a writer and synthetic tests. Approved private style examples and cabinet review are still needed to judge send-ready quality.
+- Progress (2026-11-10): Joey needs approved past announcements kept in private storage, then two cabinet members to review drafts for three past events under J-08. Do not place examples or feedback in Git.
 
 ### J-08 Check the drafts with the cabinet
 - Owner: joey
@@ -665,10 +667,11 @@ Reference documents:
 
 ### J-16 Secret scanning in CI (bonus)
 - Owner: joey
-- Status: todo
+- Status: blocked
 - Needs: none
 - What: GitHub's own secret scanning and CodeQL need a public repo or a paid plan, so run free equivalents in CI: gitleaks (secrets in the code and history) and a Python security linter. Fix or explain every finding.
 - Done when: both run in CI on every PR and are green on `main`.
+- Blocked (2026-11-10): `.github/workflows/` is outside Joey's assigned folders. Repo issue #84 asks Christophe to take CI ownership or identify its owner, then add pinned gitleaks and Bandit gates. Joey has not modified teammate-owned CI; the task remains open until both run green on PRs and `main`.
 
 ### J-17 Chatbot test runner
 - Owner: joey
@@ -677,6 +680,7 @@ Reference documents:
 - What: A script like `scripts/eval_plans.py` for the chatbot test (`chatbot-questions.csv`, frozen in T-04): ask each question, then score right answers, invented answers (an answer when the right reply is "not sure"), correct "not sure" replies, citations that really support the answer, and cost. Build and test it on synthetic questions; Tatiana runs it on the private file in T-26.
 - Done when: `scripts/eval_chat.py` gives a result table on synthetic data, with tests, in replay mode.
 - Progress (2026-10-31): replay-capable runner and synthetic scorer tests added. Tatiana's private CSV column mapping and recorded model responses still need verification.
+- Progress (2026-11-10): focused synthetic scorer, CSV loader and replay CLI tests pass. Tatiana must confirm the frozen private header and recordings and run the private set; see issue #83. No private questions or answers are in Git.
 
 ### J-18 Poster
 - Owner: joey
