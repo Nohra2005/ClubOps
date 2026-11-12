@@ -1,5 +1,6 @@
 /** GitHub Projects v2 adapter. No deletes, public exposure, tokens or workflow credentials. */
 import { managedItems, marker } from './project-plan.mjs';
+import { profileFor } from './project-profile.mjs';
 
 export const fieldSelection = `
  ... on ProjectV2Field { id name dataType }
@@ -17,14 +18,16 @@ export const itemSelection = `id isArchived content {
 
 async function pages(api, query, variables, connection) {
   const nodes = [];
+  const visited = new Set();
   let cursor = null;
   do {
     const page = connection(await api(query, { ...variables, cursor }));
     if (!page || !Array.isArray(page.nodes)) throw new Error('Missing Projects connection');
     nodes.push(...page.nodes);
     const next = page.pageInfo.hasNextPage ? page.pageInfo.endCursor : null;
-    if (page.pageInfo.hasNextPage && (!next || next === cursor))
+    if (page.pageInfo.hasNextPage && (!next || next === cursor || visited.has(next)))
       throw new Error('Invalid Projects pagination');
+    visited.add(next);
     cursor = next;
   } while (cursor);
   return nodes;
@@ -131,11 +134,9 @@ export async function snapshot(api, owner, number) {
   return { ...project, items };
 }
 
-export function preflight(project, plan) {
+export function inspectProject(project, plan) {
   if (project.public || project.closed || !project.viewerCanUpdate)
     throw new Error('Sync requires an open, private project with write access');
-  if (!project.readme?.startsWith(`${marker}\n${plan.repository}\n`))
-    throw new Error('This is not the dedicated managed ClubOps project');
   const managed = managedItems(project.items);
   const ids = new Set(plan.cards.map((card) => card.id));
   for (const id of managed.keys())
@@ -153,4 +154,12 @@ export function preflight(project, plan) {
   const names = project.fields.nodes.map((field) => field.name);
   if (new Set(names).size !== names.length) throw new Error('Duplicate project field names');
   return managed;
+}
+
+export function preflight(project, plan) {
+  if (!profileFor(project, plan))
+    throw new Error(
+      'This is not the dedicated managed ClubOps project; explicit adoption is required',
+    );
+  return inspectProject(project, plan);
 }

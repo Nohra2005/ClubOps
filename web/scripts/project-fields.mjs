@@ -1,18 +1,13 @@
 /** Managed project fields: preserve existing identities and reject conflicting configuration. */
 import { batch, fieldSelection, operation } from './project-github.mjs';
+import { dedicated, fieldDefinitions, resolveFields } from './project-profile.mjs';
 
-export async function configure(api, project, plan) {
-  const fields = new Map(project.fields.nodes.map((field) => [field.name, field]));
-  const definitions = [
-    { name: 'Status', dataType: 'SINGLE_SELECT', options: plan.statuses },
-    { name: 'Owner', dataType: 'SINGLE_SELECT', options: plan.owners },
-    { name: 'Task ID', dataType: 'TEXT' },
-    { name: 'Needs', dataType: 'TEXT' },
-    { name: 'Sprint', dataType: 'ITERATION' },
-  ];
+export function validateConfiguration(project, plan, profile = dedicated) {
+  const fields = resolveFields(project, profile);
+  const definitions = fieldDefinitions(plan, profile);
   // Validate every existing field before applying any configuration changes.
   for (const definition of definitions) {
-    const field = fields.get(definition.name);
+    const field = fields.get(definition.key);
     if (!field) continue;
     if (field.dataType !== definition.dataType)
       throw new Error(`${field.name}: incompatible field type`);
@@ -22,13 +17,14 @@ export async function configure(api, project, plan) {
         JSON.stringify(definition.options)
     ) {
       const emptyDefaultStatus =
-        field.name === 'Status' &&
+        profile.kind === 'dedicated' &&
+        definition.key === 'Status' &&
         project.items.length === 0 &&
         field.options.every((option) => ['Todo', 'In Progress', 'Done'].includes(option.name));
       if (!emptyDefaultStatus)
         throw new Error(`${field.name}: options differ; refusing to reset live assignments`);
     }
-    if (field.name === 'Sprint') {
+    if (definition.key === 'Sprint') {
       const existing = [
         ...field.configuration.completedIterations,
         ...field.configuration.iterations,
@@ -48,9 +44,17 @@ export async function configure(api, project, plan) {
       }
     }
   }
+  const views = project.views.nodes.filter((view) => view.name === profile.view);
+  if (views.length > 1 || views.some((view) => view.layout !== 'BOARD_LAYOUT'))
+    throw new Error('Managed board view layout changed; reconcile manually');
+  return { fields, definitions };
+}
+
+export async function configure(api, project, plan, profile = dedicated) {
+  const { fields, definitions } = validateConfiguration(project, plan, profile);
   const colors = ['GRAY', 'BLUE', 'RED', 'YELLOW', 'GREEN'];
   for (const definition of definitions) {
-    let field = fields.get(definition.name);
+    let field = fields.get(definition.key);
     const options = definition.options?.map((name, index) => ({
       name,
       description: name,
@@ -59,7 +63,7 @@ export async function configure(api, project, plan) {
     if (!field) {
       const input = { projectId: project.id, name: definition.name, dataType: definition.dataType };
       if (options) input.singleSelectOptions = options;
-      if (definition.name === 'Sprint')
+      if (definition.key === 'Sprint')
         input.iterationConfiguration = {
           startDate: plan.sprints[0].startDate,
           duration: 7,
@@ -74,7 +78,7 @@ export async function configure(api, project, plan) {
         ),
       ]);
       field = result.projectV2Field;
-      fields.set(definition.name, field);
+      fields.set(definition.key, field);
     } else if (
       options &&
       JSON.stringify(field.options.map((option) => option.name)) !==
@@ -92,9 +96,9 @@ export async function configure(api, project, plan) {
         ),
       ]);
       field = result.projectV2Field;
-      fields.set(definition.name, field);
+      fields.set(definition.key, field);
     }
-    if (definition.name === 'Sprint') {
+    if (definition.key === 'Sprint') {
       const existing = [
         ...field.configuration.completedIterations,
         ...field.configuration.iterations,
@@ -121,11 +125,11 @@ export async function configure(api, project, plan) {
             `projectV2Field { ${fieldSelection} }`,
           ),
         ]);
-        fields.set(definition.name, result.projectV2Field);
+        fields.set(definition.key, result.projectV2Field);
       }
     }
   }
-  const view = project.views.nodes.find((candidate) => candidate.name === 'Tasks by status');
+  const view = project.views.nodes.find((candidate) => candidate.name === profile.view);
   const configuration = {
     visibleFieldIds: ['Status', 'Owner', 'Task ID', 'Needs', 'Sprint'].map(
       (name) => fields.get(name).id,
@@ -138,7 +142,7 @@ export async function configure(api, project, plan) {
         'CreateProjectV2ViewInput',
         {
           projectId: project.id,
-          name: 'Tasks by status',
+          name: profile.view,
           layout: 'BOARD_LAYOUT',
           configuration,
         },

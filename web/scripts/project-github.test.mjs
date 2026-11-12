@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { marker, planBoard } from './project-plan.mjs';
-import { createBoard } from './project-github.mjs';
+import { createBoard, snapshot } from './project-github.mjs';
+import { configure } from './project-fields.mjs';
+import { additive } from './project-profile.mjs';
 import { syncBoard } from './project-sync.mjs';
 
 const clone = (value) => globalThis.structuredClone(value);
@@ -269,4 +271,46 @@ test('creates a private repo-linked board once, and reuses only its managed iden
   assert.equal(github.writes.length, writes);
   github.readme = 'Unrelated project';
   await assert.rejects(createBoard(github.api, plan), /no duplicate board/);
+});
+
+test('additive field configuration preserves manual Status and Iteration identities', async () => {
+  const github = new FakeGitHub();
+  github.fields = [
+    {
+      id: 'manual-status',
+      name: 'Status',
+      dataType: 'SINGLE_SELECT',
+      options: [{ id: 'original-option', name: 'Backlog' }],
+    },
+    {
+      id: 'manual-iteration',
+      name: 'Iteration',
+      dataType: 'ITERATION',
+      configuration: {
+        iterations: [
+          { id: 'keep-week', title: 'Human week', startDate: '2026-11-01', duration: 7 },
+        ],
+        completedIterations: [],
+      },
+    },
+  ];
+  const original = clone(github.fields);
+  const fields = await configure(
+    github.api,
+    await snapshot(github.api, plan.owner, 1),
+    plan,
+    additive,
+  );
+  assert.equal(fields.get('Status').name, 'ClubOps status');
+  assert.equal(fields.get('Sprint').name, 'ClubOps sprint');
+  assert.deepEqual(github.fields.slice(0, 2), original);
+  assert.equal(github.views[0].name, additive.view);
+  assert.ok(github.writes.every((write) => write.name !== 'updateProjectV2Field'));
+});
+
+test('conflicting existing view is refused before fields or cards are changed', async () => {
+  const github = new FakeGitHub();
+  github.views = [{ id: 'existing', name: 'Tasks by status', layout: 'TABLE_LAYOUT' }];
+  await assert.rejects(syncBoard(github.api, plan, 1), /layout/);
+  assert.equal(github.writes.length, 0);
 });
