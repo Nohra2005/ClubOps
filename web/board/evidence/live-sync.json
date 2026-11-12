@@ -53,12 +53,49 @@
     },
     "view_grouping": "Verify ClubOps status grouping in GitHub UI"
   },
-  "view": {
+  "weekly_reviews": "No completed team review is evidenced by this import. Sprint assignments are proposals.",
+  "initial_view": {
     "number": 7,
     "name": "ClubOps tasks by status",
     "layout": "BOARD_LAYOUT",
     "group_by": [],
-    "grouping_verified": false
+    "grouping_verified": false,
+    "note": "Historical initial GraphQL-only view. group_by was horizontal grouping, not the column setting; superseded by the separately verified REST column view."
   },
-  "weekly_reviews": "No completed team review is evidenced by this import. Sprint assignments are proposals."
+  "column_view_receipt": {
+    "url": "https://github.com/users/Nohra2005/projects/4",
+    "tasks": 90,
+    "created": 0,
+    "updates": 0,
+    "source_commit": "2fff7946745e07a8c0978370de013de46a61eb27",
+    "verified": true,
+    "profile": "additive",
+    "unmanaged_preserved": true,
+    "field_names": {
+      "Status": "ClubOps status",
+      "Owner": "ClubOps owner",
+      "Task ID": "ClubOps task id",
+      "Needs": "ClubOps needs",
+      "Sprint": "ClubOps sprint"
+    },
+    "view_grouping": "Verified ClubOps status columns via REST creation and GraphQL read-back",
+    "columns": {
+      "url": "https://github.com/users/Nohra2005/projects/4/views/8",
+      "name": "ClubOps status columns",
+      "column_field": "ClubOps status",
+      "verified": true,
+      "created": false,
+      "previous_views_preserved": true
+    }
+  },
+  "view": {
+    "number": 8,
+    "name": "ClubOps status columns",
+    "layout": "BOARD_LAYOUT",
+    "column_field": "ClubOps status",
+    "grouping_verified": true,
+    "url": "https://github.com/users/Nohra2005/projects/4/views/8",
+    "created_on_repeat": false
+  },
+  "column_tool_commit": "4585329"
 }

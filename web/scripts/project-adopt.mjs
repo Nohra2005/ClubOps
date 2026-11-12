@@ -38,7 +38,8 @@ export function inspectAdoption(project, plan, number) {
     manual_items: project.items.length - managed.size,
     field_names: additive.fields,
     view: additive.view,
-    view_grouping: 'Set and verify ClubOps status in the GitHub UI; API cannot configure grouping',
+    view_grouping:
+      'Use --apply --columns to create and verify the separate REST status-column view',
   };
 }
 

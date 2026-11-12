@@ -390,7 +390,7 @@ test('adopts additively, preserves every manual identity and a second sync is a 
   assert.equal(result.tasks, 123);
   assert.equal(result.profile, 'additive');
   assert.equal(result.unmanaged_preserved, true);
-  assert.match(result.view_grouping, /GitHub UI/);
+  assert.match(result.view_grouping, /--columns/);
   assert.equal(github.items.length, 126);
   assert.deepEqual(github.items.slice(0, 3), before.items);
   assert.deepEqual(github.fields.slice(0, 2), before.fields);

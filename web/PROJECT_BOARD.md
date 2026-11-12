@@ -8,11 +8,12 @@ Original Status/Iteration fields and manual content remain intact; five separate
 ClubOps fields and the **ClubOps tasks by status** view were added. No collaborator
 or visibility change and no duplicate project.
 
-**One visual step remains:** open that view, choose **Group by → ClubOps status**,
-then save. Read-only API inspection confirms view #7 is a board with no grouping
-yet. Browser control stopped because it could not verify Chrome's URL, so no visual
-completion is claimed. The API cannot set grouping through its supported view input.
-C-31 remains doing until this step and **three actual weekly team reviews** are evidenced.
+**Columns now verified:** open [ClubOps status columns (view #8)](https://github.com/users/Nohra2005/projects/4/views/8).
+The supported REST create-view endpoint sets `vertical_group_by` to ClubOps status;
+GraphQL read-back verifies that exact field as the column field. Repeating the command
+creates no view and makes no card changes. Earlier view #7 and all original views
+remain intact. The prior manual-UI request is superseded; no browser action is needed.
+C-31 remains doing because **three actual weekly team reviews** are not yet evidenced.
 GitHub automatically categorizing a past iteration as completed is not a team review.
 Statuses in unmerged PRs are not published; merge them, then sync main again.
 
@@ -106,7 +107,7 @@ Only an explicit `--apply` can append a project/repository-bound marker to the
 existing README and create the separate managed fields/view:
 
 ```sh
-node web/scripts/project-board.mjs --adopt --apply --project-number 4
+node web/scripts/project-board.mjs --adopt --apply --columns --project-number 4
 ```
 
 The five new fields are **ClubOps status**, **ClubOps owner**, **ClubOps task id**,
@@ -115,17 +116,24 @@ cards stay intact. Existing README text remains an exact prefix. If a reserved n
 already exists on an unmarked board, adoption refuses rather than claiming it.
 Partial field/card writes resume via normal sync without a second marker or duplicate.
 
-In the new **ClubOps tasks by status** view, select **Group by → ClubOps status** in
-GitHub and save the view. The API’s view configuration only supports visible fields,
-so the receipt explicitly requires this UI verification. Optionally filter the view
-to task cards using the UI; the three original manual cards have no ClubOps status.
-Do not change their original Status or claim an API card check proves visual grouping.
+`--columns` adds the separate **ClubOps status columns** board using the documented
+[REST view-creation API](https://docs.github.com/en/rest/projects/views). It verifies
+the vertical column field through GraphQL. Existing incompatible or ambiguous views
+are refused, never overwritten. A lost POST response can be retried by reading back
+the existing named view. Complete REST pages are read, but unrelated built-in fields
+can differ between REST and GraphQL; every required numeric field ID is checked.
+The original manual cards have no ClubOps status and remain in the no-status column.
+
+GraphQL view input exposes only visible fields; this does not imply all GitHub APIs
+lack column support. In the UI the setting is **View → Column field**, while **Group by**
+creates horizontal sections ([GitHub board guide](https://docs.github.com/en/issues/planning-and-tracking-with-projects/customizing-views-in-your-project/customizing-the-board-layout)).
+Card-field read-back alone never proves the column setting.
 
 After the existing board is safely reconciled with the importer, sync merged task PRs:
 
 ```sh
 git fetch origin
-node web/scripts/project-board.mjs --apply --project-number 4
+node web/scripts/project-board.mjs --apply --columns --project-number 4
 ```
 
 Only matching read-back produces `verified: true` in `output/project-board-sync.json`.
@@ -139,7 +147,7 @@ next action and refuses a different authenticated owner.
 
 - One draft card per active task in `TASKS.md`; dropped commented-out tasks are omitted.
 - ClubOps status values exactly match `todo`, `doing`, `blocked`, `review`, `done`;
-  the visual columns require the grouping step above.
+  view #8 verifies these as its vertical columns.
 - The adopted board uses the ClubOps-prefixed fields above. Dedicated boards retain
   the original Status/Owner/Task ID/Needs/Sprint names.
 - Edit task status in `TASKS.md` through the reviewed PR workflow, then sync; don't
@@ -190,7 +198,7 @@ npm run test:tools
 npm run check
 ```
 
-The 25 synthetic tool tests cover 123 tasks plus three manual cards across
+The 32 synthetic tool tests cover 123 tasks plus three manual cards across
 pages, interrupted field/card creation, repeat-sync no-ops, unsafe-target refusal,
 manual content/field/view preservation, read-back tampering and cyclic pagination.
 The plan validates against the real task file too. Error tests keep raw diagnostics

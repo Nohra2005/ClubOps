@@ -63,7 +63,10 @@ export async function syncBoard(api, plan, number, { adopt = false } = {}) {
     unmanaged_preserved: true,
     field_names: profile.fields,
     ...(profile.kind === 'additive'
-      ? { view_grouping: 'Verify ClubOps status grouping in GitHub UI' }
+      ? {
+          view_grouping:
+            'Card fields verified; use --columns to verify the separate status-column view',
+        }
       : {}),
   };
 }
