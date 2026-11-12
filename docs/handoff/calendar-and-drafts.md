@@ -155,3 +155,12 @@ No entries yet.
 **Next:** Address review findings and keep the runner's output free of proposal answer text.
 
 **Open questions / blockers:** The shared `docs/capabilities.md` schema drift still blocks the local full check gate and needs its owner to resolve.
+## 2026-11-10 — J-16 and Joey integration audit (docs/j16-owner-handoffs)
+
+**Did:** Audited J-02–J-06, J-12 and J-17 against synthetic acceptance tests. The focused calendar, proposal and chat tests pass. Recorded the current 52-field proposal template and corrected the stale 33-field progress note. Published repo issues #83 (Tatiana) and #84 (Christophe) with concrete Google, Gmail, API, evaluation, scheduling, deployment and CI handoffs. J-16 is blocked on CI workflow ownership because `.github/workflows/` is outside Joey's assigned folders.
+
+**State:** No teammate-owned code or private content changed. The fake-Google/calendar queue, proposal drafter and chat runner are testable; live Google/Gmail, private evaluations, complete proposal acceptance and the deployed scheduler are still open. J-20 draft PR #81 has no legitimate model recordings yet. PRs #79/#80 need independent review.
+
+**Next:** Christophe should identify the CI owner in #84 and implement pinned gitleaks/Bandit gates; Tatiana should specify integration fields and private evaluation inputs in #83. Joey then runs the live calendar/mail acceptance and cabinet draft review after those prerequisites land.
+
+**Open questions / blockers:** The existing Windows schema check reports `docs/capabilities.md` drift, while GitHub CI is green. Keep all calendar IDs, tokens, club examples and feedback out of Git.
