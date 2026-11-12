@@ -286,12 +286,19 @@ Reference documents:
 - What: Keep Google sign-in separate from Calendar authorization. Add president-only connect/disconnect and OAuth callback endpoints with state validation, server-side encrypted refresh-token storage and refresh/reconnect handling. Use the private club calendar ID, `calendar.events` and `calendar.acls` scopes. After an approved plan is saved, drain Joey's sync queue to Google and report pending/error/connected status. On cabinet add/remove, use Joey's J-21 reader ACL adapter with retryable failures; never grant writer or owner access. Agree the endpoint response fields with Christophe before changing the UI contract.
 - Done when: synthetic API tests prove unauthorized users cannot connect, unapproved plans never sync, retries do not duplicate events, and cabinet add/remove grants/revokes only reader access; a cabinet-approved local Google test completes after J-01's private calendar ID is supplied.
 
-### T-47 Connect Gmail intake to human Review
+### T-47 OSA e-mail reaches Review: API and accounts (D-113, D-114)
+- Owner: tatiana
+- Status: doing
+- Needs: J-10, T-39
+- What: The parts that need the API owner or her accounts. Gmail read access for `clubops.agent` (`gmail.readonly`, refresh token only in `.env`). The private OSA sender list (operator data, never the repo). Routes in `app.py`: add/verify an extra sending address, `GET /api/inbox` (cabinet only, own club), `POST /api/inbox/{id}/capture` (one paid model call, triggered by a click). Prompt caching for the fixed capture instructions. Inbox checks are J-22; screens are C-35.
+- Done when: a real forwarded OSA e-mail becomes Review cards for its club through the routes, with synthetic route tests and failure-matrix rows.
+
+### T-48 Expiry archive and AUB-wide cards (D-115)
 - Owner: tatiana
 - Status: todo
-- Needs: T-18
-- What: Add a separately authorized, server-side Gmail read connection for `clubops.agent@gmail.com` with encrypted refresh-token storage. Poll through Joey's J-10 queue without AI; show pending mail to an authorized cabinet member, and call the learner only on that member's explicit capture click. Save proposed facts in Review before acknowledging the queued message. Report connection, expired authorization and processing errors to Christophe's Settings/Review screens. Agree API fields before wiring the UI.
-- Done when: synthetic API tests prove wrong-club and outsider mail never reach capture, duplicate polling is safe, a click creates Review proposals without approval, and a private cabinet-approved forward works after Gmail authorization.
+- Needs: T-47
+- What: Each card can carry an expiry date (the model suggests it, the reviewer can change it); a plain rule, no model, moves an expired card to an archive the planner never uses; the president can restore it; the archive is kept. Cards are sorted AUB-wide or club-only: AUB-wide cards are approved by the operator now (later: live when two presidents approve), club-only cards by the president. After ASME and the final evaluation: simple approved rules (date cut-offs) checked by code in the planner, and reading OSA e-mails without a click.
+- Done when: synthetic tests for expiry, restore and the two card kinds, each with a failure-matrix row.
 
 ## Christophe: frontend
 
@@ -397,6 +404,7 @@ Reference documents:
 - What: Deploy on the same free host as the backend.
 - Done when: the cabinet opens the app from a link on their phones.
 - Preparation: the shared Docker image and Caddy router are ready for a container build; see `web/DEPLOYMENT.md`. No deployed URL yet.
+- Note (2026-11-11, Tatiana): add the deployed app's address to "Authorized JavaScript origins" of the Google client "ClubOps Web Client" (it lists only http://localhost:5173), or Google sign-in fails on the live site.
 
 ### C-15 Demo support
 - Owner: christophe
@@ -561,12 +569,12 @@ Reference documents:
 - What: On each Review card show the source quote, a "Shared with all AUB clubs" badge when `shared` is true, and a switch to change it (send `shared: true/false` with the decision; only presidents may approve shared facts, others get 403). Show disagreements first. Bulk approve skips shared facts, disagreements and warned facts (D-79).
 - Done when: the screen does this with tests, and the user guide explains sharing in two lines.
 
-### C-35 Google connection and inbox status in Settings
+### C-35 Inbox, forwarding and card screens (D-113 to D-116)
 - Owner: christophe
 - Status: todo
-- Needs: C-13
-- What: Replace the demo Calendar toggle and placeholder inbox text with the agreed T-46/T-47 API states. Let a president start Calendar authorization and see the club's connected/pending/error state and shared-calendar access status; show the club's plus-address and pending forwarded mail with an explicit capture action. Keep client IDs public and all tokens and secrets on the server. Develop against fake API responses until the backend endpoints land.
-- Done when: synthetic frontend tests cover disconnected, connected, pending, expired and failed states, and the local app uses the real endpoints after T-46/T-47 are ready.
+- Needs: C-21, C-34, T-47
+- What: (1) Setup (C-21): a step to add an extra sending address and show the code to e-mail; an Outlook forwarding guide (OSA senders only) showing the club's `+tag` address with a copy button, and a "Test my forwarding" button. (2) Inbox screen: waiting e-mails, a "Read this" button that says it costs money, and the reason when an e-mail was skipped ("ClubOps only reads e-mails forwarded from OSA staff"). (3) Review cards (C-34): an expiry date field, an AUB-wide / club-only label, an "Add to calendar" box for deadlines (ticked by default) with who it is for, and an archive view with Restore.
+- Done when: each screen has frontend tests against the T-47 routes (stubbed until they land) and is in the demo build before the Saturday 14 Nov freeze.
 
 ## Joey: calendar, reminders, drafts
 
@@ -733,3 +741,16 @@ Reference documents:
 - Done when: fake-Google tests show repeat grants are safe, removal revokes only that member's reader rule, and a live cabinet-approved test verifies access after backend OAuth is connected.
 - Progress (2026-11-10): reader ACL adapter and synthetic tests added. PR #79 is open with Tatiana and Christophe requested for review. Backend OAuth, cabinet add/remove triggers, Settings status, calendar ID and live test remain pending with their owners.
 - Progress (2026-11-11): Tatiana's PR #79 review found the Running Club-only env placeholder. Replaced it with a private per-club JSON map, parser and synthetic multi-club/invalid-input tests. Joey must move the existing local ID into the new map privately. T-46 still owns backend loading and OAuth; live sharing remains pending.
+### J-22 Inbox checks before any paid read (D-113, D-114)
+- Owner: joey
+- Status: todo
+- Needs: J-10
+- What: Finishes J-10. In `src/clubops/inbox/`: an extra sending address per cabinet member, proven by a short code e-mailed to the club's `+tag` address and removed with the member; the original sender inside the forwarded text must be on the OSA list (passed in, never committed); skip e-mails already read; clean the text before the model (signatures, old replies, links, formatting); every skipped e-mail returns its reason; the same OSA e-mail sent to many clubs is read once. No model call in this task.
+- Done when: synthetic tests cover unverified sender, wrong code, original sender not on the OSA list, duplicate, read-once across clubs, and an e-mail with instructions inside treated as data; each has a failure-matrix row. PR up by Thursday 12 Nov night; otherwise Tatiana takes it over.
+
+### J-23 Deadline cards on the club calendar (D-116)
+- Owner: joey
+- Status: todo
+- Needs: J-02, T-48
+- What: One calendar per club on `clubops.agent`. An approved deadline card with "Add to calendar" ticked creates an event with a reminder and invites only the people it names, through their Gmail. Event invites are set per event, cabinet by default. ClubOps never gets access to members' own calendars.
+- Done when: synthetic tests (no live Google calls) and failure-matrix rows.
