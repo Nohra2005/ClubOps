@@ -564,7 +564,8 @@ Reference documents:
 
 ### C-35 Inbox, forwarding and card screens (D-113 to D-116)
 - Owner: christophe
-- Status: todo
+- Status: doing
+- Progress (2026-11-12): building synthetic demo screens for forwarding verification, explicit paid-read confirmation and card expiry/archive. T-47 #92 and J-22 #93 remain under review; HTTP routes/error/action shapes and T-48 are not published yet. Live actions stay unavailable until agreed; no invented endpoints or real Google/model calls.
 - Needs: C-21, C-34, T-47
 - What: (1) Setup (C-21): a step to add an extra sending address and show the code to e-mail; an Outlook forwarding guide (OSA senders only) showing the club's `+tag` address with a copy button, and a "Test my forwarding" button. (2) Inbox screen: waiting e-mails, a "Read this" button that says it costs money, and the reason when an e-mail was skipped ("ClubOps only reads e-mails forwarded from OSA staff"). (3) Review cards (C-34): an expiry date field, an AUB-wide / club-only label, an "Add to calendar" box for deadlines (ticked by default) with who it is for, and an archive view with Restore.
 - Done when: each screen has frontend tests against the T-47 routes (stubbed until they land) and is in the demo build before the Saturday 14 Nov freeze.
