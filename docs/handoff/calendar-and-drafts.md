@@ -136,6 +136,25 @@ No entries yet.
 
 **Open questions / blockers:** Results belong in Tatiana's `results/` area; coordinate the measured run and evidence before poster claims.
 
+## 2026-11-10 — J-19 proposal accuracy runner
+
+**Did:** Added a deterministic runner that builds drafts from versioned proposal requests, checks them against the form and verified per-field truth, and outputs only category counts and safe case IDs. Synthetic tests cover category boundaries, incomplete truth rejection and a CLI replay. Recorded D-108 and F-199.
+
+**State:** J-19's synthetic acceptance check is met on pushed branch `eval/j19-proposal-accuracy`; PR and teammate review remain. Full pytest passes (602 passed, 1 skipped; 92.72% coverage), as do Ruff and mypy. The pre-existing `docs/capabilities.md` schema drift still prevents the full check gate. The private submitted proposals remain with Tatiana for T-26. No private form answer was committed or printed by the runner.
+
+**Next:** Tatiana maps each private proposal to a versioned request and complete truth map, then runs `uv run python scripts/eval_proposals.py --cases <private-json> --out <private-result>` during T-26.
+
+**Open questions / blockers:** Real historical proposals may need field-by-field transcription before scoring; this is evaluation data work, not a reason to invent missing truth.
+
+## 2026-11-10 — J-19 review request
+
+**Did:** Opened PR #80 from `eval/j19-proposal-accuracy` into `main` and requested Tatiana's review. The PR body records the private-data boundary and T-26 handoff.
+
+**State:** J-19 is in review. CI and teammate approval remain before merge.
+
+**Next:** Address review findings and keep the runner's output free of proposal answer text.
+
+**Open questions / blockers:** The shared `docs/capabilities.md` schema drift still blocks the local full check gate and needs its owner to resolve.
 ## 2026-11-10 — J-21 shared-calendar cabinet access
 
 **Did:** Added a Google Calendar ACL adapter that grants named cabinet members reader access and revokes only their reader rule. It is safe to repeat and preserves manually elevated roles. Added synthetic tests, D-110 and F-198. The user confirmed the ClubOps account, Cloud APIs, OAuth sign-in client and Running Club shared calendar exist, but supplied no calendar ID or tokens.
