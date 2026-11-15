@@ -269,8 +269,8 @@ Reference documents:
 - Owner: tatiana
 - Status: todo
 - Needs: T-35, J-20
-- What: For ASME, pick what a real new club would paste on day one (its rules or constitution, one past proposal, cabinet list), only material dated before its test events, and check none of it is where the ASME labels came from (no leak). Mark its onboarding facts on the sheet like a busy president would (no special care).
-- Done when: the ASME starter pack is in `data/private/asme/` and the leak check is written in `eval/FROZEN.md`.
+- What: Updated 15 Nov to the setup interview (D-103) instead of pasted documents. Before the day: add the ASME president's account (sign-in Gmail, private). On 18 or 19 November the president answers the setup interview (one small model call per answer) and reviews the cards like a busy president, no special care. Leak check: no answer may name a test event or give away a labelled approval or deadline; such an answer is removed before the run. Then J-20's runner plans ASME's 13 frozen events.
+- Done when: answers and cards are in `data/private/asme/` and the leak check table in `eval/FROZEN.md` is filled.
 
 ### T-45 A cut-off model answer is reported, not dropped in silence (F-168, F-169)
 - Owner: tatiana
