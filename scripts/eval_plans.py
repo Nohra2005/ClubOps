@@ -172,7 +172,7 @@ def main() -> None:
     text = f"# Planning evaluation ({date.today()}, {len(cases)} events)\n\n" + table(results, len(cases)) + "\n"
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
-        args.out.write_text(text)
+        args.out.write_text(text, encoding="utf-8")
     print(text)
 
 

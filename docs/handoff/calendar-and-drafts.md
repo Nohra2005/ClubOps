@@ -155,6 +155,56 @@ No entries yet.
 **Next:** Address review findings and keep the runner's output free of proposal answer text.
 
 **Open questions / blockers:** The shared `docs/capabilities.md` schema drift still blocks the local full check gate and needs its owner to resolve.
+## 2026-11-10 — J-21 shared-calendar cabinet access
+
+**Did:** Added a Google Calendar ACL adapter that grants named cabinet members reader access and revokes only their reader rule. It is safe to repeat and preserves manually elevated roles. Added synthetic tests, D-110 and F-198. The user confirmed the ClubOps account, Cloud APIs, OAuth sign-in client and Running Club shared calendar exist, but supplied no calendar ID or tokens.
+
+**State:** Branch `feat/j21-calendar-sharing` was committed and pushed. Adapter tests and full pytest suite pass (602 passed, 1 skipped); Ruff and mypy pass. The repository's existing `docs/capabilities.md` schema drift prevents the `make check` equivalent from passing, and `make` is not installed on this machine. No live Google operation was made. The connected GitHub PR creation endpoint returned 404; open the PR from the pushed branch.
+
+**Next:** Tatiana adds server-side Calendar OAuth with `calendar.events` and `calendar.acls`, private token refresh and retryable cabinet add/remove triggers. Christophe connects Settings to real connection and sharing status. Then run a cabinet-approved live test and mark J-21 done.
+
+**Open questions / blockers:** Calendar ID must be supplied privately. Google does not guarantee that ACL sharing automatically adds the calendar to each member's sidebar. Current role-specific reminder calendars remain a separate integration decision; the shared-calendar reader adapter does not implement them.
+
+## 2026-11-10 — Google integration owner handoff
+
+**Did:** Recorded T-46 for Tatiana's Calendar OAuth, sync and cabinet sharing triggers; T-47 for her Gmail OAuth and human-click Review path; and C-35 for Christophe's Settings and inbox UI. Updated J-01's blocker to reflect the Google setup the user completed. These task descriptions are the team handoff; no private credential or calendar ID was added to the repo.
+
+**State:** Joey still needs the Running Club calendar ID stored privately, owner-side OAuth routes, a cabinet-approved live Calendar and mail test, approved style examples, and J-08 cabinet feedback. The Google ACL adapter is ready for T-46 integration, but J-21 is not complete until the live test.
+
+**Next:** Continue J-19's synthetic proposal accuracy runner while the Google owner tasks proceed.
+
+**Open questions / blockers:** The existing calendar contract uses private role calendars for reminders; the user has deferred creating those. Tatiana and Joey must agree on any contract change before claiming role-specific Google reminders work.
+
+## 2026-11-10 — J-21 review request
+
+**Did:** Opened PR #79 from `feat/j21-calendar-sharing` into `main` and requested Tatiana and Christophe as reviewers. The PR body points to T-46, T-47 and C-35 as owner-specific follow-up work.
+
+**State:** J-21 is in review. The adapter has synthetic coverage; the live Google test needs Tatiana's OAuth integration and the private Running Club calendar ID.
+
+**Next:** Address review comments, then run the cabinet-approved local test once the owner-side API is connected.
+
+**Open questions / blockers:** CI still has the shared schema drift on `docs/capabilities.md`; no real Calendar access rule has been changed.
+
+## 2026-11-10 — J-01 manual Google setup confirmed
+
+**Did:** Recorded the user's completed Google setup in J-01 and added a placeholder for `CLUBOPS_GOOGLE_RUNNING_CLUB_CALENDAR_ID` to `.env.example`. The real value remains only in the user's ignored local `.env`.
+
+**State:** J-01 remains blocked at its live-test acceptance gate. T-46, T-47 and C-35 still need owner-side authorization and UI flows; no live Calendar or Gmail permission was granted by this documentation change.
+
+**Next:** Work on J-20 with synthetic clubs and replay mode while owner integrations proceed.
+
+**Open questions / blockers:** The user does not require manual Calendar sharing. The private role-calendar reminder architecture remains an explicit contract decision for Tatiana and Joey before live reminders are claimed.
+
+
+## 2026-11-11 - J-21 per-club Calendar configuration (PR #79)
+
+**Did:** Merged current main and answered Tatiana's review with a private JSON map keyed by club slug. Added a parser and synthetic tests for two clubs, malformed/duplicate entries and generic errors; changed `.env.example` to a blank map setting. Recorded D-120 and F-205.
+
+**State:** Joey's existing local Running Club ID remains private but must be moved from the old single-club variable into `CLUBOPS_GOOGLE_CALENDAR_IDS_JSON` on his machine. T-46 still must load the map and implement OAuth, sync and cabinet triggers; C-35 still owns UI status. No live access test has run.
+
+**Next:** Tatiana reviews the map format and wires it in T-46; Christophe reviews Settings expectations. After both land, Joey performs a cabinet-approved multi-club isolation and reader-access test.
+
+**Open questions / blockers:** PR #90 proposes a one-calendar-per-club reminder decision. Coordinate any change to the calendar contract with Tatiana before changing Joey's role-reminder behavior.
 ## 2026-11-10 — J-16 and Joey integration audit (docs/j16-owner-handoffs)
 
 **Did:** Audited J-02–J-06, J-12 and J-17 against synthetic acceptance tests. The focused calendar, proposal and chat tests pass. Recorded the current 52-field proposal template and corrected the stale 33-field progress note. Published repo issues #83 (Tatiana) and #84 (Christophe) with concrete Google, Gmail, API, evaluation, scheduling, deployment and CI handoffs. J-16 is blocked on CI workflow ownership because `.github/workflows/` is outside Joey's assigned folders.
