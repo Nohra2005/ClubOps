@@ -279,6 +279,20 @@ Reference documents:
 - What: Learning the bylaws printed "all done" while only 1 of its 4 pieces had reached the model: the other answers were cut off at the answer limit, which looked like "not JSON", and the pieces were counted as empty and marked done. Read the provider's stop signal on every call, count such a piece as failed (not skipped) and leave it out of `done` so a rerun retries it; split documents on their own headings so a rule is not cut in half.
 - Done when: a cut-off answer says so, a failed piece is retried on the next run, and both have a regression test. (2026-11-08: done, D-98; contracts 0.2.3.)
 
+### T-47 OSA e-mail reaches Review: API and accounts (D-113, D-114)
+- Owner: tatiana
+- Status: doing
+- Needs: J-10, T-39
+- What: The parts that need the API owner or her accounts. Gmail read access for `clubops.agent` (`gmail.readonly`, refresh token only in `.env`). The private OSA sender list (operator data, never the repo). Routes in `app.py`: add/verify an extra sending address, `GET /api/inbox` (cabinet only, own club), `POST /api/inbox/{id}/capture` (one paid model call, triggered by a click). Prompt caching for the fixed capture instructions. Inbox checks are J-22; screens are C-35.
+- Done when: a real forwarded OSA e-mail becomes Review cards for its club through the routes, with synthetic route tests and failure-matrix rows.
+
+### T-48 Expiry archive and AUB-wide cards (D-115)
+- Owner: tatiana
+- Status: todo
+- Needs: T-47
+- What: Each card can carry an expiry date (the model suggests it, the reviewer can change it); a plain rule, no model, moves an expired card to an archive the planner never uses; the president can restore it; the archive is kept. Cards are sorted AUB-wide or club-only: AUB-wide cards are approved by the operator now (later: live when two presidents approve), club-only cards by the president. After ASME and the final evaluation: simple approved rules (date cut-offs) checked by code in the planner, and reading OSA e-mails without a click.
+- Done when: synthetic tests for expiry, restore and the two card kinds, each with a failure-matrix row.
+
 ## Christophe: frontend
 
 ### C-01 Read the UI spec and pick the stack
@@ -383,6 +397,7 @@ Reference documents:
 - What: Deploy on the same free host as the backend.
 - Done when: the cabinet opens the app from a link on their phones.
 - Preparation: the shared Docker image and Caddy router are ready for a container build; see `web/DEPLOYMENT.md`. No deployed URL yet.
+- Note (2026-11-11, Tatiana): add the deployed app's address to "Authorized JavaScript origins" of the Google client "ClubOps Web Client" (it lists only http://localhost:5173), or Google sign-in fails on the live site.
 
 ### C-15 Demo support
 - Owner: christophe
@@ -548,6 +563,13 @@ Reference documents:
 - What: On each Review card show the source quote, a "Shared with all AUB clubs" badge when `shared` is true, and a switch to change it (send `shared: true/false` with the decision; only presidents may approve shared facts, others get 403). Show disagreements first. Bulk approve skips shared facts, disagreements and warned facts (D-79).
 - Done when: the screen does this with tests, and the user guide explains sharing in two lines.
 
+### C-35 Inbox, forwarding and card screens (D-113 to D-116)
+- Owner: christophe
+- Status: todo
+- Needs: C-21, C-34, T-47
+- What: (1) Setup (C-21): a step to add an extra sending address and show the code to e-mail; an Outlook forwarding guide (OSA senders only) showing the club's `+tag` address with a copy button, and a "Test my forwarding" button. (2) Inbox screen: waiting e-mails, a "Read this" button that says it costs money, and the reason when an e-mail was skipped ("ClubOps only reads e-mails forwarded from OSA staff"). (3) Review cards (C-34): an expiry date field, an AUB-wide / club-only label, an "Add to calendar" box for deadlines (ticked by default) with who it is for, and an archive view with Restore.
+- Done when: each screen has frontend tests against the T-47 routes (stubbed until they land) and is in the demo build before the Saturday 14 Nov freeze.
+
 ## Joey: calendar, reminders, drafts
 
 ### J-01 Read the calendar contract and set up Google
@@ -592,6 +614,7 @@ Reference documents:
 - Needs: J-05
 - What: Tests with a fake Google (no real calls in `make check`); a Failure Matrix row for each failure mode (Google down, item sent twice, role with no person).
 - Done when: `make check` passes with your tests.
+- Progress (2026-11-10): fake-Google tests cover approval gating, stable IDs, move, done/cancel, missing-role fallback, all-cabinet private reminders, queue retry and club-wide items. Focused tests pass. Live plan approval, Google sync and role access still require T-46/C-35 and J-01/J-09 acceptance.
 
 ### J-07 Draft templates
 - Owner: joey
@@ -600,6 +623,7 @@ Reference documents:
 - What: Templates for: WhatsApp announcement, reminder message, sponsor email, Instagram caption, poster text (never logos), expense form, volunteer shifts, impact report. Match the club's real style (look at past announcements).
 - Done when: each template produces a draft a cabinet member would send without edits.
 - Progress (2026-10-31): all eight draft types have a writer and synthetic tests. Approved private style examples and cabinet review are still needed to judge send-ready quality.
+- Progress (2026-11-10): Joey needs approved past announcements kept in private storage, then two cabinet members to review drafts for three past events under J-08. Do not place examples or feedback in Git.
 
 ### J-08 Check the drafts with the cabinet
 - Owner: joey
@@ -638,6 +662,7 @@ Reference documents:
 - What: Fill the OSA Event Proposal form from an approved event's details, the club profile and the rule check, following the frozen `draft-proposal` contract (`DraftProposalRequest` -> `ProposalDraft` in `src/clubops/contracts/forms.py`). The form is `data/forms/osa_event_proposal_2026_2027.json`; it grows from 33 to 52 questions: "Yes" to materials adds 10 (q34-q43: tables, chairs, boards, tents, table covers, outlets and amperage), "Yes" to catering adds 9 (q44-q52: menu, people, setup time, price per person, a second option, cost sharing); each extra question has `required_if` on the question that opens it. Every answer says its origin (stated, from memory, computed, missing) and source; times in 24-hour format; dates match the event; adviser name without "Dr."; nothing invented (unknown = left for a person). Code in `src/clubops/drafts/proposal.py`. Tatiana adds it to the agent as a tool and to the event page once it works (tell her).
 - Done when: drafts for the made-up test events pass the form checks (required answers present, 24-hour times, dates consistent, attachments listed), with tests for both form versions.
 - Progress (2026-10-31): deterministic drafter and synthetic checks for the checked-in 33-question form added. The official six materials questions are not yet present in the checked-in template, so their exact form-version check remains pending.
+- Progress (2026-11-10): the checked-in official template now has 52 fields; focused synthetic tests cover conditional materials fields, date/time formatting, source refs and unknowns. The old 33-field version and complete answer acceptance still need explicit verification; Tatiana owns agent/event API wiring.
 
 ### J-13 Security tests (was T-24)
 - Owner: joey
@@ -665,10 +690,11 @@ Reference documents:
 
 ### J-16 Secret scanning in CI (bonus)
 - Owner: joey
-- Status: todo
+- Status: blocked
 - Needs: none
 - What: GitHub's own secret scanning and CodeQL need a public repo or a paid plan, so run free equivalents in CI: gitleaks (secrets in the code and history) and a Python security linter. Fix or explain every finding.
 - Done when: both run in CI on every PR and are green on `main`.
+- Blocked (2026-11-10): `.github/workflows/` is outside Joey's assigned folders. Repo issue #84 asks Christophe to take CI ownership or identify its owner, then add pinned gitleaks and Bandit gates. Joey has not modified teammate-owned CI; the task remains open until both run green on PRs and `main`.
 
 ### J-17 Chatbot test runner
 - Owner: joey
@@ -677,6 +703,7 @@ Reference documents:
 - What: A script like `scripts/eval_plans.py` for the chatbot test (`chatbot-questions.csv`, frozen in T-04): ask each question, then score right answers, invented answers (an answer when the right reply is "not sure"), correct "not sure" replies, citations that really support the answer, and cost. Build and test it on synthetic questions; Tatiana runs it on the private file in T-26.
 - Done when: `scripts/eval_chat.py` gives a result table on synthetic data, with tests, in replay mode.
 - Progress (2026-10-31): replay-capable runner and synthetic scorer tests added. Tatiana's private CSV column mapping and recorded model responses still need verification.
+- Progress (2026-11-10): focused synthetic scorer, CSV loader and replay CLI tests pass. Tatiana must confirm the frozen private header and recordings and run the private set; see issue #83. No private questions or answers are in Git.
 
 ### J-18 Poster
 - Owner: joey
@@ -698,3 +725,17 @@ Reference documents:
 - Needs: J-14, T-41
 - What: Show ClubOps works for clubs it was not tuned on. `scripts/eval_new_club.py`: start a club empty (only the shared AUB layer), give it a starter pack of 0, 1, 3, then all onboarding documents, and plan its events after each step with `clubops.evaluation.plans` (approvals caught, false alarms, cost). Make 3 synthetic clubs of other kinds (academic, cultural, social; like J-14) with events and labels, and freeze them before running. Tatiana runs it on ASME (T-44) in T-26.
 - Done when: the script gives a curve table per club on synthetic data, with tests, in replay mode.
+
+### J-22 Inbox checks before any paid read (D-113, D-114)
+- Owner: joey
+- Status: todo
+- Needs: J-10
+- What: Finishes J-10. In `src/clubops/inbox/`: an extra sending address per cabinet member, proven by a short code e-mailed to the club's `+tag` address and removed with the member; the original sender inside the forwarded text must be on the OSA list (passed in, never committed); skip e-mails already read; clean the text before the model (signatures, old replies, links, formatting); every skipped e-mail returns its reason; the same OSA e-mail sent to many clubs is read once. No model call in this task.
+- Done when: synthetic tests cover unverified sender, wrong code, original sender not on the OSA list, duplicate, read-once across clubs, and an e-mail with instructions inside treated as data; each has a failure-matrix row. PR up by Thursday 12 Nov night; otherwise Tatiana takes it over.
+
+### J-23 Deadline cards on the club calendar (D-116)
+- Owner: joey
+- Status: todo
+- Needs: J-02, T-48
+- What: One calendar per club on `clubops.agent`. An approved deadline card with "Add to calendar" ticked creates an event with a reminder and invites only the people it names, through their Gmail. Event invites are set per event, cabinet by default. ClubOps never gets access to members' own calendars.
+- Done when: synthetic tests (no live Google calls) and failure-matrix rows.
