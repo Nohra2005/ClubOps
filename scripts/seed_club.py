@@ -160,7 +160,7 @@ def learn(args: argparse.Namespace, client: ModelClient | None = None, settings:
     # A learning failure must never be invisible again (D-98): record every attempt unless asked otherwise.
     os.environ.setdefault("CLUBOPS_DEBUG_LOG", str(args.data_dir / "learn-debug.jsonl"))
     state_path = args.data_dir / f"seed-{args.club}.json"
-    saved = json.loads(state_path.read_text()) if state_path.exists() else {}
+    saved = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
     done: list[str] = list(saved.get("done", []))
     facts = int(saved.get("proposals", 0))
     dropped = int(saved.get("dropped", 0))
