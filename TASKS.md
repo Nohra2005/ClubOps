@@ -279,6 +279,13 @@ Reference documents:
 - What: Learning the bylaws printed "all done" while only 1 of its 4 pieces had reached the model: the other answers were cut off at the answer limit, which looked like "not JSON", and the pieces were counted as empty and marked done. Read the provider's stop signal on every call, count such a piece as failed (not skipped) and leave it out of `done` so a rerun retries it; split documents on their own headings so a rule is not cut in half.
 - Done when: a cut-off answer says so, a failed piece is retried on the next run, and both have a regression test. (2026-11-08: done, D-98; contracts 0.2.3.)
 
+### T-46 Connect Google Calendar on the backend
+- Owner: tatiana
+- Status: todo
+- Needs: T-22
+- What: Keep Google sign-in separate from Calendar authorization. Add president-only connect/disconnect and OAuth callback endpoints with state validation, server-side encrypted refresh-token storage and refresh/reconnect handling. Use the private club calendar ID, `calendar.events` and `calendar.acls` scopes. After an approved plan is saved, drain Joey's sync queue to Google and report pending/error/connected status. On cabinet add/remove, use Joey's J-21 reader ACL adapter with retryable failures; never grant writer or owner access. Agree the endpoint response fields with Christophe before changing the UI contract.
+- Done when: synthetic API tests prove unauthorized users cannot connect, unapproved plans never sync, retries do not duplicate events, and cabinet add/remove grants/revokes only reader access; a cabinet-approved local Google test completes after J-01's private calendar ID is supplied.
+
 ### T-47 OSA e-mail reaches Review: API and accounts (D-113, D-114)
 - Owner: tatiana
 - Status: doing
@@ -577,7 +584,8 @@ Reference documents:
 - Needs: none
 - What: Read `docs/calendar-contract.md`. Create the Google Cloud project, turn on the Calendar API, create the shared club calendar. Secrets never go in the repo.
 - Done when: a test item appears in the shared calendar from your code.
-- Blocked: OAuth client, club calendar IDs and a cabinet-approved live test are not available yet. The adapter and setup steps are in `src/clubops/calendar/README.md`.
+- Progress (2026-11-10): manual Google setup complete: Calendar and Gmail APIs enabled, External OAuth test users and web client configured, Running Club calendar created, and its ID stored only in local `.env`. No manual calendar sharing is required.
+- Blocked: T-46's separate Calendar authorization and backend sync, C-35's connection UI, and a cabinet-approved live test are still needed before a test item can appear in Google Calendar. The adapter and setup steps are in `src/clubops/calendar/README.md`.
 
 ### J-02 Sync calendar items
 - Owner: joey
@@ -715,10 +723,11 @@ Reference documents:
 
 ### J-19 Proposal accuracy runner
 - Owner: joey
-- Status: todo
+- Status: review
 - Needs: J-12
 - What: Measure how close the proposal draft is to what the club really submitted: for each past event that has a real proposal (Tatiana gives the private files), compare the draft's answers field by field. Report correct, wrong, left for a person, and invented answers (filled in when the truth was unknown), plus form-check errors. Build and test it on synthetic proposals; Tatiana runs it on the real ones in T-26.
 - Done when: `scripts/eval_proposals.py` gives a result table on synthetic data, with tests, in replay mode.
+- Progress (2026-11-10): deterministic JSON-case runner and synthetic CLI tests pass. It prints counts and case IDs only. PR #80 is open with Tatiana requested for review; her private submitted proposals are used in T-26.
 
 ### J-20 New-club test and learning curve (D-91)
 - Owner: joey
@@ -727,6 +736,14 @@ Reference documents:
 - What: Show ClubOps works for clubs it was not tuned on. `scripts/eval_new_club.py`: start a club empty (only the shared AUB layer), give it a starter pack of 0, 1, 3, then all onboarding documents, and plan its events after each step with `clubops.evaluation.plans` (approvals caught, false alarms, cost). Make 3 synthetic clubs of other kinds (academic, cultural, social; like J-14) with events and labels, and freeze them before running. Tatiana runs it on ASME (T-44) in T-26.
 - Done when: the script gives a curve table per club on synthetic data, with tests, in replay mode.
 
+### J-21 Automate shared-calendar cabinet access
+- Owner: joey
+- Status: review
+- Needs: J-01
+- What: Grant a named cabinet member read-only access to the club's shared Google calendar and revoke that rule when the member leaves. Keep Google access separate from ClubOps approval rights. Tatiana owns the cabinet API triggers and token storage; Christophe owns the Settings display. Do not change public, owner or manually elevated permissions automatically.
+- Done when: fake-Google tests show repeat grants are safe, removal revokes only that member's reader rule, and a live cabinet-approved test verifies access after backend OAuth is connected.
+- Progress (2026-11-10): reader ACL adapter and synthetic tests added. PR #79 is open with Tatiana and Christophe requested for review. Backend OAuth, cabinet add/remove triggers, Settings status, calendar ID and live test remain pending with their owners.
+- Progress (2026-11-11): Tatiana's PR #79 review found the Running Club-only env placeholder. Replaced it with a private per-club JSON map, parser and synthetic multi-club/invalid-input tests. Joey must move the existing local ID into the new map privately. T-46 still owns backend loading and OAuth; live sharing remains pending.
 ### J-22 Inbox checks before any paid read (D-113, D-114)
 - Owner: joey
 - Status: todo
