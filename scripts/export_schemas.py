@@ -74,7 +74,7 @@ def render_doc() -> str:
 
 def main(check: bool) -> int:
     expected = {**render_schemas(), DOC: render_doc()}
-    stale = [p for p, text in expected.items() if not p.exists() or p.read_text() != text]
+    stale = [p for p, text in expected.items() if not p.exists() or p.read_text(encoding="utf-8") != text]
     orphans = [p for p in SCHEMAS.glob("*.json") if p not in expected]
     if check:
         for p in [*stale, *orphans]:
@@ -86,7 +86,7 @@ def main(check: bool) -> int:
     for p in orphans:
         p.unlink()
     for p, text in expected.items():
-        p.write_text(text)
+        p.write_text(text, encoding="utf-8", newline="\n")
     print(f"wrote {len(expected)} files")
     return 0
 
