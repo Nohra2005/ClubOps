@@ -1,6 +1,6 @@
 # Architecture
 
-Updated 9 November 2026 from the published contracts, decisions and API table. Local integration and container checks are recorded in `web/VERIFICATION.md`; provider/evaluation evidence belongs in `results/` and `docs/evidence.md`. Public deployment remains pending.
+Updated 16 November 2026 against main `54d38c1`, published interfaces and merged integration PRs. Local integration and container checks are recorded in `web/VERIFICATION.md`; provider/evaluation evidence belongs in `results/` and `docs/evidence.md`. Public deployment remains pending. Report sections and their evidence limits are in [architecture-and-operations.md](../web/report/architecture-and-operations.md).
 
 ## Request and approval flow
 
@@ -24,7 +24,7 @@ flowchart TB
   records --> reports[Usage screen and report CLI]
 ```
 
-The planner can choose its own steps inside a user-started run. It cannot approve its own plan, verify knowledge or send a message. An edited event requires review of the new revision. Google calendar synchronization, new-club setup, the full chatbot and draft-generation wiring have separate owners/tasks; consult [api.md](api.md) for the current endpoint status rather than assuming a diagram is deployed functionality.
+The planner can choose its own steps inside a user-started run. It cannot approve its own plan, verify knowledge or send a message. An edited event requires review of the new revision. New-club setup is registered in the application through merged [#87](https://github.com/Nohra2005/ClubOps/pull/87). Google calendar synchronization, the full chatbot and draft-generation wiring have separate owners/tasks. The [API table](api.md) remains the interface reference, but its setup 501 and always-complete notes predate #87; the setup status below supersedes those notes, without changing the contract.
 
 ## What makes decisions
 
@@ -36,6 +36,7 @@ The planner can choose its own steps inside a user-started run. It cannot approv
 | Memory approval | A person verifies, rejects or edits proposals. Warnings and outdated sources require individual frontend review rather than batch approval | Verify contracts, Review API, `web/e2e/contracts.spec.ts` |
 | Plan approval | Server checks the submitted revision before creating internal calendar items | Event/API contracts, `web/e2e/live-api.spec.ts` |
 | Handover | Existing plain-code assembly becomes a view retaining current sources and explicit gaps; no model call | Handover contracts, `tests/test_handover_view.py`, `tests/test_handover_endpoint.py` |
+| Club setup | Explicit president interview; durable question progress; skips/resume avoid extraction, extracted facts wait in Review | `POST /api/setup/next`, `web/CLUB_SETUP.md`, `web/e2e/setup-live.spec.ts` |
 | Reporting | Deduplicates cumulative snapshots and trace IDs; absent metrics are unavailable, not zero | `src/clubops/reports/`, report tests |
 
 Draft text is for a person to inspect and copy/send. Handover sign-off and several editing actions remain demo-only; the real transport reports unavailable actions explicitly.
@@ -58,12 +59,12 @@ The separate Compose `local` target compiles an explicit dev sign-in form, boots
 ## Current operations and limits
 
 - Python CI checks lint, strict types, coverage and schema drift; dependency auditing remains active.
-- Frontend quality/browser and container/persistence checks are established on main after #44/#46. Current main `4b3f17e` has successful [CI](https://github.com/Nohra2005/ClubOps/actions/runs/42501653494), [Web](https://github.com/Nohra2005/ClubOps/actions/runs/42501653484) and [Container](https://github.com/Nohra2005/ClubOps/actions/runs/42501653554) runs. These checks are separate from evidence of independent teammate review; AGENTS/CONTRIBUTING require that review and merge commits.
+- Python, frontend/browser and container/persistence workflows are established on main after #44/#46. Reproducible commands and dated results are in [`../web/VERIFICATION.md`](../web/VERIFICATION.md); a green workflow establishes checks on its particular revision, not a deployed service or a model-quality result. These checks are separate from evidence of independent teammate review; AGENTS/CONTRIBUTING require that review and merge commits.
 - C-25 has an optional closed-run metadata-only OTLP/HTTP JSON exporter and a synthetic local Jaeger proof in [`../web/observability/README.md`](../web/observability/README.md). It requires explicit real run/step/model-call timing and associations; it never infers them from unrelated JSONL records. Producer hooks remain with the agent/model owners, so real-run instrumentation, deployed monitoring/alerts and final evaluation thresholds remain C-25/C-26/C-22 work. The synthetic proof does not establish production operation.
 - Runs execute in-process; a single worker/instance is the supported deployment configuration. Finish active planning before a restart. Durable job recovery and horizontal scaling are not claimed.
 - Real provider quality, production OAuth, persistent hosting recovery and real-world pilot outcomes are not established by scripted tests.
 
-## Prepared setup adapter (C-21, PR #55)
+## Integrated setup service (C-21, PRs #55 and #87)
 
 `src/clubops/api/setup.py` owns durable per-club question progress and an extraction
 outbox. It accepts authenticated Actor, capture, idempotent Review submission and
@@ -71,10 +72,17 @@ shared-rule count callbacks; it imports contracts rather than backend implementa
 Answers are Untrusted interview sources. Nothing in setup verifies knowledge or
 changes cabinet/profile records. The UI supports resume and preserves failed drafts.
 
-Application registration and `/me.club.setup_complete` wiring are still pending with
-Tatiana; main's setup endpoint remains 501. Real-auth/SQLite tests explicitly install
-a reference adapter and use synthetic extraction, not production wiring or measured
-model quality. The submit callback must preserve earlier Review decisions on retry.
+PR #55 supplies the service; merged #87 registers it and connects
+`/me.club.setup_complete` to its durable progress. The no-interception browser
+regression in `web/e2e/setup-live.spec.ts` exercises the actual application factory,
+real cookies and SQLite: an empty club is routed to setup, can pause/resume and
+complete with skips, and then reports completion. Missing CSRF and adviser writes
+are denied. Skips leave Review empty and do not complete the four starter checks.
+This checks local HTTP integration, not Google sign-in, worker-restart recovery,
+model extraction quality or actual ASME onboarding. Older
+`tests/test_setup_endpoint.py` checks still use a reference adapter; do not confuse
+that fixture with production registration. The submit callback must preserve earlier
+Review decisions on retry; F-201 records the known rejected-proposal retry limit.
 See [the integration guide](../web/CLUB_SETUP.md) for the exact boundary and current
 answer-only contract's stale-tab limitation, accepted by Tatiana in #43 for one-time,
 president-only setup. Reported extraction failures (`sources_failed`) cannot advance
