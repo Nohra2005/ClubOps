@@ -6,6 +6,7 @@ export default defineConfig({
     'contracts.spec.ts',
     'live-api.spec.ts',
     'local-login.spec.ts',
+    'setup-live.spec.ts',
     'routing.spec.ts',
     'demo-rehearsal.spec.ts',
   ],
