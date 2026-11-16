@@ -173,6 +173,15 @@ No entries yet.
 **State:** The 15-row checklist run validates the pipeline only. ClubOps replay still requires complete synthetic model recordings; the PR remains draft and J-20 remains in review. No private club material or model-quality claim is in Git.
 
 **Next:** Tatiana: review the interview-first assumption and help prepare approved synthetic replay recordings. Joey: run the measured ClubOps curve, update evidence, then request final independent review.
+## 2026-11-10 — J-12 form-version regression (test/j12-form-versions)
+
+**Did:** Added synthetic checks for the historical 33-field shape selected by field ID from the current form, plus the current 52-field catering branch. The legacy draft validates with its known values; the current conditional fields remain explicitly pending when the event lacks facts.
+
+**State:** Focused proposal tests pass. J-12 remains doing because official required fields need human confirmation and Tatiana owns agent/event API wiring in issue #83. No contract or form source was changed.
+
+**Next:** Tatiana should wire the existing drafter through the published draft contract; Joey should verify a cabinet-reviewed complete proposal and adjust only sourced fields.
+
+**Open questions / blockers:** The synthetic 33-field shape is a compatibility test, not a newly sourced historical OSA form. Keep real submitted proposals private.
 ## 2026-11-10 — J-19 proposal accuracy runner
 
 **Did:** Added a deterministic runner that builds drafts from versioned proposal requests, checks them against the form and verified per-field truth, and outputs only category counts and safe case IDs. Synthetic tests cover category boundaries, incomplete truth rejection and a CLI replay. Recorded D-108 and F-199.
@@ -251,3 +260,13 @@ No entries yet.
 **Next:** Christophe should identify the CI owner in #84 and implement pinned gitleaks/Bandit gates; Tatiana should specify integration fields and private evaluation inputs in #83. Joey then runs the live calendar/mail acceptance and cabinet draft review after those prerequisites land.
 
 **Open questions / blockers:** The existing Windows schema check reports `docs/capabilities.md` drift, while GitHub CI is green. Keep all calendar IDs, tokens, club examples and feedback out of Git.
+
+## 2026-11-16 - Joey: J-20 current-main reconciliation
+
+**Did:** Pulled #81 and merged main including the new ASME/team dates in #88. Preserved both shared handoff histories and the frozen interview-first stages.
+
+**State:** Draft remains intentional: synthetic tests and a checklist pipeline are available; no matching measured ClubOps model recordings have been supplied. This is not an ASME/private learning result.
+
+**Next:** Tatiana supplies legitimate matching replay recordings and runs the private ASME setup/leak-check acceptance; re-review this branch after CI.
+
+**Open questions / blockers:** No invented recordings, measured improvement or private data are committed. J-20 is still doing until the real replay curve is recorded.
