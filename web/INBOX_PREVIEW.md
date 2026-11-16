@@ -79,6 +79,29 @@ private OSA allowlists, credentials or raw diagnostics. Real forwarding, permiss
 paid-read deduplication and calendar behavior need owner-side tests and approved
 live acceptance.
 
+## Published candidate interfaces: 16 November 2026
+
+Tatiana has now documented candidate routes in open #95 and #96. The preview still
+does not call them; publication of a route is separate from adapter integration and
+live acceptance.
+
+- #95: `GET /api/inbox` returns `[{id, subject, date, forwarded_by}]`, metadata only,
+  without a model call. `POST /api/inbox/{id}/capture` is an explicit cabinet/CSRF
+  paid read returning `{proposals: [review ids], skipped}`. Other-club IDs are 404,
+  advisers are 403, and a failed read is 502 with the email retained for retry.
+- #96: president/CSRF `POST /api/knowledge/{id}/restore {valid_to: date or null}`
+  restores an expired fact as a new version. Not-expired facts are 409, past new
+  dates are 422. Expired facts remain history and are omitted from planning.
+- Still needed for a strict adapter: concrete response examples/nullable field and
+  `skipped` types, Restore's success response, J-22 skip/error/retry representation,
+  and forwarding verification/proof/settings endpoints. A successful provider read
+  is not inferred from a preview reducer state. No guessed routes or fallback paid
+  teaching calls are permitted.
+
+D-127 is this preview's design decision; F-228/F-229 cover proof and paid-read
+guards. The original D-124/F-214/F-215 numbers collided with #95/#96 and were
+renumbered before integration. Earlier handoff entries retain the historical IDs.
+
 ## Reproduce synthetic checks
 
 Run browser suites sequentially; they share their default artifact directory.

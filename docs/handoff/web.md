@@ -194,4 +194,12 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 
 **State / next:** C-35 stays doing, not production-ready: T-47 #92 and J-22 #93 are open; T-48/calendar contracts are pending, and D-115/D-116 live policy is after ASME. Need exact server shapes, validated adapter/HTTP stub tests against them and approved live acceptance. Independent review and final-head CI remain required; Create a merge commit and retain small commits. D-124/F-214-F-218 were reserved after all main/open-PR ranges. Tatiana should link owned guide/tests from her evidence/rubric docs. No outside-owner code or shared contracts changed.
 
+## 2026-11-16 - Christophe (C-35 shared-ID correction)
+
+**Did:** Fast-forwarded Tatiana's reviewed #94 branch update, then merged current main 54d38c1. Found that new #95/#96 reuse the preview's D-124/F-214/F-215 for different decisions/failures. Renumbered our rows to D-127/F-228/F-229 beyond #91 D-125/F-226 and #99 D-126/F-227; historical entries above remain unchanged. Updated web/INBOX_PREVIEW.md with the newly published candidate paths and the exact remaining response/proof contract gaps. No application behavior changed.
+
+**State / next:** Preview stays demo-only and C-35 doing. Previous approved head 9691b69 had all five CI checks green. Shared task/log/failure checks are rerun for the correction; current-head full CI/re-review is required after push. Tatiana should supply concrete typed examples, Restore response and J-22 skip/retry/proof/settings shapes before strict live integration. Preserve commits and wait for the team's merge-freeze decision; no self-merge.
+
+**Open questions / blockers:** #95/#96 are open, not production acceptance. No mailbox/provider access, paid calls or private data used. F-216/F-217/F-218 remain unchanged. The local demo preview is running again on 127.0.0.1:5173, still on the C-35 branch.
+
 **Other updates:** C-31 board #4 is now readable and private, with 17 fields and three existing issue cards (#43/#83/#84). Manual statuses/Iteration and lack of management marker are incompatible with the importer; no changes, duplicate board or sprint history invented. #91 needs syncing and its access-blocker text refreshed. J-16 still needs explicit .github path ownership approval. C-14 note requests the deployed origin in Google, but no deployed URL or authorized configuration supplied. Team coordination and contract requests are in #43; assistants in other sessions must receive them through teammates.
