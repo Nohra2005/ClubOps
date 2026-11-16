@@ -22,7 +22,7 @@ from clubops.contracts.rules import RuleApplication
 from clubops.drafts.proposal import draft_proposal
 
 
-def request(template: FormTemplate, *, materials: bool = False) -> DraftProposalRequest:
+def request(template: FormTemplate, *, materials: bool = False, catering: bool = False) -> DraftProposalRequest:
     start = datetime.fromisoformat("2026-12-03T14:00:00+02:00")
     spec = EventSpec(
         event_id="ev-synthetic-workshop",
@@ -39,7 +39,7 @@ def request(template: FormTemplate, *, materials: bool = False) -> DraftProposal
         admission=Admission.FREE,
         funding=[Funding.NO_EXPENSES],
         needs_materials=materials,
-        has_catering=False,
+        has_catering=catering,
         confirmed_by="m-president",
     )
     profile = ClubProfile(
@@ -94,3 +94,30 @@ def test_official_conditional_fields_are_present_without_invented_values(templat
     assert draft.answers["q14"].value == "14:00"
     assert draft.answers["q16"].value == "16:00"
     assert draft.answers["q01"].sources
+
+
+def test_legacy_33_field_version_keeps_known_values_and_pending_answers(template: FormTemplate) -> None:
+    legacy = FormTemplate.model_validate(
+        {
+            **template.model_dump(),
+            "version": "2026-2027.0",
+            "fields": [field.model_dump() for field in template.fields if int(field.field_id[1:]) <= 33],
+        }
+    )
+    draft = draft_proposal(request(legacy))
+    assert draft.form_version == legacy.version
+    assert len(draft.answers) + len(draft.attachments) == 33
+    assert "q34" not in draft.answers
+    assert draft.answers["q14"].value == "14:00"
+    assert draft.answers["q02"].value is None
+    assert draft.answers["q02"].sources == []
+    assert validate_answers(legacy, draft) == []
+
+
+def test_catering_branch_of_52_field_form_stays_pending_without_facts(template: FormTemplate) -> None:
+    assert len(template.fields) == 52
+    draft = draft_proposal(request(template, catering=True))
+    assert draft.answers["q20"].value == "Yes"
+    assert all(draft.answers[f"q{i}"].value is None for i in range(44, 53))
+    assert all(draft.answers[f"q{i}"].sources == [] for i in range(44, 53))
+    assert {issue.code for issue in validate_answers(template, draft)} == {"form.required"}

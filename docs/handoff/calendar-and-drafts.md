@@ -136,6 +136,15 @@ No entries yet.
 
 **Open questions / blockers:** Results belong in Tatiana's `results/` area; coordinate the measured run and evidence before poster claims.
 
+## 2026-11-10 — J-12 form-version regression (test/j12-form-versions)
+
+**Did:** Added synthetic checks for the historical 33-field shape selected by field ID from the current form, plus the current 52-field catering branch. The legacy draft validates with its known values; the current conditional fields remain explicitly pending when the event lacks facts.
+
+**State:** Focused proposal tests pass. J-12 remains doing because official required fields need human confirmation and Tatiana owns agent/event API wiring in issue #83. No contract or form source was changed.
+
+**Next:** Tatiana should wire the existing drafter through the published draft contract; Joey should verify a cabinet-reviewed complete proposal and adjust only sourced fields.
+
+**Open questions / blockers:** The synthetic 33-field shape is a compatibility test, not a newly sourced historical OSA form. Keep real submitted proposals private.
 ## 2026-11-10 — J-19 proposal accuracy runner
 
 **Did:** Added a deterministic runner that builds drafts from versioned proposal requests, checks them against the form and verified per-field truth, and outputs only category counts and safe case IDs. Synthetic tests cover category boundaries, incomplete truth rejection and a CLI replay. Recorded D-108 and F-199.
