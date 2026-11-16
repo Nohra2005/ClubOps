@@ -9,17 +9,17 @@ The real transport uses authenticated cookies, encoded path identifiers, abortab
 The published [API table](../docs/api.md) now resolves the earlier T-22 questions.
 The historical C-17 notes below describe the earlier contract review, not current blockers.
 
-| Boundary        | Current handling                                                                                                                                                                                      |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| HTTP convention | Bare UI views except canonical `AgentRun`; every changing request has `X-Requested-With: ClubOps`, including FormData and bodiless POSTs                                                              |
-| Google / logout | Official GIS button, `POST /auth/google {credential}`, HttpOnly session; protected `POST /auth/logout` must succeed before redirect. No token storage. Public client ID and real account test pending |
-| Planning        | Poll canonical run; questions are plain text; explicit `/continue` resumes the same ID and polling; leaving a limited run sends no invented stop action                                               |
-| Approval        | Revision sent to the server; local real-API test confirms no calendar items before approval and persistence after approval/reload. Approver IDs resolve through the cabinet list                      |
-| Chat            | Accept richer UI source objects and canonical citation IDs. Current server ask is an uncertainty placeholder until J-15; teaching is live, including no-fact results                                  |
-| Handover        | Live C-19 deterministic endpoint; UI/export preserves all supplied sources and gap questions. Sign-off remains demo-only                                                                              |
+| Boundary        | Current handling                                                                                                                                                                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| HTTP convention | Bare UI views except canonical `AgentRun`; every changing request has `X-Requested-With: ClubOps`, including FormData and bodiless POSTs                                                                                                         |
+| Google / logout | Official GIS button, `POST /auth/google {credential}`, HttpOnly session; protected `POST /auth/logout` must succeed before redirect. No token storage. Public client ID and real account test pending                                            |
+| Planning        | Poll canonical run; questions are plain text; explicit `/continue` resumes the same ID and polling; leaving a limited run sends no invented stop action                                                                                          |
+| Approval        | Revision sent to the server; local real-API test confirms no calendar items before approval and persistence after approval/reload. Approver IDs resolve through the cabinet list                                                                 |
+| Chat            | Accept richer UI source objects and canonical citation IDs. Current server ask is an uncertainty placeholder until J-15; teaching is live, including no-fact results                                                                             |
+| Handover        | Live C-19 deterministic endpoint; UI/export preserves all supplied sources and gap questions. Sign-off remains demo-only                                                                                                                         |
 | Setup           | #55 service and #87 application wiring are merged. `POST /setup/next {answer?}` resumes or advances; `/me.club.setup_complete` reads saved progress. Local skip/resume HTTP tests use the actual app; Google/deployed acceptance remains pending |
-| Usage           | Existing monthly planning totals plus recorded outcomes/cost-per-success; steps labelled accurately. Trace metrics remain unavailable until club-scoped traces are supplied                           |
-| Calendar        | Internal approved items work; Google sync is not connected in the API                                                                                                                                 |
+| Usage           | Existing monthly planning totals plus recorded outcomes/cost-per-success; steps labelled accurately. Trace metrics remain unavailable until club-scoped traces are supplied                                                                      |
+| Calendar        | Internal approved items work; Google sync is not connected in the API                                                                                                                                                                            |
 
 Verified locally with real HTTP/SQLite on desktop and 375px phone: plan → approve →
 calendar, handover, usage and cookie logout. Google SDK/credential behavior and failure
