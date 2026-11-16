@@ -267,3 +267,41 @@ D-104/F-175-F-178 and `REVIEW_GUIDE.md` record behavior and limits. Existing pub
 `tests/test_shared_layer.py` runs in root checks; no backend code/contracts changed.
 HTTP UI checks use synthetic intercepted responses, not a deployed service or user
 study. Final-head CI and independent teammate review are on the C-34 PR.
+
+## 2026-11-16 — C-29 actual application setup
+
+Baseline: main `54d38c1`, with #87 application wiring and #89 Windows UTF-8 fix.
+The C-29 branch adds `e2e/setup-live.spec.ts` to the existing live-API suite. This
+fixture launches the actual production application factory, real HTTP cookies and
+temporary SQLite stores. It does not install a substitute setup route or intercept
+API responses. Empty synthetic clubs are separate for desktop and 375px phone.
+
+Observed checks:
+
+- `npm run test:e2e:live`: **8 passed**, including four new setup cases. The president
+  flow checks initial `/me` false, redirect, skip, stop/reload/resume at the same
+  question, unchanged progress after missing CSRF (403), completion with skips and
+  `/me` true after completion. Reopening reads completed progress. Review stays an
+  empty array; starter ticks stay 0 of 4. Actual adviser sessions receive 403 on
+  writes and cannot open the interview controls. Existing plan approval, calendar,
+  handover, usage and local-login regressions remain green.
+- `npm run check`: lint, format, strict app/rehearsal types, **68 frontend unit
+  tests**, **12 board-tool tests** and production build passed.
+- Root `make check` equivalents: Ruff/format (**153 files**), strict mypy (**82
+  files**), schema/task checks and **681 tests passed**, **93.11% coverage**.
+  A fresh `uv sync --all-extras --dev` environment used the current lockfile; Node
+  dependencies were installed independently with `npm ci` in this worktree.
+
+The first test attempt used an incorrect `{items: []}` assertion for Review's bare
+array response; correcting the assertion did not change application behavior.
+An earlier worktree dependency junction caused local font-serving warnings; the
+successful run used an independent install with those warnings resolved. Windows
+setup required the existing workspace uv executable on PATH. The existing
+Starlette/httpx and MLflow/SQLAlchemy deprecation warnings are not test failures.
+
+Limits: no extraction/model calls in setup, real identities, private sources,
+Google provider login, worker-restart claim, public deployment, live mailbox,
+actual ASME acceptance or measured learning quality. The Python adapter tests and
+synthetic rehearsal prove different boundaries. F-151 and F-201 remain known limits.
+CI on the new PR head and independent review are tracked on its PR, not assumed from
+this local result. C-29 still needs Joey's fresh README-only setup and report review.
