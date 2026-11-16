@@ -21,7 +21,7 @@ RULEBOOK = Path("data/rulebook/aub-rules.json")
 
 
 def read_rulebook(path: Path = RULEBOOK) -> list[KnowHowItem]:
-    return [KnowHowItem.model_validate(raw) for raw in json.loads(path.read_text())]
+    return [KnowHowItem.model_validate(raw) for raw in json.loads(path.read_text(encoding="utf-8"))]
 
 
 def load(data_dir: Path, verified_by: str | None, path: Path = RULEBOOK) -> tuple[int, int]:
