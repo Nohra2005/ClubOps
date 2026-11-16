@@ -269,8 +269,8 @@ Reference documents:
 - Owner: tatiana
 - Status: todo
 - Needs: T-35, J-20
-- What: For ASME, pick what a real new club would paste on day one (its rules or constitution, one past proposal, cabinet list), only material dated before its test events, and check none of it is where the ASME labels came from (no leak). Mark its onboarding facts on the sheet like a busy president would (no special care).
-- Done when: the ASME starter pack is in `data/private/asme/` and the leak check is written in `eval/FROZEN.md`.
+- What: Updated 15 Nov to the setup interview (D-103) instead of pasted documents. Before the day: add the ASME president's account (sign-in Gmail, private). On 18 or 19 November the president answers the setup interview (one small model call per answer) and reviews the cards like a busy president, no special care. Leak check: no answer may name a test event or give away a labelled approval or deadline; such an answer is removed before the run. Then J-20's runner plans ASME's 13 frozen events.
+- Done when: answers and cards are in `data/private/asme/` and the leak check table in `eval/FROZEN.md` is filled.
 
 ### T-45 A cut-off model answer is reported, not dropped in silence (F-168, F-169)
 - Owner: tatiana
@@ -461,6 +461,7 @@ Reference documents:
 - Needs: none
 - What: The backend for the setup screen you built (C-11): `POST /api/setup/next {answer?}` walks a new club through about 10 questions (name, club or society and faculty, adviser, cabinet roles, signature events, usual venues, sponsors...) and turns each answer into a proposed fact in Review; the 25 AUB rules apply from day one (they are shared). Code in `src/clubops/api/setup.py` (yours); register it in place of the 501 route (one line; tell Tatiana). Tatiana gives you ASME's non-personal facts to seed ASME as the second club for the demo.
 - Done when: a new club can go through setup in the demo, and ASME is the second club.
+- Date change (2026-11-11, Tatiana): ASME onboarding moves from Wednesday 11 November to **Wednesday 18 or Thursday 19 November** (moved again on 15 Nov).
 - Progress (2026-11-11, Tatiana): production wiring done (D-112). `app.py` registers the setup router with the specified callbacks in place of the 501, and `/api/me` reports `setup_complete` from the service, with the Running Club marked as set up before C-21. The setup tests now run the production route with synthetic callbacks via `create_app(setup_overrides=...)`: deleting the route from `app.router.routes` no longer takes effect in FastAPI 0.162, so they had been exercising the production route. Decided-card retry: pending and approved proposals are skipped; a rejected one can reappear once (F-201, known limit). Remaining: ASME goes through setup in the demo.
 - Progress (2026-11-03): owned service/router and frontend in PR #55; durable per-club questions, Untrusted capture, retry outbox and Review-only writes. 18 synthetic service/HTTP/SQLite cases include one explicit reproduction of the unresolved stale-tab limit (F-151), plus desktop/phone setup tests. See `web/CLUB_SETUP.md`. Still doing: Tatiana must wire the public callbacks and `/me` completion field, approve decided-card retry semantics and provide sourced non-personal ASME seed facts. Existing answer-only contract's stale-tab limit is documented; no contract was silently extended.
 
@@ -574,7 +575,7 @@ Reference documents:
 - Status: todo
 - Needs: C-21, C-34, T-47
 - What: (1) Setup (C-21): a step to add an extra sending address and show the code to e-mail; an Outlook forwarding guide (OSA senders only) showing the club's `+tag` address with a copy button, and a "Test my forwarding" button. (2) Inbox screen: waiting e-mails, a "Read this" button that says it costs money, and the reason when an e-mail was skipped ("ClubOps only reads e-mails forwarded from OSA staff"). (3) Review cards (C-34): an expiry date field, an AUB-wide / club-only label, an "Add to calendar" box for deadlines (ticked by default) with who it is for, and an archive view with Restore.
-- Done when: each screen has frontend tests against the T-47 routes (stubbed until they land) and is in the demo build before the Saturday 14 Nov freeze.
+- Done when: each screen has frontend tests against the T-47 routes (stubbed until they land) and is in the demo build before the 23 Nov meet-up.
 
 ## Joey: calendar, reminders, drafts
 
