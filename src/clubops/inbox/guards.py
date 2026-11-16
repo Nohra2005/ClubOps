@@ -21,9 +21,9 @@ from pathlib import Path
 
 _TAG = re.compile(r"^clubops\.agent\+([a-z0-9-]+)@gmail\.com$", re.IGNORECASE)
 _FORWARD_MARKER = re.compile(
-    r"(?im)^\s*(?:-{2,}\s*(?:forwarded message|original message)\s*-{2,}|begin forwarded message:)\s*$"
+    r"(?im)^\s*(?:-{2,}\s*(?:forwarded message|original message)\s*-{2,}|begin forwarded message:|_{5,})\s*$"
 )
-_HEADER = re.compile(r"(?im)^(from|subject|date|message-id):\s*(.+)$")
+_HEADER = re.compile(r"(?im)^(from|subject|date|sent|to|cc|message-id):\s*(.+)$")
 _LINK = re.compile(r"https?://\S+", re.IGNORECASE)
 _QUOTE = re.compile(r"(?m)^(?:>|On .+ wrote:|From: .+)$")
 
@@ -186,7 +186,9 @@ def check_forward(
         match = _HEADER.match(line)
         if match is None:
             return CheckedMail("malformed_forward_headers")
-        headers[match.group(1).casefold()] = match.group(2).strip()
+        name = match.group(1).casefold()
+        if name not in {"sent", "to", "cc"}:
+            headers[name] = match.group(2).strip()
     origins = [address.casefold() for _, address in getaddresses([headers.get("from", "")])]
     if len(origins) != 1 or origins[0] not in {address.casefold() for address in osa_senders}:
         return CheckedMail("original_sender_not_osa")

@@ -233,3 +233,13 @@ No entries yet.
 **Next:** Tatiana should call the guard from the human-click capture route, derive authorized senders from the cabinet plus verified entries, pass the private OSA list, claim the fingerprint before the paid call, save Review proposals, then mark it read. Release the claim on failure to keep the mail retryable and show the skip reason through C-35. Please resolve PR #92's explicit-role allowlist review first. Christophe should use T-47's published response/error shapes for the C-35 screens.
 
 **Open questions / blockers:** A live forward and cross-club read-once check need T-47 and cabinet approval. The claim expires after ten minutes so a crashed read can be retried; T-47 must handle that retry and avoid claiming before a person clicks. Do not commit the OSA sender list or codes.
+
+## 2026-11-16 - Joey: J-22 Outlook review and task acceptance audit
+
+**Did:** Pulled the current branch, fetched and merged main 54d38c1, preserving both failure-matrix histories. Addressed Tatiana's PR #93 blocker: recognize Outlook underscore forwards, accept and discard Sent/To/Cc, retain Gmail/Date handling. A synthetic Outlook test checks clean content, non-OSA rejection and cross-club duplicate rejection. Marked J-17/J-19 done against their explicit synthetic runner gates; private T-26 scores are still pending.
+
+**State:** J-22 remains review pending current-head independent approval and CI. #79/#80/#85/#86 are already merged; this session does not claim those merges. No private mailbox data or paid calls were used.
+
+**Next:** Tatiana re-reviews #93 and wires guards into T-47 (#95), including claim/release and skip reasons; Christophe uses those shapes in C-35 (#94).
+
+**Open questions / blockers:** J-23 requires a coordinated CalendarItem contract extension for deadline approval and per-event invitees; T-48 (#96) alone does not provide that contract. J-13/#82 needs actual defense-off/on outcomes; J-20/#81 needs real model replay recordings. J-16 still needs CI-owner work in #84; calendar/Gmail acceptance, cabinet draft feedback and poster numbers remain external gates.

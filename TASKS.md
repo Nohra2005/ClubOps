@@ -705,12 +705,14 @@ Reference documents:
 
 ### J-17 Chatbot test runner
 - Owner: joey
-- Status: doing
+- Status: done
 - Needs: J-15
 - What: A script like `scripts/eval_plans.py` for the chatbot test (`chatbot-questions.csv`, frozen in T-04): ask each question, then score right answers, invented answers (an answer when the right reply is "not sure"), correct "not sure" replies, citations that really support the answer, and cost. Build and test it on synthetic questions; Tatiana runs it on the private file in T-26.
 - Done when: `scripts/eval_chat.py` gives a result table on synthetic data, with tests, in replay mode.
 - Progress (2026-10-31): replay-capable runner and synthetic scorer tests added. Tatiana's private CSV column mapping and recorded model responses still need verification.
 - Progress (2026-11-10): focused synthetic scorer, CSV loader and replay CLI tests pass. Tatiana must confirm the frozen private header and recordings and run the private set; see issue #83. No private questions or answers are in Git.
+
+- Verified (2026-11-16): synthetic replay runner and tests are present; the task's synthetic acceptance gate is complete. Private evaluation remains Tatiana's T-26 gate, not a claimed result.
 
 ### J-18 Poster
 - Owner: joey
@@ -721,11 +723,13 @@ Reference documents:
 
 ### J-19 Proposal accuracy runner
 - Owner: joey
-- Status: review
+- Status: done
 - Needs: J-12
 - What: Measure how close the proposal draft is to what the club really submitted: for each past event that has a real proposal (Tatiana gives the private files), compare the draft's answers field by field. Report correct, wrong, left for a person, and invented answers (filled in when the truth was unknown), plus form-check errors. Build and test it on synthetic proposals; Tatiana runs it on the real ones in T-26.
 - Done when: `scripts/eval_proposals.py` gives a result table on synthetic data, with tests, in replay mode.
 - Progress (2026-11-10): deterministic JSON-case runner and synthetic CLI tests pass. It prints counts and case IDs only. PR #80 is open with Tatiana requested for review; her private submitted proposals are used in T-26.
+
+- Verified (2026-11-16): synthetic replay runner and tests are present; the task's synthetic acceptance gate is complete. Private evaluation remains Tatiana's T-26 gate, not a claimed result.
 
 ### J-20 New-club test and learning curve (D-91)
 - Owner: joey
@@ -752,7 +756,9 @@ Reference documents:
 
 ### J-23 Deadline cards on the club calendar (D-116)
 - Owner: joey
-- Status: todo
+- Status: blocked
 - Needs: J-02, T-48
 - What: One calendar per club on `clubops.agent`. An approved deadline card with "Add to calendar" ticked creates an event with a reminder and invites only the people it names, through their Gmail. Event invites are set per event, cabinet by default. ClubOps never gets access to members' own calendars.
 - Done when: synthetic tests (no live Google calls) and failure-matrix rows.
+
+- Blocked (2026-11-16): T-48 is not merged and the frozen CalendarItem contract has no per-event invitee or deadline-card approval fields. Coordinate a standalone contract-change PR with Tatiana before implementing D-116; do not reuse the old role-calendar behavior as acceptance.
