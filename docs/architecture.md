@@ -86,4 +86,5 @@ Review decisions on retry; F-201 records the known rejected-proposal retry limit
 See [the integration guide](../web/CLUB_SETUP.md) for the exact boundary and current
 answer-only contract's stale-tab limitation, accepted by Tatiana in #43 for one-time,
 president-only setup. Reported extraction failures (`sources_failed`) cannot advance
-progress or queue partial facts. Sourced ASME seeding remains T-09 work.
+progress or queue partial facts. Authorized ASME starter sources and acceptance
+remain T-44 and the owning team's work.
