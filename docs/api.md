@@ -56,7 +56,8 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Settings | `GET /api/usage` | live (monthly planning cost; `calls_label` identifies planner steps; optional `run_metrics`, `trace_metrics`, `trace_metrics_available`, `metrics_note` explain C-20 outcomes and recorded coverage) |
 | Setup | `POST /api/setup/next` | 501 until C-21 |
 | Inbox | `GET /api/inbox` | live (cabinet only, own club): `[{id, subject, date, forwarded_by}]` for forwarded e-mails waiting to be read; metadata only, no model call |
-| Inbox | `POST /api/inbox/{id}/capture` | live (cabinet only, CSRF): one paid model read; `{proposals: [review ids], skipped}`; 404 if the id is not waiting for your club; 502 if the read failed (the e-mail stays waiting, retry); budget errors as usual. J-22's sender checks and skip reasons plug in here once merged |
+| Inbox | `POST /api/inbox/{id}/capture` | live (cabinet only, CSRF): one paid model read; `{proposals: [review ids], skipped}`; 404 if the id is not waiting for your club; 409 if the e-mail did not pass J-22's checks or is already being read (or was read for another club); 502 if the read failed (the e-mail stays waiting, retry); budget errors as usual. The read is claimed in J-22's ledger before the model and marked read only after Review has the proposals |
+| Inbox | `GET /api/inbox/skipped` | live (cabinet only, own club): `[{id, subject, reason, why}]` for forwarded e-mails the free checks refused, e.g. `why`: "ClubOps only reads e-mails forwarded from OSA staff". Never read by a model |
 
 The demo-only actions in `client.ts` (`/__ui/*`) stay demo-only for now.
 

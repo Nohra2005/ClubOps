@@ -68,6 +68,8 @@ from clubops.contracts.knowhow import (
     VerifyRequest,
 )
 from clubops.inbox.capture import PendingInbox
+from clubops.inbox.guards import InboxLedger
+from clubops.inbox_intake import InboxNotes
 from clubops.knowhow.backends import open_club_store_backend
 from clubops.knowhow.directory import Directory
 from clubops.knowhow.handover import build_handover
@@ -763,6 +765,8 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
     # ------------------------------------------------------------- OSA inbox (T-47)
 
     inbox = PendingInbox(config.data_dir / "inbox.db")
+    inbox_notes = InboxNotes(config.data_dir / "inbox-notes.db")
+    inbox_ledger = InboxLedger(config.data_dir / "inbox-ledger.db")
 
     def _summary(message_id: str, request: CaptureRequest) -> dict[str, str]:
         """Metadata only: subject, date and who forwarded it. The body is shown nowhere before Review."""
@@ -780,6 +784,11 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         """Forwarded e-mails waiting for this club. Free: nothing has been read by a model yet."""
         return [_summary(mid, req) for mid, req in inbox.pending(member.club_id)]
 
+    @app.get("/api/inbox/skipped")
+    def inbox_skipped(member: Member = Depends(cabinet)) -> list[dict[str, str]]:  # noqa: B008
+        """Forwarded e-mails the free checks refused, with the reason in plain words. Never read."""
+        return inbox_notes.skipped(member.club_id)
+
     @app.post("/api/inbox/{message_id}/capture")
     def inbox_capture(message_id: str, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
         """One paid model read, started by a person. Proposals go to Review; the e-mail leaves the queue
@@ -788,10 +797,22 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         request = waiting.get(message_id)
         if request is None or request.club_id != member.club_id:
             raise HTTPException(404, "No waiting e-mail with that id for your club.")
-        with club(member.club_id) as (store, _, _, _):
-            result = Learner(model_client(), store).learn(request, today(), load_settings().new_budget())
+        fingerprint = inbox_notes.fingerprint(message_id, member.club_id)
+        if fingerprint is None:  # queued without J-22's checks: never paid for (D-114)
+            raise HTTPException(409, "This e-mail has not passed the inbox checks. Fetch the inbox again.")
+        token = inbox_ledger.claim_read(fingerprint)
+        if token is None:
+            raise HTTPException(409, "This e-mail is already being read, or was read for another club.")
+        try:
+            with club(member.club_id) as (store, _, _, _):
+                result = Learner(model_client(), store).learn(request, today(), load_settings().new_budget())
+        except BaseException:
+            inbox_ledger.release_read(fingerprint, token)
+            raise
         if result.sources_failed:
+            inbox_ledger.release_read(fingerprint, token)
             raise HTTPException(502, "The e-mail could not be read this time. It is still waiting; try again.")
+        inbox_ledger.mark_read(fingerprint, token)
         inbox.mark_processed(message_id, member.club_id)
         return {
             "proposals": [p.proposal_id for p in result.proposals],
