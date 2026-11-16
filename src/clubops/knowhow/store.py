@@ -211,6 +211,9 @@ class KnowHowStore:
         item = self.latest(item_id)
         if item is None or (item.scope is Scope.CLUB and item.club_id != actor.club_id):
             raise CapabilityError(ErrorCode.NOT_FOUND, "no such item for this club")
+        if item.scope is not Scope.CLUB:
+            # An AUB-wide fact is shared by every club: one club's president may not republish it (D-115).
+            raise CapabilityError(ErrorCode.NOT_AUTHORIZED, "AUB-wide facts are restored by the ClubOps operator")
         if item.status is not ItemStatus.VERIFIED or item.valid_to is None or item.valid_to >= now.date():
             raise CapabilityError(ErrorCode.CONFLICT, "only an approved item whose end date has passed can be restored")
         if valid_to is not None and valid_to < now.date():

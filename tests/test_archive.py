@@ -14,6 +14,7 @@ from clubops.api.app import ApiConfig, create_app
 from clubops.api.security import MemberStore
 from clubops.capabilities.runner import CapabilityError
 from clubops.contracts.common import Role
+from clubops.contracts.knowhow import Scope
 from clubops.knowhow.backends import open_club_store_backend
 from clubops.knowhow.store import KnowHowStore
 from tests.factories import CLUB, NOW, actor, item, verified
@@ -48,6 +49,7 @@ def test_restore_gives_a_new_version_the_planner_uses_again() -> None:
         (verified(item("kh-term-room", valid_to=NOW.date() + timedelta(days=5))), None),  # not expired yet
         (verified(item("kh-term-room", valid_to=ENDED)), ENDED),  # new end already past
         (verified(item("kh-term-room", club_id="chess-club", valid_to=ENDED)), None),  # another club's fact
+        (verified(item("kh-term-room", scope=Scope.AUB, club_id=None, valid_to=ENDED)), None),  # AUB-wide fact
     ],
 )
 def test_restore_refuses_wrong_cases(stored: object, new_end: date | None) -> None:
@@ -66,6 +68,7 @@ def client(tmp_path: Path) -> Iterator[TestClient]:
     people.close()
     store = KnowHowStore(open_club_store_backend(tmp_path, CLUB))
     store.backend.append(verified(item("kh-term-room", valid_to=ENDED)))
+    store.backend.append(verified(item("kh-aub-term", scope=Scope.AUB, club_id=None, valid_to=ENDED)))
     config = ApiConfig(data_dir=tmp_path, session_secret="t", dev_login=True, cookie_secure=False)  # noqa: S106
     with TestClient(create_app(config, clock=lambda: NOW)) as c:
         yield c
@@ -78,3 +81,5 @@ def test_only_the_president_restores_through_the_app(client: TestClient) -> None
     response = client.post("/api/knowledge/kh-term-room/restore", json={"valid_to": "2026-12-31"}, headers=HEADERS)
     assert response.status_code == 200, response.text
     assert response.json()["status"] == "current"
+    shared = client.post("/api/knowledge/kh-aub-term/restore", json={}, headers=HEADERS)
+    assert shared.status_code == 403  # a club president cannot republish an AUB-wide fact

@@ -55,7 +55,7 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Settings | `POST /api/documents` (multipart `file`) | live: .txt, .md, .csv, .eml, .xlsx up to 2 MB; past expense forms become a price list without AI; returns a `documents` knowledge item saying how many facts went to Review |
 | Settings | `GET /api/usage` | live (monthly planning cost; `calls_label` identifies planner steps; optional `run_metrics`, `trace_metrics`, `trace_metrics_available`, `metrics_note` explain C-20 outcomes and recorded coverage) |
 | Setup | `POST /api/setup/next` | 501 until C-21 |
-| Knowledge | `POST /api/knowledge/{id}/restore {valid_to: date or null}` | live (president only, CSRF): brings an expired fact back as a new version; facts whose end date passed show `status: may_be_outdated` and are not used by the planner; 409 if not expired, 422 if the new date is past |
+| Knowledge | `POST /api/knowledge/{id}/restore {valid_to: date or null}` | live (president only, CSRF): brings an expired club fact back as a new version (an AUB-wide fact answers 403: operator only); facts whose end date passed show `status: may_be_outdated` and are not used by the planner; 409 if not expired, 422 if the new date is past |
 
 The demo-only actions in `client.ts` (`/__ui/*`) stay demo-only for now.
 
