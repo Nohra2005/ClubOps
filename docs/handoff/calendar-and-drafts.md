@@ -156,6 +156,15 @@ No entries yet.
 **Next:** Tatiana fixes the detector so benign role descriptions are not rejected, then Joey removes the expected-failure marker and reruns the corpus and full checks.
 
 **Open questions / blockers:** Do not edit Tatiana-owned learning code in this PR. Keep the private outcome file and traces outside Git.
+## 2026-11-10 — J-12 form-version regression (test/j12-form-versions)
+
+**Did:** Added synthetic checks for the historical 33-field shape selected by field ID from the current form, plus the current 52-field catering branch. The legacy draft validates with its known values; the current conditional fields remain explicitly pending when the event lacks facts.
+
+**State:** Focused proposal tests pass. J-12 remains doing because official required fields need human confirmation and Tatiana owns agent/event API wiring in issue #83. No contract or form source was changed.
+
+**Next:** Tatiana should wire the existing drafter through the published draft contract; Joey should verify a cabinet-reviewed complete proposal and adjust only sourced fields.
+
+**Open questions / blockers:** The synthetic 33-field shape is a compatibility test, not a newly sourced historical OSA form. Keep real submitted proposals private.
 ## 2026-11-10 — J-19 proposal accuracy runner
 
 **Did:** Added a deterministic runner that builds drafts from versioned proposal requests, checks them against the form and verified per-field truth, and outputs only category counts and safe case IDs. Synthetic tests cover category boundaries, incomplete truth rejection and a CLI replay. Recorded D-108 and F-199.
@@ -234,3 +243,13 @@ No entries yet.
 **Next:** Christophe should identify the CI owner in #84 and implement pinned gitleaks/Bandit gates; Tatiana should specify integration fields and private evaluation inputs in #83. Joey then runs the live calendar/mail acceptance and cabinet draft review after those prerequisites land.
 
 **Open questions / blockers:** The existing Windows schema check reports `docs/capabilities.md` drift, while GitHub CI is green. Keep all calendar IDs, tokens, club examples and feedback out of Git.
+
+## 2026-11-16 - Joey: J-13 current-main reconciliation
+
+**Did:** Pulled #82 and merged main through #88, preserving both handoff histories. Kept the frozen attack and benign corpora and strict complete-outcome scorer.
+
+**State:** Draft remains intentional. The benign detector regression is an explicit strict expected failure (F-204), not a successful defense claim. No measured defense-off/on outcomes have been supplied.
+
+**Next:** Tatiana resolves the detector false positive and records private, independently reviewed outcomes for all attack and benign cases in both modes; publish aggregates only. Re-review this updated head after CI.
+
+**Open questions / blockers:** This branch cannot honestly provide an attack success or false-positive rate until the measured run exists; no fabricated model responses or private text were added.
