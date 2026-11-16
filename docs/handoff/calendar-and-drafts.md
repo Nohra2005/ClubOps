@@ -253,3 +253,13 @@ No entries yet.
 **Next:** Tatiana and Christophe re-review #93, integrate its guard before exposing #95 paid capture, and publish the separate deadline/audience contract for J-23. PR #92 still needs its shared main conflict resolved by its owner before merge.
 
 **Open questions / blockers:** Calendar/Gmail live acceptance and deployed sync require T-46/T-47/C-35; J-07/J-08 need approved private style examples and two cabinet reviewers on three events; J-11 needs server scheduling/persistence; J-12 needs official-form/app acceptance; J-13 needs detector fix and measured on/off outcomes; J-15 needs private chatbot evaluation; J-16 needs CI-path ownership and gates; J-18 awaits T-26 results and Tatiana's number check; J-20 needs matching legitimate replay recordings; J-21 needs cabinet access integration/live acceptance; J-23 needs the coordinated contract. Fresh README-only setup requested by C-29/#99 is still unverified. No invented evidence, private data or paid model calls were used.
+
+## 2026-11-16 - Joey: final PR handoff update
+
+**Did:** Resolved #92's main conflicts in shared design/failure logs only, preserving both sides; pushed e5038a9 to Tatiana's existing branch and independently re-approved the exact-role fix. Sixteen focused Gmail/intake/task tests and lint/format/types/schema/task checks pass. This supersedes the earlier request that its owner resolve the conflict. Updated #81's description to the actual 15-row interview-first pipeline and posted current-head review handoffs on #81/#82/#93 and issues #83/#84.
+
+**State:** #88 merged as 7109e06; #92 is synchronized and approved, waiting for current-head CI; #93 has the Outlook fix and six verified task-status corrections, waiting for teammate re-review and current CI. #81/#82 stay draft for missing measurements. All local work is committed/pushed; the original Joey branch remains checked out.
+
+**Next:** Merge #92 with a merge commit after all required checks succeed, and #93 after independent approval plus CI. T3 PR watches will handle those external waits.
+
+**Open questions / blockers:** #95 and #96 have actionable changes-requested reviews; #91/#94/#99 lack current independent approval and/or remain draft. No unreviewed or incomplete PR was merged.
