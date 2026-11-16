@@ -26,3 +26,16 @@ All items are held out: none were used while building ClubOps. Frozen before the
 | `eval/synthetic-events.csv` (public, synthetic) | 10 made-up events, one per event type the Running Club never ran | Joey (J-14), checked and corrected by Tatiana (S06, S07, S08) | `bcec66154ec2dbafcd65af0e2a9e46828c5cdab11e4cd681c4372f4432a84006` |
 
 Finding while labelling: ASME spent over $200 twice (A01, A07) without the members' vote our rulebook asks for, and OSA still approved. The labels record what really happened.
+
+## ASME onboarding leak check (T-44, to fill on the onboarding day)
+
+ASME starts empty and its president answers the setup interview (D-103) on 18 or 19 November 2026. Its 13 test events are in Freeze 2 above.
+
+| Check | Result |
+|---|---|
+| Date of the setup interview | _to fill_ |
+| Interview answers name any of the 13 test events (A01-A15) or their outcomes? | _to fill: list question numbers, or "none"_ |
+| An answer gives away a labelled approval or deadline for a test event? If yes, that answer is removed before the run | _to fill_ |
+| Cards approved / rejected / edited by the president, reviewed like a busy president (no special care) | _to fill: counts only_ |
+| Answers and cards kept in `data/private/asme/` (never in Git) | _to fill_ |
+

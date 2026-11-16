@@ -9,7 +9,7 @@ Where this section or `TASKS.md` differs from an earlier chat message from Tatia
 - New tasks: Christophe **C-35**; Joey **J-22** (PR by Thursday 12 Nov night) and **J-23**. Decisions behind them: D-113 to D-116.
 - Joey: first apply the review comments on #79-#86 (#80 only needs updating from main; #82, #85, #86 share one fix: re-save `docs/handoff/calendar-and-drafts.md` as UTF-8).
 - Next free IDs: **D-122** and **F-207** (D-117 to D-121 and F-202 to F-206 are taken by #78 and Joey's open PRs; ignore "start at D-113" in earlier reviews).
-- Merge freeze before the ASME test: **Saturday 14 Nov**. Anything not merged by then waits.
+- New dates (15 Nov): ASME onboarding on **Wed 18 or Thu 19 Nov**; full-day team meet-up on **Mon 23 Nov** (off campus) to merge everything pending, deploy, freeze and run the final evaluation together. Have your PRs reviewed and green before then.
 
 ## Start here
 
@@ -24,7 +24,7 @@ Where this section or `TASKS.md` differs from an earlier chat message from Tatia
 |---|---|---|---|
 | Tatiana | Backend, agent, memory, evaluation | `src/clubops/` (except the files listed below), `eval/`, `results/`, `docs/` | Contracts in `src/clubops/contracts/` and the API table in the UI spec |
 | Christophe | Web app, deployment, handover and setup endpoints, cost report, evaluation in CI, learning test runner, demo, setup docs, grading guide | `web/`, `render.yaml`, `Dockerfile`, `src/clubops/api/handover.py`, `src/clubops/api/setup.py`, `src/clubops/reports/`, `src/clubops/evaluation/learning.py`, `scripts/eval_learning.py`, `docs/architecture.md`, `docs/data-provenance.md`, `docs/knowledge-base.md`, `docs/demo-script.md` | API table in the UI spec (https://claude.ai/artifact/XYRMvB5SZMxNSTv7jKvJam) |
-| Joey | Chatbot, calendar sync, reminders, draft templates and the proposal draft, OSA e-mail inbox, daily checks, security tests, made-up test events, chatbot test runner, threat model, poster | `src/clubops/calendar/`, `src/clubops/drafts/`, `src/clubops/inbox/`, `src/clubops/checks/`, `src/clubops/chat/`, `tests/security/`, `eval/synthetic-events.csv`, `src/clubops/evaluation/chat.py`, `scripts/eval_chat.py`, `docs/threat-model.md` | [`docs/calendar-contract.md`](docs/calendar-contract.md) and the `Draft` contract |
+| Joey | Chatbot, calendar sync, reminders, draft templates and the proposal draft, OSA e-mail inbox, daily checks, security tests, made-up test events, chatbot test runner, threat model, poster | `src/clubops/calendar/`, `src/clubops/drafts/`, `src/clubops/inbox/`, `src/clubops/checks/`, `src/clubops/chat/`, `tests/security/`, `eval/synthetic-events.csv`, `eval/new-club-*`, `src/clubops/evaluation/chat.py`, `scripts/eval_chat.py`, `scripts/eval_proposals.py`, `scripts/eval_new_club.py`, `docs/threat-model.md` | [`docs/calendar-contract.md`](docs/calendar-contract.md) and the `Draft` contract |
 
 Shared by everyone: `TASKS.md`, `docs/design-log.md`, `docs/failure-matrix.md`, `tests/` for your own part.
 

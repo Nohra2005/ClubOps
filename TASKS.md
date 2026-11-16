@@ -269,8 +269,8 @@ Reference documents:
 - Owner: tatiana
 - Status: todo
 - Needs: T-35, J-20
-- What: For ASME, pick what a real new club would paste on day one (its rules or constitution, one past proposal, cabinet list), only material dated before its test events, and check none of it is where the ASME labels came from (no leak). Mark its onboarding facts on the sheet like a busy president would (no special care).
-- Done when: the ASME starter pack is in `data/private/asme/` and the leak check is written in `eval/FROZEN.md`.
+- What: Updated 15 Nov to the setup interview (D-103) instead of pasted documents. Before the day: add the ASME president's account (sign-in Gmail, private). On 18 or 19 November the president answers the setup interview (one small model call per answer) and reviews the cards like a busy president, no special care. Leak check: no answer may name a test event or give away a labelled approval or deadline; such an answer is removed before the run. Then J-20's runner plans ASME's 13 frozen events.
+- Done when: answers and cards are in `data/private/asme/` and the leak check table in `eval/FROZEN.md` is filled.
 
 ### T-45 A cut-off model answer is reported, not dropped in silence (F-168, F-169)
 - Owner: tatiana
@@ -278,6 +278,13 @@ Reference documents:
 - Needs: T-09
 - What: Learning the bylaws printed "all done" while only 1 of its 4 pieces had reached the model: the other answers were cut off at the answer limit, which looked like "not JSON", and the pieces were counted as empty and marked done. Read the provider's stop signal on every call, count such a piece as failed (not skipped) and leave it out of `done` so a rerun retries it; split documents on their own headings so a rule is not cut in half.
 - Done when: a cut-off answer says so, a failed piece is retried on the next run, and both have a regression test. (2026-11-08: done, D-98; contracts 0.2.3.)
+
+### T-46 Connect Google Calendar on the backend
+- Owner: tatiana
+- Status: todo
+- Needs: T-22
+- What: Keep Google sign-in separate from Calendar authorization. Add president-only connect/disconnect and OAuth callback endpoints with state validation, server-side encrypted refresh-token storage and refresh/reconnect handling. Use the private club calendar ID, `calendar.events` and `calendar.acls` scopes. After an approved plan is saved, drain Joey's sync queue to Google and report pending/error/connected status. On cabinet add/remove, use Joey's J-21 reader ACL adapter with retryable failures; never grant writer or owner access. Agree the endpoint response fields with Christophe before changing the UI contract.
+- Done when: synthetic API tests prove unauthorized users cannot connect, unapproved plans never sync, retries do not duplicate events, and cabinet add/remove grants/revokes only reader access; a cabinet-approved local Google test completes after J-01's private calendar ID is supplied.
 
 ### T-47 OSA e-mail reaches Review: API and accounts (D-113, D-114)
 - Owner: tatiana
@@ -454,6 +461,7 @@ Reference documents:
 - Needs: none
 - What: The backend for the setup screen you built (C-11): `POST /api/setup/next {answer?}` walks a new club through about 10 questions (name, club or society and faculty, adviser, cabinet roles, signature events, usual venues, sponsors...) and turns each answer into a proposed fact in Review; the 25 AUB rules apply from day one (they are shared). Code in `src/clubops/api/setup.py` (yours); register it in place of the 501 route (one line; tell Tatiana). Tatiana gives you ASME's non-personal facts to seed ASME as the second club for the demo.
 - Done when: a new club can go through setup in the demo, and ASME is the second club.
+- Date change (2026-11-11, Tatiana): ASME onboarding moves from Wednesday 11 November to **Wednesday 18 or Thursday 19 November** (moved again on 15 Nov).
 - Progress (2026-11-11, Tatiana): production wiring done (D-112). `app.py` registers the setup router with the specified callbacks in place of the 501, and `/api/me` reports `setup_complete` from the service, with the Running Club marked as set up before C-21. The setup tests now run the production route with synthetic callbacks via `create_app(setup_overrides=...)`: deleting the route from `app.router.routes` no longer takes effect in FastAPI 0.162, so they had been exercising the production route. Decided-card retry: pending and approved proposals are skipped; a rejected one can reappear once (F-201, known limit). Remaining: ASME goes through setup in the demo.
 - Progress (2026-11-03): owned service/router and frontend in PR #55; durable per-club questions, Untrusted capture, retry outbox and Review-only writes. 18 synthetic service/HTTP/SQLite cases include one explicit reproduction of the unresolved stale-tab limit (F-151), plus desktop/phone setup tests. See `web/CLUB_SETUP.md`. Still doing: Tatiana must wire the public callbacks and `/me` completion field, approve decided-card retry semantics and provide sourced non-personal ASME seed facts. Existing answer-only contract's stale-tab limit is documented; no contract was silently extended.
 
@@ -567,7 +575,7 @@ Reference documents:
 - Status: todo
 - Needs: C-21, C-34, T-47
 - What: (1) Setup (C-21): a step to add an extra sending address and show the code to e-mail; an Outlook forwarding guide (OSA senders only) showing the club's `+tag` address with a copy button, and a "Test my forwarding" button. (2) Inbox screen: waiting e-mails, a "Read this" button that says it costs money, and the reason when an e-mail was skipped ("ClubOps only reads e-mails forwarded from OSA staff"). (3) Review cards (C-34): an expiry date field, an AUB-wide / club-only label, an "Add to calendar" box for deadlines (ticked by default) with who it is for, and an archive view with Restore.
-- Done when: each screen has frontend tests against the T-47 routes (stubbed until they land) and is in the demo build before the Saturday 14 Nov freeze.
+- Done when: each screen has frontend tests against the T-47 routes (stubbed until they land) and is in the demo build before the 23 Nov meet-up.
 
 ## Joey: calendar, reminders, drafts
 
@@ -577,7 +585,8 @@ Reference documents:
 - Needs: none
 - What: Read `docs/calendar-contract.md`. Create the Google Cloud project, turn on the Calendar API, create the shared club calendar. Secrets never go in the repo.
 - Done when: a test item appears in the shared calendar from your code.
-- Blocked: OAuth client, club calendar IDs and a cabinet-approved live test are not available yet. The adapter and setup steps are in `src/clubops/calendar/README.md`.
+- Progress (2026-11-10): manual Google setup complete: Calendar and Gmail APIs enabled, External OAuth test users and web client configured, Running Club calendar created, and its ID stored only in local `.env`. No manual calendar sharing is required.
+- Blocked: T-46's separate Calendar authorization and backend sync, C-35's connection UI, and a cabinet-approved live test are still needed before a test item can appear in Google Calendar. The adapter and setup steps are in `src/clubops/calendar/README.md`.
 
 ### J-02 Sync calendar items
 - Owner: joey
@@ -661,7 +670,7 @@ Reference documents:
 - What: Fill the OSA Event Proposal form from an approved event's details, the club profile and the rule check, following the frozen `draft-proposal` contract (`DraftProposalRequest` -> `ProposalDraft` in `src/clubops/contracts/forms.py`). The form is `data/forms/osa_event_proposal_2026_2027.json`; it grows from 33 to 52 questions: "Yes" to materials adds 10 (q34-q43: tables, chairs, boards, tents, table covers, outlets and amperage), "Yes" to catering adds 9 (q44-q52: menu, people, setup time, price per person, a second option, cost sharing); each extra question has `required_if` on the question that opens it. Every answer says its origin (stated, from memory, computed, missing) and source; times in 24-hour format; dates match the event; adviser name without "Dr."; nothing invented (unknown = left for a person). Code in `src/clubops/drafts/proposal.py`. Tatiana adds it to the agent as a tool and to the event page once it works (tell her).
 - Done when: drafts for the made-up test events pass the form checks (required answers present, 24-hour times, dates consistent, attachments listed), with tests for both form versions.
 - Progress (2026-10-31): deterministic drafter and synthetic checks for the checked-in 33-question form added. The official six materials questions are not yet present in the checked-in template, so their exact form-version check remains pending.
-- Progress (2026-11-10): the checked-in official template now has 52 fields; focused synthetic tests cover conditional materials fields, date/time formatting, source refs and unknowns. The old 33-field version and complete answer acceptance still need explicit verification; Tatiana owns agent/event API wiring.
+- Progress (2026-11-10): verified the current 52-field form's catering branch and a synthetic 33-field legacy shape selected by field ID; both keep unknown answers pending rather than inventing values. Focused tests pass. Current official 52-field required answers still need human confirmation, and Tatiana owns agent/event API wiring (issue #83).
 
 ### J-13 Security tests (was T-24)
 - Owner: joey
@@ -713,10 +722,11 @@ Reference documents:
 
 ### J-19 Proposal accuracy runner
 - Owner: joey
-- Status: todo
+- Status: review
 - Needs: J-12
 - What: Measure how close the proposal draft is to what the club really submitted: for each past event that has a real proposal (Tatiana gives the private files), compare the draft's answers field by field. Report correct, wrong, left for a person, and invented answers (filled in when the truth was unknown), plus form-check errors. Build and test it on synthetic proposals; Tatiana runs it on the real ones in T-26.
 - Done when: `scripts/eval_proposals.py` gives a result table on synthetic data, with tests, in replay mode.
+- Progress (2026-11-10): deterministic JSON-case runner and synthetic CLI tests pass. It prints counts and case IDs only. PR #80 is open with Tatiana requested for review; her private submitted proposals are used in T-26.
 
 ### J-20 New-club test and learning curve (D-91)
 - Owner: joey
@@ -725,6 +735,14 @@ Reference documents:
 - What: Show ClubOps works for clubs it was not tuned on. `scripts/eval_new_club.py`: start a club empty (only the shared AUB layer), give it a starter pack of 0, 1, 3, then all onboarding documents, and plan its events after each step with `clubops.evaluation.plans` (approvals caught, false alarms, cost). Make 3 synthetic clubs of other kinds (academic, cultural, social; like J-14) with events and labels, and freeze them before running. Tatiana runs it on ASME (T-44) in T-26.
 - Done when: the script gives a curve table per club on synthetic data, with tests, in replay mode.
 
+### J-21 Automate shared-calendar cabinet access
+- Owner: joey
+- Status: review
+- Needs: J-01
+- What: Grant a named cabinet member read-only access to the club's shared Google calendar and revoke that rule when the member leaves. Keep Google access separate from ClubOps approval rights. Tatiana owns the cabinet API triggers and token storage; Christophe owns the Settings display. Do not change public, owner or manually elevated permissions automatically.
+- Done when: fake-Google tests show repeat grants are safe, removal revokes only that member's reader rule, and a live cabinet-approved test verifies access after backend OAuth is connected.
+- Progress (2026-11-10): reader ACL adapter and synthetic tests added. PR #79 is open with Tatiana and Christophe requested for review. Backend OAuth, cabinet add/remove triggers, Settings status, calendar ID and live test remain pending with their owners.
+- Progress (2026-11-11): Tatiana's PR #79 review found the Running Club-only env placeholder. Replaced it with a private per-club JSON map, parser and synthetic multi-club/invalid-input tests. Joey must move the existing local ID into the new map privately. T-46 still owns backend loading and OAuth; live sharing remains pending.
 ### J-22 Inbox checks before any paid read (D-113, D-114)
 - Owner: joey
 - Status: todo
