@@ -263,3 +263,13 @@ No entries yet.
 **Next:** Merge #92 with a merge commit after all required checks succeed, and #93 after independent approval plus CI. T3 PR watches will handle those external waits.
 
 **Open questions / blockers:** #95 and #96 have actionable changes-requested reviews; #91/#94/#99 lack current independent approval and/or remain draft. No unreviewed or incomplete PR was merged.
+
+## 2026-11-16 - Joey: J-22 watch recovery and merged Gmail-fetch sync
+
+**Did:** Checked #93 directly after the host watch failed. Tatiana approved the Outlook fix; all five checks on the previous head passed. Main now includes #92. Merged it into #93 and resolved only the shared failure-matrix conflict, preserving F-207/F-208 and all J-22 rows. No inbox guard or Gmail-fetch behavior changed.
+
+**State:** Current-head checks and independent re-review must be assessed after this merge-only update; #92 is already merged, superseding the previous waiting state.
+
+**Next:** Restart the #93 watch after pushing; merge only with current approval and green required checks.
+
+**Open questions / blockers:** T-47 paid-read integration remains in #95. Host watcher access is unreliable; the direct authenticated GitHub API remains readable.
