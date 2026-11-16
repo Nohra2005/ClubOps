@@ -526,6 +526,7 @@ Reference documents:
 ### C-29 Keep the docs true (was T-31)
 - Owner: christophe
 - Status: doing
+- Progress (2026-11-16): verifying the merged #87 setup through the actual application over HTTP with synthetic new clubs; refreshing owned setup/architecture/provenance docs and preparing architecture, web, deployment and monitoring report sections. Fresh README-only teammate setup, deployed acceptance and report review remain pending. Work is prepared for review after the stated merge freeze, not merged automatically.
 - Progress (2026-11-09): refreshed owned architecture, memory and provenance docs against main `4b3f17e`: green main CI evidence, lasting/this-term filtering, failed-source retries, wrong-replacement review limit, shared-scope approval and private debug/review-sheet content. Setup's accepted one-tab limit and owner integration are explicit. Fresh teammate setup and final deployed verification remain open.
 - Needs: T-22
 - What: Update `docs/architecture.md`, `docs/data-provenance.md`, `docs/knowledge-base.md` and the README setup to the new scope (agent loop, learning, web app, deployment, monitoring). Ask Tatiana when unsure how the backend works. Setup must work from a fresh clone in one command. Write the report sections on architecture, the web app, deployment and monitoring.
