@@ -243,3 +243,13 @@ No entries yet.
 **Next:** Tatiana re-reviews #93 and wires guards into T-47 (#95), including claim/release and skip reasons; Christophe uses those shapes in C-35 (#94).
 
 **Open questions / blockers:** J-23 requires a coordinated CalendarItem contract extension for deadline approval and per-event invitees; T-48 (#96) alone does not provide that contract. J-13/#82 needs actual defense-off/on outcomes; J-20/#81 needs real model replay recordings. J-16 still needs CI-owner work in #84; calendar/Gmail acceptance, cabinet draft feedback and poster numbers remain external gates.
+
+## 2026-11-16 - Joey: verified acceptance and team review handback
+
+**Did:** Reviewed all 12 open PRs' metadata, discussions, review states and CI; inspected the relevant inbox/restore/calendar changes. Reviewed and merged #88 with a merge commit (7109e06). Approved #92's explicit-role fix, requested changes on #95 (paid reads bypass J-22) and #96 (shared-fact Restore bypass). Sent concrete handoffs in #83/#84. Synced #81 and #82 separately with main, preserving both logs; they remain draft pending legitimate measured outcomes.
+
+**State:** #93 code passes the full 686-test suite (one skipped), 92.79% coverage, Ruff/format, mypy, schemas and task checks. GNU Make is absent; its equivalent commands ran. J-02/J-05/J-06 meet their fake-Google test gates, J-14 has Tatiana-reviewed frozen labels, and J-17/J-19 have synthetic replay runners. These status corrections do not imply live calendar, private model evaluation or send-ready cabinet acceptance. J-03/J-04 remain doing for reminder acceptance and the D-116 integration decision.
+
+**Next:** Tatiana and Christophe re-review #93, integrate its guard before exposing #95 paid capture, and publish the separate deadline/audience contract for J-23. PR #92 still needs its shared main conflict resolved by its owner before merge.
+
+**Open questions / blockers:** Calendar/Gmail live acceptance and deployed sync require T-46/T-47/C-35; J-07/J-08 need approved private style examples and two cabinet reviewers on three events; J-11 needs server scheduling/persistence; J-12 needs official-form/app acceptance; J-13 needs detector fix and measured on/off outcomes; J-15 needs private chatbot evaluation; J-16 needs CI-path ownership and gates; J-18 awaits T-26 results and Tatiana's number check; J-20 needs matching legitimate replay recordings; J-21 needs cabinet access integration/live acceptance; J-23 needs the coordinated contract. Fresh README-only setup requested by C-29/#99 is still unverified. No invented evidence, private data or paid model calls were used.

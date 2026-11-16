@@ -590,10 +590,12 @@ Reference documents:
 
 ### J-02 Sync calendar items
 - Owner: joey
-- Status: doing
+- Status: done
 - Needs: J-01, T-13
 - What: Create, move (same ID, new date), and delete items so Google always matches ClubOps. ClubOps is the boss; edits in Google are overwritten. Only approved plans are sent.
 - Done when: tests show no duplicates when an item is sent twice or moved.
+
+- Verified (2026-11-16): Existing fake-Google tests meet this task's synthetic acceptance gate (stable-ID upsert/move, done/cancel, retry and failure coverage). Live authorization/deployment acceptance remains J-01/J-09; D-116 deadline invitations remain J-23. This does not claim live Google delivery.
 
 ### J-03 Reminders
 - Owner: joey
@@ -611,18 +613,22 @@ Reference documents:
 
 ### J-05 Done and cancelled
 - Owner: joey
-- Status: doing
+- Status: done
 - Needs: J-02
 - What: Task done stops its reminders; event cancelled deletes all its items.
 - Done when: tested.
 
+- Verified (2026-11-16): Existing fake-Google tests meet this task's synthetic acceptance gate (stable-ID upsert/move, done/cancel, retry and failure coverage). Live authorization/deployment acceptance remains J-01/J-09; D-116 deadline invitations remain J-23. This does not claim live Google delivery.
+
 ### J-06 Calendar tests and failure rows
 - Owner: joey
-- Status: doing
+- Status: done
 - Needs: J-05
 - What: Tests with a fake Google (no real calls in `make check`); a Failure Matrix row for each failure mode (Google down, item sent twice, role with no person).
 - Done when: `make check` passes with your tests.
 - Progress (2026-11-10): fake-Google tests cover approval gating, stable IDs, move, done/cancel, missing-role fallback, all-cabinet private reminders, queue retry and club-wide items. Focused tests pass. Live plan approval, Google sync and role access still require T-46/C-35 and J-01/J-09 acceptance.
+
+- Verified (2026-11-16): Existing fake-Google tests meet this task's synthetic acceptance gate (stable-ID upsert/move, done/cancel, retry and failure coverage). Live authorization/deployment acceptance remains J-01/J-09; D-116 deadline invitations remain J-23. This does not claim live Google delivery.
 
 ### J-07 Draft templates
 - Owner: joey
@@ -682,11 +688,13 @@ Reference documents:
 
 ### J-14 Made-up events for the missing event types (was T-36)
 - Owner: joey
-- Status: review
+- Status: done
 - Needs: none
 - What: 10 short, made-up event descriptions for types the Running Club never ran (workshop, conference, film screening, concert, exhibition, gala, meeting, competition, trip, play), each with the approvals it needs judged from the 25 AUB rules only (`data/rulebook/aub-rules.json`, codes in `TASKS.md` T-08). Mark them synthetic. Save as `eval/synthetic-events.csv` with the same columns as the Running Club test set (Tatiana shares the header). Ask Tatiana when a rule is unclear; don't guess.
 - Done when: 10 labelled events are in the repo, checked by Tatiana, ready for T-38's freeze.
 - Progress (2026-10-31): ten synthetic rows added using the evaluation loader's columns and the sourced rulebook. Tatiana's label review and confirmation against the private D5 header remain before freeze.
+
+- Verified (2026-11-16): Tatiana's checked/corrected ten synthetic rows are recorded in eval/FROZEN.md Freeze 2; the normalized file hash matches that freeze. Earlier pending-review note is superseded.
 
 ### J-15 Chatbot with sources (was T-17)
 - Owner: joey
