@@ -590,10 +590,12 @@ Reference documents:
 
 ### J-02 Sync calendar items
 - Owner: joey
-- Status: doing
+- Status: done
 - Needs: J-01, T-13
 - What: Create, move (same ID, new date), and delete items so Google always matches ClubOps. ClubOps is the boss; edits in Google are overwritten. Only approved plans are sent.
 - Done when: tests show no duplicates when an item is sent twice or moved.
+
+- Verified (2026-11-16): Existing fake-Google tests meet this task's synthetic acceptance gate (stable-ID upsert/move, done/cancel, retry and failure coverage). Live authorization/deployment acceptance remains J-01/J-09; D-116 deadline invitations remain J-23. This does not claim live Google delivery.
 
 ### J-03 Reminders
 - Owner: joey
@@ -611,18 +613,22 @@ Reference documents:
 
 ### J-05 Done and cancelled
 - Owner: joey
-- Status: doing
+- Status: done
 - Needs: J-02
 - What: Task done stops its reminders; event cancelled deletes all its items.
 - Done when: tested.
 
+- Verified (2026-11-16): Existing fake-Google tests meet this task's synthetic acceptance gate (stable-ID upsert/move, done/cancel, retry and failure coverage). Live authorization/deployment acceptance remains J-01/J-09; D-116 deadline invitations remain J-23. This does not claim live Google delivery.
+
 ### J-06 Calendar tests and failure rows
 - Owner: joey
-- Status: doing
+- Status: done
 - Needs: J-05
 - What: Tests with a fake Google (no real calls in `make check`); a Failure Matrix row for each failure mode (Google down, item sent twice, role with no person).
 - Done when: `make check` passes with your tests.
 - Progress (2026-11-10): fake-Google tests cover approval gating, stable IDs, move, done/cancel, missing-role fallback, all-cabinet private reminders, queue retry and club-wide items. Focused tests pass. Live plan approval, Google sync and role access still require T-46/C-35 and J-01/J-09 acceptance.
+
+- Verified (2026-11-16): Existing fake-Google tests meet this task's synthetic acceptance gate (stable-ID upsert/move, done/cancel, retry and failure coverage). Live authorization/deployment acceptance remains J-01/J-09; D-116 deadline invitations remain J-23. This does not claim live Google delivery.
 
 ### J-07 Draft templates
 - Owner: joey
@@ -682,11 +688,13 @@ Reference documents:
 
 ### J-14 Made-up events for the missing event types (was T-36)
 - Owner: joey
-- Status: review
+- Status: done
 - Needs: none
 - What: 10 short, made-up event descriptions for types the Running Club never ran (workshop, conference, film screening, concert, exhibition, gala, meeting, competition, trip, play), each with the approvals it needs judged from the 25 AUB rules only (`data/rulebook/aub-rules.json`, codes in `TASKS.md` T-08). Mark them synthetic. Save as `eval/synthetic-events.csv` with the same columns as the Running Club test set (Tatiana shares the header). Ask Tatiana when a rule is unclear; don't guess.
 - Done when: 10 labelled events are in the repo, checked by Tatiana, ready for T-38's freeze.
 - Progress (2026-10-31): ten synthetic rows added using the evaluation loader's columns and the sourced rulebook. Tatiana's label review and confirmation against the private D5 header remain before freeze.
+
+- Verified (2026-11-16): Tatiana's checked/corrected ten synthetic rows are recorded in eval/FROZEN.md Freeze 2; the normalized file hash matches that freeze. Earlier pending-review note is superseded.
 
 ### J-15 Chatbot with sources (was T-17)
 - Owner: joey
@@ -706,12 +714,14 @@ Reference documents:
 
 ### J-17 Chatbot test runner
 - Owner: joey
-- Status: doing
+- Status: done
 - Needs: J-15
 - What: A script like `scripts/eval_plans.py` for the chatbot test (`chatbot-questions.csv`, frozen in T-04): ask each question, then score right answers, invented answers (an answer when the right reply is "not sure"), correct "not sure" replies, citations that really support the answer, and cost. Build and test it on synthetic questions; Tatiana runs it on the private file in T-26.
 - Done when: `scripts/eval_chat.py` gives a result table on synthetic data, with tests, in replay mode.
 - Progress (2026-10-31): replay-capable runner and synthetic scorer tests added. Tatiana's private CSV column mapping and recorded model responses still need verification.
 - Progress (2026-11-10): focused synthetic scorer, CSV loader and replay CLI tests pass. Tatiana must confirm the frozen private header and recordings and run the private set; see issue #83. No private questions or answers are in Git.
+
+- Verified (2026-11-16): synthetic replay runner and tests are present; the task's synthetic acceptance gate is complete. Private evaluation remains Tatiana's T-26 gate, not a claimed result.
 
 ### J-18 Poster
 - Owner: joey
@@ -722,11 +732,13 @@ Reference documents:
 
 ### J-19 Proposal accuracy runner
 - Owner: joey
-- Status: review
+- Status: done
 - Needs: J-12
 - What: Measure how close the proposal draft is to what the club really submitted: for each past event that has a real proposal (Tatiana gives the private files), compare the draft's answers field by field. Report correct, wrong, left for a person, and invented answers (filled in when the truth was unknown), plus form-check errors. Build and test it on synthetic proposals; Tatiana runs it on the real ones in T-26.
 - Done when: `scripts/eval_proposals.py` gives a result table on synthetic data, with tests, in replay mode.
 - Progress (2026-11-10): deterministic JSON-case runner and synthetic CLI tests pass. It prints counts and case IDs only. PR #80 is open with Tatiana requested for review; her private submitted proposals are used in T-26.
+
+- Verified (2026-11-16): synthetic replay runner and tests are present; the task's synthetic acceptance gate is complete. Private evaluation remains Tatiana's T-26 gate, not a claimed result.
 
 ### J-20 New-club test and learning curve (D-91)
 - Owner: joey
@@ -745,14 +757,17 @@ Reference documents:
 - Progress (2026-11-11): Tatiana's PR #79 review found the Running Club-only env placeholder. Replaced it with a private per-club JSON map, parser and synthetic multi-club/invalid-input tests. Joey must move the existing local ID into the new map privately. T-46 still owns backend loading and OAuth; live sharing remains pending.
 ### J-22 Inbox checks before any paid read (D-113, D-114)
 - Owner: joey
-- Status: todo
+- Status: review
 - Needs: J-10
 - What: Finishes J-10. In `src/clubops/inbox/`: an extra sending address per cabinet member, proven by a short code e-mailed to the club's `+tag` address and removed with the member; the original sender inside the forwarded text must be on the OSA list (passed in, never committed); skip e-mails already read; clean the text before the model (signatures, old replies, links, formatting); every skipped e-mail returns its reason; the same OSA e-mail sent to many clubs is read once. No model call in this task.
 - Done when: synthetic tests cover unverified sender, wrong code, original sender not on the OSA list, duplicate, read-once across clubs, and an e-mail with instructions inside treated as data; each has a failure-matrix row. PR up by Thursday 12 Nov night; otherwise Tatiana takes it over.
+- Progress (2026-11-12): Joey-owned `inbox.guards` and synthetic tests cover the verification code, private OSA allowlist input, skip reasons, content cleaning and cross-club fingerprint. API wiring and live Gmail acceptance remain with Tatiana's T-47; the guard does not make model calls or send mail.
 
 ### J-23 Deadline cards on the club calendar (D-116)
 - Owner: joey
-- Status: todo
+- Status: blocked
 - Needs: J-02, T-48
 - What: One calendar per club on `clubops.agent`. An approved deadline card with "Add to calendar" ticked creates an event with a reminder and invites only the people it names, through their Gmail. Event invites are set per event, cabinet by default. ClubOps never gets access to members' own calendars.
 - Done when: synthetic tests (no live Google calls) and failure-matrix rows.
+
+- Blocked (2026-11-16): T-48 is not merged and the frozen CalendarItem contract has no per-event invitee or deadline-card approval fields. Coordinate a standalone contract-change PR with Tatiana before implementing D-116; do not reuse the old role-calendar behavior as acceptance.
