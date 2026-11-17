@@ -223,3 +223,53 @@ No entries yet.
 **Next:** Christophe should identify the CI owner in #84 and implement pinned gitleaks/Bandit gates; Tatiana should specify integration fields and private evaluation inputs in #83. Joey then runs the live calendar/mail acceptance and cabinet draft review after those prerequisites land.
 
 **Open questions / blockers:** The existing Windows schema check reports `docs/capabilities.md` drift, while GitHub CI is green. Keep all calendar IDs, tokens, club examples and feedback out of Git.
+
+## 2026-11-12 - J-22 pre-read inbox guards
+
+**Did:** Added a private SQLite verification/read ledger and synthetic pre-paid-read guards in Joey's inbox folder. A member's extra sender address needs a salted six-digit code mailed to the club plus-address within ten minutes; five wrong attempts lock it, and removal revokes it. A forward needs a matching club tag, authorized forwarder and operator-supplied OSA original sender. Cleaned text remains untrusted. Global original-message fingerprints skip a read already completed for another club. Added D-123 and F-209 to F-213 with regression tests.
+
+**State:** Synthetic guard tests pass; no Google call, model call, real address or club content is in this PR. J-22 is in review. The existing Gmail fetch/queue path remains separate, and T-47 API integration/live acceptance has not happened.
+
+**Next:** Tatiana should call the guard from the human-click capture route, derive authorized senders from the cabinet plus verified entries, pass the private OSA list, claim the fingerprint before the paid call, save Review proposals, then mark it read. Release the claim on failure to keep the mail retryable and show the skip reason through C-35. Please resolve PR #92's explicit-role allowlist review first. Christophe should use T-47's published response/error shapes for the C-35 screens.
+
+**Open questions / blockers:** A live forward and cross-club read-once check need T-47 and cabinet approval. The claim expires after ten minutes so a crashed read can be retried; T-47 must handle that retry and avoid claiming before a person clicks. Do not commit the OSA sender list or codes.
+
+## 2026-11-16 - Joey: J-22 Outlook review and task acceptance audit
+
+**Did:** Pulled the current branch, fetched and merged main 54d38c1, preserving both failure-matrix histories. Addressed Tatiana's PR #93 blocker: recognize Outlook underscore forwards, accept and discard Sent/To/Cc, retain Gmail/Date handling. A synthetic Outlook test checks clean content, non-OSA rejection and cross-club duplicate rejection. Marked J-17/J-19 done against their explicit synthetic runner gates; private T-26 scores are still pending.
+
+**State:** J-22 remains review pending current-head independent approval and CI. #79/#80/#85/#86 are already merged; this session does not claim those merges. No private mailbox data or paid calls were used.
+
+**Next:** Tatiana re-reviews #93 and wires guards into T-47 (#95), including claim/release and skip reasons; Christophe uses those shapes in C-35 (#94).
+
+**Open questions / blockers:** J-23 requires a coordinated CalendarItem contract extension for deadline approval and per-event invitees; T-48 (#96) alone does not provide that contract. J-13/#82 needs actual defense-off/on outcomes; J-20/#81 needs real model replay recordings. J-16 still needs CI-owner work in #84; calendar/Gmail acceptance, cabinet draft feedback and poster numbers remain external gates.
+
+## 2026-11-16 - Joey: verified acceptance and team review handback
+
+**Did:** Reviewed all 12 open PRs' metadata, discussions, review states and CI; inspected the relevant inbox/restore/calendar changes. Reviewed and merged #88 with a merge commit (7109e06). Approved #92's explicit-role fix, requested changes on #95 (paid reads bypass J-22) and #96 (shared-fact Restore bypass). Sent concrete handoffs in #83/#84. Synced #81 and #82 separately with main, preserving both logs; they remain draft pending legitimate measured outcomes.
+
+**State:** #93 code passes the full 686-test suite (one skipped), 92.79% coverage, Ruff/format, mypy, schemas and task checks. GNU Make is absent; its equivalent commands ran. J-02/J-05/J-06 meet their fake-Google test gates, J-14 has Tatiana-reviewed frozen labels, and J-17/J-19 have synthetic replay runners. These status corrections do not imply live calendar, private model evaluation or send-ready cabinet acceptance. J-03/J-04 remain doing for reminder acceptance and the D-116 integration decision.
+
+**Next:** Tatiana and Christophe re-review #93, integrate its guard before exposing #95 paid capture, and publish the separate deadline/audience contract for J-23. PR #92 still needs its shared main conflict resolved by its owner before merge.
+
+**Open questions / blockers:** Calendar/Gmail live acceptance and deployed sync require T-46/T-47/C-35; J-07/J-08 need approved private style examples and two cabinet reviewers on three events; J-11 needs server scheduling/persistence; J-12 needs official-form/app acceptance; J-13 needs detector fix and measured on/off outcomes; J-15 needs private chatbot evaluation; J-16 needs CI-path ownership and gates; J-18 awaits T-26 results and Tatiana's number check; J-20 needs matching legitimate replay recordings; J-21 needs cabinet access integration/live acceptance; J-23 needs the coordinated contract. Fresh README-only setup requested by C-29/#99 is still unverified. No invented evidence, private data or paid model calls were used.
+
+## 2026-11-16 - Joey: final PR handoff update
+
+**Did:** Resolved #92's main conflicts in shared design/failure logs only, preserving both sides; pushed e5038a9 to Tatiana's existing branch and independently re-approved the exact-role fix. Sixteen focused Gmail/intake/task tests and lint/format/types/schema/task checks pass. This supersedes the earlier request that its owner resolve the conflict. Updated #81's description to the actual 15-row interview-first pipeline and posted current-head review handoffs on #81/#82/#93 and issues #83/#84.
+
+**State:** #88 merged as 7109e06; #92 is synchronized and approved, waiting for current-head CI; #93 has the Outlook fix and six verified task-status corrections, waiting for teammate re-review and current CI. #81/#82 stay draft for missing measurements. All local work is committed/pushed; the original Joey branch remains checked out.
+
+**Next:** Merge #92 with a merge commit after all required checks succeed, and #93 after independent approval plus CI. T3 PR watches will handle those external waits.
+
+**Open questions / blockers:** #95 and #96 have actionable changes-requested reviews; #91/#94/#99 lack current independent approval and/or remain draft. No unreviewed or incomplete PR was merged.
+
+## 2026-11-16 - Joey: J-22 watch recovery and merged Gmail-fetch sync
+
+**Did:** Checked #93 directly after the host watch failed. Tatiana approved the Outlook fix; all five checks on the previous head passed. Main now includes #92. Merged it into #93 and resolved only the shared failure-matrix conflict, preserving F-207/F-208 and all J-22 rows. No inbox guard or Gmail-fetch behavior changed.
+
+**State:** Current-head checks and independent re-review must be assessed after this merge-only update; #92 is already merged, superseding the previous waiting state.
+
+**Next:** Restart the #93 watch after pushing; merge only with current approval and green required checks.
+
+**Open questions / blockers:** T-47 paid-read integration remains in #95. Host watcher access is unreliable; the direct authenticated GitHub API remains readable.
