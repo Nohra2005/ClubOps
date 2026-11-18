@@ -1,10 +1,67 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useApp } from '../AppContext';
-import { ErrorNotice, Modal, PageHeading } from '../components/ui';
+import { ErrorNotice, Modal, PageHeading, Resource } from '../components/ui';
 import { PreviewNotice } from '../inbox/ForwardingPanel';
 import { skipReasons } from '../inbox/preview';
 import { useInboxPreview } from '../inbox/useInboxPreview';
+import { useResource } from '../hooks';
+
+function HttpInbox() {
+  const { api } = useApp();
+  const waiting = useResource(() => api.inbox(), [api]);
+  const skipped = useResource(() => api.skippedInbox(), [api]);
+  return (
+    <>
+      <p className="notice">
+        Server metadata only. This screen does not request email bodies or an AI read. Paid reads
+        and forwarding changes are not connected here yet.
+      </p>
+      <section className="panel" aria-label="Waiting email">
+        <div className="panel-header">
+          <h2>Waiting email</h2>
+          <button className="button small" disabled={waiting.loading} onClick={waiting.reload}>
+            Refresh waiting email
+          </button>
+        </div>
+        <Resource loading={waiting.loading} error={waiting.error} retry={waiting.reload}>
+          {waiting.value?.length === 0 && <p>No waiting email.</p>}
+          <div className="inbox-message-list">
+            {waiting.value?.map((message) => (
+              <article className="inbox-message" key={message.id}>
+                <h3>{message.subject || '(No subject)'}</h3>
+                <p>Received: {message.date || 'Not supplied'}</p>
+                <p>Forwarded by: {message.forwarded_by || 'Not supplied'}</p>
+              </article>
+            ))}
+          </div>
+        </Resource>
+      </section>
+      <section className="panel" aria-label="Skipped email">
+        <div className="panel-header">
+          <h2>Skipped by free checks</h2>
+          <button className="button small" disabled={skipped.loading} onClick={skipped.reload}>
+            Refresh skipped email
+          </button>
+        </div>
+        <p>These messages were refused before a model read. The server supplies each reason.</p>
+        <Resource loading={skipped.loading} error={skipped.error} retry={skipped.reload}>
+          {skipped.value?.length === 0 && <p>No skipped email.</p>}
+          <div className="inbox-message-list">
+            {skipped.value?.map((message) => (
+              <article className="inbox-message" key={message.id}>
+                <h3>{message.subject || '(No subject)'}</h3>
+                <p>{message.why}</p>
+                <p className="inline-note">Reason: {message.reason}</p>
+              </article>
+            ))}
+          </div>
+        </Resource>
+      </section>
+      <Link to="/settings#forwarding">Check forwarding setup →</Link>
+    </>
+  );
+}
 
 function DemoInbox() {
   const { state, dispatch, canEdit } = useInboxPreview();
@@ -140,7 +197,7 @@ function DemoInbox() {
   );
 }
 export default function Inbox() {
-  const { api } = useApp();
+  const { api, canEdit } = useApp();
   return (
     <>
       <PageHeading
@@ -150,11 +207,12 @@ export default function Inbox() {
       />
       {api.mode === 'demo' ? (
         <DemoInbox />
+      ) : canEdit ? (
+        <HttpInbox />
       ) : (
         <section className="panel">
-          <h2>Inbox integration is not available yet.</h2>
-          <p>No email was fetched or read. Your existing knowledge and Review are unchanged.</p>
-          <Link to="/settings#forwarding">Check forwarding setup →</Link>
+          <h2>Inbox is for cabinet members.</h2>
+          <p>This adviser session does not request private inbox metadata or read email.</p>
         </section>
       )}
     </>
