@@ -116,7 +116,7 @@ live acceptance.
   teaching calls are permitted.
 
 D-127 is the preview decision; D-128 covers this read-only HTTP projection.
-F-228/F-229 cover proof and paid-read guards; F-230 is the HTTP write boundary and
+F-228/F-229 cover proof and paid-read guards; F-232 is the HTTP write boundary and
 F-231 covers read-only metadata failures/privacy. The original D-124/F-214/F-215
 and later F-216 numbers collided with #95/#96 and were renumbered. Earlier handoff
 entries retain their historical IDs.
