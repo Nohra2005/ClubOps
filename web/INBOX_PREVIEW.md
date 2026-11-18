@@ -1,4 +1,4 @@
-# Inbox and deadline previews (C-35)
+# Inbox metadata and deadline previews (C-35)
 
 The demo build includes forwarding setup in **Setup** and **Settings**, a separate
 **Inbox**, and a separate deadline lifecycle panel in **Review**. They use synthetic
@@ -6,11 +6,11 @@ messages and a reserved `.example` forwarding address. They make no HTTP, Google
 email or model calls. They do not publish knowledge, change the actual Review queue,
 create calendar items or alter the server’s existing shared-approval policy.
 
-C-35 remains doing: T-47 #92 adds a free fetch CLI and J-22 #93 adds checks.
-TASKS names `GET /api/inbox` and `POST /api/inbox/{id}/capture`, but their JSON,
-errors, retry behavior and verification/lifecycle routes are not published.
-T-48 and calendar-contract work remain with their
-owners. D-115/D-116’s live policy changes are explicitly after ASME. The existing
+C-35 remains doing. Free fetch #92 and J-22's checks #93 are merged. Open #95
+documents candidate waiting/skipped metadata routes and paid capture; open #96
+documents club-fact Restore. This branch implements only the two metadata GETs in
+HTTP mode. Paid/proof/settings/Restore response details and live acceptance remain
+with their owners. D-115/D-116's live policy changes remain separate; the existing
 Review controls and payloads are unchanged.
 
 ## Try it
@@ -55,10 +55,23 @@ are president-only. These are UI guards, not proof of backend authorization.
 
 ## HTTP boundary for Tatiana
 
-In HTTP mode Inbox and forwarding show unavailable states; the lifecycle preview is
-absent. They generate no real-looking address, request no guessed routes, extend no
-Review payload and never fall back to a paid `/chat/teach` call. Settings’ existing
-explicitly submitted manual notes are a separate action.
+HTTP Inbox uses only `GET /api/inbox` and `GET /api/inbox/skipped`, with independent
+loading, errors and explicit refresh. The parser accepts the documented bare arrays,
+requires distinct nonempty string IDs and plain string subject/reason/explanation
+fields, and drops extra fields such as bodies. Missing/null descriptive date or
+forwarder labels display **Not supplied**, rather than implying verification or a
+timestamp. This is a frontend projection policy, not a change to frozen contracts.
+
+Adviser sessions do not mount either metadata resource. Server authorization is
+still required. No metadata is copied to browser storage. Server strings render as
+text, without HTML or automatic links. Failed, denied, malformed and uninstalled
+routes show an error instead of an empty successful list or demo fallback. #95 is
+not merged: current main can therefore return an unavailable/error response here.
+
+Forwarding writes remain unavailable and the HTTP lifecycle preview is absent.
+There is no paid-read control, guessed route, generated live address, extended
+Review payload or paid `/chat/teach` fallback. Settings' explicitly submitted
+manual notes are a separate action.
 
 Please publish routes, exact JSON and role/error/retry rules for:
 
@@ -89,18 +102,24 @@ live acceptance.
   without a model call. `POST /api/inbox/{id}/capture` is an explicit cabinet/CSRF
   paid read returning `{proposals: [review ids], skipped}`. Other-club IDs are 404,
   advisers are 403, and a failed read is 502 with the email retained for retry.
+- Its 17 November update adds `GET /api/inbox/skipped` returning
+  `[{id, subject, reason, why}]`, and 409 for a refused/already-claimed capture.
+  The read-only view supports the two list routes; no capture request is made.
 - #96: president/CSRF `POST /api/knowledge/{id}/restore {valid_to: date or null}`
   restores an expired fact as a new version. Not-expired facts are 409, past new
   dates are 422. Expired facts remain history and are omitted from planning.
+  The updated route rejects AUB-wide Restore with 403 (operator only).
 - Still needed for a strict adapter: concrete response examples/nullable field and
   `skipped` types, Restore's success response, J-22 skip/error/retry representation,
   and forwarding verification/proof/settings endpoints. A successful provider read
   is not inferred from a preview reducer state. No guessed routes or fallback paid
   teaching calls are permitted.
 
-D-127 is this preview's design decision; F-228/F-229 cover proof and paid-read
-guards. The original D-124/F-214/F-215 numbers collided with #95/#96 and were
-renumbered before integration. Earlier handoff entries retain the historical IDs.
+D-127 is the preview decision; D-128 covers this read-only HTTP projection.
+F-228/F-229 cover proof and paid-read guards; F-230 is the HTTP write boundary and
+F-231 covers read-only metadata failures/privacy. The original D-124/F-214/F-215
+and later F-216 numbers collided with #95/#96 and were renumbered. Earlier handoff
+entries retain their historical IDs.
 
 ## Reproduce synthetic checks
 
@@ -117,5 +136,6 @@ Unit cases cover proof/expiry, sample-only addresses, free versus paid transitio
 partial retries/deduplication, roles and expiry/Restore/shared-publication guards.
 Browser cases cover confirmation/Cancel, retries, connection states, adviser controls,
 storage isolation, desktop/phone layout and accessibility. The HTTP regression
-checks for unpublished requests/preview writes. These checks do not measure real
+checks the documented metadata GETs, unavailable writes and independent failures.
+These checks do not measure real
 model quality, billing, security or deployment.
