@@ -1,0 +1,58 @@
+{
+  "kind": "live GitHub Projects merged-task refresh; metadata only",
+  "observed_at_utc": "2026-11-18T10:58:27Z",
+  "tool_commit": "2ce4cebb9451a624223f77a619d8d3135f24bd81",
+  "completed_refresh": {
+    "url": "https://github.com/users/Nohra2005/projects/4",
+    "tasks": 92,
+    "created": 0,
+    "updates": 100,
+    "source_commit": "166f27ed2ce647450354f842cf76ef0b7fa5b7e6",
+    "verified": true,
+    "profile": "additive",
+    "unmanaged_preserved": true,
+    "field_names": {
+      "Status": "ClubOps status",
+      "Owner": "ClubOps owner",
+      "Task ID": "ClubOps task id",
+      "Needs": "ClubOps needs",
+      "Sprint": "ClubOps sprint"
+    },
+    "view_grouping": "Verified ClubOps status columns via REST creation and GraphQL read-back",
+    "columns": {
+      "url": "https://github.com/users/Nohra2005/projects/4/views/8",
+      "name": "ClubOps status columns",
+      "column_field": "ClubOps status",
+      "verified": true,
+      "created": false,
+      "previous_views_preserved": true
+    }
+  },
+  "repeat_sync": {
+    "url": "https://github.com/users/Nohra2005/projects/4",
+    "tasks": 92,
+    "created": 0,
+    "updates": 0,
+    "source_commit": "166f27ed2ce647450354f842cf76ef0b7fa5b7e6",
+    "verified": true,
+    "profile": "additive",
+    "unmanaged_preserved": true,
+    "field_names": {
+      "Status": "ClubOps status",
+      "Owner": "ClubOps owner",
+      "Task ID": "ClubOps task id",
+      "Needs": "ClubOps needs",
+      "Sprint": "ClubOps sprint"
+    },
+    "view_grouping": "Verified ClubOps status columns via REST creation and GraphQL read-back",
+    "columns": {
+      "url": "https://github.com/users/Nohra2005/projects/4/views/8",
+      "name": "ClubOps status columns",
+      "column_field": "ClubOps status",
+      "verified": true,
+      "created": false,
+      "previous_views_preserved": true
+    }
+  },
+  "limits": "Merged TASKS only; manual objects and existing columns preserved. No weekly meeting, provider or deployed acceptance evidence."
+}
