@@ -267,3 +267,31 @@ D-104/F-175-F-178 and `REVIEW_GUIDE.md` record behavior and limits. Existing pub
 `tests/test_shared_layer.py` runs in root checks; no backend code/contracts changed.
 HTTP UI checks use synthetic intercepted responses, not a deployed service or user
 study. Final-head CI and independent teammate review are on the C-34 PR.
+
+## 2026-11-18 - C-35 read-only HTTP Inbox
+
+Synced main 166f27e, preserving both sides of shared logs. The Inbox HTTP view now
+requests only the candidate #95 GET /api/inbox and GET /api/inbox/skipped arrays.
+Waiting/skipped lists have independent loading/error/refresh states; duplicate or
+malformed identities fail visibly, extra body fields are dropped, descriptive
+missing/null date/forwarder labels show Not supplied and all text is untrusted.
+Adviser sessions mount neither resource. No paid capture, proof/settings/Restore
+write, browser metadata storage or demo fallback is enabled.
+
+Local checks: full root make-check equivalents pass (Ruff/format: 158 files; mypy:
+84 files; schema/tasks; 693 tests, 93.06% coverage). Web check passes with 84 unit
+and 12 board-tool tests, lint/format/types/build. All 54 HTTP browser cases pass,
+including 12 targeted C-35 cases on desktop/phone. Metadata rendering is scanned
+for accessibility and phone overflow. C-29's separate actual-app suite also passes
+all 8 cases after its main sync; it does not test unmerged inbox routes.
+
+The first full root run caught a duplicate F-230: that number now belongs to the
+merged Outlook guard row. Our old preview boundary is F-232; the new metadata
+regression is F-231 and decision D-128. Targeted log checks and the full root suite
+were rerun green. The initial refresh fixture also needed to keep failing through
+React development remounts, rather than assuming one initial GET.
+
+These Inbox browser cases intercept synthetic metadata. They do not prove a real
+mailbox, provider cost, server authorization or deployed acceptance. #95 is still
+open, so current main may answer unavailable/error to the metadata requests.
+C-35 stays doing; final-head CI and independent review are required on #94.
