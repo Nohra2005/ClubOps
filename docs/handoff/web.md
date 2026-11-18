@@ -220,3 +220,9 @@ Final local web check passes with 68 units, 32 tool tests, lint/format, strict a
 **State / next:** C-31 stays doing; three actual team-review records remain absent. No code or contract changed. Shared-doc/task checks and proof formatting are rerun; previous head's five CI checks were green, new proof head needs its own CI/review. Follow the team's merge-freeze decision and preserve commits. Only merged TASKS statuses are imported, not this branch's or other PRs' unmerged progress.
 
 **Open questions / blockers:** No participants/meeting outcomes invented; no public exposure, duplicate board, changed manual Status/Iteration, private club data, provider usage or main merge. Tatiana should link the dated proof from her evidence index. The 90-task count in earlier entries is the actual 12 November snapshot, superseded by this dated refresh.
+
+## 2026-11-18 - Christophe (C-31 main sync and current task refresh)
+
+**Did:** Resolved #91 main-sync conflicts additively, retaining the new Gmail/J-22 rows and the board evidence/history. Actual private project #4 now mirrors merged main 166f27e: 92 tasks, 0 new cards, 100 field/body updates. The same status-columns view #8 and manual objects are preserved. Repeat full sync verifies 0 creates/0 updates and no new view. Full metadata-only receipts: web/board/evidence/refresh-2026-11-18.json; earlier dated proofs remain history.
+
+**State / next:** C-31 stays doing, because three genuine weekly team reviews still lack records. This batch changes no importer or contract behavior. Shared-doc/task checks and board-tool/front-end checks are rerun; current-head CI/review remains required. Main-based Python gates verified separately in C-35: 693 tests, 93.06% coverage and static/schema/task checks pass. Only merged statuses are reflected; no pending PR status or invented meeting history. Please link dated proof in the owner evidence index and preserve merge commits after the team freeze decision.
