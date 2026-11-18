@@ -22,6 +22,7 @@ import type {
 } from './types';
 
 import { ApiError } from './errors';
+import { readSkippedEmail, readWaitingEmail } from '../inbox/http-metadata';
 import { readAgentRun, readAnswer, readDraft, readSetupStep } from './contract-responses';
 export { ApiError } from './errors';
 export interface RequestOptions {
@@ -70,6 +71,16 @@ export class ApiClient {
   }
   events() {
     return this.request<EventSummary[]>('/events');
+  }
+  async inbox() {
+    if (this.mode !== 'http')
+      throw new ApiError('Use the disclosed demo Inbox to practice with synthetic email.', 501);
+    return readWaitingEmail(await this.request<unknown>('/inbox'));
+  }
+  async skippedInbox() {
+    if (this.mode !== 'http')
+      throw new ApiError('Use the disclosed demo Inbox to practice with synthetic email.', 501);
+    return readSkippedEmail(await this.request<unknown>('/inbox/skipped'));
   }
   event(id: string) {
     return this.request<EventDetail>(`/events/${encodeURIComponent(id)}`);
