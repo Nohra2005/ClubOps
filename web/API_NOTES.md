@@ -41,6 +41,16 @@ can call `clubops.reports.traces.record_trace(data_dir, club_id, meta, status, e
 with a known club context. The report never reads a global trace file, whose records lack
 club ownership. Existing legacy monthly planning spend remains intact.
 
+## HTTP session validation — 19 November 2026 (C-13)
+
+Session boundary update (C-13, 19 November): the HTTP `/me` projection is validated
+before protected UI renders. Member/club fields, declared roles, boolean setup flags
+and nonnegative integer counts must match the published view. Invalid responses
+show a generic recoverable connection error, without a default role or demo data.
+An explicit retry performs another GET. Valid member and active roles remain
+independent fields; no equality rule was added. Server authorization is unchanged.
+See `src/api/session-response.ts` and `e2e/session-http.spec.ts`.
+
 ## Shared Review scope — 10 November 2026 (C-34)
 
 T-41 / `tests/test_shared_layer.py` publish the `shared` field on Review cards and
