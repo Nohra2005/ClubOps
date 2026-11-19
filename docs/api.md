@@ -83,3 +83,23 @@ python -m clubops.reports --data-dir data/app --club running-club --month 2026-1
 
 Keep real reports private. Current regression and browser runs use scripted/synthetic
 activity; a real-provider pilot report remains part of C-20 validation.
+
+### Inbox: exact responses (answers Chris on #95)
+
+`GET /api/inbox`. All four values are always strings; `date` or `forwarded_by` can be `""` when the e-mail lacked them (show "Not supplied"). Subject is cut at 200 characters, date at 40.
+
+```json
+[{"id": "msg-001", "subject": "Campus closed on Monday", "date": "2026-11-19", "forwarded_by": "Name"}]
+```
+
+`GET /api/inbox/skipped`, all strings:
+
+```json
+[{"id": "msg-002", "subject": "Hello", "reason": "original_sender_not_osa", "why": "ClubOps only reads e-mails forwarded from OSA staff"}]
+```
+
+`POST /api/inbox/{id}/capture` (CSRF header, president or cabinet, one paid model call):
+- Success with cards: `{"proposals": ["p-1", "p-2"], "skipped": []}`. The ids are Review card ids.
+- No fact found: `{"proposals": [], "skipped": []}`. The e-mail is still marked read.
+- Content the model could not use: `{"proposals": [], "skipped": ["<plain reason>"]}`.
+- Errors `{"detail": "<plain sentence>"}`: 404 not waiting for your club; 409 not checked yet (fetch again) or already being read; 502 read failed, still waiting, retry.
