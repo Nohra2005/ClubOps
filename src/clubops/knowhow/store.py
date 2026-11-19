@@ -202,6 +202,34 @@ class KnowHowStore:
             case _:
                 raise CapabilityError(ErrorCode.INTERNAL, f"unhandled proposal op {proposal.op}")
 
+    def restore(self, item_id: ItemId, actor: Actor, now: datetime, valid_to: date | None) -> KnowHowItem:
+        """Bring an expired item back from the archive with a new end date (or none) as its next version.
+
+        Expiry is a plain date rule: once ``valid_to`` has passed, the planner no longer uses the item
+        (``current``), and it stays stored as history. A person restores it when the guessed date was
+        wrong (D-115). Nothing else about the item changes."""
+        item = self.latest(item_id)
+        if item is None or (item.scope is Scope.CLUB and item.club_id != actor.club_id):
+            raise CapabilityError(ErrorCode.NOT_FOUND, "no such item for this club")
+        if item.scope is not Scope.CLUB:
+            # An AUB-wide fact is shared by every club: one club's president may not republish it (D-115).
+            raise CapabilityError(ErrorCode.NOT_AUTHORIZED, "AUB-wide facts are restored by the ClubOps operator")
+        if item.status is not ItemStatus.VERIFIED or item.valid_to is None or item.valid_to >= now.date():
+            raise CapabilityError(ErrorCode.CONFLICT, "only an approved item whose end date has passed can be restored")
+        if valid_to is not None and valid_to < now.date():
+            raise CapabilityError(ErrorCode.INVALID_INPUT, "the new end date is already in the past")
+        restored = _rebuild(
+            item,
+            version=item.version + 1,
+            valid_to=valid_to,
+            verified_by=actor.member_id,
+            verified_at=now,
+        )
+        with self.backend.transaction():
+            self._mark_superseded(item_id)
+            self.backend.append(restored)
+        return restored
+
     def _mark_superseded(self, item_id: ItemId) -> None:
         latest = self.latest(item_id)
         if latest is not None and latest.status is ItemStatus.VERIFIED:
