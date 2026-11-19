@@ -577,6 +577,13 @@ Reference documents:
 - What: (1) Setup (C-21): a step to add an extra sending address and show the code to e-mail; an Outlook forwarding guide (OSA senders only) showing the club's `+tag` address with a copy button, and a "Test my forwarding" button. (2) Inbox screen: waiting e-mails, a "Read this" button that says it costs money, and the reason when an e-mail was skipped ("ClubOps only reads e-mails forwarded from OSA staff"). (3) Review cards (C-34): an expiry date field, an AUB-wide / club-only label, an "Add to calendar" box for deadlines (ticked by default) with who it is for, and an archive view with Restore.
 - Done when: each screen has frontend tests against the T-47 routes (stubbed until they land) and is in the demo build before the 23 Nov meet-up.
 
+### C-36 Patch the frontend development dependency audit
+- Owner: christophe
+- Status: doing
+- Needs: C-23
+- What: Patch the minimatch advisory found through the ESLint/TypeScript-ESLint development dependency chain. Keep application dependencies and security checks intact; verify a clean lockfile install, full/deployment-only audits and frontend quality checks. Provide a reproducible audit command and evidence.
+- Done when: the patched lockfile and audit command pass current checks and independent review, with the advisory and development-only scope documented.
+
 ## Joey: calendar, reminders, drafts
 
 ### J-01 Read the calendar contract and set up Google
