@@ -267,3 +267,28 @@ D-104/F-175-F-178 and `REVIEW_GUIDE.md` record behavior and limits. Existing pub
 `tests/test_shared_layer.py` runs in root checks; no backend code/contracts changed.
 HTTP UI checks use synthetic intercepted responses, not a deployed service or user
 study. Final-head CI and independent teammate review are on the C-34 PR.
+
+## 2026-11-19 - C-13 HTTP session view validation
+
+The published /api/me view now passes runtime validation before protected UI renders.
+Unknown roles, malformed member/club records, missing identities, non-boolean setup
+flags and invalid badge counts fail with a generic connection error and explicit
+retry/sign-in controls. Valid role fields remain independent; the public view does
+not define an equality rule between them. Extra response fields are not retained.
+Server cookie/session/role checks remain the authorization boundary; no Python or
+API contract changed.
+
+A failing regression first reproduced an unknown role being accepted by ApiClient.
+After the fix, web check passes with 97 unit tests (29 session cases), 12 tool cases,
+lint/format/types/build. All 54 synthetic HTTP browser cases pass, including 12 new
+session cases on desktop/phone: no protected requests before a valid session,
+explicit retry with no writes, no private values in rendered errors, and an adviser
+retaining read-only UI. The actual local API/cookie/SQLite suite also passes all 4
+cases. Full root gates pass: 693 tests, 93.06% coverage; Ruff/format 158 files,
+strict mypy 84 files, schema/task checks.
+
+No real Google/provider/deployed acceptance is claimed. The separate C-36 patch
+handles the development dependency advisory found during installation; this C-13
+branch keeps main's dependency lock unchanged. Current-head CI and independent
+review are tracked on its PR. C-13 remains doing until deployed/every-screen
+acceptance is recorded.
