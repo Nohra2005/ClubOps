@@ -2,7 +2,7 @@
 
 The supplied 22 October UI PDF is the source for `/api` paths and the example chat/run/task/approval field names. `src/api/types.ts` contains frontend view models, not replacement Python contracts. `VITE_API_MODE=demo|http` switches the transport. The demo persists synthetic data separately for each club; it never calls Google, a model, email or OSA.
 
-The real transport uses authenticated cookies, encoded path identifiers, abortable requests, a bounded timeout and generic error messages. The backend must enforce authorization, CSRF protection, club isolation, content hashes and spend limits. Hiding a frontend button is not authorization.
+The real transport uses authenticated cookies, encoded path identifiers, abortable requests, a bounded timeout and generic error messages by default. Only documented Restore 4xx refusals may supply a bounded plain explanation; all 5xx and unrelated actions retain generic errors. The backend must enforce authorization, CSRF protection, club isolation, content hashes and spend limits. Hiding a frontend button is not authorization.
 
 ## Current integration — 1 November 2026 (C-13 / C-19 / C-20)
 
@@ -40,6 +40,17 @@ save/finish callbacks (including continued runs) and extends `/usage`. Feature p
 can call `clubops.reports.traces.record_trace(data_dir, club_id, meta, status, error)`
 with a known club context. The report never reads a global trace file, whose records lack
 club ownership. Existing legacy monthly planning spend remains intact.
+
+## Inbox capture and club-fact Restore — 19 November 2026 (C-35)
+
+C-35 update (19 November): #95 ce1d514 and #96 8dccd0e document exact capture and
+Restore responses. The HTTP Inbox now confirms each paid read separately, validates
+`proposals`/`skipped` string arrays and requires a successful fresh metadata snapshot
+after any unconfirmed outcome. No-fact success is acknowledged, not retried. HTTP
+knowledge separates current/archive rows and offers Restore only to presidents on
+expired club facts. A matching club/current acknowledgement triggers a fresh fact
+read; disputed 409 text remains visible. No guessed proof/settings, expiry/calendar
+payloads or shared Restore were added. See [INBOX_PREVIEW.md](INBOX_PREVIEW.md).
 
 ## Shared Review scope — 10 November 2026 (C-34)
 
