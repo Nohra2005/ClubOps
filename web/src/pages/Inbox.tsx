@@ -5,22 +5,78 @@ import { ErrorNotice, Modal, PageHeading, Resource } from '../components/ui';
 import { PreviewNotice } from '../inbox/ForwardingPanel';
 import { skipReasons } from '../inbox/preview';
 import { useInboxPreview } from '../inbox/useInboxPreview';
-import { useResource } from '../hooks';
+import { useAction, useResource } from '../hooks';
+import type { WaitingEmail } from '../inbox/http-metadata';
 
 function HttpInbox() {
   const { api } = useApp();
   const waiting = useResource(() => api.inbox(), [api]);
   const skipped = useResource(() => api.skippedInbox(), [api]);
+  const read = useAction();
+  const [selected, setSelected] = useState<WaitingEmail>();
+  const [completed, setCompleted] = useState<string[]>([]);
+  const [unconfirmed, setUnconfirmed] = useState<{ id: string; snapshot?: WaitingEmail[] }[]>([]);
+  const [feedback, setFeedback] = useState<string>();
+  const [reasons, setReasons] = useState<string[]>([]);
+  const blocked = (id: string) =>
+    unconfirmed.some(
+      (entry) =>
+        entry.id === id &&
+        (!waiting.value ||
+          waiting.value === entry.snapshot ||
+          waiting.loading ||
+          Boolean(waiting.error)),
+    );
+  async function confirmRead() {
+    if (!selected) return;
+    const message = selected;
+    const result = await read.run(async () => {
+      try {
+        return await api.captureInbox(message.id);
+      } catch (error) {
+        setUnconfirmed((previous) => [
+          ...previous.filter((entry) => entry.id !== message.id),
+          { id: message.id, snapshot: waiting.value },
+        ]);
+        throw error;
+      }
+    });
+    if (!result.ok) return;
+    const cards = new Set(result.value.proposals).size;
+    setCompleted((previous) => [...new Set([...previous, message.id])]);
+    setUnconfirmed((previous) => previous.filter((entry) => entry.id !== message.id));
+    setFeedback(
+      cards
+        ? `Read result received. ${cards} Review card(s) proposed; none approved.`
+        : 'Read result received. No facts were proposed; no fact was approved.',
+    );
+    setReasons(result.value.skipped);
+    setSelected(undefined);
+    waiting.reload();
+  }
   return (
     <>
       <p className="notice">
-        Server metadata only. This screen does not request email bodies or an AI read. Paid reads
-        and forwarding changes are not connected here yet.
+        Listing and refreshing metadata are free. An AI read starts only after a separate
+        confirmation and may cost money. Forwarding changes are not connected here yet.
       </p>
+      {feedback && <p role="status">{feedback}</p>}
+      {reasons.length > 0 && (
+        <ul>
+          {reasons.map((reason, index) => (
+            <li key={index}>{reason}</li>
+          ))}
+        </ul>
+      )}
+      {!selected && <ErrorNotice message={read.error} />}
       <section className="panel" aria-label="Waiting email">
         <div className="panel-header">
           <h2>Waiting email</h2>
-          <button className="button small" disabled={waiting.loading} onClick={waiting.reload}>
+          <button
+            className="button small"
+            disabled={waiting.loading || read.pending}
+            onClick={waiting.reload}
+          >
             Refresh waiting email
           </button>
         </div>
@@ -32,6 +88,20 @@ function HttpInbox() {
                 <h3>{message.subject || '(No subject)'}</h3>
                 <p>Received: {message.date || 'Not supplied'}</p>
                 <p>Forwarded by: {message.forwarded_by || 'Not supplied'}</p>
+                {completed.includes(message.id) ? (
+                  <p>Read result already received. Check Review; no repeat read from this page.</p>
+                ) : (
+                  <button
+                    className="button small"
+                    disabled={read.pending || blocked(message.id)}
+                    onClick={() => {
+                      read.clearError();
+                      setSelected(message);
+                    }}
+                  >
+                    {blocked(message.id) ? 'Refresh before retrying' : 'Read this · costs money'}
+                  </button>
+                )}
               </article>
             ))}
           </div>
@@ -59,6 +129,39 @@ function HttpInbox() {
         </Resource>
       </section>
       <Link to="/settings#forwarding">Check forwarding setup →</Link>
+      <Link className="text-button" to="/review">
+        Check Review →
+      </Link>
+      <Modal
+        open={Boolean(selected)}
+        title="Read this email with AI?"
+        onClose={() => {
+          if (!read.pending) setSelected(undefined);
+        }}
+      >
+        <p>{selected?.subject || '(No subject)'}</p>
+        <p>
+          This starts a paid AI read. No price estimate is available. Any proposed facts go to
+          Review; this does not approve them.
+        </p>
+        <p>
+          If the result is not confirmed, refresh Inbox and check Review before choosing another
+          paid attempt. Refreshing does not read the email.
+        </p>
+        <ErrorNotice message={read.error} />
+        <div className="form-actions">
+          <button
+            className="button primary"
+            disabled={read.pending || !selected || blocked(selected.id)}
+            onClick={confirmRead}
+          >
+            {read.pending ? 'Reading…' : 'Confirm paid read'}
+          </button>
+          <button className="button" disabled={read.pending} onClick={() => setSelected(undefined)}>
+            Cancel
+          </button>
+        </div>
+      </Modal>
     </>
   );
 }
@@ -197,7 +300,7 @@ function DemoInbox() {
   );
 }
 export default function Inbox() {
-  const { api, canEdit } = useApp();
+  const { api, canEdit, me } = useApp();
   return (
     <>
       <PageHeading
@@ -208,7 +311,7 @@ export default function Inbox() {
       {api.mode === 'demo' ? (
         <DemoInbox />
       ) : canEdit ? (
-        <HttpInbox />
+        <HttpInbox key={`${me.club.id}:${me.user.member_id}`} />
       ) : (
         <section className="panel">
           <h2>Inbox is for cabinet members.</h2>
