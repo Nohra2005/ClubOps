@@ -9,7 +9,7 @@ import { useAction, useResource } from '../hooks';
 import type { WaitingEmail } from '../inbox/http-metadata';
 
 function HttpInbox() {
-  const { api } = useApp();
+  const { api, refresh } = useApp();
   const waiting = useResource(() => api.inbox(), [api]);
   const skipped = useResource(() => api.skippedInbox(), [api]);
   const read = useAction();
@@ -53,6 +53,7 @@ function HttpInbox() {
     setReasons(result.value.skipped);
     setSelected(undefined);
     waiting.reload();
+    refresh();
   }
   return (
     <>

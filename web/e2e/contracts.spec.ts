@@ -810,7 +810,7 @@ test('a rejected sharing decision preserves edits and the choice until a deliber
   ).toBe(true);
 });
 
-test('HTTP inbox renders metadata and skip reasons as plain text without bodies, writes or storage', async ({
+test('HTTP inbox renders metadata and skip reasons without bodies, automatic writes or storage', async ({
   page,
 }) => {
   const calls: string[] = [];
@@ -849,9 +849,10 @@ test('HTTP inbox renders metadata and skip reasons as plain text without bodies,
   await expect(page.getByText('Received: Not supplied', { exact: true })).toBeVisible();
   await expect(page.getByRole('main')).not.toContainText('PRIVATE_BODY_CANARY');
   await expect(page.locator('img[src="x"]')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: /Read this|Confirm.*read|Restore/ })).toHaveCount(
-    0,
-  );
+  await expect(
+    page.getByRole('button', { name: 'Read this · costs money', exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Confirm paid read', exact: true })).toHaveCount(0);
   expect(calls.every((call) => ['GET /api/inbox', 'GET /api/inbox/skipped'].includes(call))).toBe(
     true,
   );
