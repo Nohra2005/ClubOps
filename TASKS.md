@@ -573,6 +573,7 @@ Reference documents:
 ### C-35 Inbox, forwarding and card screens (D-113 to D-116)
 - Owner: christophe
 - Status: doing
+- Progress (2026-11-19): Tatiana published exact Inbox and Restore responses in #95 ce1d514 and #96 8dccd0e. Implementing confirmed single-message paid reads, explicit refresh after an unconfirmed result, archive filtering and president-only expired club-fact Restore. Work uses these candidate contracts and synthetic HTTP tests; forwarding proof/settings endpoints and deployed acceptance remain open.
 - Progress (2026-11-18): J-22 guards and Gmail fetching are merged. Building a read-only HTTP Inbox against #95's documented candidate list/skipped routes with synthetic response tests while T-47 remains doing. Paid reads, forwarding proof/settings and Restore writes stay unavailable until their remaining response contracts and acceptance are supplied. Sync main 166f27e; preview boundary F-216 is now F-232 to avoid #95's new row.
 - Progress (2026-11-12): synthetic demo screens cover forwarding verification, explicit paid-read confirmation and card expiry/archive. T-47 #92 and J-22 #93 remain under review; TASKS names inbox list/capture paths, but JSON/error/retry shapes and verification/lifecycle routes remain unpublished. Live actions stay unavailable until agreed; no invented endpoints or real Google/model calls. Guide: `web/INBOX_PREVIEW.md`.
 - Needs: C-21, C-34, T-47
