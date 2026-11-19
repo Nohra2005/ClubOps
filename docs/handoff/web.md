@@ -185,3 +185,11 @@ Verification on the synced C-25 branch: full root gates pass with 667 passed, 1 
 Merged main afbdead into #76 without squashing. Preserved all six distinct C-33/C-34 HTTP tests and both sides of additive logs/evidence. C-34 is done after #75 merged; C-25/C-28/C-33 stay doing while their PRs/acceptance remain open. Root gates: 603 passed, 1 skipped, 92.47%; web check 52 units + 12 tool tests/build; full HTTP 38 passed. Setup wiring from #87 is retained; deployed/real-club acceptance remains pending. No new shared IDs or backend implementation changed.
 
 The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C-33/C-21 acceptance is actual deployed/new-club verification, not the former 501 placeholder.
+
+## 2026-11-19 - Christophe (C-13 session response validation)
+
+**Did:** Isolated main-based fix/c13-session-response-validation validates the published /me view before rendering protected UI. Rejects unknown roles, malformed identity/club records, non-boolean flags and unsafe counts without coercion or demo fallback. Whitelists view fields and preserves valid independent role values. Generic recoverable error now has an accessible alert; explicit retry only rechecks reads. Added unit and desktop/phone HTTP regressions, first reproducing the unsafe unknown-role acceptance. No backend implementation, Python contract, auth method or server permission policy changed.
+
+**State / next:** C-13 remains doing. Full root gates pass (693 tests, 93.06%; Ruff/format 158 files, mypy 84, schemas/tasks); web check 97 units/12 tools/types/build; HTTP 54 pass including 12 new cases; actual local API/cookie/SQLite 4 pass. D-129/F-233 reserved beyond main/open PRs. Small commits preserved; current-head CI/independent review still required. Merge via PR/merge commit, no main push or self-approval. Owner should link web/VERIFICATION.md and session tests from her evidence/rubric files.
+
+**Open / limits:** Validated frontend response shapes do not establish server authorization, real Google login or deployed acceptance. C-35 remains separate. New development-tool advisory remediation is isolated as C-36, not mixed into this parser branch. Tatiana's new #95/#96 exact responses arrived during this work and unblock the next C-35 paid-read/Restore portion.
