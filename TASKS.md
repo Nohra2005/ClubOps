@@ -389,6 +389,7 @@ Reference documents:
 ### C-13 Connect to the real backend
 - Owner: christophe
 - Status: doing
+- Progress (2026-11-19): validating the published HTTP `/api/me` view before protected UI renders. Malformed roles, member/club fields, setup flags and counts must show a recoverable connection error; no role defaults, demo fallback or automatic writes. Independent main-based branch; real deployed/Google and every-screen acceptance remain open.
 - Needs: C-12, T-22
 - What: Switch from fake data to the real API; fix mismatches with Tatiana.
 - Done when: every screen works on the deployed backend.
