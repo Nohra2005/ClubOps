@@ -22,6 +22,7 @@ import type {
 } from './types';
 
 import { ApiError } from './errors';
+import { readMe } from './session-response';
 import { readAgentRun, readAnswer, readDraft, readSetupStep } from './contract-responses';
 export { ApiError } from './errors';
 export interface RequestOptions {
@@ -49,8 +50,9 @@ export class ApiClient {
       );
     return this.post<T>(`/__ui/${action}`, body);
   }
-  me() {
-    return this.request<Me>('/me');
+  async me() {
+    const value = await this.request<unknown>('/me');
+    return this.mode === 'http' ? readMe(value) : (value as Me);
   }
   signInGoogle(credential: string) {
     if (this.mode !== 'http')
