@@ -1,5 +1,15 @@
 # Google Calendar setup for each club
 
+## Current architecture boundary (20 November 2026)
+
+The instructions above describe the implemented role-calendar adapter. D-116
+supersedes that deployment design with one calendar per club and named per-event
+invitees. Do not create private role calendars as a prerequisite for the new
+integration. J-23 is blocked until Tatiana and Joey separately approve the
+versioned calendar contract; the existing adapter remains covered by fake tests.
+T-46 owns token storage/refresh, callbacks, approved-plan and cabinet triggers.
+
+## Implemented legacy adapter reference
 `CalendarSync` is a one-way copy from approved ClubOps items. Configure a **separate
 Google calendar ID per club** and pass a short-lived OAuth access token to
 `GoogleCalendarGateway`. Configure a **private role calendar for each cabinet role**;
@@ -56,15 +66,6 @@ API references: [Events insert](https://developers.google.com/workspace/calendar
 [Events update](https://developers.google.com/workspace/calendar/api/v3/reference/events/update),
 [Reminders](https://developers.google.com/workspace/calendar/api/concepts/reminders).
 
-## Current architecture boundary (20 November 2026)
-
-The instructions above describe the implemented role-calendar adapter. D-116
-supersedes that deployment design with one calendar per club and named per-event
-invitees. Do not create private role calendars as a prerequisite for the new
-integration. J-23 is blocked until Tatiana and Joey separately approve the
-versioned calendar contract; the existing adapter remains covered by fake tests.
-T-46 owns token storage/refresh, callbacks, approved-plan and cabinet triggers.
-
 ## Live acceptance receipt (J-01/J-09/J-21)
 
 Keep the real calendar ID, accounts, approval record and screenshots only in
@@ -91,4 +92,6 @@ adapter test is not deployed acceptance.
 
 Joey's 20 November README startup attempt stopped at the prerequisite check:
 `docker version` could not reach `dockerDesktopLinuxEngine` (named pipe absent).
-No fresh Compose startup, browser login or hosted persistence outcome is claimed.
+Starting the installed Docker Desktop app made its engine pipe available, but the
+version API then returned HTTP 500. No fresh Compose startup, browser login or
+hosted persistence outcome is claimed.
