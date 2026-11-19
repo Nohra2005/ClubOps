@@ -81,3 +81,19 @@ python -m clubops.reports --data-dir data/app --club running-club --month 2026-1
 
 Keep real reports private. Current regression and browser runs use scripted/synthetic
 activity; a real-provider pilot report remains part of C-20 validation.
+
+### Restore: exact responses (answers Chris on #96)
+
+`POST /api/knowledge/{id}/restore` with body `{"valid_to": "2027-06-30"}` (or `{"valid_to": null}` for no end date) returns the **same projection as `GET /api/knowledge/{id}`**, now current:
+
+```json
+{"item_id": "k-123", "title": "Venue booking lead time", "statement": "...", "tab": "tips", "kind": "fact",
+ "scope": "club", "sources": [], "last_checked": "2026-11-19", "status": "current",
+ "history": [{"date": "2026-11-19", "description": "version 3: verified", "actor": "president@example.org"}], "used_in": []}
+```
+
+How the screen tells an expired club fact from other items (no new field is needed):
+- `status == "may_be_outdated"` means **only** that the end date has passed (`valid_to < today`). A source warning never sets it.
+- Restore is offered when `status == "may_be_outdated"` **and** `scope == "club"`. An AUB-wide fact (`scope == "aub"`) answers 403 (operator only), so hide the button for it.
+- A disputed fact whose date passed also shows `may_be_outdated` but answers 409 (not a verified expired fact). Show the server's plain `detail` sentence.
+- Errors are `{"detail": "<plain sentence>"}`: 403 not president or AUB-wide, 404 not this club's item, 409 not expired, 422 past date.
