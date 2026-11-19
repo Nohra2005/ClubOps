@@ -293,3 +293,13 @@ No entries yet.
 **Next:** Restart the #93 watch after pushing; merge only with current approval and green required checks.
 
 **Open questions / blockers:** T-47 paid-read integration remains in #95. Host watcher access is unreliable; the direct authenticated GitHub API remains readable.
+
+## 2026-11-20 - Joey: J-13 current-main reconciliation and report sections
+
+**Did:** Merged main 166f27e into #82, preserving both shared log histories. Added report sections on security, calendar and inbox to the owned threat model, separating tested boundaries from provider/deployed/model acceptance.
+
+**State:** The frozen attack/benign scorer remains ready for independent review; F-204 is a strict expected failure in Tatiana's detector. No outcome or performance number was invented.
+
+**Next:** Tatiana fixes or explicitly accepts F-204, then runs and reviews both modes with private traces and publishes aggregate results in her results area.
+
+**Open questions / blockers:** Matching measured outcomes, the coordinated J-23 contract, T-46 hosted integration and live Gmail/Calendar acceptance remain required. Existing tests do not certify those gates.
