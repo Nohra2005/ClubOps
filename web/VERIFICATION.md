@@ -295,3 +295,37 @@ These Inbox browser cases intercept synthetic metadata. They do not prove a real
 mailbox, provider cost, server authorization or deployed acceptance. #95 is still
 open, so current main may answer unavailable/error to the metadata requests.
 C-35 stays doing; final-head CI and independent review are required on #94.
+
+## 2026-11-19 - C-35 confirmed reads, archive and club-fact Restore
+
+Source contracts: Tatiana's newly published exact responses in #95 ce1d514 and #96
+8dccd0e, still open. Root frontend remains independently based on main 166f27e.
+Paid read is one explicit POST per confirmed message, guarded against rapid clicks.
+No-fact/skipped results are acknowledged and proposed cards stay unapproved.
+Unconfirmed responses require a successful fresh metadata snapshot before another
+paid attempt; a failed refresh cannot unlock it. Mixed/repeated proposal IDs remain
+contract-compatible; display counts unique Review cards. No bodies or outcomes are
+persisted in browser storage.
+
+HTTP knowledge filters current/archive records from the existing response. Only a
+president on an expired club fact sees Restore. New date/no-end selection requires
+explicit approval. Match item ID, club scope and current state in the acknowledgement,
+then reload the fact. Public Restore 4xx explanations render as bounded plain text;
+all 5xx and other actions keep generic diagnostics. A malformed/lost result blocks
+another write until a fresh fact read. Shared/retired/non-president controls stay
+hidden; disputed expired facts may receive the documented 409.
+
+Validation: npm run check passes with 108 unit tests (24 new action-boundary cases),
+12 board-tool cases, lint/format/types/build. Full HTTP suite: 82 passed on desktop
+and phone, including 12 paid-read and 16 Restore cases. Tests cover Cancel, rapid
+clicks, no-fact/skipped results, unsuccessful refresh, stale metadata, wrong item
+acknowledgement, null/future date, disputed 409, scope/role guards and dialog
+accessibility. Root make-check equivalents pass: 693 tests, 93.06%; Ruff/format 158
+files, strict mypy 84 files, schema/tasks. Existing actual API/cookie/SQLite suite:
+4 passed. Demo Inbox/Knowledge regressions are recorded in the current handoff.
+
+The new writes use intercepted synthetic API responses; the actual-API suite does
+not exercise the unmerged #95/#96 routes. No real mail/provider cost, server security
+rate or ASME/deployed acceptance is established. The root Python environment was
+synchronized to the existing lock for final checks. D-131/F-235/F-236 record the
+change; keep the dated 18 November read-only evidence as history.
