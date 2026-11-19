@@ -208,13 +208,19 @@ export default function Knowledge() {
               api.mode === 'http' && lifetime === 'archive'
                 ? 'Facts that are no longer current will be kept here for reference.'
                 : query
-                ? 'Try another phrase, or ask the cabinet who has the source.'
-                : 'Approved knowledge will appear here as your club learns.'
+                  ? 'Try another phrase, or ask the cabinet who has the source.'
+                  : 'Approved knowledge will appear here as your club learns.'
             }
             action={
-              api.mode === 'http' && lifetime === 'archive' ? <button className="button" onClick={() => setLifetime('current')}>View current knowledge</button> : <Link to="/chat" className="button">
-                Ask or teach the club →
-              </Link>
+              api.mode === 'http' && lifetime === 'archive' ? (
+                <button className="button" onClick={() => setLifetime('current')}>
+                  View current knowledge
+                </button>
+              ) : (
+                <Link to="/chat" className="button">
+                  Ask or teach the club →
+                </Link>
+              )
             }
           />
         )}
