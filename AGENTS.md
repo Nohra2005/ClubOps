@@ -8,6 +8,7 @@ Where this section or `TASKS.md` differs from an earlier chat message from Tatia
 
 - New tasks: Christophe **C-35**; Joey **J-22** (PR by Thursday 12 Nov night) and **J-23**. Decisions behind them: D-113 to D-116.
 - Joey: first apply the review comments on #79-#86 (#80 only needs updating from main; #82, #85, #86 share one fix: re-save `docs/handoff/calendar-and-drafts.md` as UTF-8).
+- 20 Nov: **Joey**: re-approve #95 (new commit after the sync, CI green; your earlier requested changes are done). **Christophe**: sync #94, #100 and #101 with main (merge, keep both sides of the shared logs); Tatiana approved all three, the sync will reset it. Review only what is in your own assigned PRs; no new scope until the 23 Nov meet-up.
 - IDs: take the next number after the highest on `main` and on every open PR (rule 7). Reserved now: D-122 to D-124 and F-214 to F-217 (Tatiana, #95/#96), D-128 to D-130 and F-232 to F-234 (Christophe). Ignore "start at D-113" in earlier reviews.
 - New dates (15 Nov): ASME onboarding on **Wed 18 or Thu 19 Nov**; full-day team meet-up on **Mon 23 Nov** (off campus) to merge everything pending, deploy, freeze and run the final evaluation together. Have your PRs reviewed and green before then.
 
