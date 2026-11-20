@@ -329,3 +329,21 @@ not exercise the unmerged #95/#96 routes. No real mail/provider cost, server sec
 rate or ASME/deployed acceptance is established. The root Python environment was
 synchronized to the existing lock for final checks. D-131/F-235/F-236 record the
 change; keep the dated 18 November read-only evidence as history.
+
+## 2026-11-20 - C-35 main sync after T-48 merged
+
+Merged main `0ac0b5b` into #94 without rewriting the existing commits. The only
+conflict was the additive design log; both C-35 entries and T-48 D-124 are retained.
+T-48 Restore is now on main; T-47 Inbox routes remain in open #95. No backend
+implementation or contract was edited in the sync.
+
+Root make-check equivalents pass: 700 tests, 93.09% coverage, Ruff/format (159
+files), mypy (84 files), schema drift and task checks. Frontend quality/build checks
+pass with 108 unit tests and 12 board-tool tests. All 82 synthetic HTTP browser
+cases pass on desktop and phone, including paid-read/Restore regressions.
+Existing D/F IDs were checked against main and every open PR; no new IDs needed.
+
+The write tests remain intercepted synthetic contract checks, not actual mailbox,
+provider or deployed acceptance. A fresh independent approval and current-head CI
+are required after the sync; Tatiana will merge the PR. C-35 remains doing while
+forwarding proof/settings and Review expiry/calendar payloads are unpublished.

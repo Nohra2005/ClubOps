@@ -221,3 +221,12 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 **Next:** Tatiana reviews the frontend integration and publishes the remaining proof/settings plus Review expiry/calendar fields. Chris is reviewing #95/#96; no particular named reviewer is mandated, only someone other than the author. Before deploying, merge reviewed API/frontend changes with merge commits and verify actual Inbox/Restore routes using authorized synthetic/live acceptance. When combining #100 and #94, retain all session/inbox/Restore HTTP test files and both API adapter imports/sections.
 
 **Open / limits:** New writes are tested with intercepted synthetic responses against candidate docs, not a real mailbox/provider or backend security-rate measurement; the actual API suite covers the existing plan/auth flow only. No exactly-once billing, durable browser retry, real Google configuration, ASME outcome or completed C-35 claim. Owner evidence/rubric files stay untouched; please link web/INBOX_PREVIEW.md and web/VERIFICATION.md. Separate #100 session guard and #101 development-dependency patch have all five CI checks green. No main push, self-merge or automatic approval of returned facts.
+
+
+## 2026-11-20 - Christophe (C-35 requested main sync)
+
+**Did:** Merged main 0ac0b5b into #94 as requested by Tatiana. Kept both sides of the sole conflict in the additive design log; all original small commits and T-48 entries remain. No authored backend/contract change. Audited decision/failure numbers against main and every open PR; no new row needed.
+
+**State:** C-35 doing. Root checks pass: 700 tests, 93.09%, Ruff/format 159 files, mypy 84 files, schema/tasks. Frontend quality/build: 108 units and 12 tools. HTTP browser suite: 82 pass. Current-head CI and fresh independent re-approval are required after push.
+
+**Next / limits:** Tatiana re-approves the synced head and merges with Create a merge commit. T-48 is on main; #95 still supplies the unmerged Inbox routes. Forwarding proof/settings and Review expiry/calendar payloads remain separate. Existing write tests use synthetic interceptions, not actual mailbox/provider/deployed acceptance. No self-merge or direct main push.
