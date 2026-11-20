@@ -193,3 +193,12 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 **State / next:** C-36 review. Clean npm ci and both full/production-only audits report zero findings (previous full audit: nine affected development package nodes; production-only zero). Web check: 68 units/12 tools/types/build and lint/format pass. Full root gates: 693 tests, 93.06%; Ruff/format 158 files, mypy 84, schemas/tasks. Advisory and reproducible commands: web/security/dependency-audit-2026-11-19.md. D-130/F-234 reserved after C-13 D-129/F-233. Await current-head CI and independent review; preserve small commits and merge commits. Owner should link evidence in her index.
 
 **Open / limits:** This is a tooling dependency remediation and live advisory scan, not a production incident or measured security-rate result. The audit needs registry connectivity and its database changes over time. Windows uses the trusted system CA store with certificate validation enabled. No backend implementation/contracts, real club data, credentials, source text or provider calls involved. C-13 session validation and C-35 integration remain independent PRs.
+
+
+## 2026-11-20 - Christophe (C-36 approved-PR main sync)
+
+**Did:** Merged main 0ac0b5b as Tatiana requested and retained both sides of the shared design-log conflict. Approved implementation and individual commits remain unchanged. Existing IDs checked across main/open PRs; no new IDs.
+
+**State:** Web quality/build checks pass with 68 units and 12 tools. Python source/tests/scripts/schemas/lock match the C-35 checkout whose full root gates pass (700 tests, 93.09%); branch-local shared checks are run before publishing. Full development npm audit remains at zero vulnerabilities; production application dependencies are unchanged.
+
+**Next / limits:** Tatiana re-approves the synced head after current-head CI and merges with Create a merge commit. No backend/auth contract change, real provider acceptance, self-merge or direct main push.

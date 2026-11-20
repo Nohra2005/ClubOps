@@ -267,3 +267,16 @@ D-104/F-175-F-178 and `REVIEW_GUIDE.md` record behavior and limits. Existing pub
 `tests/test_shared_layer.py` runs in root checks; no backend code/contracts changed.
 HTTP UI checks use synthetic intercepted responses, not a deployed service or user
 study. Final-head CI and independent teammate review are on the C-34 PR.
+
+## 2026-11-20 - C-36 approved-PR main sync
+
+Merged main `0ac0b5b` without rewriting the original small commits. Preserved both
+sides of the additive design-log conflict. Frontend quality/build checks pass:
+68 units and 12 board-tool tests, lint, format and types. Python source, tests,
+scripts, schemas and locked dependencies are byte-identical to the synced C-35
+checkout whose full root gates passed (700 tests, 93.09%, Ruff/format 159 files,
+mypy 84 files, schema/tasks). Shared docs/tasks are checked in this checkout.
+Full development npm audit remains at zero vulnerabilities; production application dependencies are unchanged.
+
+No new design/failure ID or backend/contract change. Current-head CI and fresh
+independent approval are required after this sync; no self-merge/main push.
