@@ -267,3 +267,17 @@ D-104/F-175-F-178 and `REVIEW_GUIDE.md` record behavior and limits. Existing pub
 `tests/test_shared_layer.py` runs in root checks; no backend code/contracts changed.
 HTTP UI checks use synthetic intercepted responses, not a deployed service or user
 study. Final-head CI and independent teammate review are on the C-34 PR.
+
+## 2026-11-20 - C-31 existing board refresh on merged Inbox baseline
+
+Merged main `e4090c6`; shared failure rows preserved once. Live board #4 read-back
+verifies 92 merged tasks, 0 new cards and 93 managed field/body updates. Repeat full
+sync creates/updates zero. Original 3 manual cards, human fields and status-column
+view #8 are preserved. Dated proof is board/evidence/refresh-2026-11-20.json.
+
+Web quality/build passes: 68 units, 32 board-tool tests, lint/format/types.
+Branch-local shared docs/tasks: 10 pass. Python source/tests/scripts/schemas/lock
+match the final C-35 tree whose root gates pass (710 tests, 93.14%, Ruff/format
+162 files, mypy 85 files, schemas/tasks). No application source changed in this
+refresh. C-31 remains doing: three genuine weekly-review records are still needed.
+No meetings, unmerged task completion or deployed/provider evidence is invented.

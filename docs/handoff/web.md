@@ -226,3 +226,12 @@ Final local web check passes with 68 units, 32 tool tests, lint/format, strict a
 **Did:** Resolved #91 main-sync conflicts additively, retaining the new Gmail/J-22 rows and the board evidence/history. Actual private project #4 now mirrors merged main 166f27e: 92 tasks, 0 new cards, 100 field/body updates. The same status-columns view #8 and manual objects are preserved. Repeat full sync verifies 0 creates/0 updates and no new view. Full metadata-only receipts: web/board/evidence/refresh-2026-11-18.json; earlier dated proofs remain history.
 
 **State / next:** C-31 stays doing, because three genuine weekly team reviews still lack records. This batch changes no importer or contract behavior. Shared-doc/task checks and board-tool/front-end checks are rerun; current-head CI/review remains required. Main-based Python gates verified separately in C-35: 693 tests, 93.06% coverage and static/schema/task checks pass. Only merged statuses are reflected; no pending PR status or invented meeting history. Please link dated proof in the owner evidence index and preserve merge commits after the team freeze decision.
+
+
+## 2026-11-20 - Christophe (C-31 existing-board merged-task refresh)
+
+**Did:** Synced #91 to main e4090c6 and preserved shared logs. Refreshed only managed fields/cards on the existing private board #4: 92 tasks, no new cards, 93 updates; verified zero changes on a repeat. Original 3 manual cards, fields and status-column view #8 remain. Dated read-back receipt is web/board/evidence/refresh-2026-11-20.json.
+
+**State:** C-31 doing. Web checks pass with 68 units/32 tools/types/build; branch shared docs/tasks 10 pass. Python tree matches C-35's final full root verification (710 tests, 93.14%, Ruff/format 162, mypy 85, schema/tasks). Current-head CI and independent review required; no new design/failure ID.
+
+**Next / limits:** Review/merge the prepared board PR with a merge commit; record three genuine weekly team reviews separately. Only merged TASKS was mirrored; pending PR statuses and meetings were not invented. No duplicate board, manual field change, new feature scope or main push/self-merge.
