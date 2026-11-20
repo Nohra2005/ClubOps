@@ -574,7 +574,10 @@ Reference documents:
 
 ### C-35 Inbox, forwarding and card screens (D-113 to D-116)
 - Owner: christophe
-- Status: todo
+- Status: doing
+- Progress (2026-11-19): implemented the exact Inbox and Restore responses published in #95 ce1d514 and #96 8dccd0e: confirmed single-message paid reads, refresh gating after an unconfirmed result, archive filtering and president-only expired club-fact Restore. Local checks pass: 108 units/12 tools/build, 82 synthetic HTTP cases, 4 actual API regressions, root 693 tests/93.06%. These candidate routes remain unmerged; forwarding proof/settings and Review expiry/calendar payloads plus deployed acceptance remain open. Ready for independent review before the 23 November meet-up.
+- Progress (2026-11-18): J-22 guards and Gmail fetching are merged. Building a read-only HTTP Inbox against #95's documented candidate list/skipped routes with synthetic response tests while T-47 remains doing. Paid reads, forwarding proof/settings and Restore writes stay unavailable until their remaining response contracts and acceptance are supplied. Sync main 166f27e; preview boundary F-216 is now F-232 to avoid #95's new row.
+- Progress (2026-11-12): synthetic demo screens cover forwarding verification, explicit paid-read confirmation and card expiry/archive. T-47 #92 and J-22 #93 remain under review; TASKS names inbox list/capture paths, but JSON/error/retry shapes and verification/lifecycle routes remain unpublished. Live actions stay unavailable until agreed; no invented endpoints or real Google/model calls. Guide: `web/INBOX_PREVIEW.md`.
 - Needs: C-21, C-34, T-47
 - What: (1) Setup (C-21): a step to add an extra sending address and show the code to e-mail; an Outlook forwarding guide (OSA senders only) showing the club's `+tag` address with a copy button, and a "Test my forwarding" button. (2) Inbox screen: waiting e-mails, a "Read this" button that says it costs money, and the reason when an e-mail was skipped ("ClubOps only reads e-mails forwarded from OSA staff"). (3) Review cards (C-34): an expiry date field, an AUB-wide / club-only label, an "Add to calendar" box for deadlines (ticked by default) with who it is for, and an archive view with Restore.
 - Done when: each screen has frontend tests against the T-47 routes (stubbed until they land) and is in the demo build before the 23 Nov meet-up.
@@ -601,17 +604,19 @@ Reference documents:
 
 ### J-03 Reminders
 - Owner: joey
-- Status: doing
+- Status: blocked
 - Needs: J-02
 - What: Default reminders from the contract; reminders go only to the person holding the task's role; everyone sees the shared calendar.
 - Done when: a test task reminds the right person at the right times.
+- Blocked (2026-11-20): private-role reminder offsets, missing-role fallback and done/cancel have synthetic coverage, but D-116 replaces that delivery architecture. T-46/J-23 must publish the one-calendar audience contract and backend connection before Joey can verify actual recipient/time acceptance. Do not claim real reminder delivery from fake-Google tests.
 
 ### J-04 Club-wide reminders
 - Owner: joey
-- Status: doing
+- Status: done
 - Needs: J-02
 - What: Reminders not tied to an event: OSA rule check (monthly from September until the rules are in), cabinet elections (April), impact form after each event.
 - Done when: they appear in the calendar with no event attached.
+- Verified (2026-11-20): fake-Google tests cover monthly OSA checks, rules-received suppression, April elections, and impact reminders on event+2/event+5 dates. Club-wide items have no event_id. This closes the synthetic generator gate; deployed delivery remains J-09/J-11 and the new audience design remains J-23.
 
 ### J-05 Done and cancelled
 - Owner: joey
@@ -634,59 +639,66 @@ Reference documents:
 
 ### J-07 Draft templates
 - Owner: joey
-- Status: doing
+- Status: blocked
 - Needs: none
 - What: Templates for: WhatsApp announcement, reminder message, sponsor email, Instagram caption, poster text (never logos), expense form, volunteer shifts, impact report. Match the club's real style (look at past announcements).
 - Done when: each template produces a draft a cabinet member would send without edits.
 - Progress (2026-10-31): all eight draft types have a writer and synthetic tests. Approved private style examples and cabinet review are still needed to judge send-ready quality.
 - Progress (2026-11-10): Joey needs approved past announcements kept in private storage, then two cabinet members to review drafts for three past events under J-08. Do not place examples or feedback in Git.
+- Blocked (2026-11-20): all eight synthetic template writers are implemented and tested. Approved same-club private style examples and send-without-edits acceptance are absent; the private review receipt procedure is in src/clubops/drafts/README.md. No private examples or reviewer feedback are fabricated.
 
 ### J-08 Check the drafts with the cabinet
 - Owner: joey
-- Status: todo
+- Status: blocked
 - Needs: J-07, T-14
 - What: Generate drafts for 3 past events; ask 2 cabinet members what they'd change; fix the templates.
 - Done when: their changes are in.
+- Blocked (2026-11-20): needs three consented past events and two real cabinet reviewers after J-07 style inputs are supplied. Joey applies and rechecks their requested template edits. GitHub review of code is not cabinet acceptance of draft quality.
 
 ### J-09 Calendar on the deployed app
 - Owner: joey
-- Status: todo
+- Status: blocked
 - Needs: J-06, C-18
 - What: Google secrets set on the host; sync runs on the deployed backend.
 - Done when: approving a plan on the deployed app puts items in the shared calendar.
+- Blocked (2026-11-20): C-18 hosted acceptance and T-46 OAuth, approved-plan triggers, durable queue draining and status are not complete. No live calendar write or deployment was performed. Joey runs the documented approval/create/move/retry/done/cancel/restart acceptance after the owners provide the host.
 
 ### J-10 OSA e-mail inbox
 - Owner: joey
-- Status: doing
+- Status: blocked
 - Needs: T-39, T-18
 - What: Read the ClubOps inbox (Gmail API) and turn each forwarded e-mail into input for learning. One inbox for all clubs: each club forwards to its own address with a "+" tag (`clubops.agent+running-club@gmail.com`), and the tag says the club. Drop e-mails whose sender is not on that club's cabinet list, and e-mails with an unknown tag. Pass the rest as `Untrusted` text (sender, date, subject, body; attachments listed by name only) to T-18's capture step, so every fact waits in Review. Never auto-approve; never reply to the sender. Code in `src/clubops/inbox/`.
 - Done when: forwarding a real OSA e-mail puts a proposed fact in that club's Review, and tests (with made-up e-mails) cover: wrong tag, sender not on the list, the same e-mail twice (no duplicate), and an e-mail with instructions inside ("ignore the rules...") treated as data. Each case has a failure-matrix row.
 - Progress (2026-10-31): Gmail read adapter, designated `clubops.agent+<club>@gmail.com` tag/sender filtering and durable deduplicated private queue added with synthetic tests. Human-click capture integration and live forward remain pending Gmail API access and Tatiana's API wiring.
+- Blocked (2026-11-20): #92/#93 are merged. #95 implements the guarded paid-read route and passed Joey's 15 focused inbox tests; Joey approved it, but it now conflicts with merged #96 in owner-maintained docs/api.md. Tatiana must reconcile that response documentation and shared failure rows, obtain current-head re-review/CI, finish proof/removal routes, then coordinate the approved real-forward acceptance with #94. J-22 code completion does not prove live Review delivery.
 
 ### J-11 Daily check and OSA rule check (was T-21)
 - Owner: joey
-- Status: doing
+- Status: blocked
 - Needs: J-04
 - What: A daily plain-code check of each club's upcoming events (overdue tasks, deadlines inside 2 days, plans outdated by edits) that calls the AI only when it finds a real problem; and the monthly OSA website check from September until the president marks the new rules as in (D-30, D-31). Both run on a schedule on the server and write reminders, never send messages. Code in `src/clubops/checks/`.
 - Done when: both run on a schedule on the deployed app, with tests (made-up events) and failure-matrix rows.
 - Progress (2026-10-31): plain-code daily findings and OSA page hash checks added with synthetic tests. Server scheduling, reminder persistence and source fetch integration remain pending owner-side deployment/API work.
+- Blocked (2026-11-20): deterministic findings/hash tests exist; Tatiana/Christophe must provide scheduled server execution, private durable findings/reminders and restart evidence. J-04 generator acceptance is complete. No automatic paid model run is authorized by this task status.
 
 ### J-12 Proposal draft (was T-16)
 - Owner: joey
-- Status: doing
+- Status: done
 - Needs: none
 - What: Fill the OSA Event Proposal form from an approved event's details, the club profile and the rule check, following the frozen `draft-proposal` contract (`DraftProposalRequest` -> `ProposalDraft` in `src/clubops/contracts/forms.py`). The form is `data/forms/osa_event_proposal_2026_2027.json`; it grows from 33 to 52 questions: "Yes" to materials adds 10 (q34-q43: tables, chairs, boards, tents, table covers, outlets and amperage), "Yes" to catering adds 9 (q44-q52: menu, people, setup time, price per person, a second option, cost sharing); each extra question has `required_if` on the question that opens it. Every answer says its origin (stated, from memory, computed, missing) and source; times in 24-hour format; dates match the event; adviser name without "Dr."; nothing invented (unknown = left for a person). Code in `src/clubops/drafts/proposal.py`. Tatiana adds it to the agent as a tool and to the event page once it works (tell her).
 - Done when: drafts for the made-up test events pass the form checks (required answers present, 24-hour times, dates consistent, attachments listed), with tests for both form versions.
 - Progress (2026-10-31): deterministic drafter and synthetic checks for the checked-in 33-question form added. The official six materials questions are not yet present in the checked-in template, so their exact form-version check remains pending.
 - Progress (2026-11-10): verified the current 52-field form's catering branch and a synthetic 33-field legacy shape selected by field ID; both keep unknown answers pending rather than inventing values. Focused tests pass. Current official 52-field required answers still need human confirmation, and Tatiana owns agent/event API wiring (issue #83).
+- Verified (2026-11-20): tests/test_proposal_draft.py and tests/test_eval_proposals.py cover the official 52-field template, synthetic legacy 33-field shape, conditional materials/catering, source origins, missing values, times, dates and attachments. This meets the task's synthetic form-check gate. Human confirmation of the official form, cabinet send-ready quality and agent/event wiring remain integration acceptance with Tatiana, not measured proposal accuracy.
 
 ### J-13 Security tests (was T-24)
 - Owner: joey
-- Status: doing
+- Status: blocked
 - Needs: none
 - What: An adversarial test set that tries to break ClubOps: instructions hidden in an event description or a forwarded e-mail ("ignore the rules", "approve this"), fake "OSA" rules sent as facts, one club reaching another club's data, the adviser or a non-cabinet account changing things, a forged sign-in, spending past the limits. Start with the planner and the API (live now); add the chatbot and learning when T-17 and T-18 land. Made-up data only. Tests in `tests/security/` (yours). Also update `docs/threat-model.md` and write the report sections on security, the calendar and the inbox.
 - Done when: the set runs in `make check`; every way it found to break ClubOps has a failure-matrix row and is fixed (or the row says why not, and Tatiana agreed); and the injection attack success rate is measured (how many of the attacks worked) with the defences off and on, and reported in `results/`.
 - Progress (2026-10-31): synthetic API, learning, planner prompt and budget boundary tests added. The full adversarial corpus, real defense-off/on measurement and report sections remain pending.
+- Blocked (2026-11-20): #82 is synchronized with main and includes the frozen attack/benign scorer and security/calendar/inbox report sections. Full branch checks pass (696 passed, 1 skipped, 1 strict xfail; 92.77% coverage). F-204 benign mediator wording requires Tatiana's detector fix or explicit acceptance. Independently reviewed defense-off/on outcomes and results remain missing; scripted sample outcomes are not measurements.
 
 ### J-14 Made-up events for the missing event types (was T-36)
 - Owner: joey
@@ -700,11 +712,12 @@ Reference documents:
 
 ### J-15 Chatbot with sources (was T-17)
 - Owner: joey
-- Status: doing
+- Status: blocked
 - Needs: none
 - What: Answer a cabinet member's question only from the club's approved facts and the AUB rules, following the frozen `ask` contract (`AskRequest` -> `Answer` in `src/clubops/contracts/knowhow.py`). Find candidate facts with the store's search (`KnowHowStore.search`), give them to the model, and check its answer in code: every citation must be one of the facts given; no facts found, or the model unsure, means `known: false` with who to ask (`ask`) and where to look (`look_in`), never a made-up answer (D-49). Redact the question before the model (`clubops.redaction`). Use the model client and its budget (`clubops.model`). Code in `src/clubops/chat/` (yours); wire it to `POST /api/chat/ask` in place of the placeholder (tell Tatiana). Develop with made-up facts and questions; Tatiana runs the real 42-question test (private) and tells you the score.
 - Done when: the chatbot answers on the app with sources, says "not sure" with who to ask when it should, and Tatiana's 42-question run is recorded.
 - Progress (2026-10-31): source-gated chat core and synthetic tests added. App endpoint wiring and Tatiana's private 42-question run remain pending.
+- Blocked (2026-11-20): synthetic source/citation/unknown-answer tests pass. Tatiana must confirm current app wiring and record the private 42-question run for T-26. No private question set or matching model recordings exist in this checkout; no score is invented.
 
 ### J-16 Secret scanning in CI (bonus)
 - Owner: joey
@@ -713,6 +726,7 @@ Reference documents:
 - What: GitHub's own secret scanning and CodeQL need a public repo or a paid plan, so run free equivalents in CI: gitleaks (secrets in the code and history) and a Python security linter. Fix or explain every finding.
 - Done when: both run in CI on every PR and are green on `main`.
 - Blocked (2026-11-10): `.github/workflows/` is outside Joey's assigned folders. Repo issue #84 asks Christophe to take CI ownership or identify its owner, then add pinned gitleaks and Bandit gates. Joey has not modified teammate-owned CI; the task remains open until both run green on PRs and `main`.
+- Blocked (2026-11-20): no workflow-path ownership grant or completed gitleaks/Bandit PR/main gate was found in #84. Tatiana must explicitly assign the workflow paths; the assigned owner implements pinned tools and supplies green run evidence. No new dependencies or security configuration were installed during this audit.
 
 ### J-17 Chatbot test runner
 - Owner: joey
@@ -727,10 +741,11 @@ Reference documents:
 
 ### J-18 Poster
 - Owner: joey
-- Status: todo
+- Status: blocked
 - Needs: T-26
 - What: Update the poster to the new scope (agent, learning, handover, web app) and to the final numbers from `results/` (every number points to `docs/evidence.md`). Tatiana checks the numbers.
 - Done when: poster printed or submitted by 30 November.
+- Blocked (2026-11-20): final T-26 result files and Tatiana-checked evidence claims are not available. Joey cannot finalize or submit a poster with measured numbers before those exist. No test counts or synthetic scorer fixtures are substituted for model performance.
 
 ### J-19 Proposal accuracy runner
 - Owner: joey
@@ -744,26 +759,30 @@ Reference documents:
 
 ### J-20 New-club test and learning curve (D-91)
 - Owner: joey
-- Status: todo
+- Status: blocked
 - Needs: J-14, T-41
 - What: Show ClubOps works for clubs it was not tuned on. `scripts/eval_new_club.py`: start a club empty (only the shared AUB layer), give it a starter pack of 0, 1, 3, then all onboarding documents, and plan its events after each step with `clubops.evaluation.plans` (approvals caught, false alarms, cost). Make 3 synthetic clubs of other kinds (academic, cultural, social; like J-14) with events and labels, and freeze them before running. Tatiana runs it on ASME (T-44) in T-26.
 - Done when: the script gives a curve table per club on synthetic data, with tests, in replay mode.
+- Blocked (2026-11-20): #81 is synchronized with main; five focused tests and the 15-row checklist CLI pass for empty, 1/3/4 interview answers, then documents. Complete matching ClubOps model recordings and a measured replay curve are still absent. Checklist/scorer fixtures verify the runner only. Tatiana owns private ASME evidence and T-26. PR remains draft until that gate is met.
 
 ### J-21 Automate shared-calendar cabinet access
 - Owner: joey
-- Status: review
+- Status: blocked
 - Needs: J-01
 - What: Grant a named cabinet member read-only access to the club's shared Google calendar and revoke that rule when the member leaves. Keep Google access separate from ClubOps approval rights. Tatiana owns the cabinet API triggers and token storage; Christophe owns the Settings display. Do not change public, owner or manually elevated permissions automatically.
 - Done when: fake-Google tests show repeat grants are safe, removal revokes only that member's reader rule, and a live cabinet-approved test verifies access after backend OAuth is connected.
 - Progress (2026-11-10): reader ACL adapter and synthetic tests added. PR #79 is open with Tatiana and Christophe requested for review. Backend OAuth, cabinet add/remove triggers, Settings status, calendar ID and live test remain pending with their owners.
 - Progress (2026-11-11): Tatiana's PR #79 review found the Running Club-only env placeholder. Replaced it with a private per-club JSON map, parser and synthetic multi-club/invalid-input tests. Joey must move the existing local ID into the new map privately. T-46 still owns backend loading and OAuth; live sharing remains pending.
+- Blocked (2026-11-20): #79 is merged; multi-club parser and named reader grant/revoke tests pass. T-46 cabinet triggers/OAuth and a cabinet-approved live access/revocation test are still missing. Reader access does not prove notification delivery or D-116 event invitations.
+
 ### J-22 Inbox checks before any paid read (D-113, D-114)
 - Owner: joey
-- Status: review
+- Status: done
 - Needs: J-10
 - What: Finishes J-10. In `src/clubops/inbox/`: an extra sending address per cabinet member, proven by a short code e-mailed to the club's `+tag` address and removed with the member; the original sender inside the forwarded text must be on the OSA list (passed in, never committed); skip e-mails already read; clean the text before the model (signatures, old replies, links, formatting); every skipped e-mail returns its reason; the same OSA e-mail sent to many clubs is read once. No model call in this task.
 - Done when: synthetic tests cover unverified sender, wrong code, original sender not on the OSA list, duplicate, read-once across clubs, and an e-mail with instructions inside treated as data; each has a failure-matrix row. PR up by Thursday 12 Nov night; otherwise Tatiana takes it over.
 - Progress (2026-11-12): Joey-owned `inbox.guards` and synthetic tests cover the verification code, private OSA allowlist input, skip reasons, content cleaning and cross-club fingerprint. API wiring and live Gmail acceptance remain with Tatiana's T-47; the guard does not make model calls or send mail.
+- Verified (2026-11-20): #93 was independently approved and merged on 17 Nov. Its synthetic verification, wrong-code/lockout, original-OSA, duplicate/read-once, untrusted-content and Outlook cases meet this task's no-model acceptance gate. J-10/T-47 and C-35 retain API/live acceptance; this does not claim a real mail was read.
 
 ### J-23 Deadline cards on the club calendar (D-116)
 - Owner: joey
@@ -773,3 +792,4 @@ Reference documents:
 - Done when: synthetic tests (no live Google calls) and failure-matrix rows.
 
 - Blocked (2026-11-16): T-48 is not merged and the frozen CalendarItem contract has no per-event invitee or deadline-card approval fields. Coordinate a standalone contract-change PR with Tatiana before implementing D-116; do not reuse the old role-calendar behavior as acceptance.
+- Blocked (2026-11-20): T-48 restore slice is now merged as #96, but CalendarItem still lacks approved deadline-card choice and named per-event audience. Tatiana must agree the standalone versioned contract-change with Joey, including audience replacement/removal, done/cancel and retry semantics; both owners approve. Then Joey implements the one-calendar-per-club adapter and synthetic regressions. No contract was changed unilaterally.
