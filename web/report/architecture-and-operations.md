@@ -1,6 +1,6 @@
 # Report sections: architecture, web app, deployment and monitoring
 
-Christophe's C-29 draft, 16 November 2026. Interface baseline: main `54d38c1`.
+Christophe's C-29 draft, updated 20 November 2026. Interface baseline: main `0ac0b5b`.
 For Tatiana to review and incorporate into T-27. These sections describe implemented
 boundaries and local evidence. Final provider/evaluation results, hosted acceptance
 and team/user observations must be added from their actual records.
@@ -117,3 +117,12 @@ club acceptance, final frozen evaluation thresholds and three genuine weekly tea
 reviews require their own evidence; none are inferred from a passing test or board
 iteration date. The owner-maintained report evidence index must link these files
 before publication.
+
+## README-only teammate setup evidence
+
+[Joey's 20 November attempt](setup-attempt-2026-11-20.md) stopped at the Docker
+prerequisite: the Linux engine named pipe was absent. It did not reach Compose
+startup or login, so the fresh README-only setup acceptance remains open. Retain
+this concrete failure alongside the automated local evidence rather than replacing
+it with an inferred success. Repeat the documented flow when a working engine is
+available; real deployment and provider acceptance remain separate.
