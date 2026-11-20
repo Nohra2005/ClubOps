@@ -193,3 +193,12 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 **State / next:** C-13 remains doing. Full root gates pass (693 tests, 93.06%; Ruff/format 158 files, mypy 84, schemas/tasks); web check 97 units/12 tools/types/build; HTTP 54 pass including 12 new cases; actual local API/cookie/SQLite 4 pass. D-129/F-233 reserved beyond main/open PRs. Small commits preserved; current-head CI/independent review still required. Merge via PR/merge commit, no main push or self-approval. Owner should link web/VERIFICATION.md and session tests from her evidence/rubric files.
 
 **Open / limits:** Validated frontend response shapes do not establish server authorization, real Google login or deployed acceptance. C-35 remains separate. New development-tool advisory remediation is isolated as C-36, not mixed into this parser branch. Tatiana's new #95/#96 exact responses arrived during this work and unblock the next C-35 paid-read/Restore portion.
+
+
+## 2026-11-20 - Christophe (C-13 approved-PR main sync)
+
+**Did:** Merged main 0ac0b5b as Tatiana requested and retained both sides of the shared design-log conflict. Approved implementation and individual commits remain unchanged. Existing IDs checked across main/open PRs; no new IDs.
+
+**State:** Web quality/build checks pass with 97 units and 12 tools. Python source/tests/scripts/schemas/lock match the C-35 checkout whose full root gates pass (700 tests, 93.09%); branch-local shared checks are run before publishing. Session response validation remains unchanged; deployed Google/every-screen acceptance is still open.
+
+**Next / limits:** Tatiana re-approves the synced head after current-head CI and merges with Create a merge commit. No backend/auth contract change, real provider acceptance, self-merge or direct main push.

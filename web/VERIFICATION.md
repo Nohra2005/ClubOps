@@ -292,3 +292,16 @@ handles the development dependency advisory found during installation; this C-13
 branch keeps main's dependency lock unchanged. Current-head CI and independent
 review are tracked on its PR. C-13 remains doing until deployed/every-screen
 acceptance is recorded.
+
+## 2026-11-20 - C-13 approved-PR main sync
+
+Merged main `0ac0b5b` without rewriting the original small commits. Preserved both
+sides of the additive design-log conflict. Frontend quality/build checks pass:
+97 units and 12 board-tool tests, lint, format and types. Python source, tests,
+scripts, schemas and locked dependencies are byte-identical to the synced C-35
+checkout whose full root gates passed (700 tests, 93.09%, Ruff/format 159 files,
+mypy 84 files, schema/tasks). Shared docs/tasks are checked in this checkout.
+Session response validation remains unchanged; deployed Google/every-screen acceptance is still open.
+
+No new design/failure ID or backend/contract change. Current-head CI and fresh
+independent approval are required after this sync; no self-merge/main push.
