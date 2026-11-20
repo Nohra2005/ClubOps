@@ -201,3 +201,12 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 **Did:** Merged current main 166f27e into #99, keeping both sides of the shared failure log and the original small report/setup commits. No report, application implementation or contract changed. Gmail fetch and J-22 guards are merged; candidate Inbox HTTP routes #95 remain open, so no new live-mailbox claim is added to the report.
 
 **State / next:** Actual application/cookie/SQLite browser suite rerun: all 8 desktop/phone cases pass after sync. Full main-based Python gates are also verified in the parallel C-35 checkout (693 tests, 93.06%; Ruff/format, mypy, schema/tasks); C-29 current-head CI/review still required. C-29 remains doing until Tatiana reviews/incorporates the report and Joey records genuine README-only setup. Retain D-126/F-227, known F-151/F-201 limits, private-source/provider/deployment boundaries and independent review/merge commits. No self-merge under the stated freeze.
+
+
+## 2026-11-20 - Christophe (C-29 current-main evidence and teammate attempt)
+
+**Did:** Synced #99 to main e4090c6, retaining both sides of design/failure logs. Moved only C-29 D-126/F-227 to D-132/F-237 to avoid #103. Added a sourced receipt of Joey's README-only attempt, which stopped at the unavailable Docker Linux engine; updated report baseline and task progress. Historical handoffs remain unchanged.
+
+**State:** C-29 doing. Final root gates: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. Frontend quality/build: 68 units/12 tools. Actual app HTTP/cookie/SQLite setup/planning suite reran 8/8 on final main baseline; shared docs/tasks 10/10. Separate small sync, ID, receipt and verification commits preserved; current-head CI/review required.
+
+**Next / limits:** Tatiana reviews/incorporates the report and owner evidence links; a teammate repeats the exact README flow when a working Linux container engine is available. Joey's attempt is a prerequisite failure, not completed app acceptance. Known setup limits F-151/F-201 and deployed/provider/ASME evidence remain separate. No new feature scope before 23 November, no authored backend/contract edit or self-merge/main push.

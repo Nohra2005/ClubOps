@@ -305,3 +305,23 @@ actual ASME acceptance or measured learning quality. The Python adapter tests an
 synthetic rehearsal prove different boundaries. F-151 and F-201 remain known limits.
 CI on the new PR head and independent review are tracked on its PR, not assumed from
 this local result. C-29 still needs Joey's fresh README-only setup and report review.
+
+## 2026-11-20 - C-29 synced report and sourced teammate setup blocker
+
+Merged main `e4090c6` after #95/#96 landed; kept the main and C-29 shared rows.
+Renumbered only C-29's decision/failure to D-132/F-237 because new #103 uses
+D-126/F-227. Historical dated references remain unchanged. No backend implementation
+or contract authored. Report baseline now matches this merged API.
+
+Root gates on the final stable tree pass: 710 tests, 93.14% coverage, Ruff/format
+162 files, mypy 85 files, schemas/tasks. Frontend quality/build passes (68 units,
+12 board-tool cases). Actual local API/cookie/SQLite suite reran on this final
+baseline: all 8 desktop/phone cases pass, including setup and adviser denial.
+Ten shared-doc/task checks also pass.
+
+Joey's independently reported README-only attempt stopped before startup because
+Docker's Linux engine pipe was absent. The sourced receipt is
+[report/setup-attempt-2026-11-20.md](report/setup-attempt-2026-11-20.md). It is not a
+successful fresh install, Compose/login or deployed acceptance. C-29 remains doing;
+report incorporation and a successful fresh README-only setup remain open. No real
+provider/ASME result, new feature scope, self-merge or main push.

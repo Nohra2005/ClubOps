@@ -1,6 +1,6 @@
 # Report sections: architecture, web app, deployment and monitoring
 
-Christophe's C-29 draft, updated 20 November 2026. Interface baseline: main `0ac0b5b`.
+Christophe's C-29 draft, updated 20 November 2026. Interface baseline: main `e4090c6`.
 For Tatiana to review and incorporate into T-27. These sections describe implemented
 boundaries and local evidence. Final provider/evaluation results, hosted acceptance
 and team/user observations must be added from their actual records.
