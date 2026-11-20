@@ -261,3 +261,12 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 **Did:** #95 merged as e4090c6 during verification, so merged that main as well. Retained each main/own failure once. C-35 preview role row moves to F-238; main's F-217 stays unchanged. C-29 D-132/F-237 avoid #103's IDs. Earlier dated references remain history.
 
 **State / next:** Final root tree passes 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. All 82 HTTP cases passed in a completed run with normal Windows process cleanup. Frontend source/tests/lock are unchanged by the second main sync. Existing approved implementation and small commits remain. Re-review after final-head CI; Tatiana merges using Create a merge commit. No new scope before the 23 November meet-up or real mailbox/provider/deployed claim.
+
+
+## 2026-11-20 - Christophe (C-13 combined session/Inbox integration)
+
+**Did:** Synced #100 to reviewed #94/#102 main 0f3bb09. Kept both adapter imports, all session/Inbox/Restore HTTP registrations and demo exclusions, both API notes sections and all previous shared handoff/evidence lines. Original commits retained; no new scope or D/F IDs.
+
+**State:** Frontend checks pass: 137 units/12 tools/types/build. Clean standalone HTTP suite: 94 pass; sequential actual local API/cookie/SQLite: 4 pass. Shared Python root gates: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Branch shared docs/tasks: 10 pass. Overlapped artifact failures and fresh uv certificate/startup preparation were resolved by normal sequential runs using the system trust store, not assertion/source changes.
+
+**Next / limits:** Fresh independent approval after current-head CI, then merge with Create a merge commit. Deployed Google/every-screen acceptance remains open. No real provider/private inputs, backend/contract implementation changes, new scope before 23 November or main push/self-merge.

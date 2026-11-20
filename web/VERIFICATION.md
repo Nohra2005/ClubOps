@@ -402,3 +402,27 @@ C-35 preview role row is now F-238, preserving main's adviser-route F-217.
 C-29 uses D-132/F-237 to avoid #103's D-126/F-227. Historical dated evidence
 retains its old references. No new feature scope, real provider/club acceptance,
 self-merge or main push. Current-head CI and fresh independent approval remain.
+
+## 20 November - C-13 combined with reviewed Inbox frontend
+
+Tatiana merged #94/#102 as main `0f3bb09`. Synced #100 without dropping either
+API adapter or any browser suite: session, Inbox capture and Restore are all
+registered in the HTTP config and excluded from the demo config. Every previous
+handoff/evidence line and both teams' shared rows remain. No new D/F IDs or scope.
+
+Frontend quality/build passes with 137 units and 12 board-tool cases. The clean
+standalone HTTP run passes all 94 desktop/phone cases; the subsequent actual local
+API/cookie/SQLite suite passes all 4 cases. Root make-check equivalents pass on
+the identical Python source/tests/scripts/schemas/lock: 710 tests, 93.14%,
+Ruff/format 162 files, mypy 85 files, schemas/tasks. Branch shared checks: 10 pass.
+
+An initial overlapped browser run failed two artifact writes, so both suites were
+rerun sequentially; no assertion was removed. The fresh worktree's uv install
+needed the system certificate store (`UV_SYSTEM_CERTS=true`), keeping TLS checks
+enabled. An initial live startup timed out during environment preparation; the
+prepared standalone run then passed. No application workaround or dependency
+change was made for these local runner issues.
+
+C-13 deployed Google/every-screen acceptance remains open. Current-head CI and
+fresh independent re-review are required after push; original commits are retained.
+No self-merge/main push, real provider calls or new scope before 23 November.
