@@ -347,3 +347,17 @@ The write tests remain intercepted synthetic contract checks, not actual mailbox
 provider or deployed acceptance. A fresh independent approval and current-head CI
 are required after the sync; Tatiana will merge the PR. C-35 remains doing while
 forwarding proof/settings and Review expiry/calendar payloads are unpublished.
+
+### 20 November follow-up - newly merged Inbox baseline
+
+#95 merged while checks were running. Synced again to main `e4090c6`, retaining
+main's failure rows and each unique frontend row once. Both #95 and #96 are now
+merged. Root gates on the final Python tree pass: 710 tests, 93.14% coverage,
+Ruff/format 162 files, mypy 85 files, schema/task checks. Branch-local shared docs
+are checked before push; frontend quality/build remains green (108 units,
+12 board-tool cases). All 82 HTTP cases passed in a completed run with normal Windows process cleanup. Frontend source/tests/lock are unchanged by the second main sync.
+
+C-35 preview role row is now F-238, preserving main's adviser-route F-217.
+C-29 uses D-132/F-237 to avoid #103's D-126/F-227. Historical dated evidence
+retains its old references. No new feature scope, real provider/club acceptance,
+self-merge or main push. Current-head CI and fresh independent approval remain.

@@ -230,3 +230,10 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 **State:** C-35 doing. Root checks pass: 700 tests, 93.09%, Ruff/format 159 files, mypy 84 files, schema/tasks. Frontend quality/build: 108 units and 12 tools. HTTP browser suite: 82 pass. Current-head CI and fresh independent re-approval are required after push.
 
 **Next / limits:** Tatiana re-approves the synced head and merges with Create a merge commit. T-48 is on main; #95 still supplies the unmerged Inbox routes. Forwarding proof/settings and Review expiry/calendar payloads remain separate. Existing write tests use synthetic interceptions, not actual mailbox/provider/deployed acceptance. No self-merge or direct main push.
+
+
+### 20 November follow-up - C-35, final Inbox main sync
+
+**Did:** #95 merged as e4090c6 during verification, so merged that main as well. Retained each main/own failure once. C-35 preview role row moves to F-238; main's F-217 stays unchanged. C-29 D-132/F-237 avoid #103's IDs. Earlier dated references remain history.
+
+**State / next:** Final root tree passes 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. All 82 HTTP cases passed in a completed run with normal Windows process cleanup. Frontend source/tests/lock are unchanged by the second main sync. Existing approved implementation and small commits remain. Re-review after final-head CI; Tatiana merges using Create a merge commit. No new scope before the 23 November meet-up or real mailbox/provider/deployed claim.
