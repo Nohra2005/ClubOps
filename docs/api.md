@@ -43,7 +43,7 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Events | `PATCH /api/tasks/{task_id} {state, owner_role}` | live |
 | Events | `POST /api/events/{id}/drafts/{type}` | 501 until J-07 is wired |
 | Events | `POST /api/events/{id}/after-event {answers}` | live: closes the event, sends the facts to Review, returns `{draft, review_count}` (a plain impact-report draft until J-07) |
-| Chat | `POST /api/chat/ask {text}` | placeholder: always "not known, ask the club president" until J-15 |
+| Chat | `POST /api/chat/ask {text}` | cabinet only (the read-only adviser gets 403: a question will cost a model call); placeholder: always "not known, ask the club president" until J-15 |
 | Chat | `POST /api/chat/teach {text}` | live: returns `{kind: "learned", text, review_id}`; `review_id` is empty when no fact was found |
 | Review | `GET /api/review?filter=` | live; card types `fact`, `rule`, `merge` (same or newer version of a known fact) and `disagreement`, with `alternative` = the known fact; optional `warning` (the source had hidden instructions) and `outdated` |
 | Review | `POST /api/review/{id} {decision: approve|reject|edit, edited_text?, reason?}` | live |

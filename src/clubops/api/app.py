@@ -762,8 +762,9 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
     # -------------------------------------------------- not built yet (501)
 
     @app.post("/api/chat/ask")
-    def ask(member: Member = Depends(signed_in)) -> dict[str, Any]:  # noqa: B008
-        """Until the chatbot (T-17) exists: say so honestly, with who to ask (D-49)."""
+    def ask(member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+        """Until the chatbot (T-17) exists: say so honestly, with who to ask (D-49). Cabinet only: the read-only
+        adviser must not start a question that will cost a model call once the chatbot is on (F-217)."""
         return {
             "known": False,
             "text": "The chatbot isn't switched on yet, so I can't answer from the club's memory.",
