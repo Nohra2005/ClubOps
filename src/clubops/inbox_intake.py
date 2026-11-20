@@ -39,8 +39,10 @@ class InboxNotes:
         with closing(sqlite3.connect(path)) as db, db:
             db.execute(
                 "CREATE TABLE IF NOT EXISTS accepted (message_id TEXT PRIMARY KEY, club_id TEXT NOT NULL, "
-                "fingerprint TEXT NOT NULL)"
+                "fingerprint TEXT NOT NULL, audience INTEGER)"
             )
+            if "audience" not in {row[1] for row in db.execute("PRAGMA table_info(accepted)")}:
+                db.execute("ALTER TABLE accepted ADD COLUMN audience INTEGER")  # notes made before D-126
             db.execute(
                 "CREATE TABLE IF NOT EXISTS skipped (message_id TEXT PRIMARY KEY, club_id TEXT NOT NULL, "
                 "reason TEXT NOT NULL, subject TEXT NOT NULL)"
@@ -53,9 +55,20 @@ class InboxNotes:
                 for table in ("accepted", "skipped")
             )
 
-    def accept(self, message_id: str, club_id: str, fingerprint: str) -> None:
+    def accept(self, message_id: str, club_id: str, fingerprint: str, audience: int | None = None) -> None:
         with closing(sqlite3.connect(self.path)) as db, db:
-            db.execute("INSERT OR IGNORE INTO accepted VALUES (?, ?, ?)", (message_id, club_id, fingerprint))
+            db.execute(
+                "INSERT OR IGNORE INTO accepted (message_id, club_id, fingerprint, audience) VALUES (?, ?, ?, ?)",
+                (message_id, club_id, fingerprint, audience),
+            )
+
+    def audience(self, message_id: str, club_id: str) -> int | None:
+        """How many people the original went to, or None when it was not visible."""
+        with closing(sqlite3.connect(self.path)) as db:
+            row = db.execute(
+                "SELECT audience FROM accepted WHERE message_id=? AND club_id=?", (message_id, club_id)
+            ).fetchone()
+        return int(row[0]) if row and row[0] is not None else None
 
     def skip(self, message_id: str, club_id: str, reason: str, subject: str) -> None:
         with closing(sqlite3.connect(self.path)) as db, db:
@@ -114,7 +127,7 @@ def intake(
             counts["skipped"] += 1
             continue
         if queue.enqueue(message_id, _cleaned(request, checked.content)):
-            notes.accept(message_id, request.club_id, checked.fingerprint)
+            notes.accept(message_id, request.club_id, checked.fingerprint, checked.audience)
             counts["queued"] += 1
     return counts
 

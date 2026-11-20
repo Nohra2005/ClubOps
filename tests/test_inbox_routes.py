@@ -26,14 +26,14 @@ OTHER_CLUB = "chess-club"
 OSA = "osa.staff@example.org"
 
 
-def _mail(club: str, subject: str, original: str = OSA, body: str = "") -> bytes:
+def _mail(club: str, subject: str, original: str = OSA, body: str = "", to: str = "") -> bytes:
     """An Outlook-style forward (synthetic): marker line, then the original header lines."""
     return (
         f"From: {FORWARDER}\nTo: clubops.agent+{club}@gmail.com\nSubject: FW: {subject}\n"
         "Date: Tue, 10 Nov 2026 13:00:00 +0200\nContent-Type: text/plain\n\n"
         "________________________________\n"
         f"From: OSA Staff <{original}>\nSent: Tuesday, November 10, 2026 1:00 PM\n"
-        "To: Student A <a@example.org>; Student B <b@example.org>\nCc: Second Staff <s@example.org>\n"
+        f"To: {to or 'Student A <a@example.org>; Student B <b@example.org>'}\nCc: Second Staff <s@example.org>\n"
         f"Subject: {subject}\n\n{body or BLK}\n"
     ).encode()
 
@@ -162,3 +162,33 @@ def test_a_read_in_progress_blocks_a_second_paid_read(app: tuple[TestClient, Pro
     assert fingerprint is not None and InboxLedger(data / "inbox-ledger.db").claim_read(fingerprint)
     assert c.post("/api/inbox/m1/capture", headers=HEADERS).status_code == 409
     assert provider.prompts == []
+
+
+def test_the_number_of_people_the_original_went_to_decides_aub_wide_or_club_only(
+    app: tuple[TestClient, Provider, Path],
+) -> None:
+    """D-126: 3 recipients make a club-only card, 40 make an AUB-wide one, whatever the model labels it."""
+    c, provider, data = app
+    crowd = "; ".join(f"Club {i} <club{i}@example.org>" for i in range(40))
+    assert _fetch(data, {"few": _mail(CLUB, "A note"), "many": _mail(CLUB, "A notice", to=crowd)})["queued"] == 2
+    shared = {}
+    for message_id in ("few", "many"):
+        provider.answers.append({"facts": [dict(LESSON, about="club" if message_id == "many" else "aub")]})
+        [proposal_id] = c.post(f"/api/inbox/{message_id}/capture", headers=HEADERS).json()["proposals"]
+        shared[message_id] = next(card["shared"] for card in c.get("/api/review").json() if card["id"] == proposal_id)
+    assert shared == {"few": False, "many": True}
+    assert InboxNotes(data / "inbox-notes.db").audience("many", CLUB) == 41  # 40 in To + 1 in Cc, numbers only
+
+
+def test_notes_made_before_the_audience_count_still_open_and_fall_back(tmp_path: Path) -> None:
+    import sqlite3
+
+    old = tmp_path / "inbox-notes.db"
+    with sqlite3.connect(old) as db:
+        db.execute(
+            "CREATE TABLE accepted (message_id TEXT PRIMARY KEY, club_id TEXT NOT NULL, fingerprint TEXT NOT NULL)"
+        )
+        db.execute("INSERT INTO accepted VALUES ('m0', 'running-club', 'abc')")
+    notes = InboxNotes(old)
+    assert notes.fingerprint("m0", "running-club") == "abc"
+    assert notes.audience("m0", "running-club") is None  # unknown: the model's label decides
