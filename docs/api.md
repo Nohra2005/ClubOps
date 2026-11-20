@@ -43,7 +43,7 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Events | `PATCH /api/tasks/{task_id} {state, owner_role}` | live |
 | Events | `POST /api/events/{id}/drafts/{type}` | 501 until J-07 is wired |
 | Events | `POST /api/events/{id}/after-event {answers}` | live: closes the event, sends the facts to Review, returns `{draft, review_count}` (a plain impact-report draft until J-07) |
-| Chat | `POST /api/chat/ask {text}` | placeholder: always "not known, ask the club president" until J-15 |
+| Chat | `POST /api/chat/ask {text}` | cabinet only (the read-only adviser gets 403: a question will cost a model call); placeholder: always "not known, ask the club president" until J-15 |
 | Chat | `POST /api/chat/teach {text}` | live: returns `{kind: "learned", text, review_id}`; `review_id` is empty when no fact was found |
 | Review | `GET /api/review?filter=` | live; card types `fact`, `rule`, `merge` (same or newer version of a known fact) and `disagreement`, with `alternative` = the known fact; optional `warning` (the source had hidden instructions) and `outdated` |
 | Review | `POST /api/review/{id} {decision: approve|reject|edit, edited_text?, reason?}` | live |
@@ -55,6 +55,9 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Settings | `POST /api/documents` (multipart `file`) | live: .txt, .md, .csv, .eml, .xlsx up to 2 MB; past expense forms become a price list without AI; returns a `documents` knowledge item saying how many facts went to Review |
 | Settings | `GET /api/usage` | live (monthly planning cost; `calls_label` identifies planner steps; optional `run_metrics`, `trace_metrics`, `trace_metrics_available`, `metrics_note` explain C-20 outcomes and recorded coverage) |
 | Setup | `POST /api/setup/next` | 501 until C-21 |
+| Inbox | `GET /api/inbox` | live (cabinet only, own club): `[{id, subject, date, forwarded_by}]` for forwarded e-mails waiting to be read; metadata only, no model call |
+| Inbox | `POST /api/inbox/{id}/capture` | live (cabinet only, CSRF): one paid model read; `{proposals: [review ids], skipped}`; 404 if the id is not waiting for your club; 409 if the e-mail did not pass J-22's checks or is already being read (or was read for another club); 502 if the read failed (the e-mail stays waiting, retry); budget errors as usual. The read is claimed in J-22's ledger before the model and marked read only after Review has the proposals |
+| Inbox | `GET /api/inbox/skipped` | live (cabinet only, own club): `[{id, subject, reason, why}]` for forwarded e-mails the free checks refused, e.g. `why`: "ClubOps only reads e-mails forwarded from OSA staff". Never read by a model |
 | Knowledge | `POST /api/knowledge/{id}/restore {valid_to: date or null}` | live (president only, CSRF): brings an expired club fact back as a new version (an AUB-wide fact answers 403: operator only); facts whose end date passed show `status: may_be_outdated` and are not used by the planner; 409 if not expired, 422 if the new date is past |
 
 The demo-only actions in `client.ts` (`/__ui/*`) stay demo-only for now.
@@ -82,6 +85,25 @@ python -m clubops.reports --data-dir data/app --club running-club --month 2026-1
 Keep real reports private. Current regression and browser runs use scripted/synthetic
 activity; a real-provider pilot report remains part of C-20 validation.
 
+### Inbox: exact responses (answers Chris on #95)
+
+`GET /api/inbox`. All four values are always strings; `date` or `forwarded_by` can be `""` when the e-mail lacked them (show "Not supplied"). Subject is cut at 200 characters, date at 40.
+
+```json
+[{"id": "msg-001", "subject": "Campus closed on Monday", "date": "2026-11-19", "forwarded_by": "Name"}]
+```
+
+`GET /api/inbox/skipped`, all strings:
+
+```json
+[{"id": "msg-002", "subject": "Hello", "reason": "original_sender_not_osa", "why": "ClubOps only reads e-mails forwarded from OSA staff"}]
+```
+
+`POST /api/inbox/{id}/capture` (CSRF header, president or cabinet, one paid model call):
+- Success with cards: `{"proposals": ["p-1", "p-2"], "skipped": []}`. The ids are Review card ids.
+- No fact found: `{"proposals": [], "skipped": []}`. The e-mail is still marked read.
+- Content the model could not use: `{"proposals": [], "skipped": ["<plain reason>"]}`.
+- Errors `{"detail": "<plain sentence>"}`: 404 not waiting for your club; 409 not checked yet (fetch again) or already being read; 502 read failed, still waiting, retry.
 ### Restore: exact responses (answers Chris on #96)
 
 `POST /api/knowledge/{id}/restore` with body `{"valid_to": "2027-06-30"}` (or `{"valid_to": null}` for no end date) returns the **same projection as `GET /api/knowledge/{id}`**, now current:
