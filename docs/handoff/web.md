@@ -261,3 +261,12 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 **Did:** #95 merged as e4090c6 during verification, so merged that main as well. Retained each main/own failure once. C-35 preview role row moves to F-238; main's F-217 stays unchanged. C-29 D-132/F-237 avoid #103's IDs. Earlier dated references remain history.
 
 **State / next:** Final root tree passes 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. All 82 HTTP cases passed in a completed run with normal Windows process cleanup. Frontend source/tests/lock are unchanged by the second main sync. Existing approved implementation and small commits remain. Re-review after final-head CI; Tatiana merges using Create a merge commit. No new scope before the 23 November meet-up or real mailbox/provider/deployed claim.
+
+
+## 2026-11-20 - Christophe (C-36 after reviewed Inbox merge)
+
+**Did:** Tatiana merged #94 and Joey's #102 as main 0f3bb09. Synced this existing PR, retaining both shared logs and every earlier handoff/evidence line. Original focused commits stay intact; no new feature scope or design/failure IDs.
+
+**State:** Frontend checks pass: 108 units/12 tools, lint/format/types/build and branch-local shared docs/tasks. Shared Python-tree root gates pass: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Full npm dependency audit reports zero vulnerabilities. The patched lint chain checks the now-merged Inbox/Restore frontend.
+
+**Next / limits:** Fresh independent review after current-head CI, then a merge commit. Existing deployed/provider/club acceptance gaps remain separate; no authored backend/contract edit, new scope, self-merge or main push.
