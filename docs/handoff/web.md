@@ -202,3 +202,10 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 **State:** Web quality/build checks pass with 68 units and 12 tools. Python source/tests/scripts/schemas/lock match the C-35 checkout whose full root gates pass (700 tests, 93.09%); branch-local shared checks are run before publishing. Full development npm audit remains at zero vulnerabilities; production application dependencies are unchanged.
 
 **Next / limits:** Tatiana re-approves the synced head after current-head CI and merges with Create a merge commit. No backend/auth contract change, real provider acceptance, self-merge or direct main push.
+
+
+### 20 November follow-up - C-36, final Inbox main sync
+
+**Did:** #95 merged as e4090c6 during verification, so merged that main as well. Retained each main/own failure once. C-35 preview role row moves to F-238; main's F-217 stays unchanged. C-29 D-132/F-237 avoid #103's IDs. Earlier dated references remain history.
+
+**State / next:** Final root tree passes 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. The development dependency patch is unchanged; full npm audit remains zero. Final Python source/tests/scripts/schemas/lock match the fully checked C-35 tree. Existing approved implementation and small commits remain. Re-review after final-head CI; Tatiana merges using Create a merge commit. No new scope before the 23 November meet-up or real mailbox/provider/deployed claim.
