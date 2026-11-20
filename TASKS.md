@@ -543,6 +543,7 @@ Reference documents:
 ### C-31 GitHub Projects board and weekly sprints (bonus)
 - Owner: christophe
 - Status: doing
+- Progress (2026-11-20, after #94/#102): board refresh now pins main 0f3bb09, including Joey's merged task reconciliation: 92 tasks, no new cards, 107 managed updates; repeat zero changes. New receipt: web/board/evidence/refresh-2026-11-20-after-inbox-merge.json. Manual objects preserved; real weekly-review evidence remains open.
 - Progress (2026-11-20): refreshed existing private board #4 from merged main e4090c6: 92 tasks, no new cards, 93 managed updates; repeat creates/updates zero. Original manual cards and status columns preserved. Dated read-back proof is web/board/evidence/refresh-2026-11-20.json. Three genuine weekly-review records remain outstanding.
 - Live refresh (2026-11-18): merged main 166f27e is reflected in the existing private board: 92 tasks, 0 new cards, 100 field/body updates; manual objects and view #8 preserved. Repeat sync makes 0 creates/0 updates. Dated proof: `web/board/evidence/refresh-2026-11-18.json`. Three real weekly reviews remain unevidenced.
 - Live refresh (2026-11-16): 92 merged-main tasks from 54d38c1 verified on existing project #4; 2 new cards, 99 field/body updates, original manual cards preserved and status-columns view #8 reused. Repeat sync creates 0/updates 0. Dated proof: `web/board/evidence/refresh-2026-11-16.json`. Three actual weekly team reviews still need records; this remains doing.

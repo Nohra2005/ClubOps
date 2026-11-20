@@ -215,3 +215,11 @@ created and updated zero. The three original manual cards, human fields and exis
 status-column view #8 remain preserved. Pending PRs, including C-36, are not treated
 as merged task state. This refresh is not evidence of a weekly team review; three
 genuine review records remain outstanding.
+
+### Follow-up after #94 and #102 merged
+
+The [follow-up receipt](board/evidence/refresh-2026-11-20-after-inbox-merge.json)
+pins main `0f3bb09`, including Joey's merged task-state reconciliation: 92 tasks,
+0 new cards, 107 managed updates; full repeat creates/updates zero. Manual cards,
+fields and status-column view #8 remain preserved. The earlier same-day receipt
+remains history. Three genuine weekly-review records are still outstanding.
