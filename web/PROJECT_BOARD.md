@@ -206,3 +206,12 @@ out of output. They make no GitHub writes. The live request size is bounded at f
 mutations: the earlier larger batches stopped after partial creations. Read-back
 recovered 29 existing task drafts; the completed attempt created the remaining 61
 and applied 372 field updates. A second sync verified zero changes.
+
+## 20 November merged-task refresh
+
+[Latest read-back receipt](board/evidence/refresh-2026-11-20.json) pins merged main
+`e4090c6`: 92 task cards, no new cards, 93 managed field/body updates. Repeat sync
+created and updated zero. The three original manual cards, human fields and existing
+status-column view #8 remain preserved. Pending PRs, including C-36, are not treated
+as merged task state. This refresh is not evidence of a weekly team review; three
+genuine review records remain outstanding.
