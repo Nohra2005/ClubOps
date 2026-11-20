@@ -58,6 +58,7 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Inbox | `GET /api/inbox` | live (cabinet only, own club): `[{id, subject, date, forwarded_by}]` for forwarded e-mails waiting to be read; metadata only, no model call |
 | Inbox | `POST /api/inbox/{id}/capture` | live (cabinet only, CSRF): one paid model read; `{proposals: [review ids], skipped}`; 404 if the id is not waiting for your club; 409 if the e-mail did not pass J-22's checks or is already being read (or was read for another club); 502 if the read failed (the e-mail stays waiting, retry); budget errors as usual. The read is claimed in J-22's ledger before the model and marked read only after Review has the proposals |
 | Inbox | `GET /api/inbox/skipped` | live (cabinet only, own club): `[{id, subject, reason, why}]` for forwarded e-mails the free checks refused, e.g. `why`: "ClubOps only reads e-mails forwarded from OSA staff". Never read by a model |
+| Knowledge | `POST /api/knowledge/{id}/restore {valid_to: date or null}` | live (president only, CSRF): brings an expired club fact back as a new version (an AUB-wide fact answers 403: operator only); facts whose end date passed show `status: may_be_outdated` and are not used by the planner; 409 if not expired, 422 if the new date is past |
 
 The demo-only actions in `client.ts` (`/__ui/*`) stay demo-only for now.
 
@@ -103,3 +104,18 @@ activity; a real-provider pilot report remains part of C-20 validation.
 - No fact found: `{"proposals": [], "skipped": []}`. The e-mail is still marked read.
 - Content the model could not use: `{"proposals": [], "skipped": ["<plain reason>"]}`.
 - Errors `{"detail": "<plain sentence>"}`: 404 not waiting for your club; 409 not checked yet (fetch again) or already being read; 502 read failed, still waiting, retry.
+### Restore: exact responses (answers Chris on #96)
+
+`POST /api/knowledge/{id}/restore` with body `{"valid_to": "2027-06-30"}` (or `{"valid_to": null}` for no end date) returns the **same projection as `GET /api/knowledge/{id}`**, now current:
+
+```json
+{"item_id": "k-123", "title": "Venue booking lead time", "statement": "...", "tab": "tips", "kind": "fact",
+ "scope": "club", "sources": [], "last_checked": "2026-11-19", "status": "current",
+ "history": [{"date": "2026-11-19", "description": "version 3: verified", "actor": "president@example.org"}], "used_in": []}
+```
+
+How the screen tells an expired club fact from other items (no new field is needed):
+- `status == "may_be_outdated"` means **only** that the end date has passed (`valid_to < today`). A source warning never sets it.
+- Restore is offered when `status == "may_be_outdated"` **and** `scope == "club"`. An AUB-wide fact (`scope == "aub"`) answers 403 (operator only), so hide the button for it.
+- A disputed fact whose date passed also shows `may_be_outdated` but answers 409 (not a verified expired fact). Show the server's plain `detail` sentence.
+- Errors are `{"detail": "<plain sentence>"}`: 403 not president or AUB-wide, 404 not this club's item, 409 not expired, 422 past date.

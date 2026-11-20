@@ -128,6 +128,10 @@ def model_planner(store: KnowHowStore, directory: Directory, on_step: Callable[[
 # ------------------------------------------------------------------- inputs
 
 
+class RestoreBody(BaseModel):
+    valid_to: date | None = None
+
+
 class PlanBody(BaseModel):
     description: str = Field(min_length=3, max_length=4000)
 
@@ -525,6 +529,13 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             items = store.search(member.club_id, q, limit=50) if q.strip() else visible(store, member.club_id)
             rows = [views.knowledge(i, store.history(i.item_id), today()) for i in items]
         return [r for r in rows if not tab or r["tab"] == tab]
+
+    @app.post("/api/knowledge/{item_id}/restore")
+    def restore_fact(item_id: str, body: RestoreBody, member: Member = Depends(president)) -> dict[str, Any]:  # noqa: B008
+        """Bring an expired fact back from the archive with a new end date, or none (D-115). President only."""
+        with club(member.club_id) as (store, _, _, _):
+            item = store.restore(item_id, member.actor(), clock(), body.valid_to)
+            return views.knowledge(item, store.history(item.item_id), today())
 
     @app.get("/api/knowledge/{item_id}")
     def fact(item_id: str, member: Member = Depends(signed_in)) -> dict[str, Any]:  # noqa: B008
