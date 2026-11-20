@@ -3,7 +3,6 @@ import { Link } from 'react-router';
 import {
   ArrowUpRight,
   BarChart3,
-  Copy,
   FileText,
   Link2,
   Mail,
@@ -23,10 +22,10 @@ import {
   StatusBadge,
 } from '../components/ui';
 import { useAction, useResource } from '../hooks';
-import { copyText } from '../lib';
+import ForwardingPanel from '../inbox/ForwardingPanel';
 
 export default function Settings() {
-  const { api, me, isPresident, notify, refresh } = useApp();
+  const { api, canEdit, isPresident, notify, refresh } = useApp();
   const members = useResource(() => api.cabinet(), [api]);
   const usage = useResource(() => api.usage(), [api]);
   const documents = useResource(() => api.knowledge('documents'), [api]);
@@ -39,7 +38,6 @@ export default function Settings() {
   const [role, setRole] = useState<Role>('events');
   const [pasted, setPasted] = useState('');
   const uploadRef = useRef<HTMLInputElement>(null);
-  const inbox = api.mode === 'demo' ? `${me.club.id}@forward.clubops.example` : '';
   const cost = usage.value;
   return (
     <>
@@ -50,7 +48,10 @@ export default function Settings() {
       />
       {!isPresident && (
         <div className="notice warning">
-          Settings are read only. Ask your president to change members, documents or connections.
+          Ask your president to change members, documents or connections.
+          {canEdit
+            ? ' You can practice verifying your own forwarding address below.'
+            : ' Your view is read only.'}
         </div>
       )}
       <div className="settings-layout">
@@ -63,7 +64,7 @@ export default function Settings() {
             <Link2 size={14} />
             Google Calendar
           </a>
-          <a href="#inbox">
+          <a href="#forwarding">
             <Mail size={14} />
             OSA email inbox
           </a>
@@ -162,66 +163,27 @@ export default function Settings() {
                       : 'Connect the shared club calendar to deliver reminders.'}
                   </p>
                 </div>
-                {isPresident && (
-                  <button
-                    className="button small"
-                    disabled={action.pending}
-                    onClick={async () => {
-                      const result = await action.run(() => api.google(!calendar.value?.connected));
-                      if (result.ok) {
-                        calendar.reload();
-                        notify(
-                          api.mode === 'demo'
-                            ? 'Demo connection updated. No Google account was changed.'
-                            : 'Calendar connection updated.',
-                        );
-                      }
-                    }}
-                  >
-                    {calendar.value?.connected
-                      ? 'Disconnect'
-                      : api.mode === 'demo'
-                        ? 'Enable demo connection'
-                        : 'Connect Google Calendar'}
-                  </button>
-                )}
+                <a className="text-button" href="#forwarding">
+                  Check connection setup →
+                </a>
               </div>
               <Link className="text-button" to="/calendar">
                 View club calendar <ArrowUpRight size={12} />
               </Link>
             </Resource>
           </section>
+          <ForwardingPanel />
           <section className="panel" id="inbox">
             <div className="panel-header">
               <div>
-                <h2>OSA email inbox</h2>
-                <p>Choose what to forward. Extracted facts always enter Review first.</p>
+                <h2>Manual email notes</h2>
+                <p>
+                  Only paste content you are authorized to share. AI runs when you click; facts
+                  always enter Review first.
+                </p>
               </div>
               <Mail size={20} className="section-line-icon" />
             </div>
-            {inbox ? (
-              <div className="inbox-address">
-                <code>{inbox}</code>
-                {isPresident && (
-                  <button
-                    className="icon-button"
-                    aria-label="Copy forwarding address"
-                    onClick={async () => {
-                      const result = await action.run(() => copyText(inbox));
-                      if (result.ok)
-                        notify('Example address copied. This demo inbox cannot receive email.');
-                    }}
-                  >
-                    <Copy size={13} />
-                  </button>
-                )}
-              </div>
-            ) : (
-              <p className="inline-note">No forwarding inbox is connected yet.</p>
-            )}
-            {api.mode === 'demo' && (
-              <p className="inline-note">Example address only. It cannot receive email.</p>
-            )}
             {isPresident && (
               <form
                 onSubmit={async (e) => {

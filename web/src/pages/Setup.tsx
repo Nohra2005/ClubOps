@@ -7,6 +7,7 @@ import type { SetupStep } from '../api/types';
 import { PageHeading, ErrorNotice } from '../components/ui';
 import { useAction, useResource } from '../hooks';
 import StarterChecklist from '../components/StarterChecklist';
+import ForwardingPanel from '../inbox/ForwardingPanel';
 
 export default function Setup() {
   const { api, me, isPresident, refresh } = useApp();
@@ -203,6 +204,7 @@ export default function Setup() {
           </p>
         </>
       )}
+      <ForwardingPanel />
     </div>
   );
 }

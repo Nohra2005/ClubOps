@@ -267,3 +267,97 @@ D-104/F-175-F-178 and `REVIEW_GUIDE.md` record behavior and limits. Existing pub
 `tests/test_shared_layer.py` runs in root checks; no backend code/contracts changed.
 HTTP UI checks use synthetic intercepted responses, not a deployed service or user
 study. Final-head CI and independent teammate review are on the C-34 PR.
+
+## 2026-11-18 - C-35 read-only HTTP Inbox
+
+Synced main 166f27e, preserving both sides of shared logs. The Inbox HTTP view now
+requests only the candidate #95 GET /api/inbox and GET /api/inbox/skipped arrays.
+Waiting/skipped lists have independent loading/error/refresh states; duplicate or
+malformed identities fail visibly, extra body fields are dropped, descriptive
+missing/null date/forwarder labels show Not supplied and all text is untrusted.
+Adviser sessions mount neither resource. No paid capture, proof/settings/Restore
+write, browser metadata storage or demo fallback is enabled.
+
+Local checks: full root make-check equivalents pass (Ruff/format: 158 files; mypy:
+84 files; schema/tasks; 693 tests, 93.06% coverage). Web check passes with 84 unit
+and 12 board-tool tests, lint/format/types/build. All 54 HTTP browser cases pass,
+including 12 targeted C-35 cases on desktop/phone. Metadata rendering is scanned
+for accessibility and phone overflow. C-29's separate actual-app suite also passes
+all 8 cases after its main sync; it does not test unmerged inbox routes.
+
+The first full root run caught a duplicate F-230: that number now belongs to the
+merged Outlook guard row. Our old preview boundary is F-232; the new metadata
+regression is F-231 and decision D-128. Targeted log checks and the full root suite
+were rerun green. The initial refresh fixture also needed to keep failing through
+React development remounts, rather than assuming one initial GET.
+
+These Inbox browser cases intercept synthetic metadata. They do not prove a real
+mailbox, provider cost, server authorization or deployed acceptance. #95 is still
+open, so current main may answer unavailable/error to the metadata requests.
+C-35 stays doing; final-head CI and independent review are required on #94.
+
+## 2026-11-19 - C-35 confirmed reads, archive and club-fact Restore
+
+Source contracts: Tatiana's newly published exact responses in #95 ce1d514 and #96
+8dccd0e, still open. Root frontend remains independently based on main 166f27e.
+Paid read is one explicit POST per confirmed message, guarded against rapid clicks.
+No-fact/skipped results are acknowledged and proposed cards stay unapproved.
+Unconfirmed responses require a successful fresh metadata snapshot before another
+paid attempt; a failed refresh cannot unlock it. Mixed/repeated proposal IDs remain
+contract-compatible; display counts unique Review cards. No bodies or outcomes are
+persisted in browser storage.
+
+HTTP knowledge filters current/archive records from the existing response. Only a
+president on an expired club fact sees Restore. New date/no-end selection requires
+explicit approval. Match item ID, club scope and current state in the acknowledgement,
+then reload the fact. Public Restore 4xx explanations render as bounded plain text;
+all 5xx and other actions keep generic diagnostics. A malformed/lost result blocks
+another write until a fresh fact read. Shared/retired/non-president controls stay
+hidden; disputed expired facts may receive the documented 409.
+
+Validation: npm run check passes with 108 unit tests (24 new action-boundary cases),
+12 board-tool cases, lint/format/types/build. Full HTTP suite: 82 passed on desktop
+and phone, including 12 paid-read and 16 Restore cases. Tests cover Cancel, rapid
+clicks, no-fact/skipped results, unsuccessful refresh, stale metadata, wrong item
+acknowledgement, null/future date, disputed 409, scope/role guards and dialog
+accessibility. Root make-check equivalents pass: 693 tests, 93.06%; Ruff/format 158
+files, strict mypy 84 files, schema/tasks. Existing actual API/cookie/SQLite suite:
+4 passed. Demo Inbox/Knowledge regressions are recorded in the current handoff.
+
+The new writes use intercepted synthetic API responses; the actual-API suite does
+not exercise the unmerged #95/#96 routes. No real mail/provider cost, server security
+rate or ASME/deployed acceptance is established. The root Python environment was
+synchronized to the existing lock for final checks. D-131/F-235/F-236 record the
+change; keep the dated 18 November read-only evidence as history.
+
+## 2026-11-20 - C-35 main sync after T-48 merged
+
+Merged main `0ac0b5b` into #94 without rewriting the existing commits. The only
+conflict was the additive design log; both C-35 entries and T-48 D-124 are retained.
+T-48 Restore is now on main; T-47 Inbox routes remain in open #95. No backend
+implementation or contract was edited in the sync.
+
+Root make-check equivalents pass: 700 tests, 93.09% coverage, Ruff/format (159
+files), mypy (84 files), schema drift and task checks. Frontend quality/build checks
+pass with 108 unit tests and 12 board-tool tests. All 82 synthetic HTTP browser
+cases pass on desktop and phone, including paid-read/Restore regressions.
+Existing D/F IDs were checked against main and every open PR; no new IDs needed.
+
+The write tests remain intercepted synthetic contract checks, not actual mailbox,
+provider or deployed acceptance. A fresh independent approval and current-head CI
+are required after the sync; Tatiana will merge the PR. C-35 remains doing while
+forwarding proof/settings and Review expiry/calendar payloads are unpublished.
+
+### 20 November follow-up - newly merged Inbox baseline
+
+#95 merged while checks were running. Synced again to main `e4090c6`, retaining
+main's failure rows and each unique frontend row once. Both #95 and #96 are now
+merged. Root gates on the final Python tree pass: 710 tests, 93.14% coverage,
+Ruff/format 162 files, mypy 85 files, schema/task checks. Branch-local shared docs
+are checked before push; frontend quality/build remains green (108 units,
+12 board-tool cases). All 82 HTTP cases passed in a completed run with normal Windows process cleanup. Frontend source/tests/lock are unchanged by the second main sync.
+
+C-35 preview role row is now F-238, preserving main's adviser-route F-217.
+C-29 uses D-132/F-237 to avoid #103's D-126/F-227. Historical dated evidence
+retains its old references. No new feature scope, real provider/club acceptance,
+self-merge or main push. Current-head CI and fresh independent approval remain.

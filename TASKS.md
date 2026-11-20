@@ -573,7 +573,10 @@ Reference documents:
 
 ### C-35 Inbox, forwarding and card screens (D-113 to D-116)
 - Owner: christophe
-- Status: todo
+- Status: doing
+- Progress (2026-11-19): implemented the exact Inbox and Restore responses published in #95 ce1d514 and #96 8dccd0e: confirmed single-message paid reads, refresh gating after an unconfirmed result, archive filtering and president-only expired club-fact Restore. Local checks pass: 108 units/12 tools/build, 82 synthetic HTTP cases, 4 actual API regressions, root 693 tests/93.06%. These candidate routes remain unmerged; forwarding proof/settings and Review expiry/calendar payloads plus deployed acceptance remain open. Ready for independent review before the 23 November meet-up.
+- Progress (2026-11-18): J-22 guards and Gmail fetching are merged. Building a read-only HTTP Inbox against #95's documented candidate list/skipped routes with synthetic response tests while T-47 remains doing. Paid reads, forwarding proof/settings and Restore writes stay unavailable until their remaining response contracts and acceptance are supplied. Sync main 166f27e; preview boundary F-216 is now F-232 to avoid #95's new row.
+- Progress (2026-11-12): synthetic demo screens cover forwarding verification, explicit paid-read confirmation and card expiry/archive. T-47 #92 and J-22 #93 remain under review; TASKS names inbox list/capture paths, but JSON/error/retry shapes and verification/lifecycle routes remain unpublished. Live actions stay unavailable until agreed; no invented endpoints or real Google/model calls. Guide: `web/INBOX_PREVIEW.md`.
 - Needs: C-21, C-34, T-47
 - What: (1) Setup (C-21): a step to add an extra sending address and show the code to e-mail; an Outlook forwarding guide (OSA senders only) showing the club's `+tag` address with a copy button, and a "Test my forwarding" button. (2) Inbox screen: waiting e-mails, a "Read this" button that says it costs money, and the reason when an e-mail was skipped ("ClubOps only reads e-mails forwarded from OSA staff"). (3) Review cards (C-34): an expiry date field, an AUB-wide / club-only label, an "Add to calendar" box for deadlines (ticked by default) with who it is for, and an archive view with Restore.
 - Done when: each screen has frontend tests against the T-47 routes (stubbed until they land) and is in the demo build before the 23 Nov meet-up.
