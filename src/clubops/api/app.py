@@ -67,6 +67,9 @@ from clubops.contracts.knowhow import (
     VerifyDecision,
     VerifyRequest,
 )
+from clubops.inbox.capture import PendingInbox
+from clubops.inbox.guards import InboxLedger
+from clubops.inbox_intake import InboxNotes
 from clubops.knowhow.backends import open_club_store_backend
 from clubops.knowhow.directory import Directory
 from clubops.knowhow.handover import build_handover
@@ -759,8 +762,9 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
     # -------------------------------------------------- not built yet (501)
 
     @app.post("/api/chat/ask")
-    def ask(member: Member = Depends(signed_in)) -> dict[str, Any]:  # noqa: B008
-        """Until the chatbot (T-17) exists: say so honestly, with who to ask (D-49)."""
+    def ask(member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+        """Until the chatbot (T-17) exists: say so honestly, with who to ask (D-49). Cabinet only: the read-only
+        adviser must not start a question that will cost a model call once the chatbot is on (F-217)."""
         return {
             "known": False,
             "text": "The chatbot isn't switched on yet, so I can't answer from the club's memory.",
@@ -768,6 +772,63 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             "basis": "none",
             "ask": {"who": "the club president", "role": None},
             "look_in": None,
+        }
+
+    # ------------------------------------------------------------- OSA inbox (T-47)
+
+    inbox = PendingInbox(config.data_dir / "inbox.db")
+    inbox_notes = InboxNotes(config.data_dir / "inbox-notes.db")
+    inbox_ledger = InboxLedger(config.data_dir / "inbox-ledger.db")
+
+    def _summary(message_id: str, request: CaptureRequest) -> dict[str, str]:
+        """Metadata only: subject, date and who forwarded it. The body is shown nowhere before Review."""
+        text = request.sources[0].content if request.sources else ""
+        lines = {k: v.strip() for k, _, v in (line.partition(":") for line in text.splitlines()[:5])}
+        return {
+            "id": message_id,
+            "subject": lines.get("Subject", "")[:200],
+            "date": lines.get("Date", "")[:40],
+            "forwarded_by": lines.get("Forwarded by", "")[:200],
+        }
+
+    @app.get("/api/inbox")
+    def inbox_list(member: Member = Depends(cabinet)) -> list[dict[str, str]]:  # noqa: B008
+        """Forwarded e-mails waiting for this club. Free: nothing has been read by a model yet."""
+        return [_summary(mid, req) for mid, req in inbox.pending(member.club_id)]
+
+    @app.get("/api/inbox/skipped")
+    def inbox_skipped(member: Member = Depends(cabinet)) -> list[dict[str, str]]:  # noqa: B008
+        """Forwarded e-mails the free checks refused, with the reason in plain words. Never read."""
+        return inbox_notes.skipped(member.club_id)
+
+    @app.post("/api/inbox/{message_id}/capture")
+    def inbox_capture(message_id: str, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+        """One paid model read, started by a person. Proposals go to Review; the e-mail leaves the queue
+        only when the read worked, so a failed read can be retried (F-214). Nothing is approved here (D-41)."""
+        waiting = dict(inbox.pending(member.club_id))
+        request = waiting.get(message_id)
+        if request is None or request.club_id != member.club_id:
+            raise HTTPException(404, "No waiting e-mail with that id for your club.")
+        fingerprint = inbox_notes.fingerprint(message_id, member.club_id)
+        if fingerprint is None:  # queued without J-22's checks: never paid for (D-114)
+            raise HTTPException(409, "This e-mail has not passed the inbox checks. Fetch the inbox again.")
+        token = inbox_ledger.claim_read(fingerprint)
+        if token is None:
+            raise HTTPException(409, "This e-mail is already being read, or was read for another club.")
+        try:
+            with club(member.club_id) as (store, _, _, _):
+                result = Learner(model_client(), store).learn(request, today(), load_settings().new_budget())
+        except BaseException:
+            inbox_ledger.release_read(fingerprint, token)
+            raise
+        if result.sources_failed:
+            inbox_ledger.release_read(fingerprint, token)
+            raise HTTPException(502, "The e-mail could not be read this time. It is still waiting; try again.")
+        inbox_ledger.mark_read(fingerprint, token)
+        inbox.mark_processed(message_id, member.club_id)
+        return {
+            "proposals": [p.proposal_id for p in result.proposals],
+            "skipped": result.sources_skipped,
         }
 
     # ----------------------------------------------------------- new-club setup (C-21)
