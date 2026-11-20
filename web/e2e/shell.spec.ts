@@ -8,6 +8,7 @@ test('opens shareable routes and fits the phone viewport', async ({ page }, test
     '/chat',
     '/review',
     '/calendar',
+    '/inbox',
     '/knowledge',
     '/handover',
     '/settings',

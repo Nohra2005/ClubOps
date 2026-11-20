@@ -3963,3 +3963,52 @@ kbd {
   flex-shrink: 0;
   margin-top: 4px;
 }
+
+.inbox-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+  gap: 28px;
+}
+.inbox-preview-grid > div,
+.inbox-message,
+.lifecycle-preview {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.inbox-preview-grid h3,
+.inbox-message h3 {
+  font-size: 14px;
+}
+.forwarding-steps,
+.inbox-message p,
+.inbox-preview-grid p,
+.lifecycle-preview p {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.forwarding-steps li {
+  margin-bottom: 12px;
+}
+.inbox-message-list {
+  margin: 20px 0;
+}
+.inbox-message {
+  border-top: 1px solid var(--line);
+  padding: 18px 0;
+}
+.inbox-message blockquote {
+  margin: 12px 0;
+  padding: 12px;
+  border-left: 3px solid var(--line);
+  font-size: 12px;
+}
+.preview-scenarios {
+  margin: 16px 0;
+}
+.preview-scenarios summary {
+  cursor: pointer;
+  font-size: 12px;
+}
+.lifecycle-preview {
+  margin-bottom: 24px;
+}
