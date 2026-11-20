@@ -209,3 +209,55 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 **Did:** #95 merged as e4090c6 during verification, so merged that main as well. Retained each main/own failure once. C-35 preview role row moves to F-238; main's F-217 stays unchanged. C-29 D-132/F-237 avoid #103's IDs. Earlier dated references remain history.
 
 **State / next:** Final root tree passes 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. The development dependency patch is unchanged; full npm audit remains zero. Final Python source/tests/scripts/schemas/lock match the fully checked C-35 tree. Existing approved implementation and small commits remain. Re-review after final-head CI; Tatiana merges using Create a merge commit. No new scope before the 23 November meet-up or real mailbox/provider/deployed claim.
+
+## 2026-11-12 - Christophe (C-35 disclosed inbox and deadline previews)
+
+**Did:** Fetched main 2fff794; #76/#77/#78 are merged with their small histories preserved, and main CI is green. Claimed C-35 in a separate branch and built in small portions: ephemeral demo state, forwarding/verification and connection recovery, explicit paid-read confirmation, partial-failure retry, and separate deadline expiry/calendar/archive/Restore practice. Wired Inbox into desktop/mobile navigation, forwarding into Setup/Settings, lifecycle into Review. Existing HTTP Review payloads/policy remain unchanged; HTTP shows unavailable states without invented routes. TASKS names inbox list/capture paths, but JSON/error/retry and verification/lifecycle shapes still need Tatiana. Guide: web/INBOX_PREVIEW.md.
+
+**Validation:** Root make-check equivalents pass: 667 passed, 1 skipped, 92.79% coverage; Ruff/format, strict mypy, schema and tasks. Web check passes: 74 units (6 new model cases), 12 board-tool cases, strict types/rehearsal types and build. Demo targeted suite: 24 passed across desktop/phone; final expanded accessibility/navigation/C-35 suite: 16 passed, including all 12 main routes. Two selected screenshots (phone forwarding, desktop adviser Inbox) visually inspected; no overflow/accessibility violations. HTTP suite: 42 existing cases passed; the 2 new fences passed after correcting an over-broad test interceptor that also matched /src/api modules. No app issue was hidden by that test fix. Windows default pytest temp access is restricted, so a fresh checked workspace output path was used. Browser teardown stalled under restricted process access; the normal-permission rerun completed. No real mail, Google/provider calls or billing/security/deployment claims.
+
+**State / next:** C-35 stays doing, not production-ready: T-47 #92 and J-22 #93 are open; T-48/calendar contracts are pending, and D-115/D-116 live policy is after ASME. Need exact server shapes, validated adapter/HTTP stub tests against them and approved live acceptance. Independent review and final-head CI remain required; Create a merge commit and retain small commits. D-124/F-214-F-218 were reserved after all main/open-PR ranges. Tatiana should link owned guide/tests from her evidence/rubric docs. No outside-owner code or shared contracts changed.
+
+## 2026-11-16 - Christophe (C-35 shared-ID correction)
+
+**Did:** Fast-forwarded Tatiana's reviewed #94 branch update, then merged current main 54d38c1. Found that new #95/#96 reuse the preview's D-124/F-214/F-215 for different decisions/failures. Renumbered our rows to D-127/F-228/F-229 beyond #91 D-125/F-226 and #99 D-126/F-227; historical entries above remain unchanged. Updated web/INBOX_PREVIEW.md with the newly published candidate paths and the exact remaining response/proof contract gaps. No application behavior changed.
+
+**State / next:** Preview stays demo-only and C-35 doing. Previous approved head 9691b69 had all five CI checks green. Shared task/log/failure checks are rerun for the correction; current-head full CI/re-review is required after push. Tatiana should supply concrete typed examples, Restore response and J-22 skip/retry/proof/settings shapes before strict live integration. Preserve commits and wait for the team's merge-freeze decision; no self-merge.
+
+**Open questions / blockers:** #95/#96 are open, not production acceptance. No mailbox/provider access, paid calls or private data used. F-216/F-217/F-218 remain unchanged. The local demo preview is running again on 127.0.0.1:5173, still on the C-35 branch.
+
+**Other updates:** C-31 board #4 is now readable and private, with 17 fields and three existing issue cards (#43/#83/#84). Manual statuses/Iteration and lack of management marker are incompatible with the importer; no changes, duplicate board or sprint history invented. #91 needs syncing and its access-blocker text refreshed. J-16 still needs explicit .github path ownership approval. C-14 note requests the deployed origin in Google, but no deployed URL or authorized configuration supplied. Team coordination and contract requests are in #43; assistants in other sessions must receive them through teammates.
+
+## 2026-11-18 - Christophe (C-35 read-only HTTP metadata)
+
+**Did:** Merged main 166f27e additively; preserved the new Gmail/J-22 rows. Added validated read-only Inbox waiting/skipped projections and independent UI error/refresh states against #95's candidate API table, without reading backend implementation. No body fields/HTML/links/storage, no demo fallback and no adviser resource requests. Paid capture, forwarding proof/settings and Restore remain unavailable. Work is split into task, adapter/unit, UI, browser/failure, guide and evidence commits.
+
+**State:** Full root gates pass: 693 tests, 93.06% coverage, Ruff/format 158 files, mypy 84 files, schemas/tasks. Web check: 84 unit +12 board-tool cases/types/build. Full synthetic HTTP suite: 54 pass, including 12 targeted C-35 cases with accessibility/phone width. A root failure caught our initial F-230 collision with the merged Outlook guard; preserved that row and moved our boundary to F-232, then reran green. D-128/F-231 are new. Earlier F-216/F-230 handoff references are historical. Current-head CI/re-review remains required on #94.
+
+**Next / limits:** Tatiana confirms concrete metadata types and supplies paid-capture skipped/outcome, Restore success and forwarding proof/settings contracts. Candidate #95 remains unmerged, so read-only HTTP can show an unavailable/error state on current main. Tests use intercepted synthetic responses, not a real mailbox/provider/security measurement. C-35 stays doing; no main push, self-merge or freeze override. Next free IDs are D-129/F-233 after rechecking main/open PRs. Ask the owner to link web/INBOX_PREVIEW.md and this verification entry in her evidence/rubric scope; no outside-owner documents were changed.
+
+## 2026-11-19 - Christophe (C-35 clarified paid-read and Restore integration)
+
+**Did:** Tatiana answered the exact API questions during this session (#95 ce1d514; #96 8dccd0e). Implemented single-message cost confirmation, synchronous duplicate-submit guard, no-fact/skipped acknowledgement and successful-fresh-snapshot gating before paid retries. Added HTTP current/archive filtering and president-only expired club-fact Restore with explicit date/no-end approval, matching acknowledgement and authoritative reload. Scoped public Restore 4xx explanations render as plain text; 5xx/unrelated errors remain generic. Forwarding proof/settings and Review expiry/calendar payloads are still unavailable. No backend implementation/contracts edited.
+
+**State:** C-35 doing; scoped #94 changes are ready for independent review under the updated 23 November meet-up plan. Root gates pass: 693 tests, 93.06%, Ruff/format 158 files, mypy 84 files, schemas/tasks. Web check: 108 units/12 tools/types/build; full synthetic HTTP suite 82 pass (12 paid-read +16 Restore cases new), actual local API/cookie/SQLite 4 pass, demo Inbox/Knowledge 12 pass. D-131/F-235/F-236 checked beyond #100 D-129/F-233 and #101 D-130/F-234; earlier IDs remain historical. Original small commits preserved; current-head CI/re-review remains required.
+
+**Next:** Tatiana reviews the frontend integration and publishes the remaining proof/settings plus Review expiry/calendar fields. Chris is reviewing #95/#96; no particular named reviewer is mandated, only someone other than the author. Before deploying, merge reviewed API/frontend changes with merge commits and verify actual Inbox/Restore routes using authorized synthetic/live acceptance. When combining #100 and #94, retain all session/inbox/Restore HTTP test files and both API adapter imports/sections.
+
+**Open / limits:** New writes are tested with intercepted synthetic responses against candidate docs, not a real mailbox/provider or backend security-rate measurement; the actual API suite covers the existing plan/auth flow only. No exactly-once billing, durable browser retry, real Google configuration, ASME outcome or completed C-35 claim. Owner evidence/rubric files stay untouched; please link web/INBOX_PREVIEW.md and web/VERIFICATION.md. Separate #100 session guard and #101 development-dependency patch have all five CI checks green. No main push, self-merge or automatic approval of returned facts.
+
+
+## 2026-11-20 - Christophe (C-35 requested main sync)
+
+**Did:** Merged main 0ac0b5b into #94 as requested by Tatiana. Kept both sides of the sole conflict in the additive design log; all original small commits and T-48 entries remain. No authored backend/contract change. Audited decision/failure numbers against main and every open PR; no new row needed.
+
+**State:** C-35 doing. Root checks pass: 700 tests, 93.09%, Ruff/format 159 files, mypy 84 files, schema/tasks. Frontend quality/build: 108 units and 12 tools. HTTP browser suite: 82 pass. Current-head CI and fresh independent re-approval are required after push.
+
+**Next / limits:** Tatiana re-approves the synced head and merges with Create a merge commit. T-48 is on main; #95 still supplies the unmerged Inbox routes. Forwarding proof/settings and Review expiry/calendar payloads remain separate. Existing write tests use synthetic interceptions, not actual mailbox/provider/deployed acceptance. No self-merge or direct main push.
+
+
+### 20 November follow-up - C-35, final Inbox main sync
+
+**Did:** #95 merged as e4090c6 during verification, so merged that main as well. Retained each main/own failure once. C-35 preview role row moves to F-238; main's F-217 stays unchanged. C-29 D-132/F-237 avoid #103's IDs. Earlier dated references remain history.
+
+**State / next:** Final root tree passes 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. All 82 HTTP cases passed in a completed run with normal Windows process cleanup. Frontend source/tests/lock are unchanged by the second main sync. Existing approved implementation and small commits remain. Re-review after final-head CI; Tatiana merges using Create a merge commit. No new scope before the 23 November meet-up or real mailbox/provider/deployed claim.

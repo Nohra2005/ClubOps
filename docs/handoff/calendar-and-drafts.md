@@ -273,3 +273,17 @@ No entries yet.
 **Next:** Restart the #93 watch after pushing; merge only with current approval and green required checks.
 
 **Open questions / blockers:** T-47 paid-read integration remains in #95. Host watcher access is unreliable; the direct authenticated GitHub API remains readable.
+
+## 2026-11-20 - Joey: complete task and owner-handoff audit
+
+**Did:** Pulled current main, reconciled #81/#82 preserving shared histories, completed J-13 report sections, and reran focused/full checks. Reviewed and merged #96 as 0ac0b5b after seven archive tests and all five CI checks passed. Re-reviewed #95: 15 focused inbox tests pass and the earlier J-22 bypass is fixed. Approval is posted; merge failed because #96 creates documentation conflicts. Aborted the local merge cleanly rather than edit owner-maintained docs/api.md. Updated J-04/J-12/J-22 to done at their explicit synthetic gates and made remaining external blockers concrete. Added live Calendar and cabinet draft-review receipt procedures in owned READMEs.
+
+**State:** #81 head c9070fd: five tests and 15 checklist rows, no measured model curve. #82 head 797a3c3: 696 passed, 1 skipped, 1 strict expected failure, 92.77% coverage; lint/format/types/schemas/tasks passed. Those PRs remain draft for their documented evidence gates. This audit PR is documentation/status work, not live acceptance. No secret, private data, dependency or production setting changed.
+
+**Next:** Tatiana reconciles #95 with #96 and requests current-head review, fixes F-204, supplies legitimate recordings/private evaluation, and coordinates T-46/J-23 contracts with Joey. Christophe reviews the audit and finishes C-35/deployment integration against the published owner responses. Joey then runs approved live/cabinet acceptance when those prerequisites exist.
+
+**Open questions / blockers:** T-46 OAuth/worker/cabinet triggers, J-23 contract, J-10 live forward/proof/removal, scheduled durable J-11, two cabinet reviewers and private style examples, private chatbot/new-club/security evaluation, J-16 workflow ownership/gates, and T-26 poster numbers remain external gates. Docker Linux engine is unavailable, so README-only fresh startup is blocked before Compose. Email connectors are unconnected; team notification uses explicit GitHub mentions/review requests. The earlier repeating #92/#93 watches monitored already merged PRs and should be stopped.
+
+**Audit validation:** On main plus merged #96, the complete pytest/coverage gate passed with one skipped test and 92.80% coverage. Ruff lint/format, strict mypy, schemas, task validation and diff checks passed. GNU Make is absent, so its listed equivalent commands ran. No new application behavior or design decision is introduced by the audit status/receipt documentation.
+
+**Published review handoff:** Audit PR #102 is open. After #96 merged, #81 was reconciled again to ae922e3 and #82 to 84a08e7, preserving all shared rows; #81's five tests pass and #82's shared-log/security checks pass with F-204 still expected-failing. The initial focused command named a nonexistent test file; it was corrected to the repository's actual task/log/failure test paths and passed. Docker Desktop was started locally; its engine version API returned HTTP 500, so fresh Compose acceptance remains unverified. No production service was started.
