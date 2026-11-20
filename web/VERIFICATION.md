@@ -305,3 +305,17 @@ Session response validation remains unchanged; deployed Google/every-screen acce
 
 No new design/failure ID or backend/contract change. Current-head CI and fresh
 independent approval are required after this sync; no self-merge/main push.
+
+### 20 November follow-up - newly merged Inbox baseline
+
+#95 merged while checks were running. Synced again to main `e4090c6`, retaining
+main's failure rows and each unique frontend row once. Both #95 and #96 are now
+merged. Root gates on the final Python tree pass: 710 tests, 93.14% coverage,
+Ruff/format 162 files, mypy 85 files, schema/task checks. Branch-local shared docs
+are checked before push; frontend quality/build remains green (97 units,
+12 board-tool cases). The approved session validator is unchanged. Final Python source/tests/scripts/schemas/lock match the fully checked C-35 tree.
+
+C-35 preview role row is now F-238, preserving main's adviser-route F-217.
+C-29 uses D-132/F-237 to avoid #103's D-126/F-227. Historical dated evidence
+retains its old references. No new feature scope, real provider/club acceptance,
+self-merge or main push. Current-head CI and fresh independent approval remain.
