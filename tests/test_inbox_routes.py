@@ -127,7 +127,7 @@ def test_the_adviser_cannot_see_or_read_the_inbox(app: tuple[TestClient, Provide
 def test_non_osa_mail_is_skipped_with_a_reason_and_never_read(app: tuple[TestClient, Provider, Path]) -> None:
     c, provider, data = app
     counts = _fetch(data, {"n1": _mail(CLUB, "Party", original="friend@example.org")})
-    assert counts == {"queued": 0, "skipped": 1, "not_for_a_club": 0}
+    assert counts == {"queued": 0, "skipped": 1, "not_for_a_club": 0, "refreshed": 0}
     assert c.get("/api/inbox").json() == []
     [row] = c.get("/api/inbox/skipped").json()
     assert row["id"] == "n1" and row["why"] == "ClubOps only reads e-mails forwarded from OSA staff"
@@ -192,3 +192,38 @@ def test_notes_made_before_the_audience_count_still_open_and_fall_back(tmp_path:
     notes = InboxNotes(old)
     assert notes.fingerprint("m0", "running-club") == "abc"
     assert notes.audience("m0", "running-club") is None  # unknown: the model's label decides
+
+
+def _forget_audience(data: Path) -> None:
+    import sqlite3
+
+    with sqlite3.connect(data / "inbox-notes.db") as db:
+        db.execute("UPDATE accepted SET audience=NULL")  # what a message checked before D-126 looks like
+
+
+def test_a_waiting_message_checked_before_the_count_gets_its_count_on_the_next_free_fetch(tmp_path: Path) -> None:
+    crowd = "; ".join(f"Club {i} <club{i}@example.org>" for i in range(40))
+    mails = {"old": _mail(CLUB, "A notice", to=crowd)}
+    assert _fetch(tmp_path, mails)["queued"] == 1
+    _forget_audience(tmp_path)
+    notes = InboxNotes(tmp_path / "inbox-notes.db")
+    assert notes.audience("old", CLUB) is None
+    assert _fetch(tmp_path, mails) == {"queued": 0, "skipped": 0, "not_for_a_club": 0, "refreshed": 1}
+    assert notes.audience("old", CLUB) == 41
+    assert len(PendingInbox(tmp_path / "inbox.db").pending(CLUB)) == 1  # still waiting, never re-queued or read
+    assert _fetch(tmp_path, mails)["refreshed"] == 0  # nothing left to fill in
+
+
+def test_the_refresh_leaves_read_changed_and_skipped_mail_alone(tmp_path: Path) -> None:
+    import sqlite3
+
+    crowd = "; ".join(f"Club {i} <club{i}@example.org>" for i in range(40))
+    mails = {"read": _mail(CLUB, "Read one", to=crowd), "changed": _mail(CLUB, "Changed one", to=crowd)}
+    assert _fetch(tmp_path, mails)["queued"] == 2
+    PendingInbox(tmp_path / "inbox.db").mark_processed("read", CLUB)  # already read through the route
+    _forget_audience(tmp_path)
+    with sqlite3.connect(tmp_path / "inbox-notes.db") as db:  # the stored check no longer matches this mail
+        db.execute("UPDATE accepted SET fingerprint='stale' WHERE message_id='changed'")
+    assert _fetch(tmp_path, mails)["refreshed"] == 0
+    notes = InboxNotes(tmp_path / "inbox-notes.db")
+    assert notes.audience("read", CLUB) is None and notes.audience("changed", CLUB) is None

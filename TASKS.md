@@ -306,7 +306,7 @@ Reference documents:
 - Status: review
 - Needs: T-47
 - What: The model's AUB-wide or club-only label cannot be trusted for who sees a card. At fetch time count the distinct addresses on the original To and Cc lines (store the number only). 10 or more makes AUB-wide cards, fewer makes club-only; a rule stays AUB-scope by contract. Unknown counts (Bcc, undisclosed, older notes) fall back to the model's label. The Review card says how many people the e-mail went to. No model cost, no contract change.
-- Done when: tests for the count, the threshold, both overrides, the fallback and an old notes database; F-227 has its row. PR #103 reviewed and merged; then the three waiting e-mails are re-fetched (free) so they use the count.
+- Done when: tests for the count, the threshold, both overrides, the fallback and an old notes database; F-227 has its row. PR #103 reviewed and merged; then one free fetch refreshes the waiting e-mails so they use the count (the fetch fills in only the number, for the same mail).
 
 ## Christophe: frontend
 

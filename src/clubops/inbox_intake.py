@@ -74,6 +74,24 @@ class InboxNotes:
         with closing(sqlite3.connect(self.path)) as db, db:
             db.execute("INSERT OR IGNORE INTO skipped VALUES (?, ?, ?, ?)", (message_id, club_id, reason, subject))
 
+    def unknown_audience(self, message_id: str) -> tuple[str, str] | None:
+        """(club, fingerprint) of an accepted message whose audience was never counted (checked before D-126)."""
+        with closing(sqlite3.connect(self.path)) as db:
+            row = db.execute(
+                "SELECT club_id, fingerprint FROM accepted WHERE message_id=? AND audience IS NULL", (message_id,)
+            ).fetchone()
+        return (str(row[0]), str(row[1])) if row else None
+
+    def backfill_audience(self, message_id: str, club_id: str, fingerprint: str, audience: int) -> bool:
+        """Fill in a missing count, only for the same checked message (same fingerprint) and never over a count."""
+        with closing(sqlite3.connect(self.path)) as db, db:
+            cursor = db.execute(
+                "UPDATE accepted SET audience=? "
+                "WHERE message_id=? AND club_id=? AND fingerprint=? AND audience IS NULL",
+                (audience, message_id, club_id, fingerprint),
+            )
+        return cursor.rowcount == 1
+
     def fingerprint(self, message_id: str, club_id: str) -> str | None:
         with closing(sqlite3.connect(self.path)) as db:
             row = db.execute(
@@ -111,9 +129,23 @@ def intake(
 ) -> dict[str, int]:
     """Queue only mail that passed every free check; note the reason for everything else."""
     senders = {club: set(addresses) | ledger.verified_senders(club) for club, addresses in cabinet.items()}
-    counts = {"queued": 0, "skipped": 0, "not_for_a_club": 0}
+    counts = {"queued": 0, "skipped": 0, "not_for_a_club": 0, "refreshed": 0}
+    waiting = {message_id for club in cabinet for message_id, _ in queue.pending(club)}
     for message_id in gateway.list_ids():
         if notes.seen(message_id):
+            # A message checked before the audience count existed and still waiting gets its count now: re-run the
+            # free checks on the same mail and fill in only the number. Read, skipped and changed mail is left alone.
+            old = notes.unknown_audience(message_id) if message_id in waiting else None
+            if old is not None:
+                raw = gateway.get_raw(message_id)
+                again = capture_email(raw, message_id, senders, received_at)
+                if again is not None and again.club_id == old[0]:
+                    checked = check_forward(raw, again.club_id, senders[again.club_id], osa_senders, ledger)
+                    same_mail = checked.fingerprint == old[1]  # only the mail that was checked before
+                    if checked.reason is None and checked.audience is not None and same_mail:
+                        counts["refreshed"] += int(
+                            notes.backfill_audience(message_id, old[0], old[1], checked.audience)
+                        )
             continue
         raw = gateway.get_raw(message_id)
         request = capture_email(raw, message_id, senders, received_at)

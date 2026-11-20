@@ -56,7 +56,8 @@ def main() -> int:
     )
     print(
         f"Gmail: {counts['queued']} new e-mails queued, {counts['skipped']} skipped with a reason, "
-        f"{counts['not_for_a_club']} not forwarded by a known cabinet address to a club."
+        f"{counts['not_for_a_club']} not forwarded by a known cabinet address to a club. "
+        f"{counts['refreshed']} waiting e-mails got their recipient count."
     )
     for club_id in sorted(senders):
         waiting, skipped = len(queue.pending(club_id)), notes.skipped(club_id)
