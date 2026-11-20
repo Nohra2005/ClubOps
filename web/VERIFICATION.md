@@ -375,3 +375,15 @@ C-35 preview role row is now F-238, preserving main's adviser-route F-217.
 C-29 uses D-132/F-237 to avoid #103's D-126/F-227. Historical dated evidence
 retains its old references. No new feature scope, real provider/club acceptance,
 self-merge or main push. Current-head CI and fresh independent approval remain.
+
+## 20 November - C-31 sync after #94 and #102 merged
+
+Merged main `0f3bb09`, preserving all earlier handoff/evidence lines and both
+shared logs. No new feature scope or D/F IDs. Frontend quality/build passes with
+108 units and 32 board-tool tests, lint/format/types; branch-local shared
+checks pass. Root make-check equivalents pass on the shared Python tree: 710
+tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Board refresh source/read-back and zero-change repeat are in the new follow-up receipt; three real weekly-review records remain open.
+
+Original individual commits remain; fresh independent review and current-head CI
+are required after this sync. No backend/contract implementation or real data
+added, no self-merge/main push and no new scope before 23 November.
