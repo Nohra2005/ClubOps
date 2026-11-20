@@ -1,5 +1,15 @@
 # Google Calendar setup for each club
 
+## Current architecture boundary (20 November 2026)
+
+The instructions above describe the implemented role-calendar adapter. D-116
+supersedes that deployment design with one calendar per club and named per-event
+invitees. Do not create private role calendars as a prerequisite for the new
+integration. J-23 is blocked until Tatiana and Joey separately approve the
+versioned calendar contract; the existing adapter remains covered by fake tests.
+T-46 owns token storage/refresh, callbacks, approved-plan and cabinet triggers.
+
+## Implemented legacy adapter reference
 `CalendarSync` is a one-way copy from approved ClubOps items. Configure a **separate
 Google calendar ID per club** and pass a short-lived OAuth access token to
 `GoogleCalendarGateway`. Configure a **private role calendar for each cabinet role**;
@@ -55,3 +65,33 @@ does not create or refresh OAuth tokens.
 API references: [Events insert](https://developers.google.com/workspace/calendar/api/v3/reference/events/insert),
 [Events update](https://developers.google.com/workspace/calendar/api/v3/reference/events/update),
 [Reminders](https://developers.google.com/workspace/calendar/api/concepts/reminders).
+
+## Live acceptance receipt (J-01/J-09/J-21)
+
+Keep the real calendar ID, accounts, approval record and screenshots only in
+ignored private storage. Publish only a dated aggregate receipt with tested
+commit, environment, pass/fail per step and generic failure category. A local
+adapter test is not deployed acceptance.
+
+1. Obtain approval for the actual test event, audience and cleanup. Confirm
+   separate Calendar authorization and reconnect behavior; Google sign-in alone
+   grants no Calendar access.
+2. Show that an unapproved/stale plan makes no Google write. Approve the current
+   plan in ClubOps; verify one copy in the correct club calendar and isolation
+   from a second club.
+3. Repeat the sync and move the date using the same item ID. Verify one copy,
+   the new date/time in Asia/Beirut and pending-to-synced status.
+4. Verify only the approved audience receives the intended reminders; mark done
+   and verify reminders stop. Cancel and verify the event/tasks disappear.
+5. Interrupt provider access, observe pending/error without lost work, restart
+   the host and retry. Confirm durable queue storage and no duplicate copy.
+6. Add/remove a cabinet test member; verify reader grant/revoke and preservation
+   of elevated rules. Verify audience changes separately after J-23 lands.
+7. Record each result privately, clean up only approved test artifacts, and
+   report unresolved token, scheduler, ACL or audience failures to the owner.
+
+Joey's 20 November README startup attempt stopped at the prerequisite check:
+`docker version` could not reach `dockerDesktopLinuxEngine` (named pipe absent).
+Starting the installed Docker Desktop app made its engine pipe available, but the
+version API then returned HTTP 500. No fresh Compose startup, browser login or
+hosted persistence outcome is claimed.
