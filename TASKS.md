@@ -68,7 +68,7 @@ Reference documents:
 
 ### T-07 Collect the missing AUB documents
 - Owner: tatiana
-- Status: todo
+- Status: done
 - Needs: none
 - What: Student Life Handbook (Tala, end of October); save the policytech documents as PDF (Athletics facilities, Code of Conduct, Online Communication Policy).
 - Done when: all are in the private data folder.
