@@ -299,6 +299,7 @@ Reference documents:
 - Needs: T-47
 - What: Each card can carry an expiry date (the model suggests it, the reviewer can change it); a plain rule, no model, moves an expired card to an archive the planner never uses; the president can restore it; the archive is kept. Cards are sorted AUB-wide or club-only: AUB-wide cards are approved by the operator now (later: live when two presidents approve), club-only cards by the president. After ASME and the final evaluation: simple approved rules (date cut-offs) checked by code in the planner, and reading OSA e-mails without a click.
 - Done when: synthetic tests for expiry, restore and the two card kinds, each with a failure-matrix row.
+- Progress (2026-11-15): expiry and AUB-wide sorting already existed (D-124); added the president's restore route with tests (F-215). Still after the final evaluation: planner date checks in code, reading OSA e-mails without a click.
 
 ## Christophe: frontend
 
