@@ -118,3 +118,10 @@ Other boundaries need an HTTP view model rather than a field rename:
 - A new run after a limit needs explicit user confirmation. The demo starts another bounded run; it never silently extends the old run's 8-step / $0.05 allowance.
 - Google login needs the backend's session/OAuth redirect and logout contracts. There are no frontend secrets or simulated authenticated production users.
 - All authority and lead-time examples are synthetic and visibly marked as demo data. They must be replaced by verified, sourced backend records.
+
+C-35 integration baseline (20 November): #95 Inbox and #96 Restore are now merged
+in main `e4090c6`. Their exact documented responses still define this adapter;
+remaining forwarding proof/settings and Review expiry/calendar shapes are not
+inferred from those route merges. Synthetic frontend write checks are separate
+from actual mailbox/provider/deployed acceptance. The preview-only role failure
+is now F-238, preserving main's new adviser-route F-217.

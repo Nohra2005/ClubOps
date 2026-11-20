@@ -1,7 +1,7 @@
 ﻿# Inbox, archive and Restore (C-35)
 
-Updated 19 November 2026 against the exact candidate API responses published by
-Tatiana in #95 (ce1d514) and #96 (8dccd0e). Those PRs remain under review. C-35 stays
+Updated 20 November 2026 against the exact API responses published by Tatiana in
+#95 (ce1d514) and #96 (8dccd0e), both now merged in main `e4090c6`. C-35 stays
 doing: forwarding proof/settings and Review expiry/calendar payloads plus actual
 deployed/mailbox acceptance remain open. No backend implementation or frozen
 contract is changed by this frontend work.
@@ -90,9 +90,8 @@ failed refresh, ambiguity, scope/role guards, date/no-end approval, public error
 wrong acknowledgement, source storage separation, phone layout and accessibility.
 HTTP tests intercept synthetic responses. They establish frontend behavior, not a
 real mailbox/provider/security measurement or completed ASME onboarding. The
-existing live-API suite is separate and does not exercise unmerged Inbox/Restore
-routes. Exact source-contract refs and dated results are in VERIFICATION.md.
+existing live-API suite is separate and does not exercise Inbox/Restore writes. Exact source-contract refs and dated results are in VERIFICATION.md.
 
 Decisions: D-127/D-128 (preview/read-only), D-131 (confirmed documented writes).
-Failures: F-217/F-218/F-228/F-229 (preview), F-231/F-232 (metadata/write boundary),
+Failures: F-238/F-218/F-228/F-229 (preview), F-231/F-232 (metadata/write boundary),
 F-235/F-236 (paid-read and Restore). Earlier log IDs and dated evidence are history.
