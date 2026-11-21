@@ -22,12 +22,16 @@ import type {
 } from './types';
 
 import { ApiError } from './errors';
+import { readMe } from './session-response';
+import { readSkippedEmail, readWaitingEmail } from '../inbox/http-metadata';
+import { readInboxCapture, readRestoreAcknowledgement, validRestoreDate } from './action-responses';
 import { readAgentRun, readAnswer, readDraft, readSetupStep } from './contract-responses';
 export { ApiError } from './errors';
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
   signal?: AbortSignal;
+  publicErrorDetail?: 'restore';
 }
 export type Transport = (path: string, options?: RequestOptions) => Promise<unknown>;
 
@@ -49,8 +53,9 @@ export class ApiClient {
       );
     return this.post<T>(`/__ui/${action}`, body);
   }
-  me() {
-    return this.request<Me>('/me');
+  async me() {
+    const value = await this.request<unknown>('/me');
+    return this.mode === 'http' ? readMe(value) : (value as Me);
   }
   signInGoogle(credential: string) {
     if (this.mode !== 'http')
@@ -70,6 +75,42 @@ export class ApiClient {
   }
   events() {
     return this.request<EventSummary[]>('/events');
+  }
+  async inbox() {
+    if (this.mode !== 'http')
+      throw new ApiError('Use the disclosed demo Inbox to practice with synthetic email.', 501);
+    return readWaitingEmail(await this.request<unknown>('/inbox'));
+  }
+  async skippedInbox() {
+    if (this.mode !== 'http')
+      throw new ApiError('Use the disclosed demo Inbox to practice with synthetic email.', 501);
+    return readSkippedEmail(await this.request<unknown>('/inbox/skipped'));
+  }
+  async captureInbox(id: string) {
+    if (this.mode !== 'http' || !id.trim())
+      throw new ApiError('Choose a waiting email from the server Inbox.', 422);
+    try {
+      return readInboxCapture(await this.post<unknown>(`/inbox/${encodeURIComponent(id)}/capture`));
+    } catch (error) {
+      if (error instanceof ApiError && [404, 409].includes(error.status))
+        throw new ApiError(
+          'This email is not ready, is already being read, or is no longer waiting. Refresh Inbox before deciding again.',
+          error.status,
+        );
+      throw error;
+    }
+  }
+  async restoreFact(id: string, validTo: string | null) {
+    if (this.mode !== 'http' || !id.trim() || !validRestoreDate(validTo))
+      throw new ApiError('Choose an expired club fact and a valid end date, or no end date.', 422);
+    return readRestoreAcknowledgement(
+      await this.request<unknown>(`/knowledge/${encodeURIComponent(id)}/restore`, {
+        method: 'POST',
+        body: { valid_to: validTo },
+        publicErrorDetail: 'restore',
+      }),
+      id,
+    );
   }
   event(id: string) {
     return this.request<EventDetail>(`/events/${encodeURIComponent(id)}`);
@@ -235,19 +276,39 @@ export function httpTransport(base = '/api'): Transport {
           : undefined,
         signal: controller.signal,
       });
-      if (!response.ok)
+      if (!response.ok) {
+        let explanation: string | undefined;
+        if (
+          options.publicErrorDetail === 'restore' &&
+          [403, 404, 409, 422].includes(response.status) &&
+          response.headers.get('content-type')?.includes('application/json')
+        ) {
+          try {
+            const body: unknown = await response.json();
+            const detail =
+              body && typeof body === 'object' && !Array.isArray(body)
+                ? (body as Record<string, unknown>).detail
+                : undefined;
+            if (typeof detail === 'string' && detail.trim() && detail.length <= 1000)
+              explanation = detail;
+          } catch {
+            /* Keep the ordinary status message for unreadable errors. */
+          }
+        }
         throw new ApiError(
-          response.status === 401
-            ? 'Please sign in to continue.'
-            : response.status === 403
-              ? "You don't have permission for this action."
-              : response.status === 409
-                ? 'This item changed. Reload it before approving.'
-                : response.status === 501
-                  ? 'This feature is not connected to the server yet. Your edits are still here.'
-                  : "ClubOps couldn't finish this. Your edits are still on this page.",
+          explanation ??
+            (response.status === 401
+              ? 'Please sign in to continue.'
+              : response.status === 403
+                ? "You don't have permission for this action."
+                : response.status === 409
+                  ? 'This item changed. Reload it before approving.'
+                  : response.status === 501
+                    ? 'This feature is not connected to the server yet. Your edits are still here.'
+                    : "ClubOps couldn't finish this. Your edits are still on this page."),
           response.status,
         );
+      }
       if (response.status === 204) return undefined;
       if (!response.headers.get('content-type')?.includes('application/json'))
         throw new ApiError('ClubOps returned an unreadable response. Please try again.', 502);
