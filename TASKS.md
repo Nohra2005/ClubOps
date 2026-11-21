@@ -803,4 +803,4 @@ Reference documents:
 - Needs: none
 - What: Reconcile current PR/task/handoff evidence, review ready work, merge only independently approved green changes, request missing owner PRs/reviews, and record the user-authorized coordination email triggers in AGENTS.md.
 - Done when: the coordination instructions/status PR is independently reviewed and merged, with actual merges, remaining owner actions and sent emails versus drafts recorded in the handoff.
-- Progress (2026-11-21): #100 merged as c53948f after Joey review; #91/#99/#101 and fixed #103 reviewed. Other merges and exact blockers are recorded in the session handoff. Gmail/Outlook connectors are unconnected, so no email delivery is claimed.
+- Progress (2026-11-21): PR #105 is open with Tatiana and Christophe requested for review. #100 merged as c53948f after Joey review; #91/#99/#101 and fixed #103 reviewed. Other merges and exact blockers are recorded in the session handoff. Gmail/Outlook connectors are unconnected, so no email delivery is claimed.
