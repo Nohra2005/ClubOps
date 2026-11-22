@@ -1,6 +1,6 @@
 # Report sections: architecture, web app, deployment and monitoring
 
-Christophe's C-29 draft, updated 20 November 2026. Interface baseline: main `0f3bb09`.
+Christophe's C-29 draft, updated 22 November 2026. Interface baseline: main `60d7027`.
 For Tatiana to review and incorporate into T-27. These sections describe implemented
 boundaries and local evidence. Final provider/evaluation results, hosted acceptance
 and team/user observations must be added from their actual records.
@@ -15,6 +15,15 @@ its separate demo adapter uses synthetic data. A working demo screen therefore d
 not establish a working production integration. The interface boundaries and diagram
 are in [architecture.md](../../docs/architecture.md) and
 [API_NOTES.md](../API_NOTES.md).
+
+Before protected screens render, the HTTP adapter validates the published session
+view: declared roles, identity/club fields, boolean setup flags and nonnegative
+badge counts. Invalid responses show a recoverable connection error with an
+explicit retry; the client does not infer a role or substitute demo data. The
+server independently authorizes each action. The merged
+[session validator](../src/api/session-response.ts) and
+[HTTP regression cases](../e2e/session-http.spec.ts) support this boundary; synthetic
+responses do not establish real Google or deployed authentication acceptance.
 
 Within a person-started planning run, the agent chooses tools and can ask for missing
 information. Code constrains transitions and each allowance of eight steps and $0.05.
