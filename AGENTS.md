@@ -54,15 +54,6 @@ Shared by everyone: `TASKS.md`, `docs/design-log.md`, `docs/failure-matrix.md`, 
 9. A question only the professor can settle (grading, scope, course rules) goes in [`docs/office-hours.md`](docs/office-hours.md): concrete, with the options and what we lean towards. Don't block on it; carry on with the lean and note it.
 10. Never push to `main` directly: every change goes through a pull request, and someone other than its author reviews it (a real comment or approval). Teammates' PRs are merged with **Create a merge commit** so each commit keeps its author. This review history is graded (bonus).
 
-## Project coordination emails
-
-When project work is ready for review, handed off, or merged, send a short project-related email to the verified teammates who need the update. The user authorizes these coordination emails; this does not authorize the ClubOps application to send mail or take other external actions.
-
-- Verify recipients from project history or known team contacts; never guess an address or use a GitHub noreply address.
-- Read the existing project thread first, avoid duplicate updates, and reply there when possible. Combine related updates and include the task/PR link, what changed, whether it is ready or merged, and the next action with its owner.
-- If finished teammate work has no PR, request one against the correct base with its task ID. Request appropriate GitHub reviews as well; a GitHub notification does not replace the email.
-- If email access is unavailable or a recipient cannot be verified, continue the repo work, provide a ready-to-send draft and state the blocker. Report emails actually sent separately from drafts; do not record delivery without confirmation.
-
 ## Changing a contract
 
 1. Open an issue or message the other owner first, saying what changes and why.

@@ -356,3 +356,11 @@ TASKS.md remains authoritative. "No open PR" means no matching current open PR w
 **J-24 final local validation:** GNU Make is absent; ran the equivalent Ruff lint/format, mypy (85 source files), schema export check, task check and pytest/coverage using `uv run --no-sync` in the existing environment. All passed: 709 tests, 1 skipped, 92.85% coverage. The bot lock updates were merged without installing them locally; their exact-head GitHub CI passed before merge, and fresh-lock CI on this PR remains required. `git diff --check` passes. Only AGENTS.md, TASKS.md and this additive handoff change. No application behavior, contract, new failure mode or secret changed.
 
 **Published:** J-24 PR [#105](https://github.com/Nohra2005/ClubOps/pull/105), with Tatiana and Christophe requested for independent review. Full owner requests: [#83](https://github.com/Nohra2005/ClubOps/issues/83#issuecomment-7061168557) and [#84](https://github.com/Nohra2005/ClubOps/issues/84#issuecomment-7061168242). No private email addresses or drafts are committed.
+
+## 2026-11-22 - Joey: J-24 review follow-up
+
+**Did:** Removed the Project coordination emails section from AGENTS.md in #105 at Tatiana's request and adjusted J-24 wording to the remaining task/status handoff scope. Earlier entries describe the historical proposal, not an active shared email policy. Re-reviewed #103 after its main sync: the previously approved inbox/backfill and learner changes are preserved, all 93 focused tests passed on 8bf0429 and all five exact-head CI checks passed. Posted a fresh approval for Tatiana to merge.
+
+**Next:** Tatiana reviews the revised #105 and merges #103 when ready. Private live Gmail/Review acceptance remains separate. No application or contract change; no email sent.
+
+**Validation:** Equivalent make check commands passed again: Ruff lint/format, mypy, schemas, tasks, 709 passed / 1 skipped, 92.85% coverage; diff check clean. AGENTS.md now has no diff against main.
