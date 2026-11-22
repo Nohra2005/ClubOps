@@ -236,6 +236,30 @@ Final local web check passes with 68 units, 32 tool tests, lint/format, strict a
 
 **Next / limits:** Review/merge the prepared board PR with a merge commit; record three genuine weekly team reviews separately. Only merged TASKS was mirrored; pending PR statuses and meetings were not invented. No duplicate board, manual field change, new feature scope or main push/self-merge.
 
+## 2026-11-19 - Christophe (C-13 session response validation)
+
+**Did:** Isolated main-based fix/c13-session-response-validation validates the published /me view before rendering protected UI. Rejects unknown roles, malformed identity/club records, non-boolean flags and unsafe counts without coercion or demo fallback. Whitelists view fields and preserves valid independent role values. Generic recoverable error now has an accessible alert; explicit retry only rechecks reads. Added unit and desktop/phone HTTP regressions, first reproducing the unsafe unknown-role acceptance. No backend implementation, Python contract, auth method or server permission policy changed.
+
+**State / next:** C-13 remains doing. Full root gates pass (693 tests, 93.06%; Ruff/format 158 files, mypy 84, schemas/tasks); web check 97 units/12 tools/types/build; HTTP 54 pass including 12 new cases; actual local API/cookie/SQLite 4 pass. D-129/F-233 reserved beyond main/open PRs. Small commits preserved; current-head CI/independent review still required. Merge via PR/merge commit, no main push or self-approval. Owner should link web/VERIFICATION.md and session tests from her evidence/rubric files.
+
+**Open / limits:** Validated frontend response shapes do not establish server authorization, real Google login or deployed acceptance. C-35 remains separate. New development-tool advisory remediation is isolated as C-36, not mixed into this parser branch. Tatiana's new #95/#96 exact responses arrived during this work and unblock the next C-35 paid-read/Restore portion.
+
+
+## 2026-11-20 - Christophe (C-13 approved-PR main sync)
+
+**Did:** Merged main 0ac0b5b as Tatiana requested and retained both sides of the shared design-log conflict. Approved implementation and individual commits remain unchanged. Existing IDs checked across main/open PRs; no new IDs.
+
+**State:** Web quality/build checks pass with 97 units and 12 tools. Python source/tests/scripts/schemas/lock match the C-35 checkout whose full root gates pass (700 tests, 93.09%); branch-local shared checks are run before publishing. Session response validation remains unchanged; deployed Google/every-screen acceptance is still open.
+
+**Next / limits:** Tatiana re-approves the synced head after current-head CI and merges with Create a merge commit. No backend/auth contract change, real provider acceptance, self-merge or direct main push.
+
+
+### 20 November follow-up - C-13, final Inbox main sync
+
+**Did:** #95 merged as e4090c6 during verification, so merged that main as well. Retained each main/own failure once. C-35 preview role row moves to F-238; main's F-217 stays unchanged. C-29 D-132/F-237 avoid #103's IDs. Earlier dated references remain history.
+
+**State / next:** Final root tree passes 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. The approved session validator is unchanged. Final Python source/tests/scripts/schemas/lock match the fully checked C-35 tree. Existing approved implementation and small commits remain. Re-review after final-head CI; Tatiana merges using Create a merge commit. No new scope before the 23 November meet-up or real mailbox/provider/deployed claim.
+
 ## 2026-11-12 - Christophe (C-35 disclosed inbox and deadline previews)
 
 **Did:** Fetched main 2fff794; #76/#77/#78 are merged with their small histories preserved, and main CI is green. Claimed C-35 in a separate branch and built in small portions: ephemeral demo state, forwarding/verification and connection recovery, explicit paid-read confirmation, partial-failure retry, and separate deadline expiry/calendar/archive/Restore practice. Wired Inbox into desktop/mobile navigation, forwarding into Setup/Settings, lifecycle into Review. Existing HTTP Review payloads/policy remain unchanged; HTTP shows unavailable states without invented routes. TASKS names inbox list/capture paths, but JSON/error/retry and verification/lifecycle shapes still need Tatiana. Guide: web/INBOX_PREVIEW.md.
@@ -296,3 +320,11 @@ Final local web check passes with 68 units, 32 tool tests, lint/format, strict a
 **State:** Frontend checks pass: 108 units/32 tools, lint/format/types/build and branch-local shared docs/tasks. Shared Python-tree root gates pass: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Board refresh source/read-back and zero-change repeat are in the new follow-up receipt; three real weekly-review records remain open.
 
 **Next / limits:** Fresh independent review after current-head CI, then a merge commit. Existing deployed/provider/club acceptance gaps remain separate; no authored backend/contract edit, new scope, self-merge or main push.
+
+## 2026-11-20 - Christophe (C-13 combined session/Inbox integration)
+
+**Did:** Synced #100 to reviewed #94/#102 main 0f3bb09. Kept both adapter imports, all session/Inbox/Restore HTTP registrations and demo exclusions, both API notes sections and all previous shared handoff/evidence lines. Original commits retained; no new scope or D/F IDs.
+
+**State:** Frontend checks pass: 137 units/12 tools/types/build. Clean standalone HTTP suite: 94 pass; sequential actual local API/cookie/SQLite: 4 pass. Shared Python root gates: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Branch shared docs/tasks: 10 pass. Overlapped artifact failures and fresh uv certificate/startup preparation were resolved by normal sequential runs using the system trust store, not assertion/source changes.
+
+**Next / limits:** Fresh independent approval after current-head CI, then merge with Create a merge commit. Deployed Google/every-screen acceptance remains open. No real provider/private inputs, backend/contract implementation changes, new scope before 23 November or main push/self-merge.
