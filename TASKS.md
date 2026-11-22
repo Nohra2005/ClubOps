@@ -720,6 +720,7 @@ Reference documents:
 - Done when: the chatbot answers on the app with sources, says "not sure" with who to ask when it should, and Tatiana's 42-question run is recorded.
 - Progress (2026-10-31): source-gated chat core and synthetic tests added. App endpoint wiring and Tatiana's private 42-question run remain pending.
 - Blocked (2026-11-20): synthetic source/citation/unknown-answer tests pass. Tatiana must confirm current app wiring and record the private 42-question run for T-26. No private question set or matching model recordings exist in this checkout; no score is invented.
+- Verified (2026-11-22): inspected the current app route: POST /api/chat/ask still returns the explicit not-switched-on placeholder; the source-gated core is not wired into it. Tatiana owns the authenticated own-club API integration and private 42-question evaluation. Adding a model key alone will not complete J-15.
 
 ### J-16 Secret scanning in CI (bonus)
 - Owner: joey
@@ -806,3 +807,5 @@ Reference documents:
 - Progress (2026-11-21): PR #105 is open with Tatiana and Christophe requested for review. #100 merged as c53948f after Joey review; #91/#99/#101 and fixed #103 reviewed. Other merges and exact blockers are recorded in the session handoff. Gmail/Outlook connectors are unconnected, so no email delivery is claimed.
 
 - Review update (2026-11-22): Per Tatiana, removed the Project coordination emails section from #105; this PR now only reconciles task status and owner handoffs. Re-approved #103 at synced head 8bf0429 after all 93 focused tests and five CI checks passed. #105 still needs independent review.
+
+- Readiness (2026-11-22): checked local configuration without exposing values; live provider/sign-in/Calendar/Gmail setup is missing. Prepared ignored private cabinet review and Gmail/Calendar acceptance worksheets with no results claimed. Confirmed the chatbot route is still a placeholder and requested the API owner handoff. No configuration, paid call, live mailbox access or Google write was performed.

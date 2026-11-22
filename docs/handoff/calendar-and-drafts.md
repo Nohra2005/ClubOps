@@ -364,3 +364,15 @@ TASKS.md remains authoritative. "No open PR" means no matching current open PR w
 **Next:** Tatiana reviews the revised #105 and merges #103 when ready. Private live Gmail/Review acceptance remains separate. No application or contract change; no email sent.
 
 **Validation:** Equivalent make check commands passed again: Ruff lint/format, mypy, schemas, tasks, 709 passed / 1 skipped, 92.85% coverage; diff check clean. AGENTS.md now has no diff against main.
+
+## 2026-11-22 - Joey: J-24 readiness and J-15 integration check
+
+**Did:** Audited local configuration with presence/shape checks only and no secret output. Prepared ignored private configuration status, 48 blank cabinet review slots (three event aliases, two reviewer aliases, eight draft types), and Gmail/Calendar NOT_RUN acceptance receipts. No live/private result is asserted. Confirmed the current POST /api/chat/ask implementation is still a placeholder; the source-gated core awaits Tatiana's API integration. Sent the concrete integration and missing OSA-allowlist example findings to Tatiana in issue #83 (comment 7082598727). Configuration and security settings were not changed.
+
+**State:** Focused Calendar sync/config/ACL, inbox routes/guards/capture, chat/scorer, daily checks, draft/proposal/WhatsApp and security tests passed without provider calls. Existing live/private tasks remain blocked, not marked complete by synthetic tests or blank receipts. No new feature, contract or failure mode.
+
+**Next:** User/cabinet supplies consented examples and two reviewers; Tatiana supplies API/Google integration and private evaluation prerequisites. Before any approved private run, configure the agreed provider/prices and private recording/trace/runtime destinations; preserve replay until explicit live/paid approval. Adding credentials cannot replace T-46/J-23 or chatbot wiring. This checkout's live credentials are absent; values and private worksheets stay out of git.
+
+**Local runtime:** docker version still cannot reach dockerDesktopLinuxEngine (named pipe absent). No Compose startup or deployment is claimed. Private receipt CSVs were checked for blank reviews and NOT_RUN statuses.
+
+**Validation:** Focused owned-area suite passed; full make-check equivalents passed (709 passed, 1 skipped, 92.85% coverage; Ruff lint/format, mypy, schemas/tasks and diff checks). Private preparation files remain ignored.
