@@ -451,3 +451,18 @@ change was made for these local runner issues.
 C-13 deployed Google/every-screen acceptance remains open. Current-head CI and
 fresh independent re-review are required after push; original commits are retained.
 No self-merge/main push, real provider calls or new scope before 23 November.
+
+## 2026-11-22 - C-36 review-ready sync before the meet-up
+
+Synced main `60d7027`, including reviewed #100 and the locked FastAPI 0.162.5 /
+Ruff 0.17.5 updates. Retained both sides of shared log conflicts and every previous
+handoff/evidence line. No original commit rewritten or new D/F ID allocated.
+
+Root make-check equivalents on the updated locked environment pass: 710 tests,
+93.14% coverage, Ruff/format 162 files, mypy 85 files, schemas/tasks. Frontend
+quality/build passes with 137 units and 12 board-tool cases, lint/format/types.
+Branch-local shared docs/tasks: 10 pass. Full and production-only npm audits both report zero vulnerabilities on 22 November. An initial sandboxed registry/cache request failed; the normal registry-access retry used the system trust store and a writable workspace cache. No audit exception, package update or TLS bypass was needed.
+
+The existing task status remains review. Current-head CI and fresh independent
+approval are required after push. No new feature scope before 23 November, backend
+implementation/contract change, real private input, self-merge or main push.

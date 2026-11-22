@@ -299,3 +299,12 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 **State:** Frontend checks pass: 137 units/12 tools/types/build. Clean standalone HTTP suite: 94 pass; sequential actual local API/cookie/SQLite: 4 pass. Shared Python root gates: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Branch shared docs/tasks: 10 pass. Overlapped artifact failures and fresh uv certificate/startup preparation were resolved by normal sequential runs using the system trust store, not assertion/source changes.
 
 **Next / limits:** Fresh independent approval after current-head CI, then merge with Create a merge commit. Deployed Google/every-screen acceptance remains open. No real provider/private inputs, backend/contract implementation changes, new scope before 23 November or main push/self-merge.
+
+
+## 2026-11-22 - Christophe (C-36 reviewed-session and dependency sync)
+
+**Did:** Synced the existing PR to main 60d7027 after #100 and the Python dependency updates merged. Kept all shared rows and earlier handoff/evidence lines, retaining individual commits. No new scope or design/failure IDs. Full and production-only npm audits both report zero vulnerabilities on 22 November. An initial sandboxed registry/cache request failed; the normal registry-access retry used the system trust store and a writable workspace cache. No audit exception, package update or TLS bypass was needed.
+
+**State:** Root locked-environment gates pass: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. Web quality/build: 137 units/12 tools; branch shared docs/tasks 10 pass. Original acceptance limits remain open; fresh-head CI and independent re-review are required.
+
+**Next / limits:** Re-review the synced PR, then Create a merge commit for the 23 November meet-up. No new backend/auth contract, model calls, real data, main push or self-merge. Genuine deployment/club/weekly-review acceptance is not inferred from these tests.

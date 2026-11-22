@@ -586,6 +586,7 @@ Reference documents:
 ### C-36 Patch the frontend development dependency audit
 - Owner: christophe
 - Status: review
+- Progress (2026-11-22): synced reviewed session frontend and locked FastAPI/Ruff updates; full/production npm audits zero, 137 units and updated-main checks pass; existing remediation remains in review.
 - Needs: C-23
 - What: Patch the minimatch advisory found through the ESLint/TypeScript-ESLint development dependency chain. Keep application dependencies and security checks intact; verify a clean lockfile install, full/deployment-only audits and frontend quality checks. Provide a reproducible audit command and evidence.
 - Done when: the patched lockfile and audit command pass current checks and independent review, with the advisory and development-only scope documented.
