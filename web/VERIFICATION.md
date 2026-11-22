@@ -452,3 +452,20 @@ change was made for these local runner issues.
 C-13 deployed Google/every-screen acceptance remains open. Current-head CI and
 fresh independent re-review are required after push; original commits are retained.
 No self-merge/main push, real provider calls or new scope before 23 November.
+
+## 2026-11-22 - C-31 review-ready main sync and live refresh
+
+Synced main `60d7027` after reviewed #100 and locked FastAPI 0.162.5 / Ruff 0.17.5
+updates. Kept both shared-log sides and all earlier handoff/evidence lines.
+No commit rewriting or new feature/design/failure ID.
+
+Root locked-environment gates pass on the identical Python tree: 710 tests,
+93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Web quality/build:
+137 units, 32 board-tool cases, lint/format/types. Branch shared docs/tasks: 10 pass.
+Live refresh verifies 92 tasks, 0 new cards, 92 updates, followed by 0 creates /
+0 updates on repeat. Manual cards/fields/views stay preserved. Dated read-back:
+board/evidence/refresh-2026-11-22.json; older receipts remain intact.
+
+C-31 remains doing until three genuine weekly-review records exist. This task
+mirror is not evidence that those meetings happened. Fresh independent re-review
+and current-head CI are required after the sync; no main push or self-merge.

@@ -328,3 +328,12 @@ Final local web check passes with 68 units, 32 tool tests, lint/format, strict a
 **State:** Frontend checks pass: 137 units/12 tools/types/build. Clean standalone HTTP suite: 94 pass; sequential actual local API/cookie/SQLite: 4 pass. Shared Python root gates: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Branch shared docs/tasks: 10 pass. Overlapped artifact failures and fresh uv certificate/startup preparation were resolved by normal sequential runs using the system trust store, not assertion/source changes.
 
 **Next / limits:** Fresh independent approval after current-head CI, then merge with Create a merge commit. Deployed Google/every-screen acceptance remains open. No real provider/private inputs, backend/contract implementation changes, new scope before 23 November or main push/self-merge.
+
+
+## 2026-11-22 - Christophe (C-31 pre-meet-up sync and board verification)
+
+**Did:** Synced #91 to main 60d7027, retaining shared rows and every earlier handoff/evidence line. Refreshed existing private board #4 from merged TASKS only: 92 tasks, no new cards, 92 updates; repeat zero changes. Original three manual cards, fields and status-column view #8 remain. New dated receipt is web/board/evidence/refresh-2026-11-22.json; prior receipts preserved.
+
+**State:** C-31 doing. Web checks pass: 137 units/32 tools/types/build; branch shared docs/tasks 10 pass. Identical Python tree passes root gates with updated locked dependencies: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Fresh independent re-review and current-head CI required; original commits retained.
+
+**Next / limits:** Re-review/merge with Create a merge commit for 23 November, then record actual weekly reviews separately. No unmerged task states, meeting history, deployed/provider/club acceptance, new scope, D/F IDs, main push or self-merge invented.
