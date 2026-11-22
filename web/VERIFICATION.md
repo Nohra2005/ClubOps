@@ -496,3 +496,18 @@ change was made for these local runner issues.
 C-13 deployed Google/every-screen acceptance remains open. Current-head CI and
 fresh independent re-review are required after push; original commits are retained.
 No self-merge/main push, real provider calls or new scope before 23 November.
+
+## 2026-11-22 - C-29 review-ready sync before the meet-up
+
+Synced main `60d7027`, including reviewed #100 and the locked FastAPI 0.162.5 /
+Ruff 0.17.5 updates. Retained both sides of shared log conflicts and every previous
+handoff/evidence line. No original commit rewritten or new D/F ID allocated.
+
+Root make-check equivalents on the updated locked environment pass: 710 tests,
+93.14% coverage, Ruff/format 162 files, mypy 85 files, schemas/tasks. Frontend
+quality/build passes with 137 units and 12 board-tool cases, lint/format/types.
+Branch-local shared docs/tasks: 10 pass. All eight actual local HTTP/cookie/SQLite setup/planning cases passed with FastAPI 0.162.5. Report prose now links the merged session validator and HTTP regressions; real Google/hosting/ASME acceptance and the blocked README-only attempt remain explicit.
+
+The existing task status remains doing. Current-head CI and fresh independent
+approval are required after push. No new feature scope before 23 November, backend
+implementation/contract change, real private input, self-merge or main push.
