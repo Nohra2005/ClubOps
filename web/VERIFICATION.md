@@ -469,3 +469,13 @@ board/evidence/refresh-2026-11-22.json; older receipts remain intact.
 C-31 remains doing until three genuine weekly-review records exist. This task
 mirror is not evidence that those meetings happened. Fresh independent re-review
 and current-head CI are required after the sync; no main push or self-merge.
+
+## 2026-11-22 - C-31 weekly-review bonus withdrawn by owner
+
+Christophe explicitly chose not to pursue the weekly-review/sprint bonus. D-133
+and the current TASKS entry record that decision; the existing board remains an
+ordinary task tracker. Earlier receipts and missing-record statements are retained
+as history, not active acceptance requirements or proof of earned bonus credit.
+No further meeting-record collection, bonus-driven refresh or board deletion.
+The existing tracker PR stays reviewable; no weekly-review completion is claimed.
+This is a docs/scope-only update; shared task/log checks and formatting pass.

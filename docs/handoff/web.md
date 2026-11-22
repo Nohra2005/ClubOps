@@ -337,3 +337,14 @@ Final local web check passes with 68 units, 32 tool tests, lint/format, strict a
 **State:** C-31 doing. Web checks pass: 137 units/32 tools/types/build; branch shared docs/tasks 10 pass. Identical Python tree passes root gates with updated locked dependencies: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Fresh independent re-review and current-head CI required; original commits retained.
 
 **Next / limits:** Re-review/merge with Create a merge commit for 23 November, then record actual weekly reviews separately. No unmerged task states, meeting history, deployed/provider/club acceptance, new scope, D/F IDs, main push or self-merge invented.
+
+
+## 2026-11-22 - C-31 weekly-review bonus withdrawn by owner
+
+Christophe explicitly chose not to pursue the weekly-review/sprint bonus. D-133
+and the current TASKS entry record that decision; the existing board remains an
+ordinary task tracker. Earlier receipts and missing-record statements are retained
+as history, not active acceptance requirements or proof of earned bonus credit.
+No further meeting-record collection, bonus-driven refresh or board deletion.
+The existing tracker PR stays reviewable; no weekly-review completion is claimed.
+This is a docs/scope-only update; shared task/log checks and formatting pass.
