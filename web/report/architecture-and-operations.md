@@ -122,8 +122,7 @@ Independent teammate review and merge commits preserve the small change history.
 Prepared tooling and synthetic tests support engineering claims within their stated
 scope. C-29 remains doing until Joey's fresh README-only setup and Tatiana's report
 handoff/review are recorded. Public deployment, real Google/provider tests, actual
-club acceptance, final frozen evaluation thresholds and three genuine weekly team
-reviews require their own evidence; none are inferred from a passing test or board
+club acceptance, final frozen evaluation thresholds require their own evidence; none are inferred from a passing test or board
 iteration date. The owner-maintained report evidence index must link these files
 before publication.
 
@@ -135,3 +134,11 @@ startup or login, so the fresh README-only setup acceptance remains open. Retain
 this concrete failure alongside the automated local evidence rather than replacing
 it with an inferred success. Repeat the documented flow when a working engine is
 available; real deployment and provider acceptance remain separate.
+
+## Weekly-review bonus excluded
+
+On 22 November, Christophe chose not to pursue the weekly-review/sprint engineering
+bonus. The existing GitHub board is retained as an ordinary task tracker. Planned
+iterations and sync receipts are not evidence of completed meetings; this report
+makes no weekly-review bonus claim and does not require those records to complete
+C-29. Other CI, testing and observability evidence keeps its stated scope and limits.

@@ -312,3 +312,12 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 **State:** Root locked-environment gates pass: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. Web quality/build: 137 units/12 tools; branch shared docs/tasks 10 pass. Original acceptance limits remain open; fresh-head CI and independent re-review are required.
 
 **Next / limits:** Re-review the synced PR, then Create a merge commit for the 23 November meet-up. No new backend/auth contract, model calls, real data, main push or self-merge. Genuine deployment/club/weekly-review acceptance is not inferred from these tests.
+
+
+### 22 November owner scope update
+
+Christophe has dropped the weekly-review/sprint engineering bonus. The report now
+excludes that claim and no longer lists three meeting records as pending acceptance.
+Keep the existing board as an ordinary task tracker. C-29's fresh README-only setup,
+report incorporation and deployed/provider/club acceptance limits remain unchanged.
+D-133 and the narrowed tracker task are in #91; no other engineering bonus was cut.

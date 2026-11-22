@@ -511,3 +511,11 @@ Branch-local shared docs/tasks: 10 pass. All eight actual local HTTP/cookie/SQLi
 The existing task status remains doing. Current-head CI and fresh independent
 approval are required after push. No new feature scope before 23 November, backend
 implementation/contract change, real private input, self-merge or main push.
+
+### 22 November owner scope update
+
+Christophe has dropped the weekly-review/sprint engineering bonus. The report now
+excludes that claim and no longer lists three meeting records as pending acceptance.
+Keep the existing board as an ordinary task tracker. C-29's fresh README-only setup,
+report incorporation and deployed/provider/club acceptance limits remain unchanged.
+D-133 and the narrowed tracker task are in #91; no other engineering bonus was cut.
