@@ -7,6 +7,7 @@ export default defineConfig({
   testMatch: [
     'contracts.spec.ts',
     'demo-rehearsal.spec.ts',
+    'session-http.spec.ts',
     'inbox-actions.spec.ts',
     'restore-http.spec.ts',
   ],

@@ -278,6 +278,41 @@ checkout whose full root gates passed (700 tests, 93.09%, Ruff/format 159 files,
 mypy 84 files, schema/tasks). Shared docs/tasks are checked in this checkout.
 Full development npm audit remains at zero vulnerabilities; production application dependencies are unchanged.
 
+## 2026-11-19 - C-13 HTTP session view validation
+
+The published /api/me view now passes runtime validation before protected UI renders.
+Unknown roles, malformed member/club records, missing identities, non-boolean setup
+flags and invalid badge counts fail with a generic connection error and explicit
+retry/sign-in controls. Valid role fields remain independent; the public view does
+not define an equality rule between them. Extra response fields are not retained.
+Server cookie/session/role checks remain the authorization boundary; no Python or
+API contract changed.
+
+A failing regression first reproduced an unknown role being accepted by ApiClient.
+After the fix, web check passes with 97 unit tests (29 session cases), 12 tool cases,
+lint/format/types/build. All 54 synthetic HTTP browser cases pass, including 12 new
+session cases on desktop/phone: no protected requests before a valid session,
+explicit retry with no writes, no private values in rendered errors, and an adviser
+retaining read-only UI. The actual local API/cookie/SQLite suite also passes all 4
+cases. Full root gates pass: 693 tests, 93.06% coverage; Ruff/format 158 files,
+strict mypy 84 files, schema/task checks.
+
+No real Google/provider/deployed acceptance is claimed. The separate C-36 patch
+handles the development dependency advisory found during installation; this C-13
+branch keeps main's dependency lock unchanged. Current-head CI and independent
+review are tracked on its PR. C-13 remains doing until deployed/every-screen
+acceptance is recorded.
+
+## 2026-11-20 - C-13 approved-PR main sync
+
+Merged main `0ac0b5b` without rewriting the original small commits. Preserved both
+sides of the additive design-log conflict. Frontend quality/build checks pass:
+97 units and 12 board-tool tests, lint, format and types. Python source, tests,
+scripts, schemas and locked dependencies are byte-identical to the synced C-35
+checkout whose full root gates passed (700 tests, 93.09%, Ruff/format 159 files,
+mypy 84 files, schema/tasks). Shared docs/tasks are checked in this checkout.
+Session response validation remains unchanged; deployed Google/every-screen acceptance is still open.
+
 No new design/failure ID or backend/contract change. Current-head CI and fresh
 independent approval are required after this sync; no self-merge/main push.
 
@@ -370,6 +405,9 @@ Ruff/format 162 files, mypy 85 files, schema/task checks. Branch-local shared do
 are checked before push; frontend quality/build remains green (68 units,
 12 board-tool cases). The development dependency patch is unchanged; full npm audit remains zero. Final Python source/tests/scripts/schemas/lock match the fully checked C-35 tree.
 
+are checked before push; frontend quality/build remains green (97 units,
+12 board-tool cases). The approved session validator is unchanged. Final Python source/tests/scripts/schemas/lock match the fully checked C-35 tree.
+
 are checked before push; frontend quality/build remains green (108 units,
 12 board-tool cases). All 82 HTTP cases passed in a completed run with normal Windows process cleanup. Frontend source/tests/lock are unchanged by the second main sync.
 
@@ -389,3 +427,27 @@ tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Full npm dep
 Original individual commits remain; fresh independent review and current-head CI
 are required after this sync. No backend/contract implementation or real data
 added, no self-merge/main push and no new scope before 23 November.
+
+## 20 November - C-13 combined with reviewed Inbox frontend
+
+Tatiana merged #94/#102 as main `0f3bb09`. Synced #100 without dropping either
+API adapter or any browser suite: session, Inbox capture and Restore are all
+registered in the HTTP config and excluded from the demo config. Every previous
+handoff/evidence line and both teams' shared rows remain. No new D/F IDs or scope.
+
+Frontend quality/build passes with 137 units and 12 board-tool cases. The clean
+standalone HTTP run passes all 94 desktop/phone cases; the subsequent actual local
+API/cookie/SQLite suite passes all 4 cases. Root make-check equivalents pass on
+the identical Python source/tests/scripts/schemas/lock: 710 tests, 93.14%,
+Ruff/format 162 files, mypy 85 files, schemas/tasks. Branch shared checks: 10 pass.
+
+An initial overlapped browser run failed two artifact writes, so both suites were
+rerun sequentially; no assertion was removed. The fresh worktree's uv install
+needed the system certificate store (`UV_SYSTEM_CERTS=true`), keeping TLS checks
+enabled. An initial live startup timed out during environment preparation; the
+prepared standalone run then passed. No application workaround or dependency
+change was made for these local runner issues.
+
+C-13 deployed Google/every-screen acceptance remains open. Current-head CI and
+fresh independent re-review are required after push; original commits are retained.
+No self-merge/main push, real provider calls or new scope before 23 November.
