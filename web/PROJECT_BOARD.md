@@ -223,3 +223,12 @@ pins main `0f3bb09`, including Joey's merged task-state reconciliation: 92 tasks
 0 new cards, 107 managed updates; full repeat creates/updates zero. Manual cards,
 fields and status-column view #8 remain preserved. The earlier same-day receipt
 remains history. Three genuine weekly-review records are still outstanding.
+
+## 22 November - review-ready merged-task refresh
+
+[Current read-back receipt](board/evidence/refresh-2026-11-22.json) pins merged
+main `60d7027`, including #100 and the Python dependency updates: 92 tasks,
+0 new cards and 92 managed field/body updates. Repeat creates/updates zero.
+The three manual cards, original fields and status-column view #8 are preserved.
+Earlier receipts remain history; pending PRs are not represented as merged state.
+Three genuine weekly-review records remain outstanding before C-31 is complete.
