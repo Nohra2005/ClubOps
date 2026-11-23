@@ -637,6 +637,7 @@ Reference documents:
 - Done when: a test item appears in the shared calendar from your code.
 - Progress (2026-11-10): manual Google setup complete: Calendar and Gmail APIs enabled, External OAuth test users and web client configured, Running Club calendar created, and its ID stored only in local `.env`. No manual calendar sharing is required.
 - Blocked: T-46's separate Calendar authorization and backend sync, C-35's connection UI, and a cabinet-approved live test are still needed before a test item can appear in Google Calendar. The adapter and setup steps are in `src/clubops/calendar/README.md`.
+- Progress (2026-11-23): T-46 first slice (#124) is merged: approved plans queue and drain to the club calendar with `CLUBOPS_CALENDAR_*` host settings and `GET/POST /api/calendar/sync`. Still needed: the Calendar OAuth refresh token on the host (Testing mode expires it every 7 days) and a cabinet-approved live test item. Not done or claimed.
 
 ### J-02 Sync calendar items
 - Owner: joey
@@ -654,6 +655,7 @@ Reference documents:
 - What: Default reminders from the contract; reminders go only to the person holding the task's role; everyone sees the shared calendar.
 - Done when: a test task reminds the right person at the right times.
 - Blocked (2026-11-20): private-role reminder offsets, missing-role fallback and done/cancel have synthetic coverage, but D-116 replaces that delivery architecture. T-46/J-23 must publish the one-calendar audience contract and backend connection before Joey can verify actual recipient/time acceptance. Do not claim real reminder delivery from fake-Google tests.
+- Progress (2026-11-23): the one-calendar audience contract (#119) and backend queue (#124) are merged, so the unblock is now live acceptance only: approve a plan, confirm the right role holder is invited and reminded at the right times. Needs the Calendar key on the host.
 
 ### J-04 Club-wide reminders
 - Owner: joey
@@ -830,6 +832,7 @@ Reference documents:
 - Progress (2026-11-10): reader ACL adapter and synthetic tests added. PR #79 is open with Tatiana and Christophe requested for review. Backend OAuth, cabinet add/remove triggers, Settings status, calendar ID and live test remain pending with their owners.
 - Progress (2026-11-11): Tatiana's PR #79 review found the Running Club-only env placeholder. Replaced it with a private per-club JSON map, parser and synthetic multi-club/invalid-input tests. Joey must move the existing local ID into the new map privately. T-46 still owns backend loading and OAuth; live sharing remains pending.
 - Blocked (2026-11-20): #79 is merged; multi-club parser and named reader grant/revoke tests pass. T-46 cabinet triggers/OAuth and a cabinet-approved live access/revocation test are still missing. Reader access does not prove notification delivery or D-116 event invitations.
+- Progress (2026-11-23): T-46 (#124) landed backend loading and queue draining. Still pending: cabinet add/remove triggers calling the reader grant/revoke adapter (Tatiana) and a cabinet-approved live access/revocation test.
 
 ### J-22 Inbox checks before any paid read (D-113, D-114)
 - Owner: joey
@@ -842,7 +845,7 @@ Reference documents:
 
 ### J-23 Deadline cards on the club calendar (D-116)
 - Owner: joey
-- Status: review
+- Status: done
 - Needs: J-02, T-48
 - What: One calendar per club on `clubops.agent`. A deadline found in a trusted OSA e-mail becomes a task for each cabinet role it names, with reminders, through the role holder's Gmail; no approval click and no invitee list (D-138, contract 0.3.0 in `docs/calendar-contract.md`). ClubOps never gets access to members' own calendars. Joey builds the sync for `deadline_items` output (create, update by `item_id`, held items shown on the Calendar screen).
 - Done when: synthetic tests (no live Google calls) and failure-matrix rows.
@@ -851,10 +854,11 @@ Reference documents:
 - Blocked (2026-11-20): T-48 restore slice is now merged as #96, but CalendarItem still lacks approved deadline-card choice and named per-event audience. Tatiana must agree the standalone versioned contract-change with Joey, including audience replacement/removal, done/cancel and retry semantics; both owners approve. Then Joey implements the one-calendar-per-club adapter and synthetic regressions. No contract was changed unilaterally.
 
 - Progress (2026-11-23): Adapter implementation built on contract PR #119: one shared calendar, cabinet attendees derived from the private role directory (user-confirmed), stable task/reminder IDs, durable trusted-mail queue/holds, person-edit protection and cancellation tombstones. Synthetic sync tests pass. Tatiana still owns reader/API/OAuth/worker wiring; Christophe owns Calendar/Review display of held reasons. Legacy blockers above are superseded for this adapter scope; live delivery and complete screen acceptance are not claimed.
+- Done (2026-11-23): contract #119 and adapter #120 are merged; synthetic acceptance only. Live Google delivery, recipient acceptance and popup timing are covered by J-01/J-03/J-09, not claimed here.
 
 ### J-24 Coordinate reviewed merges and team handoffs
 - Owner: joey
-- Status: review
+- Status: done
 - Needs: none
 - What: Reconcile current PR/task/handoff evidence, review ready work, merge only independently approved green changes, request missing owner PRs/reviews.
 - Done when: the coordination status PR is independently reviewed and merged, with actual merges, remaining owner actions and sent emails versus drafts recorded in the handoff.
@@ -863,3 +867,4 @@ Reference documents:
 - Review update (2026-11-22): Per Tatiana, removed the Project coordination emails section from #105; this PR now only reconciles task status and owner handoffs. Re-approved #103 at synced head 8bf0429 after all 93 focused tests and five CI checks passed. #105 still needs independent review.
 
 - Readiness (2026-11-22): checked local configuration without exposing values; live provider/sign-in/Calendar/Gmail setup is missing. Prepared ignored private cabinet review and Gmail/Calendar acceptance worksheets with no results claimed. Confirmed the chatbot route is still a placeholder and requested the API owner handoff. No configuration, paid call, live mailbox access or Google write was performed.
+- Done (2026-11-23): this pass merged #104, #119, #120, #121, #123 and #124 after independent current-head approval and green CI; no open PRs remain. No email was sent.

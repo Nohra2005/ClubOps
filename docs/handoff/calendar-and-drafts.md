@@ -478,3 +478,11 @@ TASKS.md remains authoritative. "No open PR" means no matching current open PR w
 **Next:** Fresh current-head review and CI, then merge #82 without bypassing protection.
 
 **Validation:** Full make-check equivalents passed after combining the published #81 tooling: 773 passed, 1 skipped, 1 documented expected failure, 93.08% coverage; Ruff lint/format, mypy, schemas/tasks and diff checks passed.
+
+## 2026-11-23 - Joey: status after T-46 landed
+
+**Did:** Reviewed and merged #104, #119, #120, #121, #123 and #124, each with an independent approval on the current head and green CI. Marked J-23 and J-24 done (synthetic scope) and recorded what T-46 changes for J-01, J-03 and J-21.
+
+**State:** No open PRs. Remaining Joey work needs live access, not code: the Calendar OAuth refresh token on the host, a cabinet-approved test item (J-01), reminder-recipient acceptance (J-03), reader grant/revoke triggers from Tatiana (J-21), then the deployed run (J-09). No live Google call, deployment or email was made.
+
+**Next:** Tatiana wires cabinet add/remove to the reader ACL adapter; the user supplies the Calendar key and approves a live test.
