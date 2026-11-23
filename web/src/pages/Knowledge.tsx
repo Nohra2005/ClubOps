@@ -443,7 +443,7 @@ export function KnowledgeFact() {
                       fact.reload();
                       refresh();
                       notify(
-                        item.scope === 'aub'
+                        item.scope === 'aub' || api.mode === 'http'
                           ? 'Retirement proposal sent to Review.'
                           : 'Fact retired. History is retained.',
                       );

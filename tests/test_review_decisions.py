@@ -77,3 +77,33 @@ def test_the_edit_dialog_text_is_not_dropped_when_sent_with_approve(app_client) 
     body = {"decision": "approve", "edited_text": "Tell Cafe B ten days before, at https://example.test/cafe."}
     assert c.post(f"/api/review/{review_id}", json=body, headers=HEADERS).status_code == 200
     assert _statements(c) == [body["edited_text"]]
+
+
+def test_a_suggested_edit_goes_to_review_and_changes_the_fact_only_when_approved(app_client) -> None:  # type: ignore[no-untyped-def]  # noqa: F811
+    c, provider = app_client
+    known = _known(c, provider)
+    text = "Tell Cafe B ten days before a run: https://example.test/cafe"
+    reply = c.post(f"/api/knowledge/{known}/edit", json={"text": text}, headers=HEADERS)
+    assert reply.status_code == 200
+    assert _statements(c) == [LESSON["statement"]]  # unchanged until someone approves
+    [card] = c.get("/api/review").json()
+    assert card["id"] == reply.json()["review_id"] and card["statement"] == text
+    assert c.post(f"/api/review/{card['id']}", json={"decision": "merge"}, headers=HEADERS).status_code == 200
+    assert _statements(c) == [text]
+
+
+def test_a_suggested_retirement_goes_to_review_and_removes_the_fact_when_approved(app_client) -> None:  # type: ignore[no-untyped-def]  # noqa: F811
+    c, provider = app_client
+    known = _known(c, provider)
+    reply = c.post(f"/api/knowledge/{known}/retire", headers=HEADERS)
+    assert reply.status_code == 200 and _statements(c) == [LESSON["statement"]]
+    assert (
+        c.post(f"/api/review/{reply.json()['review_id']}", json={"decision": "approve"}, headers=HEADERS).status_code
+        == 200
+    )
+    assert c.get(f"/api/knowledge/{known}").json()["status"] == "retired"  # kept as history, no longer used
+
+
+def test_editing_a_fact_that_does_not_exist_answers_404(app_client) -> None:  # type: ignore[no-untyped-def]  # noqa: F811
+    c, _ = app_client
+    assert c.post("/api/knowledge/nope/edit", json={"text": "Something new."}, headers=HEADERS).status_code == 404

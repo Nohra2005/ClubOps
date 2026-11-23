@@ -60,6 +60,7 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Inbox | `GET /api/inbox/skipped` | live (cabinet only, own club): `[{id, subject, reason, why}]` for forwarded e-mails the free checks refused, e.g. `why`: "ClubOps only reads e-mails forwarded from OSA staff". Never read by a model |
 | Inbox | `POST /api/inbox/{id}/allow` | live (cabinet only, CSRF): free; releases an e-mail that was skipped only because its original sender is not on the OSA list (`original_sender_not_osa`; every other check had passed). It joins the waiting list; no model reads it until someone confirms the paid read. Cards from it carry `unlisted: true`, keep no links or contacts, and are excluded from batch approval. 404 if the id is not releasable for your club |
 | Knowledge | `POST /api/knowledge/{id}/restore {valid_to: date or null}` | live (president only, CSRF): brings an expired club fact back as a new version (an AUB-wide fact answers 403: operator only); facts whose end date passed show `status: may_be_outdated` and are not used by the planner; 409 if not expired, 422 if the new date is past |
+| Knowledge | `POST /api/knowledge/{id}/edit {text}` and `POST /api/knowledge/{id}/retire` | live (cabinet only, CSRF): each makes a Review proposal (update or retire) for an approved fact the club can see and returns `{review_id}`; the fact is unchanged until a cabinet member approves (an AUB-wide fact needs a president); 404 if the fact is not visible to the club |
 
 The demo-only actions in `client.ts` (`/__ui/*`) stay demo-only for now.
 

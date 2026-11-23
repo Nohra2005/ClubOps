@@ -12,6 +12,7 @@ Conventions (agreed for C-13):
 
 from __future__ import annotations
 
+import hashlib
 import io
 import os
 import re
@@ -63,6 +64,7 @@ from clubops.contracts.knowhow import (
     Kind,
     KnowHowItem,
     KnowHowProposal,
+    ProposalOp,
     Scope,
     VerifyDecision,
     VerifyRequest,
@@ -163,6 +165,10 @@ class DecisionBody(BaseModel):
     shared: bool | None = None
     opened_at: str | None = None
     decided_at: str | None = None
+
+
+class EditBody(BaseModel):
+    text: str = Field(min_length=3, max_length=1500)
 
 
 class MemberBody(BaseModel):
@@ -546,6 +552,37 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             if item is None:
                 raise HTTPException(404, "No such item.")
             return views.knowledge(item, store.history(item_id), today())
+
+    def _knowledge_proposal(member: Member, item_id: str, op: ProposalOp, text: str | None, why: str) -> dict[str, str]:
+        """A change to an approved fact goes to Review; the fact stays as it is until someone approves (F-247)."""
+        with club(member.club_id) as (store, _, _, _):
+            item = next((i for i in visible(store, member.club_id) if i.item_id == item_id), None)
+            if item is None:
+                raise HTTPException(404, "No such item.")
+            changes: dict[str, Any] = {"status": ItemStatus.PROPOSED, "verified_by": None, "verified_at": None}
+            if text is not None:
+                changes["statement"] = text
+            candidate = KnowHowItem.model_validate({**item.model_dump(), **changes})
+            stamp = hashlib.sha256(f"{item_id}|{op.value}|{text or ''}".encode()).hexdigest()[:8]
+            proposal = KnowHowProposal(
+                proposal_id=f"p-{stamp}",
+                op=op,
+                candidate=candidate,
+                target_item=item.item_id,
+                rationale=why[:600],
+            )
+            store.submit(proposal)
+        return {"review_id": proposal.proposal_id}
+
+    @app.post("/api/knowledge/{item_id}/edit")
+    def suggest_edit(item_id: str, body: EditBody, member: Member = Depends(cabinet)) -> dict[str, str]:  # noqa: B008
+        return _knowledge_proposal(
+            member, item_id, ProposalOp.UPDATE, body.text.strip(), f"edit suggested by {member.name}"
+        )
+
+    @app.post("/api/knowledge/{item_id}/retire")
+    def suggest_retire(item_id: str, member: Member = Depends(cabinet)) -> dict[str, str]:  # noqa: B008
+        return _knowledge_proposal(member, item_id, ProposalOp.RETIRE, None, f"retirement suggested by {member.name}")
 
     # ------------------------------------------------------------- review
 

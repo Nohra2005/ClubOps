@@ -241,9 +241,12 @@ export class ApiClient {
     return this.extension('feedback', { id, value, reason });
   }
   suggestEdit(item_id: string, text: string) {
+    if (this.mode === 'http')
+      return this.post(`/knowledge/${encodeURIComponent(item_id)}/edit`, { text });
     return this.extension('knowledge-edit', { item_id, text });
   }
   retire(item_id: string) {
+    if (this.mode === 'http') return this.post(`/knowledge/${encodeURIComponent(item_id)}/retire`);
     return this.extension('knowledge-retire', { item_id });
   }
   signOff(role: Role) {
