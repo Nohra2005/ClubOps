@@ -115,6 +115,14 @@ function ReviewItem({
         </div>
         <StatusBadge status={card.status} />
       </div>
+      {card.op === 'retire' && (
+        <section className="notice warning" aria-label="Retirement">
+          <p>
+            <strong>This will retire the fact.</strong> If you retire it, ClubOps stops using it. It
+            stays in the list marked retired. If you keep it, nothing changes.
+          </p>
+        </section>
+      )}
       {(card.warning || card.outdated || card.unlisted) && (
         <section className="notice warning" aria-label="Source warnings">
           <div>
@@ -212,6 +220,23 @@ function ReviewItem({
           Your confirmation is recorded. The rule stays unconfirmed until the second president
           responds.
         </p>
+      ) : canDecide && card.op === 'retire' ? (
+        <div className="review-actions">
+          <button
+            className="button small primary"
+            disabled={action.pending}
+            onClick={() => decide('approve')}
+          >
+            {action.pending ? 'Saving…' : 'Retire this fact'}
+          </button>
+          <button
+            className="button small"
+            disabled={action.pending}
+            onClick={() => decide('reject')}
+          >
+            Keep it
+          </button>
+        </div>
       ) : canDecide ? (
         <div className="review-actions">
           {card.type === 'disagreement' ? (

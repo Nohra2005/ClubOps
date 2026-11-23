@@ -21,7 +21,8 @@ export function canBatchApprove(card: ReviewCard) {
     !isShared(card) &&
     !card.warning &&
     !card.outdated &&
-    !card.unlisted
+    !card.unlisted &&
+    card.op !== 'retire'
   );
 }
 

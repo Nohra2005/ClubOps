@@ -107,3 +107,26 @@ def test_a_suggested_retirement_goes_to_review_and_removes_the_fact_when_approve
 def test_editing_a_fact_that_does_not_exist_answers_404(app_client) -> None:  # type: ignore[no-untyped-def]  # noqa: F811
     c, _ = app_client
     assert c.post("/api/knowledge/nope/edit", json={"text": "Something new."}, headers=HEADERS).status_code == 404
+
+
+def test_add_as_new_rule_works_on_a_suggested_edit(app_client) -> None:  # type: ignore[no-untyped-def]  # noqa: F811
+    """F-249: the suggested edit carries the old fact's id; adding it next to the original needs its own id."""
+    c, provider = app_client
+    known = _known(c, provider)
+    text = "Tell Cafe B ten days before a run: https://example.test/cafe"
+    review_id = c.post(f"/api/knowledge/{known}/edit", json={"text": text}, headers=HEADERS).json()["review_id"]
+    reply = c.post(f"/api/review/{review_id}", json={"decision": "keep_both"}, headers=HEADERS)
+    assert reply.status_code == 200
+    assert _statements(c) == sorted([LESSON["statement"], text])
+    assert c.get(f"/api/knowledge/{known}").json()["statement"] == LESSON["statement"]  # the old one is untouched
+
+
+def test_a_retirement_card_says_so_and_keeping_it_leaves_the_fact_active(app_client) -> None:  # type: ignore[no-untyped-def]  # noqa: F811
+    """F-250: the screen needs op=retire to tell the reviewer what Approve will do."""
+    c, provider = app_client
+    known = _known(c, provider)
+    review_id = c.post(f"/api/knowledge/{known}/retire", headers=HEADERS).json()["review_id"]
+    [card] = c.get("/api/review").json()
+    assert card["id"] == review_id and card["op"] == "retire"
+    assert c.post(f"/api/review/{review_id}", json={"decision": "reject"}, headers=HEADERS).status_code == 200
+    assert c.get(f"/api/knowledge/{known}").json()["status"] != "retired"
