@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test('handover exports a sourced guide and requires explicit sign-off', async ({ page }) => {
   await page.goto('/handover');
+  await page.getByText('Reference guide, sources and outgoing questions', { exact: true }).click();
   await expect(page.getByRole('button', { name: 'Sign off handover', exact: true })).toBeVisible();
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download text', exact: true }).click();

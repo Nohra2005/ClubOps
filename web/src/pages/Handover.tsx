@@ -6,6 +6,7 @@ import { roleLabels, roles, type Role } from '../api/types';
 import { PageHeading, ErrorNotice, Modal, NotSure, Resource, SourceChip } from '../components/ui';
 import { useAction, useResource } from '../hooks';
 import { downloadText, formatDate } from '../lib';
+import RoleIntroduction from '../handover/RoleIntroduction';
 
 export default function Handover() {
   const { api, me, isPresident, notify } = useApp();
@@ -34,122 +35,131 @@ export default function Handover() {
   };
   return (
     <>
-      <PageHeading
-        eyebrow="FOR THE NEXT PERSON IN YOUR SEAT"
-        title="Handover"
-        description="Give the next cabinet your lessons, your sources, and a head start."
-        action={
-          <div className="compact-actions">
-            <button className="button" onClick={exportGuide} disabled={!guide.value}>
-              <Download size={13} /> Download text
-            </button>
-            <button className="button" onClick={() => window.print()} disabled={!guide.value}>
-              <Printer size={13} /> Print / save PDF
-            </button>
-          </div>
-        }
-      />
-      <div className="handover-banner">
-        <span className="handover-banner-icon">
-          <GraduationCap size={32} />
-        </span>
-        <div>
-          <h2>
-            A cabinet changes.
-            <br />
-            The know-how shouldn't.
-          </h2>
-          <p>This guide is assembled from approved knowledge. No AI call, no extra cost.</p>
-        </div>
-        <label className="field">
-          <span>Guide for</span>
-          <select value={role} onChange={(e) => setRole(e.target.value as Role)}>
-            {roles
-              .filter((r) => r !== 'adviser')
-              .map((role) => (
-                <option key={role} value={role}>
-                  {roleLabels[role]}
-                </option>
-              ))}
-          </select>
-        </label>
-      </div>
-      <Resource loading={guide.loading} error={guide.error} retry={guide.reload}>
-        {guide.value && (
-          <>
-            <div className="handover-guide">
-              <div>
-                {guide.value.sections.map((section, i) => (
-                  <section className="panel guide-section" key={section.title}>
-                    <div className="guide-section-heading">
-                      <span>{String(i + 1).padStart(2, '0')}</span>
-                      <h2>{section.title}</h2>
-                    </div>
-                    {section.entries.length ? (
-                      section.entries.map((entry, j) => (
-                        <div className="guide-entry" key={j}>
-                          <p>{entry.text}</p>
-                          {(entry.sources ?? [entry.source]).map((source) => (
-                            <SourceChip key={source.item_id} source={source} />
-                          ))}
-                        </div>
-                      ))
-                    ) : (
-                      <p className="inline-note">
-                        No approved information recorded for this part yet.
-                      </p>
-                    )}
-                  </section>
-                ))}
-              </div>
-              <aside>
-                <section className="panel guide-gaps">
-                  <span className="eyebrow">LEAVE THE RIGHT QUESTIONS</span>
-                  <h2>What we don't know yet</h2>
-                  <p>These are gaps to ask the outgoing cabinet about.</p>
-                  {guide.value.gaps.map((gap) => (
-                    <div key={gap.topic}>
-                      <h3>{gap.topic}</h3>
-                      <NotSure
-                        ask={{ who: gap.ask }}
-                        lookIn={gap.look_in}
-                        explanation={gap.question}
-                      />
-                    </div>
-                  ))}
-                  <Link className="button" to={`/chat?role=${role}`}>
-                    Ask about this role <ArrowRight size={13} />
-                  </Link>
-                </section>
-              </aside>
+      <RoleIntroduction />
+      <details className="handover-reference">
+        <summary>Reference guide, sources and outgoing questions</summary>
+        <PageHeading
+          eyebrow="FOR THE NEXT PERSON IN YOUR SEAT"
+          title="Handover"
+          description="Give the next cabinet your lessons, your sources, and a head start."
+          action={
+            <div className="compact-actions">
+              <button className="button" onClick={exportGuide} disabled={!guide.value}>
+                <Download size={13} /> Download text
+              </button>
+              <button className="button" onClick={() => window.print()} disabled={!guide.value}>
+                <Printer size={13} /> Print / save PDF
+              </button>
             </div>
-            {guide.value.signed_off_at ? (
-              <div className="signed-guide">
-                <Check size={18} />
+          }
+        />
+        <div className="handover-banner">
+          <span className="handover-banner-icon">
+            <GraduationCap size={32} />
+          </span>
+          <div>
+            <h2>
+              A cabinet changes.
+              <br />
+              The know-how shouldn't.
+            </h2>
+            <p>This guide is assembled from approved knowledge. No AI call, no extra cost.</p>
+          </div>
+          <label className="field">
+            <span>Guide for</span>
+            <select value={role} onChange={(e) => setRole(e.target.value as Role)}>
+              {roles
+                .filter((r) => r !== 'adviser')
+                .map((role) => (
+                  <option key={role} value={role}>
+                    {roleLabels[role]}
+                  </option>
+                ))}
+            </select>
+          </label>
+        </div>
+        <Resource loading={guide.loading} error={guide.error} retry={guide.reload}>
+          {guide.value && (
+            <>
+              <div className="handover-guide">
                 <div>
-                  <strong>Signed off by {guide.value.signed_off_by}</strong>
-                  <p>
-                    {formatDate(guide.value.signed_off_at, true)} · This version is confirmed by the
-                    outgoing cabinet.
-                  </p>
+                  {guide.value.sections.map((section, i) => (
+                    <section className="panel guide-section" key={section.title}>
+                      <div className="guide-section-heading">
+                        <span>{String(i + 1).padStart(2, '0')}</span>
+                        <h2>{section.title}</h2>
+                      </div>
+                      {section.entries.length ? (
+                        section.entries.map((entry, j) => (
+                          <div className="guide-entry" key={j}>
+                            <p>{entry.text}</p>
+                            {(entry.sources ?? [entry.source]).map((source) => (
+                              <SourceChip key={source.item_id} source={source} />
+                            ))}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="inline-note">
+                          No approved information recorded for this part yet.
+                        </p>
+                      )}
+                    </section>
+                  ))}
                 </div>
+                <aside>
+                  <section className="panel guide-gaps">
+                    <span className="eyebrow">LEAVE THE RIGHT QUESTIONS</span>
+                    <h2>Questions for the outgoing cabinet</h2>
+                    <p>These are gaps to ask the outgoing cabinet about.</p>
+                    {guide.value.gaps.map((gap) => (
+                      <div key={gap.topic}>
+                        <h3>{gap.topic}</h3>
+                        <NotSure
+                          ask={{ who: gap.ask }}
+                          lookIn={gap.look_in}
+                          explanation={gap.question}
+                        />
+                      </div>
+                    ))}
+                    {me.role !== 'adviser' && (
+                      <Link className="button" to="/chat?prepare=1">
+                        Prepare an outgoing note
+                      </Link>
+                    )}
+                    <Link className="button" to={`/chat?role=${role}`}>
+                      Ask about this role <ArrowRight size={13} />
+                    </Link>
+                  </section>
+                </aside>
               </div>
-            ) : (
-              isPresident && (
-                <div className="handover-signoff">
+              {guide.value.signed_off_at ? (
+                <div className="signed-guide">
+                  <Check size={18} />
                   <div>
-                    <strong>Ready to pass it on?</strong>
-                    <p>Check the guide and its open questions before signing off this version.</p>
+                    <strong>Signed off by {guide.value.signed_off_by}</strong>
+                    <p>
+                      {formatDate(guide.value.signed_off_at, true)} · This version is confirmed by
+                      the outgoing cabinet.
+                    </p>
                   </div>
-                  <button className="button primary" onClick={() => setConfirm(true)}>
-                    Sign off handover
-                  </button>
                 </div>
-              )
-            )}
-          </>
-        )}
-      </Resource>
+              ) : (
+                isPresident && (
+                  <div className="handover-signoff">
+                    <div>
+                      <strong>Ready to pass it on?</strong>
+                      <p>Check the guide and its open questions before signing off this version.</p>
+                    </div>
+                    <button className="button primary" onClick={() => setConfirm(true)}>
+                      Sign off handover
+                    </button>
+                  </div>
+                )
+              )}
+            </>
+          )}
+        </Resource>
+      </details>
       <Modal open={confirm} title="Sign off this handover?" onClose={() => setConfirm(false)}>
         <p>
           You are confirming the current {roleLabels[role].toLowerCase()} guide, including its
