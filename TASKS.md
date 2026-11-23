@@ -296,11 +296,12 @@ Reference documents:
 
 ### T-48 Expiry archive and AUB-wide cards (D-115)
 - Owner: tatiana
-- Status: todo
+- Status: done
 - Needs: T-47
 - What: Each card can carry an expiry date (the model suggests it, the reviewer can change it); a plain rule, no model, moves an expired card to an archive the planner never uses; the president can restore it; the archive is kept. Cards are sorted AUB-wide or club-only: AUB-wide cards are approved by the operator now (later: live when two presidents approve), club-only cards by the president. After ASME and the final evaluation: simple approved rules (date cut-offs) checked by code in the planner, and reading OSA e-mails without a click.
 - Done when: synthetic tests for expiry, restore and the two card kinds, each with a failure-matrix row.
 - Progress (2026-11-15): expiry and AUB-wide sorting already existed (D-124); added the president's restore route with tests (F-215). Still after the final evaluation: planner date checks in code, reading OSA e-mails without a click.
+- Verified (2026-11-21): #96 merged into main as 0ac0b5b; its seven archive regressions and CI passed before merge. The synthetic expiry/restore/scope gate is complete. This does not complete T-47 live mail, future shared governance or automatic reads.
 
 ### T-49 Count who an e-mail went to: AUB-wide or club-only (D-126)
 - Owner: tatiana
@@ -683,7 +684,7 @@ Reference documents:
 - What: Read the ClubOps inbox (Gmail API) and turn each forwarded e-mail into input for learning. One inbox for all clubs: each club forwards to its own address with a "+" tag (`clubops.agent+running-club@gmail.com`), and the tag says the club. Drop e-mails whose sender is not on that club's cabinet list, and e-mails with an unknown tag. Pass the rest as `Untrusted` text (sender, date, subject, body; attachments listed by name only) to T-18's capture step, so every fact waits in Review. Never auto-approve; never reply to the sender. Code in `src/clubops/inbox/`.
 - Done when: forwarding a real OSA e-mail puts a proposed fact in that club's Review, and tests (with made-up e-mails) cover: wrong tag, sender not on the list, the same e-mail twice (no duplicate), and an e-mail with instructions inside ("ignore the rules...") treated as data. Each case has a failure-matrix row.
 - Progress (2026-10-31): Gmail read adapter, designated `clubops.agent+<club>@gmail.com` tag/sender filtering and durable deduplicated private queue added with synthetic tests. Human-click capture integration and live forward remain pending Gmail API access and Tatiana's API wiring.
-- Blocked (2026-11-20): #92/#93 are merged. #95 implements the guarded paid-read route and passed Joey's 15 focused inbox tests; Joey approved it, but it now conflicts with merged #96 in owner-maintained docs/api.md. Tatiana must reconcile that response documentation and shared failure rows, obtain current-head re-review/CI, finish proof/removal routes, then coordinate the approved real-forward acceptance with #94. J-22 code completion does not prove live Review delivery.
+- Blocked (2026-11-21): #92/#93/#95 and frontend #94 are merged into main. The guarded paid-read route and confirmed Inbox/Restore UI are available for acceptance. Tatiana still owns forwarding-address proof/removal routes and approved real-forward-to-Review evidence; coordinate the audience backfill in #103 after its main sync. Joey then runs the approved skip/retry/read-once check. J-22 code completion does not prove live Review delivery.
 
 ### J-11 Daily check and OSA rule check (was T-21)
 - Owner: joey
@@ -731,6 +732,7 @@ Reference documents:
 - Done when: the chatbot answers on the app with sources, says "not sure" with who to ask when it should, and Tatiana's 42-question run is recorded.
 - Progress (2026-10-31): source-gated chat core and synthetic tests added. App endpoint wiring and Tatiana's private 42-question run remain pending.
 - Blocked (2026-11-20): synthetic source/citation/unknown-answer tests pass. Tatiana must confirm current app wiring and record the private 42-question run for T-26. No private question set or matching model recordings exist in this checkout; no score is invented.
+- Verified (2026-11-22): inspected the current app route: POST /api/chat/ask still returns the explicit not-switched-on placeholder; the source-gated core is not wired into it. Tatiana owns the authenticated own-club API integration and private 42-question evaluation. Adding a model key alone will not complete J-15.
 
 ### J-16 Secret scanning in CI (bonus)
 - Owner: joey
@@ -806,3 +808,16 @@ Reference documents:
 
 - Blocked (2026-11-16): T-48 is not merged and the frozen CalendarItem contract has no per-event invitee or deadline-card approval fields. Coordinate a standalone contract-change PR with Tatiana before implementing D-116; do not reuse the old role-calendar behavior as acceptance.
 - Blocked (2026-11-20): T-48 restore slice is now merged as #96, but CalendarItem still lacks approved deadline-card choice and named per-event audience. Tatiana must agree the standalone versioned contract-change with Joey, including audience replacement/removal, done/cancel and retry semantics; both owners approve. Then Joey implements the one-calendar-per-club adapter and synthetic regressions. No contract was changed unilaterally.
+
+
+### J-24 Coordinate reviewed merges and team handoffs
+- Owner: joey
+- Status: review
+- Needs: none
+- What: Reconcile current PR/task/handoff evidence, review ready work, merge only independently approved green changes, request missing owner PRs/reviews.
+- Done when: the coordination status PR is independently reviewed and merged, with actual merges, remaining owner actions and sent emails versus drafts recorded in the handoff.
+- Progress (2026-11-21): PR #105 is open with Tatiana and Christophe requested for review. #100 merged as c53948f after Joey review; #91/#99/#101 and fixed #103 reviewed. Other merges and exact blockers are recorded in the session handoff. Gmail/Outlook connectors are unconnected, so no email delivery is claimed.
+
+- Review update (2026-11-22): Per Tatiana, removed the Project coordination emails section from #105; this PR now only reconciles task status and owner handoffs. Re-approved #103 at synced head 8bf0429 after all 93 focused tests and five CI checks passed. #105 still needs independent review.
+
+- Readiness (2026-11-22): checked local configuration without exposing values; live provider/sign-in/Calendar/Gmail setup is missing. Prepared ignored private cabinet review and Gmail/Calendar acceptance worksheets with no results claimed. Confirmed the chatbot route is still a placeholder and requested the API owner handoff. No configuration, paid call, live mailbox access or Google write was performed.
