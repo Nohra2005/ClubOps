@@ -699,3 +699,30 @@ merge commit once CI is green. #91 already contains current main and all five
 checks pass; #99 is already merged. Independently reviewed #104 and requested
 corrections to approval roles, unknown-audience fallback and C-27 human scoring.
 No new scope, provider calls, private inputs, direct main push or self-merge.
+
+## 2026-11-23 - Christophe (C-37 guided cabinet handover)
+
+**Did:** Replaced the permanent Handover nav item with a contextual Start your
+role entry, four navigation-highlight steps, pause/resume/skip/replay, one sourced
+reference entry and an expandable guide. Settings exposes cabinet preparation;
+outgoing notes remain explicit Teach submissions. Role-learning Ask questions
+include inspectable session-role/step context only after opt-in; Teach is unchanged.
+Fixed member/role remounts, invalid saved progress, storage-denial handling, phone
+highlighting, heading structure and unavailable live sign-off controls in self-review.
+
+**State:** Synced reviewed mail/calendar main 1d162df, preserving both shared logs;
+D-140 and F-269-F-271 avoid main's new IDs. Locked Python gates pass: 834 tests,
+1 expected failure, 93.63% coverage; Ruff/format 176 files, mypy 87, schemas/tasks.
+Web quality/build passes: 142 units, 42 board tools, lint/format/strict types.
+Broad browser checks: 50 demo, 98 HTTP plus four rehearsal cases rerun on their
+required origin, and eight real local API/cookie/SQLite cases. After main sync,
+the eight new role cases and four reference/Knowledge cases pass again; the real
+API suite is rerun on a fresh server. Visually inspected desktop/phone captures.
+
+**Next:** Independent Tatiana/Joey review, current-head CI, then a merge commit.
+Owner integration proposal is web/GUIDED_HANDOVER.md. Browser-local progress is
+not cross-device/term persistence or an invitation. The Ask endpoint still has
+its documented placeholder until J-15: this prepares questions, not verified
+model tutoring. No invented routes, changed backend contracts, automatic AI calls,
+new membership authority or deployed Azure acceptance claim. Coordinate T-33
+before evaluating this different experience. Existing Azure deployment is unchanged.

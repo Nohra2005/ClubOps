@@ -620,7 +620,8 @@ Reference documents:
 
 ### C-37 Guided cabinet handover
 - Owner: christophe
-- Status: doing
+- Status: review
+- Progress (2026-11-23): guided frontend, browser-local isolated progress, explicit Ask context and outgoing-note draft implemented; reference/export retained. D-140/F-269-F-271; web/GUIDED_HANDOVER.md describes pending owner contracts. Root gates and desktop/phone regressions pass; independent review and CI pending.
 - Needs: C-10, C-19
 - What: Replace the permanent handover navigation item with a contextual role introduction and cabinet transition entry. Provide a resumable, skippable walkthrough, approved reference knowledge and outgoing questions. Add explicit role-learning chat prompts using the published text API; do not infer membership changes or invent persistent backend onboarding routes.
 - Done when: desktop/phone and permission/isolation/no-automatic-call regressions pass; guided frontend and reference guide are independently reviewed. Server-stored invitations/progress and structured chatbot context require separately agreed owner contracts.
