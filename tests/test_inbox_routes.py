@@ -307,3 +307,14 @@ def test_mail_skipped_before_release_existed_can_still_be_released(app: tuple[Te
     assert c.post("/api/inbox/n1/allow", headers=HEADERS).status_code == 404
     _fetch(data, {"n1": _mail(CLUB, "Old skip", original="moodle@example.org")})  # the next free fetch
     assert c.post("/api/inbox/n1/allow", headers=HEADERS).status_code == 200
+
+
+def test_a_set_aside_fact_is_described_as_a_fact_not_as_unusable_content(
+    app: tuple[TestClient, Provider, Path],
+) -> None:
+    """The count is of facts the model found and the rules set aside, so the message says that (F-315)."""
+    c, provider, data = app
+    _queue(data, "m8", CLUB)
+    provider.answers.append({"facts": [{**LESSON, "lasting": "one_time"}]})
+    body = c.post("/api/inbox/m8/capture", headers=HEADERS).json()
+    assert len(body["skipped"]) == 1 and "fact" in body["skipped"][0] and "could not use" not in body["skipped"][0]
