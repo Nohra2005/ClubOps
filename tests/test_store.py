@@ -201,3 +201,15 @@ def test_contradiction_winner_cannot_reuse_an_unrelated_id(store) -> None:  # ty
         )
     assert exc.value.code is ErrorCode.CONFLICT
     assert [v.status for v in store.history("kh-book-green-field")] == [ItemStatus.VERIFIED]
+
+
+def test_a_rejected_proposal_does_not_come_back_unless_taught_again_on_purpose(store) -> None:  # type: ignore[no-untyped-def]
+    """Nothing remembered a rejection, so the same card returned on the next read (F-312)."""
+    prop = proposal()
+    accept(store, prop, decision=VerifyDecision.REJECT)
+    assert store.pending == {}
+    assert store.submit(prop) is False and store.pending == {}  # the next read finds the same fact
+    assert store.submit(prop, override_rejection=True) is True  # a person teaching it again on purpose
+    assert list(store.pending) == [prop.proposal_id]
+    accept(store, prop)  # and this time it can be approved
+    assert [i.item_id for i in store.current(CLUB, TODAY)] == ["kh-book-green-field"]

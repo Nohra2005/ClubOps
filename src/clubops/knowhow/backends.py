@@ -39,6 +39,9 @@ class Backend(Protocol):
     def pending_all(self) -> dict[str, KnowHowProposal]: ...
     def pending_put(self, proposal: KnowHowProposal) -> None: ...
     def pending_delete(self, proposal_id: str) -> None: ...
+    def rejected_all(self) -> set[str]: ...
+    def rejected_add(self, proposal_id: str) -> None: ...
+    def rejected_delete(self, proposal_id: str) -> None: ...
     def search(self, text: str, limit: int) -> list[tuple[ItemId, float]]: ...
     def transaction(self) -> AbstractContextManager[None]: ...
     def close(self) -> None: ...
@@ -51,6 +54,7 @@ class MemoryBackend:
     def __init__(self) -> None:
         self._versions: dict[ItemId, list[KnowHowItem]] = {}
         self._pending: dict[str, KnowHowProposal] = {}
+        self._rejected: set[str] = set()
 
     def versions(self, item_id: ItemId) -> list[KnowHowItem]:
         return list(self._versions.get(item_id, []))
@@ -75,6 +79,15 @@ class MemoryBackend:
 
     def pending_delete(self, proposal_id: str) -> None:
         self._pending.pop(proposal_id, None)
+
+    def rejected_all(self) -> set[str]:
+        return set(self._rejected)
+
+    def rejected_add(self, proposal_id: str) -> None:
+        self._rejected.add(proposal_id)
+
+    def rejected_delete(self, proposal_id: str) -> None:
+        self._rejected.discard(proposal_id)
 
     def search(self, text: str, limit: int) -> list[tuple[ItemId, float]]:
         wanted = set(_terms(text))
@@ -109,6 +122,9 @@ CREATE TABLE IF NOT EXISTS item_versions (
 CREATE TABLE IF NOT EXISTS pending (
     proposal_id TEXT PRIMARY KEY,
     body        TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS rejected (
+    proposal_id TEXT PRIMARY KEY
 );
 CREATE VIRTUAL TABLE IF NOT EXISTS items_fts USING fts5(item_id UNINDEXED, content, tokenize = 'unicode61');
 """
@@ -177,6 +193,15 @@ class SqliteBackend:
 
     def pending_delete(self, proposal_id: str) -> None:
         self._db.execute("DELETE FROM pending WHERE proposal_id = ?", (proposal_id,))
+
+    def rejected_all(self) -> set[str]:
+        return {r[0] for r in self._db.execute("SELECT proposal_id FROM rejected").fetchall()}
+
+    def rejected_add(self, proposal_id: str) -> None:
+        self._db.execute("INSERT OR IGNORE INTO rejected (proposal_id) VALUES (?)", (proposal_id,))
+
+    def rejected_delete(self, proposal_id: str) -> None:
+        self._db.execute("DELETE FROM rejected WHERE proposal_id = ?", (proposal_id,))
 
     def search(self, text: str, limit: int) -> list[tuple[ItemId, float]]:
         terms = _terms(text)
@@ -252,6 +277,15 @@ class SplitBackend:
 
     def pending_delete(self, proposal_id: str) -> None:
         self.club.pending_delete(proposal_id)
+
+    def rejected_all(self) -> set[str]:
+        return self.club.rejected_all()
+
+    def rejected_add(self, proposal_id: str) -> None:
+        self.club.rejected_add(proposal_id)
+
+    def rejected_delete(self, proposal_id: str) -> None:
+        self.club.rejected_delete(proposal_id)
 
     def search(self, text: str, limit: int) -> list[tuple[ItemId, float]]:
         merged = [*self.general.search(text, limit), *self.club.search(text, limit)]

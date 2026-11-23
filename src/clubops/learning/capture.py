@@ -474,11 +474,12 @@ class Learner:
         audience: int | None = None,
         unlisted_sender: bool = False,
     ) -> CaptureResult:
-        """Capture, then put every proposal in Review."""
+        """Capture, then put every proposal in Review, except those a person already rejected (F-312); a person
+        teaching a fact on purpose (chat) may bring a rejected one back."""
         result = self.capture(request, today, budget, extra, audience=audience, unlisted_sender=unlisted_sender)
-        for proposal in result.proposals:
-            self.store.submit(proposal)
-        return result
+        on_purpose = any(src.source.kind is SourceKind.USER_INPUT for src in request.sources)
+        queued = [p for p in result.proposals if self.store.submit(p, override_rejection=on_purpose)]
+        return result.model_copy(update={"proposals": queued})
 
     # ------------------------------------------------------------------ steps
 
