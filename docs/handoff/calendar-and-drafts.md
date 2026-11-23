@@ -136,6 +136,43 @@ No entries yet.
 
 **Open questions / blockers:** Results belong in Tatiana's `results/` area; coordinate the measured run and evidence before poster claims.
 
+## 2026-11-10 — J-20 dataset freeze
+
+**Did:** Prepared three synthetic clubs (academic, cultural and social), each with four dated starter documents. Reused six existing frozen synthetic event labels and pinned the new starter set before writing or running the evaluator.
+
+**State:** J-20 is doing; `eval/new-club-FROZEN.md` records the committed-file hashes. No real club data or new AUB policy labels entered the set.
+
+**Next:** Build the 0/1/3/all-document planning curve runner in replay mode and test its score table on synthetic predictions.
+
+**Open questions / blockers:** The real ASME starter-pack run stays with Tatiana in T-44/T-26.
+
+## 2026-11-10 — J-20 staged runner
+
+**Did:** Built `scripts/eval_new_club.py` to reuse frozen synthetic labels, isolate each club's starter facts, and score planning at 0, 1, 3 and 4 documents through the shared evaluation scorer. Added synthetic tests for stages, isolation, freeze drift and missing replays. Recorded D-109 and F-197 after checking other open branches' numbers.
+
+**State:** The deterministic checklist pipeline produces a 12-row table. The ClubOps path is replay-only and refuses a result if model recordings are missing. Full tests pass (604 passed, 1 skipped; 92.68% coverage), as do Ruff and mypy. The existing `docs/capabilities.md` drift still blocks schema check. J-20 remains doing until complete synthetic replay produces a measured curve.
+
+**Next:** Prepare complete synthetic replay recordings with Tatiana's model setup, then run and review the ClubOps curve before marking J-20 done.
+
+**Open questions / blockers:** No actual ClubOps learning improvement is claimed from the checklist pipeline. The ASME run remains Tatiana's T-44/T-26 work.
+
+## 2026-11-10 — J-20 draft review
+
+**Did:** Opened draft PR #81 from `eval/j20-new-club-curve` and requested Tatiana's review of the frozen dataset, isolation and replay gate. Flagged the D-107 collision between PR #79 and Christophe's C-28 branch in a PR #79 comment to both owners.
+
+**State:** J-20 is in review; the draft PR remains pending synthetic model recordings. Its checklist output is explicitly a pipeline check. No private data or model-quality result was published.
+
+**Next:** Resolve review comments and prepare complete replay recordings before presenting a measured new-club curve.
+
+**Open questions / blockers:** The existing `docs/capabilities.md` schema drift still blocks the full check gate.
+
+## 2026-11-11 - J-20 interview-first review update
+
+**Did:** Responded to Tatiana's PR #81 review by freezing three synthetic president interviews before changing the runner. The five stages per club now add approved interview facts before starter documents. Added a freeze-drift test, stage/isolation tests, D-121 and F-206.
+
+**State:** The 15-row checklist run validates the pipeline only. ClubOps replay still requires complete synthetic model recordings; the PR remains draft and J-20 remains in review. No private club material or model-quality claim is in Git.
+
+**Next:** Tatiana: review the interview-first assumption and help prepare approved synthetic replay recordings. Joey: run the measured ClubOps curve, update evidence, then request final independent review.
 ## 2026-11-10 — J-12 form-version regression (test/j12-form-versions)
 
 **Did:** Added synthetic checks for the historical 33-field shape selected by field ID from the current form, plus the current 52-field catering branch. The legacy draft validates with its known values; the current conditional fields remain explicitly pending when the event lacks facts.
@@ -376,3 +413,13 @@ TASKS.md remains authoritative. "No open PR" means no matching current open PR w
 **Local runtime:** docker version still cannot reach dockerDesktopLinuxEngine (named pipe absent). No Compose startup or deployment is claimed. Private receipt CSVs were checked for blank reviews and NOT_RUN statuses.
 
 **Validation:** Focused owned-area suite passed; full make-check equivalents passed (709 passed, 1 skipped, 92.85% coverage; Ruff lint/format, mypy, schemas/tasks and diff checks). Private preparation files remain ignored.
+
+## 2026-11-23 - Joey: J-20 reviewed tooling publication
+
+**Did:** User requested merging approved #81/#82 as tooling, retaining measurement limits. Synced #81 with current main and resolved only the J-20 TASKS conflict: kept both histories and the interview-first scope, retained blocked task status for missing model recordings/measured curve, and recorded the tooling publication authorization. No runtime or contract change in the sync.
+
+**Next:** Validate, push, mark ready and request fresh teammate review if the sync dismisses approval. Merge only after current-head CI and required review pass; the measured J-20 and private ASME gates remain open.
+
+**Integration correction:** Current main contains two F-249 rows (native board and suggested-edit Add-as-new). Renumbered the latter shared matrix row F-260, after the maximum F-259 across fetched branches, retaining its regression-test link and legacy-ID note. No owner implementation changed.
+
+**Validation:** Ruff lint/format, mypy, schemas/tasks and full pytest/coverage passed: 769 passed, 1 skipped, 93.08% coverage. Focused runner/shared-document checks: 13 passed after resolving the duplicate ID. Checklist CLI produced all 15 synthetic rows without model calls; this is not a measured ClubOps curve.
