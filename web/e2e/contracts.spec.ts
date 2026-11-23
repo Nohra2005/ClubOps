@@ -1,7 +1,39 @@
 /** These tests use the real HTTP adapter with intercepted synthetic responses, not a deployed API. */
 import { expect, test } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 import { clubs, createWorkspace } from '../src/api/fixtures';
 import { todayInBeirut } from '../src/lib';
+
+test('HTTP C-35 only lists documented metadata and keeps unpublished writes unavailable', async ({
+  page,
+}) => {
+  const unexpected: string[] = [];
+  await page.route('**/api/**', (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (!path.startsWith('/api/')) return route.fallback();
+    if (path === '/api/me') return route.fallback();
+    if (path === '/api/inbox' || path === '/api/inbox/skipped') {
+      expect(route.request().method()).toBe('GET');
+      return route.fulfill({ json: [] });
+    }
+    if (path === '/api/knowledge' || path === '/api/review') return route.fulfill({ json: [] });
+    unexpected.push(`${route.request().method()} ${path}`);
+    return route.fulfill({ status: 501, json: { detail: 'Unpublished route' } });
+  });
+  await page.goto('/inbox');
+  await expect(page.getByText('No waiting email.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Read this|Confirm simulated read/ })).toHaveCount(
+    0,
+  );
+  await page.goto('/setup');
+  await expect(page.getByRole('region', { name: 'Forwarding setup' })).toContainText(
+    'not available on this server yet',
+  );
+  await expect(page.getByLabel('Sample sending address')).toHaveCount(0);
+  await page.goto('/review');
+  await expect(page.getByRole('region', { name: 'Deadline lifecycle preview' })).toHaveCount(0);
+  expect(unexpected).toEqual([]);
+});
 
 test.beforeEach(async ({ page }) => {
   const workspace = createWorkspace('running-club');
@@ -776,4 +808,167 @@ test('a rejected sharing decision preserves edits and the choice until a deliber
       (request) => request.shared === true && request.edited_text === 'Synthetic edited fact.',
     ),
   ).toBe(true);
+});
+
+test('HTTP inbox renders metadata and skip reasons without bodies, automatic writes or storage', async ({
+  page,
+}) => {
+  const calls: string[] = [];
+  const subject = '<img src=x onerror=untrusted()> Synthetic subject';
+  await page.route('**/api/inbox**', (route) => {
+    const path = new URL(route.request().url()).pathname;
+    calls.push(`${route.request().method()} ${path}`);
+    return route.fulfill({
+      json:
+        path === '/api/inbox'
+          ? [
+              {
+                id: 'synthetic-waiting',
+                subject,
+                date: null,
+                forwarded_by: null,
+                body: 'PRIVATE_BODY_CANARY',
+              },
+            ]
+          : [
+              {
+                id: 'synthetic-skipped',
+                subject: 'Synthetic skipped forward',
+                reason: 'not_osa',
+                why: 'ClubOps only reads e-mails forwarded from OSA staff',
+                body: 'PRIVATE_BODY_CANARY',
+              },
+            ],
+    });
+  });
+  await page.goto('/inbox');
+  await expect(page.getByText(subject, { exact: true })).toBeVisible();
+  await expect(
+    page.getByText('ClubOps only reads e-mails forwarded from OSA staff', { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText('Received: Not supplied', { exact: true })).toBeVisible();
+  await expect(page.getByRole('main')).not.toContainText('PRIVATE_BODY_CANARY');
+  await expect(page.locator('img[src="x"]')).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'Read this · costs money', exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Confirm paid read', exact: true })).toHaveCount(0);
+  expect(calls.every((call) => ['GET /api/inbox', 'GET /api/inbox/skipped'].includes(call))).toBe(
+    true,
+  );
+  expect(
+    await page.evaluate(() =>
+      JSON.stringify([Object.entries(localStorage), Object.entries(sessionStorage)]),
+    ),
+  ).not.toContain('PRIVATE_BODY_CANARY');
+  expect(
+    await page.evaluate(() =>
+      JSON.stringify([Object.entries(localStorage), Object.entries(sessionStorage)]),
+    ),
+  ).not.toContain('Synthetic subject');
+  expect((await new AxeBuilder({ page }).include('main').analyze()).violations).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  );
+});
+
+test('HTTP inbox preserves independent results and refreshes a failed list only on a click', async ({
+  page,
+}) => {
+  let waitingCalls = 0;
+  let unavailable = true;
+  const writes: string[] = [];
+  await page.route('**/api/inbox**', (route) => {
+    if (route.request().method() !== 'GET') writes.push(route.request().method());
+    if (new URL(route.request().url()).pathname === '/api/inbox') {
+      waitingCalls++;
+      return unavailable
+        ? route.fulfill({ status: 503, json: { detail: 'PRIVATE_ERROR_CANARY' } })
+        : route.fulfill({ json: [] });
+    }
+    return route.fulfill({
+      json: [
+        {
+          id: 'skip-one',
+          subject: 'Synthetic skipped',
+          reason: 'not_osa',
+          why: 'Synthetic free-check refusal',
+        },
+      ],
+    });
+  });
+  await page.goto('/inbox');
+  const waiting = page.getByRole('region', { name: 'Waiting email', exact: true });
+  await expect(waiting.getByRole('alert')).toBeVisible();
+  await expect(page.getByText('Synthetic free-check refusal', { exact: true })).toBeVisible();
+  await expect(waiting).not.toContainText('No waiting email.');
+  // React development checks can mount twice; every initial request must fail.
+  expect(waitingCalls).toBeGreaterThan(0);
+  const beforeRefresh = waitingCalls;
+  unavailable = false;
+  await page.getByRole('button', { name: 'Refresh waiting email', exact: true }).click();
+  await expect(waiting).toContainText('No waiting email.');
+  await expect(waiting.getByRole('alert')).toHaveCount(0);
+  await expect(page.getByRole('main')).not.toContainText('PRIVATE_ERROR_CANARY');
+  expect(waitingCalls).toBe(beforeRefresh + 1);
+  expect(writes).toEqual([]);
+});
+
+test('HTTP inbox rejects an ambiguous response and shows server denial without false empty success', async ({
+  page,
+}) => {
+  await page.route('**/api/inbox**', (route) =>
+    new URL(route.request().url()).pathname === '/api/inbox'
+      ? route.fulfill({
+          json: [
+            { id: 'same', subject: 'PRIVATE_PARTIAL_CANARY' },
+            { id: 'same', subject: 'PRIVATE_PARTIAL_CANARY' },
+          ],
+        })
+      : route.fulfill({ status: 403, json: { detail: 'PRIVATE_ERROR_CANARY' } }),
+  );
+  await page.goto('/inbox');
+  await expect(page.getByRole('alert')).toHaveCount(2);
+  await expect(page.getByRole('main')).not.toContainText('PRIVATE_');
+  await expect(page.getByText('No waiting email.', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('No skipped email.', { exact: true })).toHaveCount(0);
+});
+
+test('HTTP inbox makes unavailable candidate routes visible without demo fallback', async ({
+  page,
+}) => {
+  await page.route('**/api/inbox**', (route) =>
+    route.fulfill({ status: 501, json: { detail: 'Not installed' } }),
+  );
+  await page.goto('/inbox');
+  await expect(page.getByRole('alert')).toHaveCount(2);
+  await expect(page.getByRole('alert').first()).toContainText('not connected to the server yet');
+  await expect(page.getByText('No waiting email.', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('No skipped email.', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Demo read outcomes', { exact: true })).toHaveCount(0);
+});
+
+test('HTTP inbox does not request cabinet metadata in an adviser session', async ({ page }) => {
+  const workspace = createWorkspace('running-club');
+  await page.route('**/api/me', (route) =>
+    route.fulfill({
+      json: {
+        user: workspace.members[0],
+        role: 'adviser',
+        club: clubs[0],
+        counts: { overdue_events: 0, review: 0, reminders: 0 },
+      },
+    }),
+  );
+  const calls: string[] = [];
+  await page.route('**/api/inbox**', (route) => {
+    calls.push(route.request().url());
+    return route.fulfill({ status: 403, json: { detail: 'Not permitted' } });
+  });
+  await page.goto('/inbox');
+  await expect(
+    page.getByRole('heading', { name: 'Inbox is for cabinet members.', exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: /Refresh.*email/ })).toHaveCount(0);
+  expect(calls).toEqual([]);
 });

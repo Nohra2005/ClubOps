@@ -24,7 +24,6 @@ _FORWARD_MARKER = re.compile(
     r"(?im)^\s*(?:-{2,}\s*(?:forwarded message|original message)\s*-{2,}|begin forwarded message:|_{5,})\s*$"
 )
 _HEADER = re.compile(r"(?im)^(from|subject|date|sent|to|cc|message-id):\s*(.+)$")
-_LINK = re.compile(r"https?://\S+", re.IGNORECASE)
 _QUOTE = re.compile(r"(?m)^(?:>|On .+ wrote:|From: .+)$")
 
 
@@ -33,6 +32,8 @@ class CheckedMail:
     reason: str | None
     content: str = ""
     fingerprint: str = ""
+    audience: int | None = None  # how many people the original was sent to (To + Cc); None when unknown (D-126)
+    unlisted_sender: bool = False  # the original sender is not on the OSA list; a person chose to read it (D-136)
 
 
 class InboxLedger:
@@ -154,14 +155,33 @@ class InboxLedger:
             )
 
 
+_ADDRESS = re.compile(r"[\w.+'-]+@[\w-]+(?:\.[\w-]+)+")
+
+
+def count_audience(values: list[str]) -> int | None:
+    """How many people the original e-mail went to, from its To and Cc lines. Only the number is kept: the
+    addresses belong to other people. Bcc is invisible, and "undisclosed recipients" says nothing, so those
+    give None and the caller falls back to the model's own label."""
+    addresses = {found.casefold() for value in values for found in _ADDRESS.findall(value)}
+    if addresses:
+        return len(addresses)
+    if any("undisclosed" in value.casefold() for value in values):
+        return None
+    entries = [entry for value in values for entry in value.split(";") if entry.strip()]
+    return len(entries) or None
+
+
 def check_forward(
     raw: bytes,
     club_id: str,
     authorized_senders: Collection[str],
     osa_senders: Collection[str],
     ledger: InboxLedger,
+    *,
+    allow_unlisted_sender: bool = False,
 ) -> CheckedMail:
-    """Validate a forward and return clean, still-untrusted text or a skip reason."""
+    """Validate a forward and return clean, still-untrusted text or a skip reason. ``allow_unlisted_sender`` skips
+    only the OSA-list check, for an e-mail a cabinet member chose to read anyway; every other check still runs."""
     mail = BytesParser(policy=policy.default).parsebytes(raw)
     senders = [address.casefold() for _, address in getaddresses(mail.get_all("From", []))]
     recipients = [address.casefold() for _, address in getaddresses(mail.get_all("To", []))]
@@ -177,6 +197,7 @@ def check_forward(
         return CheckedMail("missing_forward_headers")
     forwarded = text[marker.end() :]
     headers: dict[str, str] = {}
+    audience_lines: list[str] = []
     lines = forwarded.lstrip().splitlines()
     body_start = 0
     for index, line in enumerate(lines):
@@ -187,16 +208,18 @@ def check_forward(
         if match is None:
             return CheckedMail("malformed_forward_headers")
         name = match.group(1).casefold()
-        if name not in {"sent", "to", "cc"}:
+        if name in {"to", "cc"}:
+            audience_lines.append(match.group(2))
+        elif name != "sent":
             headers[name] = match.group(2).strip()
     origins = [address.casefold() for _, address in getaddresses([headers.get("from", "")])]
-    if len(origins) != 1 or origins[0] not in {address.casefold() for address in osa_senders}:
+    unlisted = len(origins) != 1 or origins[0] not in {address.casefold() for address in osa_senders}
+    if unlisted and not (allow_unlisted_sender and len(origins) == 1):
         return CheckedMail("original_sender_not_osa")
     content = "\n".join(lines[body_start:])
     content = _FORWARD_MARKER.split(content, maxsplit=1)[0]
     content = re.split(r"(?m)^\s*--\s*$", content, maxsplit=1)[0]
     content = _QUOTE.split(content, maxsplit=1)[0]
-    content = _LINK.sub("[link removed]", content)
     content = re.sub(r"[ \t]+", " ", content).strip()[:20_000]
     if not content:
         return CheckedMail("empty_forward")
@@ -209,4 +232,4 @@ def check_forward(
     fingerprint = hashlib.sha256(stable.encode()).hexdigest()
     if ledger.was_read(fingerprint):
         return CheckedMail("already_read")
-    return CheckedMail(None, content, fingerprint)
+    return CheckedMail(None, content, fingerprint, count_audience(audience_lines), unlisted)

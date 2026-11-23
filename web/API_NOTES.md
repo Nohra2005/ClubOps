@@ -2,23 +2,24 @@
 
 The supplied 22 October UI PDF is the source for `/api` paths and the example chat/run/task/approval field names. `src/api/types.ts` contains frontend view models, not replacement Python contracts. `VITE_API_MODE=demo|http` switches the transport. The demo persists synthetic data separately for each club; it never calls Google, a model, email or OSA.
 
-The real transport uses authenticated cookies, encoded path identifiers, abortable requests, a bounded timeout and generic error messages. The backend must enforce authorization, CSRF protection, club isolation, content hashes and spend limits. Hiding a frontend button is not authorization.
+The real transport uses authenticated cookies, encoded path identifiers, abortable requests, a bounded timeout and generic error messages by default. Only documented Restore 4xx refusals may supply a bounded plain explanation; all 5xx and unrelated actions retain generic errors. The backend must enforce authorization, CSRF protection, club isolation, content hashes and spend limits. Hiding a frontend button is not authorization.
 
 ## Current integration — 1 November 2026 (C-13 / C-19 / C-20)
 
 The published [API table](../docs/api.md) now resolves the earlier T-22 questions.
 The historical C-17 notes below describe the earlier contract review, not current blockers.
 
-| Boundary        | Current handling                                                                                                                                                                                      |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| HTTP convention | Bare UI views except canonical `AgentRun`; every changing request has `X-Requested-With: ClubOps`, including FormData and bodiless POSTs                                                              |
-| Google / logout | Official GIS button, `POST /auth/google {credential}`, HttpOnly session; protected `POST /auth/logout` must succeed before redirect. No token storage. Public client ID and real account test pending |
-| Planning        | Poll canonical run; questions are plain text; explicit `/continue` resumes the same ID and polling; leaving a limited run sends no invented stop action                                               |
-| Approval        | Revision sent to the server; local real-API test confirms no calendar items before approval and persistence after approval/reload. Approver IDs resolve through the cabinet list                      |
-| Chat            | Accept richer UI source objects and canonical citation IDs. Current server ask is an uncertainty placeholder until J-15; teaching is live, including no-fact results                                  |
-| Handover        | Live C-19 deterministic endpoint; UI/export preserves all supplied sources and gap questions. Sign-off remains demo-only                                                                              |
-| Usage           | Existing monthly planning totals plus recorded outcomes/cost-per-success; steps labelled accurately. Trace metrics remain unavailable until club-scoped traces are supplied                           |
-| Calendar        | Internal approved items work; Google sync is not connected in the API                                                                                                                                 |
+| Boundary        | Current handling                                                                                                                                                                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| HTTP convention | Bare UI views except canonical `AgentRun`; every changing request has `X-Requested-With: ClubOps`, including FormData and bodiless POSTs                                                                                                         |
+| Google / logout | Official GIS button, `POST /auth/google {credential}`, HttpOnly session; protected `POST /auth/logout` must succeed before redirect. No token storage. Public client ID and real account test pending                                            |
+| Planning        | Poll canonical run; questions are plain text; explicit `/continue` resumes the same ID and polling; leaving a limited run sends no invented stop action                                                                                          |
+| Approval        | Revision sent to the server; local real-API test confirms no calendar items before approval and persistence after approval/reload. Approver IDs resolve through the cabinet list                                                                 |
+| Chat            | Accept richer UI source objects and canonical citation IDs. Current server ask is an uncertainty placeholder until J-15; teaching is live, including no-fact results                                                                             |
+| Handover        | Live C-19 deterministic endpoint; UI/export preserves all supplied sources and gap questions. Sign-off remains demo-only                                                                                                                         |
+| Setup           | #55 service and #87 application wiring are merged. `POST /setup/next {answer?}` resumes or advances; `/me.club.setup_complete` reads saved progress. Local skip/resume HTTP tests use the actual app; Google/deployed acceptance remains pending |
+| Usage           | Existing monthly planning totals plus recorded outcomes/cost-per-success; steps labelled accurately. Trace metrics remain unavailable until club-scoped traces are supplied                                                                      |
+| Calendar        | Internal approved items work; Google sync is not connected in the API                                                                                                                                                                            |
 
 Verified locally with real HTTP/SQLite on desktop and 375px phone: plan → approve →
 calendar, handover, usage and cookie logout. Google SDK/credential behavior and failure
@@ -29,7 +30,7 @@ review IDs without inventing a saved fact, shows instruction/outdated-source war
 and excludes flagged proposals from batch approval. HTTP uploads accept TXT, MD, CSV,
 EML and XLSX up to 2 MB; the PDF/10 MB demo path is labelled separately.
 
-Remaining server work: J-15 answers, C-21 setup, J-07 draft wiring,
+Remaining server work: J-15 answers, J-07 draft wiring,
 Google Calendar wiring, and uncontracted `__ui` actions.
 These produce explicit unavailable responses; HTTP mode never saves them in demo storage.
 C-13's deployed/every-screen completion criterion is still open.
@@ -40,6 +41,27 @@ save/finish callbacks (including continued runs) and extends `/usage`. Feature p
 can call `clubops.reports.traces.record_trace(data_dir, club_id, meta, status, error)`
 with a known club context. The report never reads a global trace file, whose records lack
 club ownership. Existing legacy monthly planning spend remains intact.
+
+## HTTP session validation — 19 November 2026 (C-13)
+
+Session boundary update (C-13, 19 November): the HTTP `/me` projection is validated
+before protected UI renders. Member/club fields, declared roles, boolean setup flags
+and nonnegative integer counts must match the published view. Invalid responses
+show a generic recoverable connection error, without a default role or demo data.
+An explicit retry performs another GET. Valid member and active roles remain
+independent fields; no equality rule was added. Server authorization is unchanged.
+See `src/api/session-response.ts` and `e2e/session-http.spec.ts`.
+
+## Inbox capture and club-fact Restore — 19 November 2026 (C-35)
+
+C-35 update (19 November): #95 ce1d514 and #96 8dccd0e document exact capture and
+Restore responses. The HTTP Inbox now confirms each paid read separately, validates
+`proposals`/`skipped` string arrays and requires a successful fresh metadata snapshot
+after any unconfirmed outcome. No-fact success is acknowledged, not retried. HTTP
+knowledge separates current/archive rows and offers Restore only to presidents on
+expired club facts. A matching club/current acknowledgement triggers a fresh fact
+read; disputed 409 text remains visible. No guessed proof/settings, expiry/calendar
+payloads or shared Restore were added. See [INBOX_PREVIEW.md](INBOX_PREVIEW.md).
 
 ## Shared Review scope — 10 November 2026 (C-34)
 
@@ -101,9 +123,16 @@ Other boundaries need an HTTP view model rather than a field rename:
 
 - The spec defines `GET /runs/{id}` but not detail-confirmation fields. The demo adds `question.kind=details`, `details` and `origins`; confirmation sends the edited object as the specified answer endpoint's `text` JSON string. The published `AgentRun` has no structured detail fields; Tatiana must agree the HTTP representation in T-22.
 - Plan approval includes the revision being approved. The backend must bind approval to its exact content and reject stale revisions.
-- Event summary/detail envelopes, review card variants, calendar/knowledge envelopes, cabinet mutation identifiers and setup response fields are frontend fixtures pending backend agreement.
+- At this historical review, event/review/calendar/knowledge/cabinet/setup shapes were fixtures. T-22 and #87 subsequently published/wired the current interfaces; see the current table and [CLUB_SETUP.md](CLUB_SETUP.md). This is no longer a blanket integration blocker.
 - The task example contains a slash in `task_id`. The client URL-encodes identifiers; the backend router must support encoded IDs or agree another identifier.
 - The spec does not supply endpoints for proposal-answer edits, approval-row status, draft text saves, pace leaders, feedback, knowledge edits/retirement, handover sign-off, Google OAuth, member role edits, stopping/continuing runs or sign-out. These use explicitly demo-only operations. The HTTP adapter returns an unavailable-action error instead of inventing a backend endpoint or silently writing locally.
 - A new run after a limit needs explicit user confirmation. The demo starts another bounded run; it never silently extends the old run's 8-step / $0.05 allowance.
 - Google login needs the backend's session/OAuth redirect and logout contracts. There are no frontend secrets or simulated authenticated production users.
 - All authority and lead-time examples are synthetic and visibly marked as demo data. They must be replaced by verified, sourced backend records.
+
+C-35 integration baseline (20 November): #95 Inbox and #96 Restore are now merged
+in main `e4090c6`. Their exact documented responses still define this adapter;
+remaining forwarding proof/settings and Review expiry/calendar shapes are not
+inferred from those route merges. Synthetic frontend write checks are separate
+from actual mailbox/provider/deployed acceptance. The preview-only role failure
+is now F-238, preserving main's new adviser-route F-217.

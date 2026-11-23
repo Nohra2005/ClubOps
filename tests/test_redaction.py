@@ -79,3 +79,11 @@ def test_several_items_are_counted() -> None:
 def test_names_are_kept() -> None:
     out = redact("Tala at OSA approved it")
     assert out.text == "Tala at OSA approved it"
+
+
+def test_office_contacts_can_be_kept_for_verified_office_mail() -> None:
+    text = "Form: https://forms.example.test/a?id=1 call 01 234 567 or sao@example.test, ID 202412345"
+    kept = redact(text, keep_office_contacts=True).text
+    assert "https://forms.example.test/a?id=1" in kept and "01 234 567" in kept and "sao@example.test" in kept
+    assert "[AUB_ID]" in kept  # student IDs are still hidden
+    assert "forms.example.test/a" not in redact(text).text  # default is unchanged

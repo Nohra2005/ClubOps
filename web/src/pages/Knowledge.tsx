@@ -1,3 +1,4 @@
+import { Linkified } from '../components/Linkified';
 import { useState } from 'react';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router';
 import {
@@ -24,6 +25,7 @@ import {
 } from '../components/ui';
 import { useAction, useResource } from '../hooks';
 import { formatDate } from '../lib';
+import RestoreFact from '../knowledge/RestoreFact';
 
 const tabs: { value: KnowledgeTab; label: string }[] = [
   { value: 'rules', label: 'AUB rules' },
@@ -33,7 +35,7 @@ const tabs: { value: KnowledgeTab; label: string }[] = [
   { value: 'sponsors', label: 'Sponsors' },
 ];
 function KnowledgeRow({ item }: { item: KnowledgeItem }) {
-  const { canEdit } = useApp();
+  const { canEdit, api } = useApp();
   return (
     <article className="knowledge-row">
       <span className={`knowledge-icon knowledge-${item.tab}`}>
@@ -49,7 +51,9 @@ function KnowledgeRow({ item }: { item: KnowledgeItem }) {
         <Link to={`/knowledge/${encodeURIComponent(item.item_id)}`}>
           <h3>{item.title}</h3>
         </Link>
-        <p>{item.statement}</p>
+        <p>
+          <Linkified text={item.statement} />
+        </p>
         {item.tab === 'rules' && (
           <div className="rule-details">
             <span>
@@ -87,6 +91,12 @@ function KnowledgeRow({ item }: { item: KnowledgeItem }) {
       </div>
       <div className="knowledge-meta">
         <StatusBadge status={item.status} />
+        {api.mode === 'http' && (
+          <span>
+            {item.scope === 'aub' ? 'AUB-wide' : 'Club-only'}
+            {item.status === 'may_be_outdated' ? ' · End date passed' : ''}
+          </span>
+        )}
         <span>Checked {formatDate(item.last_checked)}</span>
         {item.year && <small>{item.year}</small>}
       </div>
@@ -107,6 +117,12 @@ export default function Knowledge() {
   const query = params.get('q') ?? '';
   const tab = (params.get('tab') ?? (query ? '' : 'rules')) as KnowledgeTab | '';
   const result = useResource(() => api.knowledge(tab, query), [api, tab, query]);
+  const [lifetime, setLifetime] = useState<'current' | 'archive'>('current');
+  const records = (result.value ?? []).filter(
+    (item) =>
+      api.mode === 'demo' ||
+      (lifetime === 'current' ? item.status === 'current' : item.status !== 'current'),
+  );
   return (
     <>
       <PageHeading
@@ -151,30 +167,63 @@ export default function Knowledge() {
         options={[...(query ? [{ value: '' as const, label: 'All results' }] : []), ...tabs]}
       />
       <Resource loading={result.loading} error={result.error} retry={result.reload}>
-        {result.value?.length ? (
+        {api.mode === 'http' && (
+          <>
+            <FilterTabs
+              label="Knowledge lifetime"
+              value={lifetime}
+              onChange={setLifetime}
+              options={[
+                { value: 'current' as const, label: 'Current knowledge' },
+                { value: 'archive' as const, label: 'Archive' },
+              ]}
+            />
+            {lifetime === 'archive' && (
+              <p>
+                Expired and retired facts are kept for reference, not current planning. Presidents
+                can restore eligible expired club facts.
+              </p>
+            )}
+          </>
+        )}
+        {records.length ? (
           <section className="panel knowledge-panel">
             <div className="panel-header">
               <h2>{tab ? tabs.find((t) => t.value === tab)?.label : 'Search results'}</h2>
               <span className="source-note">
-                {result.value.length} records{query ? ` matching “${query}”` : ''}
+                {records.length} records{query ? ` matching “${query}”` : ''}
               </span>
             </div>
-            {result.value.map((item) => (
+            {records.map((item) => (
               <KnowledgeRow item={item} key={item.item_id} />
             ))}
           </section>
         ) : (
           <EmptyState
-            title={query ? 'No matching knowledge yet.' : 'Nothing here yet.'}
+            title={
+              api.mode === 'http' && lifetime === 'archive'
+                ? 'No archived knowledge here.'
+                : query
+                  ? 'No matching knowledge yet.'
+                  : 'Nothing here yet.'
+            }
             description={
-              query
-                ? 'Try another phrase, or ask the cabinet who has the source.'
-                : 'Approved knowledge will appear here as your club learns.'
+              api.mode === 'http' && lifetime === 'archive'
+                ? 'Facts that are no longer current will be kept here for reference.'
+                : query
+                  ? 'Try another phrase, or ask the cabinet who has the source.'
+                  : 'Approved knowledge will appear here as your club learns.'
             }
             action={
-              <Link to="/chat" className="button">
-                Ask or teach the club →
-              </Link>
+              api.mode === 'http' && lifetime === 'archive' ? (
+                <button className="button" onClick={() => setLifetime('current')}>
+                  View current knowledge
+                </button>
+              ) : (
+                <Link to="/chat" className="button">
+                  Ask or teach the club →
+                </Link>
+              )
             }
           />
         )}
@@ -185,7 +234,7 @@ export default function Knowledge() {
 
 export function KnowledgeFact() {
   const { id = '' } = useParams();
-  const { api, canEdit, isPresident, notify, refresh } = useApp();
+  const { api, canEdit, isPresident, notify, refresh, me } = useApp();
   const location = useLocation();
   const source = (location.state as { source?: Source } | null)?.source;
   const fact = useResource(() => api.fact(id), [api, id]);
@@ -228,7 +277,23 @@ export function KnowledgeFact() {
               action={<StatusBadge status={item.status} />}
             />
             <section className="panel fact-statement">
-              <p>{item.statement}</p>
+              <p>
+                <Linkified text={item.statement} />
+              </p>
+              {api.mode === 'http' && item.status === 'may_be_outdated' && (
+                <p className="notice warning">
+                  This fact's end date has passed; it is not used for current planning.
+                  {item.scope === 'aub' && ' Ask the operator about updating this shared fact.'}
+                </p>
+              )}
+              <RestoreFact
+                key={`${me.club.id}:${me.user.member_id}:${me.role}:${item.item_id}:${item.status}`}
+                item={item}
+                onReload={() => {
+                  fact.reload();
+                  refresh();
+                }}
+              />
               {item.contact && (
                 <div className="fact-contact">
                   <h3>{item.contact.name}</h3>
@@ -378,7 +443,7 @@ export function KnowledgeFact() {
                       fact.reload();
                       refresh();
                       notify(
-                        item.scope === 'aub'
+                        item.scope === 'aub' || api.mode === 'http'
                           ? 'Retirement proposal sent to Review.'
                           : 'Fact retired. History is retained.',
                       );

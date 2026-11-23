@@ -267,3 +267,359 @@ D-104/F-175-F-178 and `REVIEW_GUIDE.md` record behavior and limits. Existing pub
 `tests/test_shared_layer.py` runs in root checks; no backend code/contracts changed.
 HTTP UI checks use synthetic intercepted responses, not a deployed service or user
 study. Final-head CI and independent teammate review are on the C-34 PR.
+
+## 2026-11-20 - C-31 existing board refresh on merged Inbox baseline
+
+Merged main `e4090c6`; shared failure rows preserved once. Live board #4 read-back
+verifies 92 merged tasks, 0 new cards and 93 managed field/body updates. Repeat full
+sync creates/updates zero. Original 3 manual cards, human fields and status-column
+view #8 are preserved. Dated proof is board/evidence/refresh-2026-11-20.json.
+
+Web quality/build passes: 68 units, 32 board-tool tests, lint/format/types.
+Branch-local shared docs/tasks: 10 pass. Python source/tests/scripts/schemas/lock
+match the final C-35 tree whose root gates pass (710 tests, 93.14%, Ruff/format
+162 files, mypy 85 files, schemas/tasks). No application source changed in this
+refresh. C-31 remains doing: three genuine weekly-review records are still needed.
+No meetings, unmerged task completion or deployed/provider evidence is invented.
+
+## 2026-11-16 — C-29 actual application setup
+
+Baseline: main `54d38c1`, with #87 application wiring and #89 Windows UTF-8 fix.
+The C-29 branch adds `e2e/setup-live.spec.ts` to the existing live-API suite. This
+fixture launches the actual production application factory, real HTTP cookies and
+temporary SQLite stores. It does not install a substitute setup route or intercept
+API responses. Empty synthetic clubs are separate for desktop and 375px phone.
+
+Observed checks:
+
+- `npm run test:e2e:live`: **8 passed**, including four new setup cases. The president
+  flow checks initial `/me` false, redirect, skip, stop/reload/resume at the same
+  question, unchanged progress after missing CSRF (403), completion with skips and
+  `/me` true after completion. Reopening reads completed progress. Review stays an
+  empty array; starter ticks stay 0 of 4. Actual adviser sessions receive 403 on
+  writes and cannot open the interview controls. Existing plan approval, calendar,
+  handover, usage and local-login regressions remain green.
+- `npm run check`: lint, format, strict app/rehearsal types, **68 frontend unit
+  tests**, **12 board-tool tests** and production build passed.
+- Root `make check` equivalents: Ruff/format (**153 files**), strict mypy (**82
+  files**), schema/task checks and **681 tests passed**, **93.11% coverage**.
+  A fresh `uv sync --all-extras --dev` environment used the current lockfile; Node
+  dependencies were installed independently with `npm ci` in this worktree.
+
+The first test attempt used an incorrect `{items: []}` assertion for Review's bare
+array response; correcting the assertion did not change application behavior.
+An earlier worktree dependency junction caused local font-serving warnings; the
+successful run used an independent install with those warnings resolved. Windows
+setup required the existing workspace uv executable on PATH. The existing
+Starlette/httpx and MLflow/SQLAlchemy deprecation warnings are not test failures.
+
+Limits: no extraction/model calls in setup, real identities, private sources,
+Google provider login, worker-restart claim, public deployment, live mailbox,
+actual ASME acceptance or measured learning quality. The Python adapter tests and
+synthetic rehearsal prove different boundaries. F-151 and F-201 remain known limits.
+CI on the new PR head and independent review are tracked on its PR, not assumed from
+this local result. C-29 still needs Joey's fresh README-only setup and report review.
+
+## 2026-11-20 - C-29 synced report and sourced teammate setup blocker
+
+Merged main `e4090c6` after #95/#96 landed; kept the main and C-29 shared rows.
+Renumbered only C-29's decision/failure to D-132/F-237 because new #103 uses
+D-126/F-227. Historical dated references remain unchanged. No backend implementation
+or contract authored. Report baseline now matches this merged API.
+
+Root gates on the final stable tree pass: 710 tests, 93.14% coverage, Ruff/format
+162 files, mypy 85 files, schemas/tasks. Frontend quality/build passes (68 units,
+12 board-tool cases). Actual local API/cookie/SQLite suite reran on this final
+baseline: all 8 desktop/phone cases pass, including setup and adviser denial.
+Ten shared-doc/task checks also pass.
+
+Joey's independently reported README-only attempt stopped before startup because
+Docker's Linux engine pipe was absent. The sourced receipt is
+[report/setup-attempt-2026-11-20.md](report/setup-attempt-2026-11-20.md). It is not a
+successful fresh install, Compose/login or deployed acceptance. C-29 remains doing;
+report incorporation and a successful fresh README-only setup remain open. No real
+provider/ASME result, new feature scope, self-merge or main push.
+
+## 2026-11-19 - C-13 HTTP session view validation
+
+The published /api/me view now passes runtime validation before protected UI renders.
+Unknown roles, malformed member/club records, missing identities, non-boolean setup
+flags and invalid badge counts fail with a generic connection error and explicit
+retry/sign-in controls. Valid role fields remain independent; the public view does
+not define an equality rule between them. Extra response fields are not retained.
+Server cookie/session/role checks remain the authorization boundary; no Python or
+API contract changed.
+
+A failing regression first reproduced an unknown role being accepted by ApiClient.
+After the fix, web check passes with 97 unit tests (29 session cases), 12 tool cases,
+lint/format/types/build. All 54 synthetic HTTP browser cases pass, including 12 new
+session cases on desktop/phone: no protected requests before a valid session,
+explicit retry with no writes, no private values in rendered errors, and an adviser
+retaining read-only UI. The actual local API/cookie/SQLite suite also passes all 4
+cases. Full root gates pass: 693 tests, 93.06% coverage; Ruff/format 158 files,
+strict mypy 84 files, schema/task checks.
+
+No real Google/provider/deployed acceptance is claimed. The separate C-36 patch
+handles the development dependency advisory found during installation; this C-13
+branch keeps main's dependency lock unchanged. Current-head CI and independent
+review are tracked on its PR. C-13 remains doing until deployed/every-screen
+acceptance is recorded.
+
+## 2026-11-20 - C-13 approved-PR main sync
+
+Merged main `0ac0b5b` without rewriting the original small commits. Preserved both
+sides of the additive design-log conflict. Frontend quality/build checks pass:
+97 units and 12 board-tool tests, lint, format and types. Python source, tests,
+scripts, schemas and locked dependencies are byte-identical to the synced C-35
+checkout whose full root gates passed (700 tests, 93.09%, Ruff/format 159 files,
+mypy 84 files, schema/tasks). Shared docs/tasks are checked in this checkout.
+Session response validation remains unchanged; deployed Google/every-screen acceptance is still open.
+
+No new design/failure ID or backend/contract change. Current-head CI and fresh
+independent approval are required after this sync; no self-merge/main push.
+
+## 2026-11-18 - C-35 read-only HTTP Inbox
+
+Synced main 166f27e, preserving both sides of shared logs. The Inbox HTTP view now
+requests only the candidate #95 GET /api/inbox and GET /api/inbox/skipped arrays.
+Waiting/skipped lists have independent loading/error/refresh states; duplicate or
+malformed identities fail visibly, extra body fields are dropped, descriptive
+missing/null date/forwarder labels show Not supplied and all text is untrusted.
+Adviser sessions mount neither resource. No paid capture, proof/settings/Restore
+write, browser metadata storage or demo fallback is enabled.
+
+Local checks: full root make-check equivalents pass (Ruff/format: 158 files; mypy:
+84 files; schema/tasks; 693 tests, 93.06% coverage). Web check passes with 84 unit
+and 12 board-tool tests, lint/format/types/build. All 54 HTTP browser cases pass,
+including 12 targeted C-35 cases on desktop/phone. Metadata rendering is scanned
+for accessibility and phone overflow. C-29's separate actual-app suite also passes
+all 8 cases after its main sync; it does not test unmerged inbox routes.
+
+The first full root run caught a duplicate F-230: that number now belongs to the
+merged Outlook guard row. Our old preview boundary is F-232; the new metadata
+regression is F-231 and decision D-128. Targeted log checks and the full root suite
+were rerun green. The initial refresh fixture also needed to keep failing through
+React development remounts, rather than assuming one initial GET.
+
+These Inbox browser cases intercept synthetic metadata. They do not prove a real
+mailbox, provider cost, server authorization or deployed acceptance. #95 is still
+open, so current main may answer unavailable/error to the metadata requests.
+C-35 stays doing; final-head CI and independent review are required on #94.
+
+## 2026-11-19 - C-35 confirmed reads, archive and club-fact Restore
+
+Source contracts: Tatiana's newly published exact responses in #95 ce1d514 and #96
+8dccd0e, still open. Root frontend remains independently based on main 166f27e.
+Paid read is one explicit POST per confirmed message, guarded against rapid clicks.
+No-fact/skipped results are acknowledged and proposed cards stay unapproved.
+Unconfirmed responses require a successful fresh metadata snapshot before another
+paid attempt; a failed refresh cannot unlock it. Mixed/repeated proposal IDs remain
+contract-compatible; display counts unique Review cards. No bodies or outcomes are
+persisted in browser storage.
+
+HTTP knowledge filters current/archive records from the existing response. Only a
+president on an expired club fact sees Restore. New date/no-end selection requires
+explicit approval. Match item ID, club scope and current state in the acknowledgement,
+then reload the fact. Public Restore 4xx explanations render as bounded plain text;
+all 5xx and other actions keep generic diagnostics. A malformed/lost result blocks
+another write until a fresh fact read. Shared/retired/non-president controls stay
+hidden; disputed expired facts may receive the documented 409.
+
+Validation: npm run check passes with 108 unit tests (24 new action-boundary cases),
+12 board-tool cases, lint/format/types/build. Full HTTP suite: 82 passed on desktop
+and phone, including 12 paid-read and 16 Restore cases. Tests cover Cancel, rapid
+clicks, no-fact/skipped results, unsuccessful refresh, stale metadata, wrong item
+acknowledgement, null/future date, disputed 409, scope/role guards and dialog
+accessibility. Root make-check equivalents pass: 693 tests, 93.06%; Ruff/format 158
+files, strict mypy 84 files, schema/tasks. Existing actual API/cookie/SQLite suite:
+4 passed. Demo Inbox/Knowledge regressions are recorded in the current handoff.
+
+The new writes use intercepted synthetic API responses; the actual-API suite does
+not exercise the unmerged #95/#96 routes. No real mail/provider cost, server security
+rate or ASME/deployed acceptance is established. The root Python environment was
+synchronized to the existing lock for final checks. D-131/F-235/F-236 record the
+change; keep the dated 18 November read-only evidence as history.
+
+## 2026-11-20 - C-35 main sync after T-48 merged
+
+Merged main `0ac0b5b` into #94 without rewriting the existing commits. The only
+conflict was the additive design log; both C-35 entries and T-48 D-124 are retained.
+T-48 Restore is now on main; T-47 Inbox routes remain in open #95. No backend
+implementation or contract was edited in the sync.
+
+Root make-check equivalents pass: 700 tests, 93.09% coverage, Ruff/format (159
+files), mypy (84 files), schema drift and task checks. Frontend quality/build checks
+pass with 108 unit tests and 12 board-tool tests. All 82 synthetic HTTP browser
+cases pass on desktop and phone, including paid-read/Restore regressions.
+Existing D/F IDs were checked against main and every open PR; no new IDs needed.
+
+The write tests remain intercepted synthetic contract checks, not actual mailbox,
+provider or deployed acceptance. A fresh independent approval and current-head CI
+are required after the sync; Tatiana will merge the PR. C-35 remains doing while
+forwarding proof/settings and Review expiry/calendar payloads are unpublished.
+
+### 20 November follow-up - newly merged Inbox baseline
+
+#95 merged while checks were running. Synced again to main `e4090c6`, retaining
+main's failure rows and each unique frontend row once. Both #95 and #96 are now
+merged. Root gates on the final Python tree pass: 710 tests, 93.14% coverage,
+Ruff/format 162 files, mypy 85 files, schema/task checks. Branch-local shared docs
+are checked before push; frontend quality/build remains green (97 units,
+12 board-tool cases). The approved session validator is unchanged. Final Python source/tests/scripts/schemas/lock match the fully checked C-35 tree.
+
+are checked before push; frontend quality/build remains green (108 units,
+12 board-tool cases). All 82 HTTP cases passed in a completed run with normal Windows process cleanup. Frontend source/tests/lock are unchanged by the second main sync.
+
+C-35 preview role row is now F-238, preserving main's adviser-route F-217.
+C-29 uses D-132/F-237 to avoid #103's D-126/F-227. Historical dated evidence
+retains its old references. No new feature scope, real provider/club acceptance,
+self-merge or main push. Current-head CI and fresh independent approval remain.
+
+## 20 November - C-31 sync after #94 and #102 merged
+
+Merged main `0f3bb09`, preserving all earlier handoff/evidence lines and both
+shared logs. No new feature scope or D/F IDs. Frontend quality/build passes with
+108 units and 32 board-tool tests, lint/format/types; branch-local shared
+checks pass. Root make-check equivalents pass on the shared Python tree: 710
+tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Board refresh source/read-back and zero-change repeat are in the new follow-up receipt; three real weekly-review records remain open.
+
+## 20 November - C-29 sync after #94 and #102 merged
+
+Merged main `0f3bb09`, preserving all earlier handoff/evidence lines and both
+shared logs. No new feature scope or D/F IDs. Frontend quality/build passes with
+108 units and 12 board-tool tests, lint/format/types; branch-local shared
+checks pass. Root make-check equivalents pass on the shared Python tree: 710
+tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Report/setup evidence and the blocked README-only receipt remain intact; successful fresh complete-app acceptance is still open.
+
+Original individual commits remain; fresh independent review and current-head CI
+are required after this sync. No backend/contract implementation or real data
+added, no self-merge/main push and no new scope before 23 November.
+
+## 20 November - C-13 combined with reviewed Inbox frontend
+
+Tatiana merged #94/#102 as main `0f3bb09`. Synced #100 without dropping either
+API adapter or any browser suite: session, Inbox capture and Restore are all
+registered in the HTTP config and excluded from the demo config. Every previous
+handoff/evidence line and both teams' shared rows remain. No new D/F IDs or scope.
+
+Frontend quality/build passes with 137 units and 12 board-tool cases. The clean
+standalone HTTP run passes all 94 desktop/phone cases; the subsequent actual local
+API/cookie/SQLite suite passes all 4 cases. Root make-check equivalents pass on
+the identical Python source/tests/scripts/schemas/lock: 710 tests, 93.14%,
+Ruff/format 162 files, mypy 85 files, schemas/tasks. Branch shared checks: 10 pass.
+
+An initial overlapped browser run failed two artifact writes, so both suites were
+rerun sequentially; no assertion was removed. The fresh worktree's uv install
+needed the system certificate store (`UV_SYSTEM_CERTS=true`), keeping TLS checks
+enabled. An initial live startup timed out during environment preparation; the
+prepared standalone run then passed. No application workaround or dependency
+change was made for these local runner issues.
+
+C-13 deployed Google/every-screen acceptance remains open. Current-head CI and
+fresh independent re-review are required after push; original commits are retained.
+No self-merge/main push, real provider calls or new scope before 23 November.
+
+## 2026-11-22 - C-31 review-ready main sync and live refresh
+
+Synced main `60d7027` after reviewed #100 and locked FastAPI 0.162.5 / Ruff 0.17.5
+updates. Kept both shared-log sides and all earlier handoff/evidence lines.
+No commit rewriting or new feature/design/failure ID.
+
+Root locked-environment gates pass on the identical Python tree: 710 tests,
+93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Web quality/build:
+137 units, 32 board-tool cases, lint/format/types. Branch shared docs/tasks: 10 pass.
+Live refresh verifies 92 tasks, 0 new cards, 92 updates, followed by 0 creates /
+0 updates on repeat. Manual cards/fields/views stay preserved. Dated read-back:
+board/evidence/refresh-2026-11-22.json; older receipts remain intact.
+
+C-31 remains doing until three genuine weekly-review records exist. This task
+mirror is not evidence that those meetings happened. Fresh independent re-review
+and current-head CI are required after the sync; no main push or self-merge.
+
+## 2026-11-22 - C-31 weekly-review bonus withdrawn by owner
+
+Christophe explicitly chose not to pursue the weekly-review/sprint bonus. D-133
+and the current TASKS entry record that decision; the existing board remains an
+ordinary task tracker. Earlier receipts and missing-record statements are retained
+as history, not active acceptance requirements or proof of earned bonus credit.
+No further meeting-record collection, bonus-driven refresh or board deletion.
+The existing tracker PR stays reviewable; no weekly-review completion is claimed.
+This is a docs/scope-only update; shared task/log checks and formatting pass.
+
+## 2026-11-23 - C-31 restored native backlog and one bulk correction
+
+D-137 supersedes D-133 at Christophe's request. Native Status/Assignees/Iteration,
+current Priority/Size/Estimate and the three issue handoffs are reconciled from a
+pinned merged TASKS revision. Four Monday dates are owner-reported; linked weekly
+summaries describe repository commits, not undocumented oral decisions/attendance.
+Older custom sprint fields and original cards/views remain preserved.
+
+One authorized live apply invocation completed: 93 task cards plus 3 issues,
+542 native mutations, read-back verified and zero remaining native operations.
+Mirror added the new T-49 task from main. Issue #43/#84 owners are Christophe;
+#83 is Tatiana; all three open handoffs are In progress. Summary proof is
+board/evidence/native-fields-2026-11-23.json. No second mutation run was needed.
+
+Web check passes: 137 units, 42 board-tool cases, lint/format/types/build. Ten new
+synthetic native-board regressions cover mapping/ownership, option/iteration ID
+preservation, invalid target/dates/owners, interrupted batches, numeric read-back
+and zero repeat writes. Shared docs/tasks: 10 pass. Root baseline: 728 tests,
+93.21%, Ruff/format 162 files, mypy 85 files, schemas/tasks. F-248 uses the existing
+board-tool status convention because covered-Python rows are parsed as Python AST.
+No assertions were suppressed or backend implementation/contracts edited.
+
+Native field operations use bounded batches within one CLI run, not an atomic
+server transaction. Fresh independent review/current-head CI and a merge commit
+remain required. No main push, self-merge, real club input or provider/model call.
+C-31 remains doing pending review of the restored deliverable and weekly evidence;
+no earned-grade or unverified meeting-decision claim is made.
+
+### 23 November shared-ID correction
+
+The final fetch found #112 had allocated F-248 during the native-board work.
+Preserved that owner's row and moved our native reconciliation regression to F-249.
+D-137 is still unique. Earlier dated F-248 references above describe the work before
+this correction. Native source behavior/live read-back are unchanged; shared checks
+and formatting pass after renumbering. Next free IDs: D-138/F-250 after rechecking.
+
+## 2026-11-22 - C-29 review-ready sync before the meet-up
+
+Synced main `60d7027`, including reviewed #100 and the locked FastAPI 0.162.5 /
+Ruff 0.17.5 updates. Retained both sides of shared log conflicts and every previous
+handoff/evidence line. No original commit rewritten or new D/F ID allocated.
+
+Root make-check equivalents on the updated locked environment pass: 710 tests,
+93.14% coverage, Ruff/format 162 files, mypy 85 files, schemas/tasks. Frontend
+quality/build passes with 137 units and 12 board-tool cases, lint/format/types.
+Branch-local shared docs/tasks: 10 pass. All eight actual local HTTP/cookie/SQLite setup/planning cases passed with FastAPI 0.162.5. Report prose now links the merged session validator and HTTP regressions; real Google/hosting/ASME acceptance and the blocked README-only attempt remain explicit.
+
+The existing task status remains doing. Current-head CI and fresh independent
+approval are required after push. No new feature scope before 23 November, backend
+implementation/contract change, real private input, self-merge or main push.
+
+### 22 November owner scope update
+
+Christophe has dropped the weekly-review/sprint engineering bonus. The report now
+excludes that claim and no longer lists three meeting records as pending acceptance.
+Keep the existing board as an ordinary task tracker. C-29's fresh README-only setup,
+report incorporation and deployed/provider/club acceptance limits remain unchanged.
+D-133 and the narrowed tracker task are in #91; no other engineering bonus was cut.
+
+## 2026-11-23 - C-29 restored weekly practice and sourced board context
+
+**Did:** Synced main 2bb9f5e, preserving the actual setup row and main's sourced
+inbox/audience/expiry documentation. Restored weekly-practice reporting after
+Christophe reversed D-133 (D-137 in #91). The report links #91's repository-history
+summaries and attributes four Monday dates to Christophe; it does not infer
+attendance, oral decisions or original assignments from commits.
+
+**State:** Web quality/build passes: 137 units and 12 tools. Actual local
+HTTP/cookie/SQLite setup suite: 8/8. Shared tasks/log/failure checks: 10 pass.
+Merged Python baseline gates: 728 tests, 93.21%, Ruff/format 162 files, mypy
+85 files, schemas/tasks. Report remains doing; fresh README-only success,
+report incorporation and actual deployed/provider/club acceptance remain open.
+
+**Next / limits:** Fresh independent review and current-head CI, then a merge
+commit preserving the focused history. #91 performs the separately authorized
+native-field bulk correction. No real club inputs, paid model calls, invented
+meeting decisions or main push/self-merge.
