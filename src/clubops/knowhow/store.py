@@ -90,8 +90,15 @@ class KnowHowStore:
     def visible(self, club_id: ClubId) -> list[KnowHowItem]:
         return [i for i in self.backend.latest_all() if i.scope is Scope.AUB or i.club_id == club_id]
 
-    def search(self, club_id: ClubId, text: str, limit: int = 10) -> list[KnowHowItem]:
-        """Approved items this club may see, best match first (plain full-text search, no model)."""
+    def search(
+        self, club_id: ClubId, text: str, limit: int = 10, *, include_expired: bool = False, today: date | None = None
+    ) -> list[KnowHowItem]:
+        """Approved items this club may see, best match first (plain full-text search, no model).
+
+        Items past their end date are left out, so the planner never plans from an expired fact (F-304);
+        learning passes ``include_expired`` to still match new mail against them.
+        """
+        day = today or date.today()
         found: list[KnowHowItem] = []
         for item_id, _score in self.backend.search(text, limit * 3):
             item = self.latest(item_id)
@@ -99,6 +106,7 @@ class KnowHowStore:
                 item is not None
                 and item.status in (ItemStatus.VERIFIED, ItemStatus.DISPUTED)
                 and (item.scope is Scope.AUB or item.club_id == club_id)
+                and (include_expired or item.valid_to is None or item.valid_to >= day)
             ):
                 found.append(item)
             if len(found) == limit:
@@ -185,9 +193,9 @@ class KnowHowStore:
             versions = self.history(item_id)
             if len(versions) < 2:
                 raise CapabilityError(ErrorCode.CONFLICT, "there is no earlier version to go back to")
-            changed = _rebuild(
-                versions[-2], version=item.version + 1, status=ItemStatus.VERIFIED, supersedes=None, **stamp
-            )
+            before = versions[-2]  # Undo returns to how it was: a retired fact goes back to retired (F-302)
+            status = ItemStatus.RETIRED if before.status is ItemStatus.RETIRED else ItemStatus.VERIFIED
+            changed = _rebuild(before, version=item.version + 1, status=status, supersedes=None, **stamp)
         elif retire:
             changed = _rebuild(item, status=ItemStatus.RETIRED, version=item.version + 1, valid_to=now.date(), **stamp)
         elif statement is not None:
@@ -274,9 +282,16 @@ class KnowHowStore:
 
         match proposal.op:
             case ProposalOp.CREATE:
-                if self.backend.has(candidate.item_id):
+                existing = self.latest(candidate.item_id)
+                if existing is None:
+                    return _rebuild(candidate, version=1, **stamp), []
+                if existing.status is not ItemStatus.RETIRED:
                     raise CapabilityError(ErrorCode.CONFLICT, "an item with this id already exists")
-                return _rebuild(candidate, version=1, **stamp), []
+                # A retired fact told again comes back as the next version of the same fact, in its old layer (F-302).
+                revived = _rebuild(
+                    candidate, version=existing.version + 1, scope=existing.scope, club_id=existing.club_id, **stamp
+                )
+                return revived, []
             case ProposalOp.UPDATE if target is not None:
                 # A new version stays in its fact's layer: a club can't pull an AUB fact into its own (F-163).
                 committed = _rebuild(
