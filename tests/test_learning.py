@@ -23,7 +23,15 @@ from clubops.config import ModelMode, Settings
 from clubops.contracts.common import Role, SourceKind, SourceRef, Untrusted
 from clubops.contracts.knowhow import CaptureRequest, ItemStatus, ProposalOp
 from clubops.knowhow.store import KnowHowStore
-from clubops.learning.capture import Learner, injection_flags, outdated_note, price_list, source_date, term_end
+from clubops.learning.capture import (
+    Learner,
+    injection_flags,
+    outdated_note,
+    price_list,
+    source_date,
+    split_source,
+    term_end,
+)
 from clubops.model.budget import Budget
 from clubops.model.client import ModelClient
 from tests.factories import CLUB, item, verified
@@ -293,6 +301,18 @@ def test_a_person_can_change_or_clear_the_end_date_on_a_card(app_client: tuple[T
     assert [
         k["valid_to"] for k in c.get("/api/knowledge?tab=tips").json() + c.get("/api/knowledge?tab=decisions").json()
     ] == ["2027-05-31"]
+
+
+def test_a_long_mail_is_read_to_the_end_not_cut_at_6000_characters(store: KnowHowStore, tmp_path: Path) -> None:
+    """A rule at the end of an 8,000 character mail was never seen and nothing said so (F-308)."""
+    filler = "\n".join(f"Line {n}: the hall is open on weekdays." for n in range(200))
+    long_mail = f"{filler}\n{BLK}"
+    assert len(long_mail) > 6000
+    assert "".join(split_source(long_mail)).replace("\n", "") == long_mail.replace("\n", "")
+    provider = Provider({"facts": [{**LESSON, "source": len(split_source(long_mail)) - 1}]})
+    [p] = capture(store, tmp_path, provider, long_mail).proposals
+    assert p.candidate.sources[0].quote == LESSON["quote"]
+    assert all(len(piece) <= 6000 for piece in split_source(long_mail))
 
 
 def test_the_adviser_cannot_teach(app_client: tuple[TestClient, Provider]) -> None:

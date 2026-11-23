@@ -42,7 +42,8 @@ from clubops.redaction import redact
 
 EXTRACT_VERSION = "learn-extract-v3"
 MATCH_VERSION = "learn-match-v1"
-MAX_SOURCE_CHARS = 6000
+MAX_SOURCE_CHARS = 6000  # one piece of a source the model reads
+MAX_SOURCE_PIECES = 5  # a longer source is read in up to 5 pieces, one model call for all of them (F-308)
 
 # ---------------------------------------------------------------- plain-code checks
 
@@ -129,6 +130,22 @@ def term_end(day: date) -> date:
     if day.month >= 6:
         return date(day.year, 8, 31)
     return date(day.year, 5, 31)
+
+
+def split_source(text: str) -> list[str]:
+    """A long source in pieces of at most ``MAX_SOURCE_CHARS``, cut at a line end when there is one, so a rule at the
+    end of a long mail is read too instead of being dropped without a word (F-308)."""
+    pieces: list[str] = []
+    rest = text
+    while rest and len(pieces) < MAX_SOURCE_PIECES:
+        if len(rest) <= MAX_SOURCE_CHARS:
+            pieces.append(rest)
+            break
+        cut = rest.rfind("\n", 0, MAX_SOURCE_CHARS)
+        cut = cut if cut > MAX_SOURCE_CHARS // 2 else MAX_SOURCE_CHARS
+        pieces.append(rest[:cut])
+        rest = rest[cut:].lstrip("\n")
+    return pieces or [""]
 
 
 def _norm(text: str) -> str:
@@ -408,7 +425,7 @@ class Learner:
     ) -> CaptureResult:
         """Proposals for Review (not yet submitted). ``extra`` are candidates already built by plain code.
         ``unlisted_sender``: the e-mail's sender is not on the OSA list and a person chose to read it (D-136)."""
-        prepared = [self._prepare(src, today, unlisted_sender) for src in request.sources]
+        prepared = [part for src in request.sources for part in self._prepare(src, today, unlisted_sender)]
         candidates: list[Candidate] = list(extra or [])
         skipped = 0
         failed = 0
@@ -473,15 +490,18 @@ class Learner:
         injection: list[str]
         outdated: str | None
 
-    def _prepare(self, source: Untrusted, today: date, unlisted_sender: bool = False) -> Learner._Prepared:
+    def _prepare(self, source: Untrusted, today: date, unlisted_sender: bool = False) -> list[Learner._Prepared]:
         # Verified OSA e-mails keep their links and office contacts: they are the know-how (F-241).
         is_email = source.source.kind is SourceKind.EMAIL
-        text = source.content[:MAX_SOURCE_CHARS]
-        if is_email:
-            text = _hide_forwarder(text)
-        red = redact(text, keep_office_contacts=is_email and not unlisted_sender)
-        kinds: list[RedactionKind] = sorted({_REDACTION_KINDS[k] for k in red.kinds if k in _REDACTION_KINDS})
-        return Learner._Prepared(source, red.text, kinds, injection_flags(red.text), outdated_note(red.text, today))
+        out = []
+        for piece in split_source(source.content):
+            text = _hide_forwarder(piece) if is_email else piece
+            red = redact(text, keep_office_contacts=is_email and not unlisted_sender)
+            kinds: list[RedactionKind] = sorted({_REDACTION_KINDS[k] for k in red.kinds if k in _REDACTION_KINDS})
+            out.append(
+                Learner._Prepared(source, red.text, kinds, injection_flags(red.text), outdated_note(red.text, today))
+            )
+        return out
 
     @staticmethod
     def _extract_prompt(prepared: list[Learner._Prepared]) -> str:
