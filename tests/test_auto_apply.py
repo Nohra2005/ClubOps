@@ -83,7 +83,7 @@ def test_a_non_cabinet_member_cannot_change_a_fact(store) -> None:  # type: igno
 
 
 def test_add_as_new_rule_gets_its_own_id_when_the_card_carries_the_old_one(store) -> None:  # type: ignore[no-untyped-def]
-    """F-249: an update card's candidate shares the known fact's id; keeping both needs a fresh id."""
+    """F-260: an update card's candidate shares the known fact's id; keeping both needs a fresh id."""
     old = _known(store)
     store.submit(proposal(item(statement="A second, different statement."), ProposalOp.UPDATE, target_item=old.item_id))
     added = store.keep_both("p-1", None, None, actor(Role.PRESIDENT), NOW)

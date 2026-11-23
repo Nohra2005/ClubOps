@@ -207,7 +207,7 @@ class KnowHowStore:
             actor,
         )
         if self.backend.has(candidate.item_id):
-            # A suggested edit carries the old fact's id: the new fact next to it gets its own (F-249).
+            # A suggested edit carries the old fact's id: the new fact next to it gets its own (F-260).
             candidate = _rebuild(candidate, item_id=f"{candidate.item_id[:50]}-{proposal.proposal_id[-8:].lower()}")
             if self.backend.has(candidate.item_id):
                 raise CapabilityError(ErrorCode.CONFLICT, "an item with this id already exists")
