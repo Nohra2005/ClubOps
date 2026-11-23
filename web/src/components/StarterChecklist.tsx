@@ -57,7 +57,7 @@ function StarterUpload({
             </span>
             <input
               type="file"
-              accept=".txt,.md,.csv,.eml,.xlsx"
+              accept=".pdf,.txt,.md,.csv,.eml,.xlsx"
               disabled={action.pending}
               onChange={(event) => {
                 setFile(event.target.files?.[0]);

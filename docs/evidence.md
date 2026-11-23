@@ -12,3 +12,13 @@ Every claim made on the poster, in the proposal or in the final report, and the 
 | "One prompt with no memory missed 31 of 51 required approvals (61%); with the OSA rulebook it missed 0" (poster) | The 20 event requests, labels, prompts and run logs in `eval/` | needed: re-run inside the repo |
 | "Field-by-field audit of the proposal and Expense Form" (poster) | `data/forms/osa_event_proposal_2026_2027.json` (33 fields, each mapped to its source) | proposal form in place; Expense Form planned |
 | Handover improves new officers' answers (planned headline result) | Three-way handover test in `eval/` | planned (Phase 3) |
+
+## Paid model reads (spend log)
+
+Every paid read gets a row **before** it runs (date, who ran it, what, cost). The provider dashboard is the final record; the app's own reads also appear in `/api/usage`. Amounts are estimates (about 1 cent per read) until checked against the dashboard.
+
+| Date | Run by | What | Cost | Note |
+|---|---|---|---|---|
+| 2026-11-23 | Claude (assistant), on a scratch copy of the data | One read of the forwarded OSA e-mail "Campus Access Refinement" | about 0.01 USD | Not asked for and not logged at the time; Tatiana corrected it the same day |
+| 2026-11-23 | Claude (assistant), on a scratch copy of the data | A second read, interrupted | 0 to 0.01 USD | Unconfirmed: check the provider dashboard |
+| 2026-11-23 | Tatiana, in the app | Real read of the same e-mail (5 cards) | about 0.01 USD | Her own confirm click; also in `/api/usage` |
