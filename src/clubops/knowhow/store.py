@@ -90,8 +90,15 @@ class KnowHowStore:
     def visible(self, club_id: ClubId) -> list[KnowHowItem]:
         return [i for i in self.backend.latest_all() if i.scope is Scope.AUB or i.club_id == club_id]
 
-    def search(self, club_id: ClubId, text: str, limit: int = 10) -> list[KnowHowItem]:
-        """Approved items this club may see, best match first (plain full-text search, no model)."""
+    def search(
+        self, club_id: ClubId, text: str, limit: int = 10, *, include_expired: bool = False, today: date | None = None
+    ) -> list[KnowHowItem]:
+        """Approved items this club may see, best match first (plain full-text search, no model).
+
+        Items past their end date are left out, so the planner never plans from an expired fact (F-304);
+        learning passes ``include_expired`` to still match new mail against them.
+        """
+        day = today or date.today()
         found: list[KnowHowItem] = []
         for item_id, _score in self.backend.search(text, limit * 3):
             item = self.latest(item_id)
@@ -99,6 +106,7 @@ class KnowHowStore:
                 item is not None
                 and item.status in (ItemStatus.VERIFIED, ItemStatus.DISPUTED)
                 and (item.scope is Scope.AUB or item.club_id == club_id)
+                and (include_expired or item.valid_to is None or item.valid_to >= day)
             ):
                 found.append(item)
             if len(found) == limit:
