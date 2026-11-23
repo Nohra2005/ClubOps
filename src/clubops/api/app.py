@@ -12,7 +12,6 @@ Conventions (agreed for C-13):
 
 from __future__ import annotations
 
-import hashlib
 import io
 import os
 import re
@@ -64,7 +63,6 @@ from clubops.contracts.knowhow import (
     Kind,
     KnowHowItem,
     KnowHowProposal,
-    ProposalOp,
     Scope,
     VerifyDecision,
     VerifyRequest,
@@ -555,36 +553,24 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
                 raise HTTPException(404, "No such item.")
             return views.knowledge(item, store.history(item_id), today())
 
-    def _knowledge_proposal(member: Member, item_id: str, op: ProposalOp, text: str | None, why: str) -> dict[str, str]:
-        """A change to an approved fact goes to Review; the fact stays as it is until someone approves (F-247)."""
+    def _revise(member: Member, item_id: str, **change: Any) -> dict[str, Any]:
+        """A cabinet member's change applies at once as a new version; the old one stays in history (D-138)."""
         with club(member.club_id) as (store, _, _, _):
-            item = next((i for i in visible(store, member.club_id) if i.item_id == item_id), None)
-            if item is None:
-                raise HTTPException(404, "No such item.")
-            changes: dict[str, Any] = {"status": ItemStatus.PROPOSED, "verified_by": None, "verified_at": None}
-            if text is not None:
-                changes["statement"] = text
-            candidate = KnowHowItem.model_validate({**item.model_dump(), **changes})
-            stamp = hashlib.sha256(f"{item_id}|{op.value}|{text or ''}".encode()).hexdigest()[:8]
-            proposal = KnowHowProposal(
-                proposal_id=f"p-{stamp}",
-                op=op,
-                candidate=candidate,
-                target_item=item.item_id,
-                rationale=why[:600],
-            )
-            store.submit(proposal)
-        return {"review_id": proposal.proposal_id}
+            item = store.revise(item_id, member.actor(), clock(), **change)
+            return views.knowledge(item, store.history(item.item_id), today())
 
     @app.post("/api/knowledge/{item_id}/edit")
-    def suggest_edit(item_id: str, body: EditBody, member: Member = Depends(cabinet)) -> dict[str, str]:  # noqa: B008
-        return _knowledge_proposal(
-            member, item_id, ProposalOp.UPDATE, body.text.strip(), f"edit suggested by {member.name}"
-        )
+    def edit_fact(item_id: str, body: EditBody, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+        return _revise(member, item_id, statement=body.text.strip())
 
     @app.post("/api/knowledge/{item_id}/retire")
-    def suggest_retire(item_id: str, member: Member = Depends(cabinet)) -> dict[str, str]:  # noqa: B008
-        return _knowledge_proposal(member, item_id, ProposalOp.RETIRE, None, f"retirement suggested by {member.name}")
+    def retire_fact(item_id: str, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+        return _revise(member, item_id, retire=True)
+
+    @app.post("/api/knowledge/{item_id}/undo")
+    def undo_fact(item_id: str, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+        """Go back to the version before the last change, for example after an automatic update (D-138)."""
+        return _revise(member, item_id, undo=True)
 
     # ------------------------------------------------------------- review
 
@@ -923,9 +909,15 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             raise HTTPException(502, "The e-mail could not be read this time. It is still waiting; try again.")
         inbox_ledger.mark_read(fingerprint, token)
         inbox.mark_processed(message_id, member.club_id)
+        # Clean facts from trusted OSA mail apply at once; anything odd waits in Review (D-138)
+        with club(member.club_id) as (store, _, _, _):
+            applied = [
+                p.proposal_id for p in result.proposals if store.auto_apply(p.proposal_id, member.club_id, clock())
+            ]
         # `skipped` is a list of plain reasons, as docs/api.md says; the web screen rejects a number (F-239)
         return {
-            "proposals": [p.proposal_id for p in result.proposals],
+            "proposals": [p.proposal_id for p in result.proposals if p.proposal_id not in applied],
+            "applied": applied,
             "skipped": ["The model could not use this content."] * result.sources_skipped,
         }
 
