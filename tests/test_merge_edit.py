@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import date
+
 from clubops.contracts.common import Role
 from clubops.contracts.knowhow import ProposalOp, VerifyDecision, VerifyRequest
 from tests.factories import NOW, actor, item, proposal, verified
@@ -31,3 +33,11 @@ def test_a_plain_approve_on_a_merge_card_keeps_the_known_wording(store) -> None:
     request = VerifyRequest(proposal=card, decision=VerifyDecision.ACCEPT)
     committed = store.verify(request, actor(Role.PRESIDENT), NOW).data.committed
     assert committed.statement == "Book Green Field three weeks ahead."
+
+
+def test_an_end_date_typed_on_a_merge_card_is_kept(store) -> None:  # type: ignore[no-untyped-def]
+    """Approving a "same as" card with a new end date used to keep the old one (F-306)."""
+    card, candidate = _merge_card(store)
+    edited = candidate.model_copy(update={"valid_to": date(2027, 5, 31)})
+    request = VerifyRequest(proposal=card, decision=VerifyDecision.ACCEPT_EDITED, edited_candidate=edited)
+    assert store.verify(request, actor(Role.PRESIDENT), NOW).data.committed.valid_to == date(2027, 5, 31)

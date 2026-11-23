@@ -313,8 +313,16 @@ class KnowHowStore:
                 )
                 # Edit-then-approve on a "same as" card corrects the known wording; a plain approve keeps it (F-301).
                 words = candidate.statement if candidate.statement != proposal.candidate.statement else target.statement
+                # An end date a person typed on the card is kept; otherwise the known one stays (F-306).
+                end = candidate.valid_to if candidate.valid_to != proposal.candidate.valid_to else target.valid_to
                 committed = _rebuild(
-                    target, statement=words, sources=sources, support=support, version=target.version + 1, **stamp
+                    target,
+                    statement=words,
+                    sources=sources,
+                    support=support,
+                    valid_to=end,
+                    version=target.version + 1,
+                    **stamp,
                 )
                 return committed, [target.item_id]
             case ProposalOp.RETIRE if target is not None:
