@@ -560,7 +560,7 @@ class Learner:
     def _match(self, candidates: list[Candidate], club_id: str, budget: Budget | None) -> list[KnowHowProposal]:
         similar: dict[int, list[KnowHowItem]] = {}
         for i, c in enumerate(candidates):
-            hits = self.store.search(club_id, f"{c.item.title} {c.item.statement}", limit=6)
+            hits = self.store.search(club_id, f"{c.item.title} {c.item.statement}", limit=6, include_expired=True)
             if hits:
                 similar[i] = hits
         decided: dict[int, Match] = {}

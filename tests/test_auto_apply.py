@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+from datetime import date
+
 import pytest
 
 from clubops.api import views
 from clubops.capabilities.runner import CapabilityError
 from clubops.contracts.common import ErrorCode, Role
 from clubops.contracts.knowhow import ItemStatus, ProposalOp, Scope
-from clubops.knowhow.store import AUTO_MEMBER
+from clubops.knowhow.store import AUTO_MEMBER, KnowHowStore
 from tests.factories import CLUB, NOW, TODAY, actor, item, proposal, verified
 
 
@@ -151,3 +153,21 @@ def test_a_verified_fact_is_still_not_created_twice(store) -> None:  # type: ign
     known = _known(store)
     store.submit(proposal(known.model_copy(update={"status": ItemStatus.PROPOSED, "version": 1}), pid="p-dup"))
     assert store.auto_apply("p-dup", CLUB, NOW) is None and "p-dup" in store.pending
+
+
+def test_search_skips_expired_facts_but_learning_can_still_match_them(store: KnowHowStore) -> None:
+    """The planner used to find a fact months after its end date (F-304)."""
+    old = verified(
+        item("kh-old", title="Cafe B notice", statement="Cafe B needs ten days notice", valid_to=date(2020, 1, 1))
+    )
+    live = verified(
+        item("kh-live", title="Cafe B notice now", statement="Cafe B needs ten days notice", valid_to=date(2099, 1, 1))
+    )
+    store.backend.append(old)
+    store.backend.append(live)
+    assert [i.item_id for i in store.search(old.club_id, "Cafe B notice")] == ["kh-live"]
+    assert {i.item_id for i in store.search(old.club_id, "Cafe B notice", include_expired=True)} == {
+        "kh-old",
+        "kh-live",
+    }
+    assert [i.item_id for i in store.search(old.club_id, "Cafe B notice", today=date(2019, 6, 1))].count("kh-old") == 1
