@@ -26,6 +26,7 @@ from clubops.contracts.knowhow import (
 )
 from clubops.contracts.planning import TaskState
 from clubops.contracts.rules import Applicability
+from clubops.knowhow.store import AUTO_MEMBER
 
 BEIRUT = ZoneInfo("Asia/Beirut")
 
@@ -215,11 +216,12 @@ def knowledge(item: KnowHowItem, history: list[KnowHowItem], today: date) -> dic
             {
                 "date": (v.verified_at or v.sources[0].observed_at).date().isoformat(),
                 "description": f"version {v.version}: {v.status.value}",
-                "actor": v.verified_by or "",
+                "actor": "ClubOps (automatic)" if v.verified_by == AUTO_MEMBER else v.verified_by or "",
             }
             for v in history
         ],
         "used_in": [],
+        "auto": item.verified_by == AUTO_MEMBER,  # added or last changed by code from trusted OSA mail (D-138)
     }
     if isinstance(item.details, RuleDetails):
         out["triggers"] = ", ".join(item.details.triggers)

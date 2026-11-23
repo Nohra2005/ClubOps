@@ -13,7 +13,7 @@ from datetime import date, datetime
 from typing import Any
 
 from clubops.capabilities.runner import CapabilityError, Outcome
-from clubops.contracts.common import Actor, ClubId, ErrorCode, ItemId, Role
+from clubops.contracts.common import Actor, ClubId, ErrorCode, ItemId, MemberId, Role
 from clubops.contracts.knowhow import (
     ItemStatus,
     Kind,
@@ -39,6 +39,22 @@ def rescoped(item: KnowHowItem, club_id: ClubId, *, shared: bool) -> KnowHowItem
     if shared:
         return _rebuild(item, scope=Scope.AUB, club_id=None)
     return _rebuild(item, scope=Scope.CLUB, club_id=club_id)
+
+
+AUTO_MEMBER: MemberId = "m-clubops-auto"  # `verified_by` of a fact added by code from trusted OSA mail (D-138)
+_NEEDS_A_PERSON = ("may be outdated", "sender is not on the OSA list")
+
+
+def auto_applicable(proposal: KnowHowProposal) -> bool:
+    """Only a plain addition or newer version, with nothing odd about its source, applies without a person (D-138).
+
+    A contradiction, a retirement, hidden instructions, an unlisted sender or an outdated source all wait for one."""
+    return (
+        proposal.op in (ProposalOp.CREATE, ProposalOp.UPDATE, ProposalOp.MERGE)
+        and not proposal.injection_flags
+        and not proposal.conflicts_with
+        and not any(note in proposal.rationale for note in _NEEDS_A_PERSON)
+    )
 
 
 class KnowHowStore:
@@ -112,6 +128,67 @@ class KnowHowStore:
             self.backend.append(committed)
             self.backend.pending_delete(proposal.proposal_id)
         return Outcome(data=VerifyResult(committed=committed, superseded=to_supersede))
+
+    def auto_apply(self, proposal_id: str, club_id: ClubId, now: datetime) -> KnowHowItem | None:
+        """Apply one queued proposal from trusted OSA mail without a click (D-138), or leave it for a person.
+
+        Returns the committed fact, or ``None`` when the proposal is not eligible or no longer fits the store
+        (it then stays in Review). The old version stays in history, so Undo can bring it back."""
+        queued = self.backend.pending_all().get(proposal_id)
+        if queued is None or not auto_applicable(queued):
+            return None
+        robot = Actor(member_id=AUTO_MEMBER, club_id=club_id, roles=frozenset({Role.PRESIDENT}), verified=True)
+        try:
+            committed, to_supersede = self._next_version(queued, queued.candidate, robot, now)
+        except CapabilityError:
+            return None
+        with self.backend.transaction():
+            for item_id in to_supersede:
+                self._mark_superseded(item_id)
+            self.backend.append(committed)
+            self.backend.pending_delete(queued.proposal_id)
+        return committed
+
+    def revise(
+        self,
+        item_id: ItemId,
+        actor: Actor,
+        now: datetime,
+        *,
+        statement: str | None = None,
+        retire: bool = False,
+        undo: bool = False,
+    ) -> KnowHowItem:
+        """A cabinet member changes, retires or undoes a fact directly; no second person (D-138).
+
+        Every change is a new version and the old ones stay in history. A shared fact needs a president, except one
+        that code added from trusted mail: any cabinet member may correct or undo that."""
+        if not actor.is_cabinet:
+            raise CapabilityError(ErrorCode.NOT_AUTHORIZED, "only verified cabinet members change know-how")
+        item = self.latest(item_id)
+        if item is None or (item.scope is Scope.CLUB and item.club_id != actor.club_id):
+            raise CapabilityError(ErrorCode.NOT_FOUND, "no such item for this club")
+        if item.scope is Scope.AUB and Role.PRESIDENT not in actor.roles and item.verified_by != AUTO_MEMBER:
+            raise CapabilityError(ErrorCode.NOT_AUTHORIZED, "AUB-wide facts are changed by a club president")
+        stamp = {"verified_by": actor.member_id, "verified_at": now, "last_confirmed_at": now}
+        if undo:
+            versions = self.history(item_id)
+            if len(versions) < 2:
+                raise CapabilityError(ErrorCode.CONFLICT, "there is no earlier version to go back to")
+            changed = _rebuild(
+                versions[-2], version=item.version + 1, status=ItemStatus.VERIFIED, supersedes=None, **stamp
+            )
+        elif retire:
+            changed = _rebuild(item, status=ItemStatus.RETIRED, version=item.version + 1, valid_to=now.date(), **stamp)
+        elif statement is not None:
+            changed = _rebuild(item, statement=statement, version=item.version + 1, **stamp)
+        else:
+            raise CapabilityError(ErrorCode.INVALID_INPUT, "nothing to change")
+        with self.backend.transaction():
+            if item.status is ItemStatus.VERIFIED:
+                self._mark_superseded(item_id)
+            self.backend.append(changed)
+        return changed
 
     def keep_both(
         self, proposal_id: str, edited: KnowHowItem | None, reason: str | None, actor: Actor, now: datetime

@@ -79,54 +79,32 @@ def test_the_edit_dialog_text_is_not_dropped_when_sent_with_approve(app_client) 
     assert _statements(c) == [body["edited_text"]]
 
 
-def test_a_suggested_edit_goes_to_review_and_changes_the_fact_only_when_approved(app_client) -> None:  # type: ignore[no-untyped-def]  # noqa: F811
+def test_a_cabinet_member_edits_a_fact_at_once_and_the_old_version_stays_in_history(app_client) -> None:  # type: ignore[no-untyped-def]  # noqa: F811
+    """D-138: Edit applies directly, with no second person; Undo brings the previous version back."""
     c, provider = app_client
     known = _known(c, provider)
     text = "Tell Cafe B ten days before a run: https://example.test/cafe"
-    reply = c.post(f"/api/knowledge/{known}/edit", json={"text": text}, headers=HEADERS)
-    assert reply.status_code == 200
-    assert _statements(c) == [LESSON["statement"]]  # unchanged until someone approves
-    [card] = c.get("/api/review").json()
-    assert card["id"] == reply.json()["review_id"] and card["statement"] == text
-    assert c.post(f"/api/review/{card['id']}", json={"decision": "merge"}, headers=HEADERS).status_code == 200
-    assert _statements(c) == [text]
+    assert c.post(f"/api/knowledge/{known}/edit", json={"text": text}, headers=HEADERS).status_code == 200
+    assert _statements(c) == [text] and c.get("/api/review").json() == []
+    assert len(c.get(f"/api/knowledge/{known}").json()["history"]) == 2
+    assert c.post(f"/api/knowledge/{known}/undo", headers=HEADERS).status_code == 200
+    assert _statements(c) == [LESSON["statement"]]
 
 
-def test_a_suggested_retirement_goes_to_review_and_removes_the_fact_when_approved(app_client) -> None:  # type: ignore[no-untyped-def]  # noqa: F811
+def test_a_cabinet_member_retires_a_fact_at_once_and_undo_brings_it_back(app_client) -> None:  # type: ignore[no-untyped-def]  # noqa: F811
     c, provider = app_client
     known = _known(c, provider)
-    reply = c.post(f"/api/knowledge/{known}/retire", headers=HEADERS)
-    assert reply.status_code == 200 and _statements(c) == [LESSON["statement"]]
-    assert (
-        c.post(f"/api/review/{reply.json()['review_id']}", json={"decision": "approve"}, headers=HEADERS).status_code
-        == 200
-    )
+    assert c.post(f"/api/knowledge/{known}/retire", headers=HEADERS).status_code == 200
     assert c.get(f"/api/knowledge/{known}").json()["status"] == "retired"  # kept as history, no longer used
-
-
-def test_editing_a_fact_that_does_not_exist_answers_404(app_client) -> None:  # type: ignore[no-untyped-def]  # noqa: F811
-    c, _ = app_client
-    assert c.post("/api/knowledge/nope/edit", json={"text": "Something new."}, headers=HEADERS).status_code == 404
-
-
-def test_add_as_new_rule_works_on_a_suggested_edit(app_client) -> None:  # type: ignore[no-untyped-def]  # noqa: F811
-    """F-249: the suggested edit carries the old fact's id; adding it next to the original needs its own id."""
-    c, provider = app_client
-    known = _known(c, provider)
-    text = "Tell Cafe B ten days before a run: https://example.test/cafe"
-    review_id = c.post(f"/api/knowledge/{known}/edit", json={"text": text}, headers=HEADERS).json()["review_id"]
-    reply = c.post(f"/api/review/{review_id}", json={"decision": "keep_both"}, headers=HEADERS)
-    assert reply.status_code == 200
-    assert _statements(c) == sorted([LESSON["statement"], text])
-    assert c.get(f"/api/knowledge/{known}").json()["statement"] == LESSON["statement"]  # the old one is untouched
-
-
-def test_a_retirement_card_says_so_and_keeping_it_leaves_the_fact_active(app_client) -> None:  # type: ignore[no-untyped-def]  # noqa: F811
-    """F-250: the screen needs op=retire to tell the reviewer what Approve will do."""
-    c, provider = app_client
-    known = _known(c, provider)
-    review_id = c.post(f"/api/knowledge/{known}/retire", headers=HEADERS).json()["review_id"]
-    [card] = c.get("/api/review").json()
-    assert card["id"] == review_id and card["op"] == "retire"
-    assert c.post(f"/api/review/{review_id}", json={"decision": "reject"}, headers=HEADERS).status_code == 200
+    assert c.post(f"/api/knowledge/{known}/undo", headers=HEADERS).status_code == 200
     assert c.get(f"/api/knowledge/{known}").json()["status"] != "retired"
+
+
+def test_undo_with_no_earlier_version_is_refused_and_a_missing_fact_answers_404(app_client) -> None:  # type: ignore[no-untyped-def]  # noqa: F811
+    c, provider = app_client
+    known = _known(c, provider)
+    assert c.post(f"/api/knowledge/{known}/undo", headers=HEADERS).status_code == 409
+    assert (
+        c.post("/api/knowledge/kh-nope-nope/edit", json={"text": "Whatever it says."}, headers=HEADERS).status_code
+        == 404
+    )

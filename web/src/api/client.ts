@@ -245,6 +245,10 @@ export class ApiClient {
       return this.post(`/knowledge/${encodeURIComponent(item_id)}/edit`, { text });
     return this.extension('knowledge-edit', { item_id, text });
   }
+  undoFact(item_id: string) {
+    if (this.mode === 'http') return this.post(`/knowledge/${encodeURIComponent(item_id)}/undo`);
+    return this.extension('knowledge-undo', { item_id });
+  }
   retire(item_id: string) {
     if (this.mode === 'http') return this.post(`/knowledge/${encodeURIComponent(item_id)}/retire`);
     return this.extension('knowledge-retire', { item_id });

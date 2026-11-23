@@ -9,6 +9,7 @@ import {
   FileText,
   Search,
   ShieldCheck,
+  Undo2,
   Upload,
 } from 'lucide-react';
 import { useApp } from '../AppContext';
@@ -316,22 +317,49 @@ export function KnowledgeFact() {
                   )}
                 </div>
               )}
-              {canEdit && item.status !== 'retired' && (
+              {item.auto && (
+                <p className="inline-note">
+                  Added automatically from a trusted OSA e-mail. Check it, then edit or undo it if
+                  it is wrong.
+                </p>
+              )}
+              {canEdit && (
                 <div className="form-actions">
-                  <button
-                    className="button"
-                    onClick={() => {
-                      setText(item.statement);
-                      setEditing(true);
-                    }}
-                  >
-                    <Edit3 size={13} /> Suggest an edit
-                  </button>
-                  {(item.scope !== 'aub' || isPresident) && (
-                    <button className="text-button muted" onClick={() => setRetiring(true)}>
-                      {item.scope === 'aub' ? 'Propose retirement' : 'Retire'}
+                  {item.status !== 'retired' && (
+                    <button
+                      className="button"
+                      onClick={() => {
+                        setText(item.statement);
+                        setEditing(true);
+                      }}
+                    >
+                      <Edit3 size={13} /> Edit
                     </button>
                   )}
+                  {item.history.length > 1 && (
+                    <button
+                      className="button"
+                      disabled={action.pending}
+                      onClick={async () => {
+                        const result = await action.run(() => api.undoFact(id));
+                        if (result.ok) {
+                          fact.reload();
+                          refresh();
+                          notify(
+                            'Went back to the previous version. Nothing is lost from history.',
+                          );
+                        }
+                      }}
+                    >
+                      <Undo2 size={13} /> Undo last change
+                    </button>
+                  )}
+                  {item.status !== 'retired' &&
+                    (item.scope !== 'aub' || isPresident || item.auto) && (
+                      <button className="text-button muted" onClick={() => setRetiring(true)}>
+                        Retire
+                      </button>
+                    )}
                 </div>
               )}
             </section>
@@ -384,24 +412,27 @@ export function KnowledgeFact() {
                 )}
               </section>
             </div>
-            <Modal open={editing} title="Suggest an edit" onClose={() => setEditing(false)}>
+            <Modal open={editing} title="Edit this fact" onClose={() => setEditing(false)}>
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
                   const result = await action.run(() => api.suggestEdit(id, text));
                   if (result.ok) {
-                    notify('Suggested edit sent to Review. The current fact is unchanged.');
+                    notify(
+                      'Fact updated. The old version stays in history, and you can undo the change.',
+                    );
+                    fact.reload();
                     setEditing(false);
                     refresh();
                   }
                 }}
               >
                 <p>
-                  Your change becomes a proposal in Review. The approved fact stays as it is until a
-                  cabinet member checks it.
+                  Your change applies at once. The old version stays in history, and you can undo
+                  the change.
                 </p>
                 <label className="field">
-                  <span>Suggested statement</span>
+                  <span>Statement</span>
                   <textarea
                     value={text}
                     onChange={(e) => setText(e.target.value)}
@@ -413,7 +444,7 @@ export function KnowledgeFact() {
                 <ErrorNotice message={action.error} />
                 <div className="form-actions">
                   <button className="button primary" disabled={action.pending || !text.trim()}>
-                    Send to Review
+                    Save change
                   </button>
                   <button className="button" type="button" onClick={() => setEditing(false)}>
                     Cancel
@@ -421,15 +452,10 @@ export function KnowledgeFact() {
                 </div>
               </form>
             </Modal>
-            <Modal
-              open={retiring}
-              title={item.scope === 'aub' ? 'Propose retiring this rule?' : 'Retire this fact?'}
-              onClose={() => setRetiring(false)}
-            >
+            <Modal open={retiring} title="Retire this fact?" onClose={() => setRetiring(false)}>
               <p>
-                {item.scope === 'aub'
-                  ? 'Shared rules require review and a second president. This creates a proposal and leaves the current rule in place.'
-                  : 'It will stop appearing as current knowledge. Its sources and history stay available.'}
+                It will stop appearing as current knowledge. Its sources and history stay available,
+                and you can undo it.
               </p>
               <ErrorNotice message={action.error} />
               <div className="form-actions">
@@ -442,15 +468,11 @@ export function KnowledgeFact() {
                       setRetiring(false);
                       fact.reload();
                       refresh();
-                      notify(
-                        item.scope === 'aub' || api.mode === 'http'
-                          ? 'Retirement proposal sent to Review.'
-                          : 'Fact retired. History is retained.',
-                      );
+                      notify('Fact retired. History is retained, and you can undo it.');
                     }
                   }}
                 >
-                  {item.scope === 'aub' ? 'Send proposal' : 'Retire fact'}
+                  Retire fact
                 </button>
                 <button className="button" onClick={() => setRetiring(false)}>
                   Cancel
