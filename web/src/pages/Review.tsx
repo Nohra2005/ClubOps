@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router';
 import { Check, CheckCheck, FileText, GitMerge, Scale, ShieldCheck, Upload, X } from 'lucide-react';
 import { useApp } from '../AppContext';
 import type { ReviewCard, ReviewDecision, ReviewFilter, Source } from '../api/types';
+import { Linkified } from '../components/Linkified';
 import { canBatchApprove, canReview, isShared, reviewGroups } from '../api/review-policy';
 import {
   PageHeading,
@@ -22,7 +23,9 @@ function ReviewSource({ source }: { source: Source }) {
   return (
     <>
       {source.quote ? (
-        <blockquote>{source.quote}</blockquote>
+        <blockquote>
+          <Linkified text={source.quote} />
+        </blockquote>
       ) : (
         <p className="inline-note">
           No source quote supplied. Check the original source before approving.
@@ -134,7 +137,9 @@ function ReviewItem({
               {card.type === 'merge' ? 'Proposed fact' : 'Version A'}
               {card.type === 'disagreement' && strongerA && <span>Stronger source</span>}
             </div>
-            <p>{card.statement}</p>
+            <p>
+              <Linkified text={card.statement} />
+            </p>
             <ReviewSource source={card.source} />
           </div>
           <div>
@@ -146,13 +151,17 @@ function ReviewItem({
                   <span>Stronger source</span>
                 )}
             </div>
-            <p>{card.alternative.statement}</p>
+            <p>
+              <Linkified text={card.alternative.statement} />
+            </p>
             <ReviewSource source={card.alternative.source} />
           </div>
         </div>
       ) : (
         <>
-          <p className="review-statement">{card.statement}</p>
+          <p className="review-statement">
+            <Linkified text={card.statement} />
+          </p>
           <ReviewSource source={card.source} />
         </>
       )}

@@ -411,3 +411,19 @@ def test_the_threshold_is_ten_people(store: KnowHowStore, tmp_path: Path) -> Non
 def test_when_the_audience_is_unknown_the_models_label_still_decides(store: KnowHowStore, tmp_path: Path) -> None:
     assert scoped(store, tmp_path, "aub", None).proposals[0].candidate.scope.value == "aub"
     assert scoped(store, tmp_path, "club", None).proposals[0].candidate.scope.value == "club"
+
+
+def test_a_match_to_an_unrelated_fact_is_dropped_so_nothing_gets_replaced(known: KnowHowStore, tmp_path: Path) -> None:
+    campus = {
+        **LESSON,
+        "title": "Emailed campus access requests are no longer accepted",
+        "statement": "Campus access requests sent by e-mail get no notice any more; use the new form.",
+        "quote": "requests sent by e-mail will no longer be accepted",
+    }
+    provider = Provider(
+        {"facts": [campus]}, {"matches": [{"fact": 0, "op": "update", "target": "kh-cafe-b-notice", "why": "x"}]}
+    )
+    [p] = capture(
+        known, tmp_path, provider, "Please note requests sent by e-mail will no longer be accepted."
+    ).proposals
+    assert p.op is ProposalOp.CREATE and p.target_item is None  # F-246

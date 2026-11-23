@@ -283,10 +283,59 @@ Answer JSON only: {"facts": [...]}  (an empty list is fine)."""
 
 MATCH_SYSTEM = """You compare new facts with facts a club already approved. For each new fact answer one of:
 "create" (nothing similar), "merge" (says the same thing as an existing fact), "update" (a newer or more
-precise version of an existing fact, or the same topic with different details such as another form, office or deadline),
+precise version of an existing fact),
 "contradiction" (disagrees with an existing fact; a person decides).
 "target" is the id of the existing fact for merge, update and contradiction. Use only the ids shown.
 Answer JSON only: {"matches": [{"fact": 0, "op": "...", "target": "kh-...", "why": "<one line>"}]}"""
+
+
+_FILLER = frozenset(
+    [
+        "that",
+        "this",
+        "with",
+        "from",
+        "they",
+        "must",
+        "have",
+        "been",
+        "will",
+        "through",
+        "their",
+        "there",
+        "which",
+        "when",
+        "where",
+        "what",
+        "your",
+        "each",
+        "into",
+        "also",
+        "than",
+        "then",
+        "only",
+        "about",
+        "because",
+        "after",
+        "before",
+        "could",
+        "should",
+        "would",
+        "these",
+        "those",
+    ]
+)
+
+
+def _topic_words(text: str) -> set[str]:
+    return {w for w in re.findall(r"[a-z]{4,}", text.casefold()) if w not in _FILLER}
+
+
+def _same_topic(new: KnowHowItem, known: KnowHowItem) -> bool:
+    """A match the model proposes must share at least two real words with the fact it points at; a card for campus
+    access must never replace a room-reservation fact (F-246)."""
+    new_words = _topic_words(f"{new.title} {new.statement}")
+    return len(new_words & _topic_words(f"{known.title} {known.statement}")) >= 2
 
 
 # ------------------------------------------------------------------- candidates
@@ -505,8 +554,10 @@ class Learner:
                     budget,
                 )
                 for m in answer.matches:
-                    allowed = {h.item_id for h in similar.get(m.fact, [])}
-                    if m.op == "create" or (m.target in allowed):
+                    shown = {h.item_id: h for h in similar.get(m.fact, [])}
+                    if m.op == "create" or (
+                        m.target in shown and _same_topic(candidates[m.fact].item, shown[m.target])
+                    ):
                         decided[m.fact] = m
             except CapabilityError:
                 pass
