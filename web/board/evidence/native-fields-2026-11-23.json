@@ -1,0 +1,78 @@
+{
+  "kind": "verified native-field backlog reconciliation",
+  "observed_at_utc": "2026-11-23T14:01:48.294Z",
+  "source_commit": "2bb9f5e9fb3eea984b4ebf9c50ac191bdc0d4ed5",
+  "source_ref": "origin/main",
+  "task_cards": 93,
+  "issue_cards": [
+    {
+      "number": 43,
+      "owner": "christophe",
+      "status": "In progress"
+    },
+    {
+      "number": 83,
+      "owner": "tatiana",
+      "status": "In progress"
+    },
+    {
+      "number": 84,
+      "owner": "christophe",
+      "status": "In progress"
+    }
+  ],
+  "meeting_dates": ["2026-11-02", "2026-11-09", "2026-11-16", "2026-11-23"],
+  "meeting_dates_source": "Meeting dates reported by Christophe on 23 November 2026; attendance and oral decisions are not inferred from commits.",
+  "native_mutations": 542,
+  "remaining_mutations": 0,
+  "verified": true,
+  "allocation_note": "Current planning/grouping from repository history; not original meeting assignments or verified minutes",
+  "bulk_invocations": 1,
+  "tool_commit": "18f34507165c655d7e288c3d1ae93e124f6b1052",
+  "total_cards": 96,
+  "assignees_by_owner": {
+    "tatiana": 37,
+    "christophe": 36,
+    "joey": 23
+  },
+  "native_status_counts": {
+    "Done": 49,
+    "In review": 2,
+    "In progress": 18,
+    "Backlog": 10,
+    "Ready": 2,
+    "Blocked": 15
+  },
+  "iteration_counts": {
+    "earlier baseline / unknown completion date": 29,
+    "2026-11-23": 47,
+    "2026-11-16": 10,
+    "2026-11-02": 6,
+    "2026-11-09": 4
+  },
+  "priority_counts": {
+    "P2": 68,
+    "P0": 16,
+    "P1": 12
+  },
+  "mirror": {
+    "url": "https://github.com/users/Nohra2005/projects/4",
+    "tasks": 93,
+    "created": 1,
+    "updates": 96,
+    "source_commit": "2bb9f5e9fb3eea984b4ebf9c50ac191bdc0d4ed5",
+    "verified": true,
+    "profile": "additive",
+    "unmanaged_preserved": true,
+    "field_names": {
+      "Status": "ClubOps status",
+      "Owner": "ClubOps owner",
+      "Task ID": "ClubOps task id",
+      "Needs": "ClubOps needs",
+      "Sprint": "ClubOps sprint"
+    },
+    "view_grouping": "Card fields verified; use --columns to verify the separate status-column view"
+  },
+  "assignment_projection_sha256": "efef2cba090dc0dbf2502871d0642eaf1426b889ead921eb24eb67681aac2353",
+  "limits": "Dates reported by Christophe; historical topics are commit-history summaries, not verified minutes, attendance or original commitments. Estimates are present-day planning points, not measured hours."
+}

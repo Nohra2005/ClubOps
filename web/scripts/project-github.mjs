@@ -1,5 +1,6 @@
 /** GitHub Projects v2 adapter. No deletes, public exposure, tokens or workflow credentials. */
 import { managedItems, marker } from './project-plan.mjs';
+import { profileFor } from './project-profile.mjs';
 
 export const fieldSelection = `
  ... on ProjectV2Field { id name dataType }
@@ -13,18 +14,21 @@ export const itemSelection = `id isArchived content {
  ... on ProjectV2ItemFieldTextValue { text field { ... on ProjectV2Field { id } } }
  ... on ProjectV2ItemFieldSingleSelectValue { optionId field { ... on ProjectV2SingleSelectField { id } } }
  ... on ProjectV2ItemFieldIterationValue { iterationId field { ... on ProjectV2IterationField { id } } }
+ ... on ProjectV2ItemFieldNumberValue { number field { ... on ProjectV2Field { id } } }
 } }`;
 
 async function pages(api, query, variables, connection) {
   const nodes = [];
+  const visited = new Set();
   let cursor = null;
   do {
     const page = connection(await api(query, { ...variables, cursor }));
     if (!page || !Array.isArray(page.nodes)) throw new Error('Missing Projects connection');
     nodes.push(...page.nodes);
     const next = page.pageInfo.hasNextPage ? page.pageInfo.endCursor : null;
-    if (page.pageInfo.hasNextPage && (!next || next === cursor))
+    if (page.pageInfo.hasNextPage && (!next || next === cursor || visited.has(next)))
       throw new Error('Invalid Projects pagination');
+    visited.add(next);
     cursor = next;
   } while (cursor);
   return nodes;
@@ -32,8 +36,10 @@ async function pages(api, query, variables, connection) {
 
 export async function batch(api, operations) {
   const results = [];
-  for (let start = 0; start < operations.length; start += 20) {
-    const group = operations.slice(start, start + 20);
+  // Creation aliases can outlast GitHub's execution window while applying a partial batch.
+  // Keep every request small; a failed request is reconciled by read-back, never replayed blindly.
+  for (let start = 0; start < operations.length; start += 5) {
+    const group = operations.slice(start, start + 5);
     const variables = Object.fromEntries(group.map((op, i) => [`i${i}`, op.input]));
     const declarations = group.map((op, i) => `$i${i}:${op.type}!`).join(',');
     const body = group.map((op, i) => `m${i}:${op.name}(input:$i${i}){${op.selection}}`).join('\n');
@@ -112,7 +118,9 @@ export async function snapshot(api, owner, number) {
     `query Board($owner:String!,$number:Int!) { user(login:$owner) { projectV2(number:$number) {
       id title url public closed readme viewerCanUpdate
       fields(first:100) { nodes { ${fieldSelection} } pageInfo { hasNextPage } }
-      views(first:100) { nodes { id name layout } pageInfo { hasNextPage } }
+      views(first:100) { nodes { id name number layout
+        verticalGroupByFields(first:20) { nodes { ${fieldSelection} } pageInfo { hasNextPage } }
+      } pageInfo { hasNextPage } }
     } } }`,
     { owner, number },
   );
@@ -120,6 +128,8 @@ export async function snapshot(api, owner, number) {
   if (!project) throw new Error('Project not found');
   if (project.fields.pageInfo.hasNextPage || project.views.pageInfo.hasNextPage)
     throw new Error('Unexpectedly large project configuration; refusing a partial sync');
+  if (project.views.nodes.some((view) => view.verticalGroupByFields?.pageInfo?.hasNextPage))
+    throw new Error('Incomplete view column fields; refusing a partial sync');
   const items = await pages(
     api,
     `query BoardItems($id:ID!,$cursor:String) { node(id:$id) { ... on ProjectV2 {
@@ -131,11 +141,9 @@ export async function snapshot(api, owner, number) {
   return { ...project, items };
 }
 
-export function preflight(project, plan) {
+export function inspectProject(project, plan) {
   if (project.public || project.closed || !project.viewerCanUpdate)
     throw new Error('Sync requires an open, private project with write access');
-  if (!project.readme?.startsWith(`${marker}\n${plan.repository}\n`))
-    throw new Error('This is not the dedicated managed ClubOps project');
   const managed = managedItems(project.items);
   const ids = new Set(plan.cards.map((card) => card.id));
   for (const id of managed.keys())
@@ -153,4 +161,12 @@ export function preflight(project, plan) {
   const names = project.fields.nodes.map((field) => field.name);
   if (new Set(names).size !== names.length) throw new Error('Duplicate project field names');
   return managed;
+}
+
+export function preflight(project, plan) {
+  if (!profileFor(project, plan))
+    throw new Error(
+      'This is not the dedicated managed ClubOps project; explicit adoption is required',
+    );
+  return inspectProject(project, plan);
 }
