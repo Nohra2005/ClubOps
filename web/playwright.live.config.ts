@@ -4,7 +4,7 @@ import base from './playwright.config';
 export default defineConfig({
   ...base,
   testIgnore: [],
-  testMatch: ['live-api.spec.ts', 'local-login.spec.ts'],
+  testMatch: ['live-api.spec.ts', 'local-login.spec.ts', 'setup-live.spec.ts'],
   // One test at a time: both browsers share this temporary, synthetic API store.
   fullyParallel: false,
   workers: 1,
