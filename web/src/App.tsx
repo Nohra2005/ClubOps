@@ -18,7 +18,6 @@ import {
   CalendarDays,
   CheckCheck,
   ChevronDown,
-  GraduationCap,
   LogOut,
   Mail,
   MessageCircle,
@@ -42,6 +41,8 @@ import Inbox from './pages/Inbox';
 import Login from './pages/Login';
 import { storage } from './api';
 import { PageHeading } from './components/ui';
+import { RoleLearningProvider } from './handover/RoleLearning';
+import { RoleTour } from './handover/RoleTour';
 
 const navigation = [
   { to: '/chat', label: 'Chat', icon: MessageCircle },
@@ -50,17 +51,27 @@ const navigation = [
   { to: '/calendar', label: 'Calendar', icon: CalendarDays },
   { to: '/inbox', label: 'Inbox', icon: Mail },
   { to: '/knowledge', label: 'Knowledge', icon: BookOpen },
-  { to: '/handover', label: 'Handover', icon: GraduationCap },
   { to: '/settings', label: 'Settings', icon: Settings2 },
 ];
 
 function Shell() {
+  const { api, me } = useApp();
+  return (
+    <RoleLearningProvider key={JSON.stringify([api.mode, me.club.id, me.user.member_id, me.role])}>
+      <ShellContent />
+    </RoleLearningProvider>
+  );
+}
+
+function ShellContent() {
   const { me, api, switchDemo, signOut, signingOut, signedOut, offline, isPresident } = useApp();
   const location = useLocation();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
-  const title = navigation.find((n) => location.pathname.startsWith(n.to))?.label ?? 'Workspace';
+  const title =
+    navigation.find((n) => location.pathname.startsWith(n.to))?.label ??
+    (location.pathname === '/handover' ? 'Start your role' : 'Workspace');
   useEffect(() => {
     document.title = `${title} · ClubOps`;
   }, [title]);
@@ -206,7 +217,7 @@ function Shell() {
                 <p>
                   {roleLabels[me.role]} · {me.club.name}
                 </p>
-                <Link to="/handover">Handover guide</Link>
+                <Link to="/handover">Start your role / handover</Link>
                 <Link to="/settings">{isPresident ? 'Settings' : 'View club settings'}</Link>
                 {api.mode === 'demo' && (
                   <label className="field">
@@ -250,7 +261,12 @@ function Shell() {
             Adviser view · browse your club's workspace with read-only access.
           </div>
         )}
-        <main id="main" className="page" key={`${me.club.id}:${me.role}`}>
+        <main
+          id="main"
+          className="page"
+          key={`${api.mode}:${me.club.id}:${me.user.member_id}:${me.role}`}
+        >
+          <RoleTour />
           <Outlet />
         </main>
         <footer className="page-footer">

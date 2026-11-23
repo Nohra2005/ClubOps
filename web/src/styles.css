@@ -4012,3 +4012,109 @@ kbd {
 .lifecycle-preview {
   margin-bottom: 24px;
 }
+.role-introduction {
+  margin-bottom: 2rem;
+}
+.role-introduction h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  margin: 0.6rem 0;
+}
+.role-intro-lead {
+  max-width: 48rem;
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+.role-intro-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  margin-top: 1.5rem;
+}
+.role-intro-grid .panel {
+  padding: 1.6rem;
+}
+.role-intro-grid p {
+  line-height: 1.65;
+}
+.role-welcome {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.2rem;
+  border: 1px solid #c8dcd2;
+  background: #f1f7f3;
+  border-radius: 14px;
+  margin-bottom: 1.5rem;
+}
+.role-welcome p {
+  margin: 0.3rem 0 0;
+}
+.role-welcome > div {
+  flex: 1;
+}
+.role-tour {
+  border: 2px solid #28674e;
+  border-radius: 14px;
+  padding: 1.3rem;
+  margin-bottom: 1.5rem;
+  background: #f1f7f3;
+}
+.role-tour h2 {
+  margin: 0.5rem 0;
+}
+.role-tour p {
+  max-width: 65ch;
+  line-height: 1.65;
+}
+.role-tour .compact-actions {
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+.role-tour-highlight {
+  outline: 3px solid #28674e;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+.role-chat-help {
+  padding: 1rem 1.3rem;
+  border: 1px solid #c8dcd2;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  background: #f1f7f3;
+}
+.role-chat-help label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+}
+.role-chat-help p {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.handover-reference > summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 1.2rem;
+  border: 1px solid #c8dcd2;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 700px) {
+  .role-intro-grid {
+    grid-template-columns: 1fr;
+  }
+  .role-welcome {
+    flex-wrap: wrap;
+  }
+  .role-welcome > div {
+    flex-basis: calc(100% - 3rem);
+  }
+  .role-tour .button {
+    min-height: 44px;
+  }
+}
+
+.role-first-fact {
+  margin-bottom: 1.5rem;
+}

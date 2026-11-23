@@ -6,6 +6,7 @@ export default defineConfig({
   testIgnore: [],
   testMatch: [
     'contracts.spec.ts',
+    'role-learning.spec.ts',
     'demo-rehearsal.spec.ts',
     'session-http.spec.ts',
     'inbox-actions.spec.ts',
@@ -13,7 +14,7 @@ export default defineConfig({
   ],
   use: { ...base.use, baseURL: 'http://127.0.0.1:5174', serviceWorkers: 'block' },
   webServer: {
-    command: 'npm run dev -- --port 5174 --strictPort',
+    command: 'node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5174 --strictPort',
     url: 'http://127.0.0.1:5174',
     env: {
       VITE_API_MODE: 'http',
