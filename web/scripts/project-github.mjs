@@ -14,6 +14,7 @@ export const itemSelection = `id isArchived content {
  ... on ProjectV2ItemFieldTextValue { text field { ... on ProjectV2Field { id } } }
  ... on ProjectV2ItemFieldSingleSelectValue { optionId field { ... on ProjectV2SingleSelectField { id } } }
  ... on ProjectV2ItemFieldIterationValue { iterationId field { ... on ProjectV2IterationField { id } } }
+ ... on ProjectV2ItemFieldNumberValue { number field { ... on ProjectV2Field { id } } }
 } }`;
 
 async function pages(api, query, variables, connection) {
