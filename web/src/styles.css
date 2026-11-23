@@ -4114,3 +4114,7 @@ kbd {
     min-height: 44px;
   }
 }
+
+.role-first-fact {
+  margin-bottom: 1.5rem;
+}

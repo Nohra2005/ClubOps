@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { storage } from '../api';
 import { useApp } from '../AppContext';
-import { initialProgress, progressKey, readProgress, type Progress } from './progress';
+import { progressKey, readProgress, type Progress } from './progress';
 
 const Context = createContext<{
   progress: Progress;
@@ -13,13 +13,11 @@ export function RoleLearningProvider({ children }: { children: ReactNode }) {
   // The parent keys this provider by session identity, preventing cross-member state reuse.
   const [progress, setProgress] = useState(() => readProgress(storage.getItem(key)));
   function update(change: Partial<Progress>) {
-    setProgress((current) => {
-      const next = readProgress(JSON.stringify({ ...current, ...change, version: 1 }));
-      storage.setItem(key, JSON.stringify(next));
-      return next;
-    });
+    const next = readProgress(JSON.stringify({ ...progress, ...change, version: 1 }));
+    setProgress(next);
+    storage.setItem(key, JSON.stringify(next));
   }
-  return <Context value={{ progress: progress ?? initialProgress(), update }}>{children}</Context>;
+  return <Context value={{ progress, update }}>{children}</Context>;
 }
 export function useRoleLearning() {
   const value = useContext(Context);

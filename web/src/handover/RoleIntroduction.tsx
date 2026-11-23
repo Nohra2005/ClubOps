@@ -9,6 +9,7 @@ export default function RoleIntroduction() {
   const { me, isPresident } = useApp();
   const { progress, update } = useRoleLearning();
   const navigate = useNavigate();
+  const ready = me.role !== 'adviser' && me.club.setup_complete;
   const resumable = ['active', 'paused'].includes(progress.status);
   return (
     <section className="role-introduction" aria-labelledby="role-start-title">
@@ -31,7 +32,17 @@ export default function RoleIntroduction() {
               ? 'Your access stays read only. The sourced guide and open questions are below.'
               : 'Four short stops through Events, Calendar, Knowledge and Chat. Skip, pause, or return whenever you need.'}
           </p>
-          {me.role !== 'adviser' && (
+          {!me.club.setup_complete && (
+            <p>
+              This club has not finished its setup interview.{' '}
+              {isPresident ? (
+                <Link to="/setup">Complete club setup first</Link>
+              ) : (
+                'Ask the president to finish club setup first.'
+              )}
+            </p>
+          )}
+          {ready && (
             <>
               <p className="inline-note">
                 {progress.status === 'complete'

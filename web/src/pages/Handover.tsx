@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { ArrowRight, Check, Download, GraduationCap, Printer } from 'lucide-react';
 import { useApp } from '../AppContext';
 import { roleLabels, roles, type Role } from '../api/types';
-import { PageHeading, ErrorNotice, Modal, NotSure, Resource, SourceChip } from '../components/ui';
+import { ErrorNotice, Modal, NotSure, Resource, SourceChip } from '../components/ui';
 import { useAction, useResource } from '../hooks';
 import { downloadText, formatDate } from '../lib';
 import RoleIntroduction from '../handover/RoleIntroduction';
@@ -36,23 +36,41 @@ export default function Handover() {
   return (
     <>
       <RoleIntroduction />
+      {guide.value?.role === me.role && guide.value.sections[0]?.entries[0] && (
+        <section className="panel role-first-fact" aria-label="A first thing to know">
+          <span className="eyebrow">FROM YOUR CLUB?S APPROVED KNOWLEDGE</span>
+          <h2>A first thing to know</h2>
+          <p>{guide.value.sections[0].entries[0].text}</p>
+          {(
+            guide.value.sections[0].entries[0].sources ?? [
+              guide.value.sections[0].entries[0].source,
+            ]
+          ).map((source) => (
+            <SourceChip key={source.item_id} source={source} />
+          ))}
+          <p className="inline-note">
+            Open the reference below for the rest of this role's sources and unanswered questions.
+          </p>
+        </section>
+      )}
+
       <details className="handover-reference">
         <summary>Reference guide, sources and outgoing questions</summary>
-        <PageHeading
-          eyebrow="FOR THE NEXT PERSON IN YOUR SEAT"
-          title="Handover"
-          description="Give the next cabinet your lessons, your sources, and a head start."
-          action={
-            <div className="compact-actions">
-              <button className="button" onClick={exportGuide} disabled={!guide.value}>
-                <Download size={13} /> Download text
-              </button>
-              <button className="button" onClick={() => window.print()} disabled={!guide.value}>
-                <Printer size={13} /> Print / save PDF
-              </button>
-            </div>
-          }
-        />
+        <header className="page-heading">
+          <div>
+            <span className="eyebrow">THE SOURCED REFERENCE</span>
+            <h2>Handover</h2>
+            <p>Keep the sources and open questions behind this role.</p>
+          </div>
+          <div className="compact-actions">
+            <button className="button" onClick={exportGuide} disabled={!guide.value}>
+              <Download size={13} /> Download text
+            </button>
+            <button className="button" onClick={() => window.print()} disabled={!guide.value}>
+              <Printer size={13} /> Print / save PDF
+            </button>
+          </div>
+        </header>
         <div className="handover-banner">
           <span className="handover-banner-icon">
             <GraduationCap size={32} />
@@ -144,7 +162,8 @@ export default function Handover() {
                   </div>
                 </div>
               ) : (
-                isPresident && (
+                isPresident &&
+                api.mode === 'demo' && (
                   <div className="handover-signoff">
                     <div>
                       <strong>Ready to pass it on?</strong>
@@ -159,6 +178,12 @@ export default function Handover() {
             </>
           )}
         </Resource>
+        {isPresident && api.mode === 'http' && (
+          <p className="inline-note">
+            Handover sign-off is not available here yet. You can still read and download the sourced
+            guide.
+          </p>
+        )}
       </details>
       <Modal open={confirm} title="Sign off this handover?" onClose={() => setConfirm(false)}>
         <p>

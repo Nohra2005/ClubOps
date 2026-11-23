@@ -16,7 +16,9 @@ export function RoleTour() {
   const onStep = location.pathname === step.path;
   useEffect(() => {
     if (!active || !onStep) return;
-    const nodes = document.querySelectorAll(`a[href="${step.path}"]`);
+    const nodes = document.querySelectorAll(
+      `.nav-link[href="${step.path}"], .mobile-nav a[href="${step.path}"]`,
+    );
     nodes.forEach((node) => node.classList.add('role-tour-highlight'));
     return () => nodes.forEach((node) => node.classList.remove('role-tour-highlight'));
   }, [active, onStep, step.path]);
