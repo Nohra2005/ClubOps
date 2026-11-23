@@ -31,7 +31,7 @@ test('plans through the real API, requires approval, and retains the approved re
   await page.goto('/handover');
   await page.getByText('Reference guide, sources and outgoing questions', { exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Handover', exact: true })).toBeVisible();
-  await expect(page.getByText("What we don't know yet", { exact: true })).toBeVisible();
+  await expect(page.getByText('Questions for the outgoing cabinet', { exact: true })).toBeVisible();
   const guideResponse = page.waitForResponse('**/api/handover/events');
   await page.getByRole('combobox', { name: /Guide for/ }).selectOption('events');
   expect((await guideResponse).ok()).toBe(true);
