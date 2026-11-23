@@ -1,0 +1,31 @@
+{
+  "clubs": [
+    {
+      "club_id": "synthetic-academic",
+      "answers": [
+        {"id": "ai1", "on": "2026-09-20", "statement": "Our synthetic academic club often organizes workshops and conferences."},
+        {"id": "ai2", "on": "2026-09-21", "statement": "We usually plan for small student groups in classrooms."},
+        {"id": "ai3", "on": "2026-09-22", "statement": "Our president confirms guest-speaker invitations before a conference draft is sent."},
+        {"id": "ai4", "on": "2026-09-23", "statement": "We keep a short internal summary after each academic event."}
+      ]
+    },
+    {
+      "club_id": "synthetic-cultural",
+      "answers": [
+        {"id": "ci1", "on": "2026-09-20", "statement": "Our synthetic cultural club often holds film discussions and art exhibitions."},
+        {"id": "ci2", "on": "2026-09-21", "statement": "Discussion screenings usually use a classroom."},
+        {"id": "ci3", "on": "2026-09-22", "statement": "Exhibition volunteers prepare display materials before opening day."},
+        {"id": "ci4", "on": "2026-09-23", "statement": "We keep reusable display boards in club storage."}
+      ]
+    },
+    {
+      "club_id": "synthetic-social",
+      "answers": [
+        {"id": "si1", "on": "2026-09-20", "statement": "Our synthetic social club organizes student concerts and plays."},
+        {"id": "si2", "on": "2026-09-21", "statement": "Performances usually use an auditorium."},
+        {"id": "si3", "on": "2026-09-22", "statement": "Volunteers help with seating before performances."},
+        {"id": "si4", "on": "2026-09-23", "statement": "Our cabinet keeps an internal inventory of reusable stage props."}
+      ]
+    }
+  ]
+}

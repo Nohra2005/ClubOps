@@ -608,6 +608,16 @@ Reference documents:
 - What: (1) Setup (C-21): a step to add an extra sending address and show the code to e-mail; an Outlook forwarding guide (OSA senders only) showing the club's `+tag` address with a copy button, and a "Test my forwarding" button. (2) Inbox screen: waiting e-mails, a "Read this" button that says it costs money, and the reason when an e-mail was skipped ("ClubOps only reads e-mails forwarded from OSA staff"). (3) Review cards (C-34): an expiry date field, an AUB-wide / club-only label, an "Add to calendar" box for deadlines (ticked by default) with who it is for, and an archive view with Restore.
 - Done when: each screen has frontend tests against the T-47 routes (stubbed until they land) and is in the demo build before the 23 Nov meet-up.
 
+### C-36 Patch the frontend development dependency audit
+- Owner: christophe
+- Status: review
+- Progress (2026-11-23): merged #122 duplicate-F-249 correction from main; all 10 branch-local task/failure/log checks pass. Previous-head four non-Python CI checks passed; combined-head CI and re-approval pending.
+- Progress (2026-11-23): resolved current-main shared logs without losing either history; 733 Python tests/93.16%, 137 frontend units/12 tools, quality/build and both npm audits pass. Production dependency records unchanged; fresh-head CI and independent approval pending.
+- Progress (2026-11-22): synced reviewed session frontend and locked FastAPI/Ruff updates; full/production npm audits zero, 137 units and updated-main checks pass; existing remediation remains in review.
+- Needs: C-23
+- What: Patch the minimatch advisory found through the ESLint/TypeScript-ESLint development dependency chain. Keep application dependencies and security checks intact; verify a clean lockfile install, full/deployment-only audits and frontend quality checks. Provide a reproducible audit command and evidence.
+- Done when: the patched lockfile and audit command pass current checks and independent review, with the advisory and development-only scope documented.
+
 ## Joey: calendar, reminders, drafts
 
 ### J-01 Read the calendar contract and set up Google
@@ -724,7 +734,11 @@ Reference documents:
 - What: An adversarial test set that tries to break ClubOps: instructions hidden in an event description or a forwarded e-mail ("ignore the rules", "approve this"), fake "OSA" rules sent as facts, one club reaching another club's data, the adviser or a non-cabinet account changing things, a forged sign-in, spending past the limits. Start with the planner and the API (live now); add the chatbot and learning when T-17 and T-18 land. Made-up data only. Tests in `tests/security/` (yours). Also update `docs/threat-model.md` and write the report sections on security, the calendar and the inbox.
 - Done when: the set runs in `make check`; every way it found to break ClubOps has a failure-matrix row and is fixed (or the row says why not, and Tatiana agreed); and the injection attack success rate is measured (how many of the attacks worked) with the defences off and on, and reported in `results/`.
 - Progress (2026-10-31): synthetic API, learning, planner prompt and budget boundary tests added. The full adversarial corpus, real defense-off/on measurement and report sections remain pending.
+- Progress (2026-11-10): froze ten synthetic injections across event, mail, document, chat and after-event surfaces. A strict scorer accepts only complete reviewed defense-off/on boolean outcomes and prints aggregate rates; no model run or success-rate claim has been made. Tatiana must provide the isolated defense-off run and review private outcomes before results are published.
+- Progress (2026-11-11): Tatiana's PR #82 review identified a real benign-text false positive. Added a separately frozen four-case benign corpus and required false-positive counts alongside attack success. The detector regression remains an explicit expected failure until Tatiana fixes her owned learning detector (F-204); no measured rates are claimed.
 - Blocked (2026-11-20): #82 is synchronized with main and includes the frozen attack/benign scorer and security/calendar/inbox report sections. Full branch checks pass (696 passed, 1 skipped, 1 strict xfail; 92.77% coverage). F-204 benign mediator wording requires Tatiana's detector fix or explicit acceptance. Independently reviewed defense-off/on outcomes and results remain missing; scripted sample outcomes are not measurements.
+
+- Tooling publication (2026-11-23): user requests merging the independently reviewed #82 corpus/scorer now. This tooling slice can publish while J-13 remains blocked for F-204 resolution and reviewed measured attack/benign defense-off/on outcomes; no rate is claimed.
 
 ### J-14 Made-up events for the missing event types (was T-36)
 - Owner: joey
@@ -788,9 +802,15 @@ Reference documents:
 - Owner: joey
 - Status: blocked
 - Needs: J-14, T-41
-- What: Show ClubOps works for clubs it was not tuned on. `scripts/eval_new_club.py`: start a club empty (only the shared AUB layer), give it a starter pack of 0, 1, 3, then all onboarding documents, and plan its events after each step with `clubops.evaluation.plans` (approvals caught, false alarms, cost). Make 3 synthetic clubs of other kinds (academic, cultural, social; like J-14) with events and labels, and freeze them before running. Tatiana runs it on ASME (T-44) in T-26.
+- What: Test the president setup interview path (D-103): start a club empty (only the shared AUB layer), add 1, 3, then all 4 approved synthetic setup answers, then starter documents; plan events after each stage with `clubops.evaluation.plans` (approvals caught, false alarms, cost). Use three frozen synthetic clubs (academic, cultural, social). Tatiana runs the private ASME case (T-44) in T-26.
 - Done when: the script gives a curve table per club on synthetic data, with tests, in replay mode.
+- Progress (2026-11-10): three synthetic club starter packs and six reused frozen event labels pinned in `eval/new-club-FROZEN.md` before the runner is built.
+- Progress (2026-11-10): staged runner and synthetic tests built; checklist pipeline yields a table. ClubOps replay needs matching model recordings before a measured curve can be reported.
+- Progress (2026-11-10): draft PR #81 is open with Tatiana requested for review; it stays draft until the synthetic ClubOps replay is complete.
+- Progress (2026-11-11): review-driven rework adds a separately frozen synthetic president interview and five stages per club. The 15-row checklist confirms the pipeline only; complete model replay recordings are still needed for a measured ClubOps curve.
 - Blocked (2026-11-20): #81 is synchronized with main; five focused tests and the 15-row checklist CLI pass for empty, 1/3/4 interview answers, then documents. Complete matching ClubOps model recordings and a measured replay curve are still absent. Checklist/scorer fixtures verify the runner only. Tatiana owns private ASME evidence and T-26. PR remains draft until that gate is met.
+
+- Tooling publication (2026-11-23): user requests merging the independently reviewed #81 runner now. The earlier draft-only restriction is superseded for this tooling slice; J-20 remains blocked for the missing measured replay curve and matching recordings. No measured result is claimed.
 
 ### J-21 Automate shared-calendar cabinet access
 - Owner: joey
