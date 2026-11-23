@@ -312,6 +312,14 @@ _REDACTION_KINDS: dict[str, RedactionKind] = {
 WIDE_AUDIENCE = 10  # an e-mail sent to this many people or more is AUB-wide news, not one club's (D-126)
 
 
+_FORWARDER = re.compile(r"^Forwarded by:.*$", re.MULTILINE)
+
+
+def _hide_forwarder(text: str) -> str:
+    """The cabinet member who forwarded the e-mail is private metadata: the model never sees the address."""
+    return _FORWARDER.sub("Forwarded by: [cabinet member]", text)
+
+
 class Learner:
     def __init__(self, client: ModelClient | None, store: KnowHowStore) -> None:
         self.client = client
@@ -398,10 +406,11 @@ class Learner:
 
     def _prepare(self, source: Untrusted, today: date, unlisted_sender: bool = False) -> Learner._Prepared:
         # Verified OSA e-mails keep their links and office contacts: they are the know-how (F-241).
-        red = redact(
-            source.content[:MAX_SOURCE_CHARS],
-            keep_office_contacts=source.source.kind is SourceKind.EMAIL and not unlisted_sender,
-        )
+        is_email = source.source.kind is SourceKind.EMAIL
+        text = source.content[:MAX_SOURCE_CHARS]
+        if is_email:
+            text = _hide_forwarder(text)
+        red = redact(text, keep_office_contacts=is_email and not unlisted_sender)
         kinds: list[RedactionKind] = sorted({_REDACTION_KINDS[k] for k in red.kinds if k in _REDACTION_KINDS})
         return Learner._Prepared(source, red.text, kinds, injection_flags(red.text), outdated_note(red.text, today))
 
