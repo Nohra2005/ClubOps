@@ -1,6 +1,6 @@
 # Data provenance
 
-Updated 9 November 2026. Sources must be public, authorized or synthetic. A source's existence is not evidence that consent, a pilot or an evaluation has happened.
+Updated 16 November 2026. Sources must be public, authorized or synthetic. A source's existence is not evidence that consent, a pilot or an evaluation has happened.
 
 ## Source inventory
 
@@ -47,7 +47,7 @@ their companion files private under the evaluation's authorization.
 
 Running Club material cannot establish generalization to every AUB club. Synthetic scenarios test behavior but do not establish provider quality or user benefit. Real pilot, handover, security-rate and model-comparison claims must cite measured results in `docs/evidence.md`; prepared scripts alone do not support those claims.
 
-## Prepared setup data path (C-21, PR #55)
+## Integrated setup data path (C-21, PRs #55 and #87)
 
 The setup module labels incoming answers as Untrusted interview sources with the
 club and question locator. Its active progress row stores a question index and, only
@@ -58,5 +58,10 @@ that is not a secure-erasure or backup-retention guarantee. Human approval still
 controls whether a proposed fact becomes retrievable knowledge.
 
 All committed setup/browser/adapter examples are synthetic. No real ASME seed facts
-were supplied or invented. Owner wiring, source review and explicit approval remain
-necessary before claiming a real second-club demo; see [CLUB_SETUP.md](../web/CLUB_SETUP.md).
+were supplied or invented. Application wiring is merged in #87. The local
+`web/e2e/setup-live.spec.ts` regression uses separate synthetic desktop/phone clubs,
+real HTTP session cookies and SQLite, with skips rather than source extraction.
+It checks progress and access controls; it does not establish consent, learned-fact
+accuracy, source approval, provider cost or a completed real second-club demo.
+Source review, explicit approval and deployed acceptance remain necessary; see
+[CLUB_SETUP.md](../web/CLUB_SETUP.md).

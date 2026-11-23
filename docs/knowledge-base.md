@@ -1,6 +1,6 @@
 # Knowledge base and working memory
 
-Updated 9 November 2026. The memory model separates proposed knowledge, verified knowledge and event/run working state. Public interfaces are in `src/clubops/contracts/`; availability is in `docs/api.md`.
+Updated 16 November 2026. The memory model separates proposed knowledge, verified knowledge and event/run working state. Public interfaces are in `src/clubops/contracts/`; availability is in `docs/api.md`, with the merged #87 setup integration explained in [CLUB_SETUP.md](../web/CLUB_SETUP.md).
 
 ## Stores, scope and lifetime
 
@@ -14,6 +14,8 @@ Updated 9 November 2026. The memory model separates proposed knowledge, verified
 | Model recordings | Private replay/record material under configured storage | Replay avoids paid calls; recordings may contain derived content and are not metadata-only. Keep them private and subject to source authorization |
 | Run and trace reports | Per-club metadata; month aggregation uses Beirut time for recorded metrics | Deduplicate cumulative snapshots/trace IDs. No prompt, answer or step text in report records. Unscoped global traces are not read into a club's report |
 | Browser demo | Synthetic workspace, isolated by club and test user | Browser storage only for the demo; it is not production authentication or approved club knowledge |
+| Setup interview | Durable per-club SQLite progress and temporary extraction outbox; registered by #87 | Explicit president answers are untrusted inputs and only propose knowledge. Resume/skips do not extract. Completing the interview does not approve a fact or finish the starter checklist |
+| Starter checklist | Browser-local acknowledgements scoped by mode, club and member | Boolean ticks only; a successful upload acknowledgement is not fact verification. No cross-device checklist persistence is claimed |
 
 No automatic raw-data, history, recording or trace purge is claimed. Retention/deletion and backup restoration still require an implemented operational policy and evidence; see [data-provenance.md](data-provenance.md).
 
@@ -48,4 +50,12 @@ Production Google identity is matched to the cabinet list, with an HttpOnly sess
 
 ## Known limits
 
-Missing model-token/latency/retry records appear as unavailable, not zero. Real provider measurements, OpenTelemetry export, deployed alerts, production retention/backup recovery and evidence that handover improves users' results remain separate tasks. Read-only screen visits do not silently launch a model run or verify knowledge.
+Missing model-token/latency/retry records appear as unavailable, not zero. The optional
+C-25 OTLP exporter and synthetic local Jaeger proof are implemented; real producer
+hooks, real-provider measurements and deployed alerts remain separate work. See
+[observability/README.md](../web/observability/README.md) for the export boundary.
+Production retention/backup recovery and evidence that handover improves users'
+results remain unverified. Read-only screen visits do not silently launch a model
+run or verify knowledge. The accepted answer-only setup stale-tab limit (F-151)
+and rejected-proposal reappearance after a partial queue failure (F-201) still apply;
+use one setup tab and inspect proposals before approving them.
