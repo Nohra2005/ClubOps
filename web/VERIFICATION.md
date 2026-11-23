@@ -282,6 +282,64 @@ match the final C-35 tree whose root gates pass (710 tests, 93.14%, Ruff/format
 refresh. C-31 remains doing: three genuine weekly-review records are still needed.
 No meetings, unmerged task completion or deployed/provider evidence is invented.
 
+## 2026-11-16 — C-29 actual application setup
+
+Baseline: main `54d38c1`, with #87 application wiring and #89 Windows UTF-8 fix.
+The C-29 branch adds `e2e/setup-live.spec.ts` to the existing live-API suite. This
+fixture launches the actual production application factory, real HTTP cookies and
+temporary SQLite stores. It does not install a substitute setup route or intercept
+API responses. Empty synthetic clubs are separate for desktop and 375px phone.
+
+Observed checks:
+
+- `npm run test:e2e:live`: **8 passed**, including four new setup cases. The president
+  flow checks initial `/me` false, redirect, skip, stop/reload/resume at the same
+  question, unchanged progress after missing CSRF (403), completion with skips and
+  `/me` true after completion. Reopening reads completed progress. Review stays an
+  empty array; starter ticks stay 0 of 4. Actual adviser sessions receive 403 on
+  writes and cannot open the interview controls. Existing plan approval, calendar,
+  handover, usage and local-login regressions remain green.
+- `npm run check`: lint, format, strict app/rehearsal types, **68 frontend unit
+  tests**, **12 board-tool tests** and production build passed.
+- Root `make check` equivalents: Ruff/format (**153 files**), strict mypy (**82
+  files**), schema/task checks and **681 tests passed**, **93.11% coverage**.
+  A fresh `uv sync --all-extras --dev` environment used the current lockfile; Node
+  dependencies were installed independently with `npm ci` in this worktree.
+
+The first test attempt used an incorrect `{items: []}` assertion for Review's bare
+array response; correcting the assertion did not change application behavior.
+An earlier worktree dependency junction caused local font-serving warnings; the
+successful run used an independent install with those warnings resolved. Windows
+setup required the existing workspace uv executable on PATH. The existing
+Starlette/httpx and MLflow/SQLAlchemy deprecation warnings are not test failures.
+
+Limits: no extraction/model calls in setup, real identities, private sources,
+Google provider login, worker-restart claim, public deployment, live mailbox,
+actual ASME acceptance or measured learning quality. The Python adapter tests and
+synthetic rehearsal prove different boundaries. F-151 and F-201 remain known limits.
+CI on the new PR head and independent review are tracked on its PR, not assumed from
+this local result. C-29 still needs Joey's fresh README-only setup and report review.
+
+## 2026-11-20 - C-29 synced report and sourced teammate setup blocker
+
+Merged main `e4090c6` after #95/#96 landed; kept the main and C-29 shared rows.
+Renumbered only C-29's decision/failure to D-132/F-237 because new #103 uses
+D-126/F-227. Historical dated references remain unchanged. No backend implementation
+or contract authored. Report baseline now matches this merged API.
+
+Root gates on the final stable tree pass: 710 tests, 93.14% coverage, Ruff/format
+162 files, mypy 85 files, schemas/tasks. Frontend quality/build passes (68 units,
+12 board-tool cases). Actual local API/cookie/SQLite suite reran on this final
+baseline: all 8 desktop/phone cases pass, including setup and adviser denial.
+Ten shared-doc/task checks also pass.
+
+Joey's independently reported README-only attempt stopped before startup because
+Docker's Linux engine pipe was absent. The sourced receipt is
+[report/setup-attempt-2026-11-20.md](report/setup-attempt-2026-11-20.md). It is not a
+successful fresh install, Compose/login or deployed acceptance. C-29 remains doing;
+report incorporation and a successful fresh README-only setup remain open. No real
+provider/ASME result, new feature scope, self-merge or main push.
+
 ## 2026-11-19 - C-13 HTTP session view validation
 
 The published /api/me view now passes runtime validation before protected UI renders.
@@ -425,6 +483,14 @@ shared logs. No new feature scope or D/F IDs. Frontend quality/build passes with
 checks pass. Root make-check equivalents pass on the shared Python tree: 710
 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Board refresh source/read-back and zero-change repeat are in the new follow-up receipt; three real weekly-review records remain open.
 
+## 20 November - C-29 sync after #94 and #102 merged
+
+Merged main `0f3bb09`, preserving all earlier handoff/evidence lines and both
+shared logs. No new feature scope or D/F IDs. Frontend quality/build passes with
+108 units and 12 board-tool tests, lint/format/types; branch-local shared
+checks pass. Root make-check equivalents pass on the shared Python tree: 710
+tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Report/setup evidence and the blocked README-only receipt remain intact; successful fresh complete-app acceptance is still open.
+
 Original individual commits remain; fresh independent review and current-head CI
 are required after this sync. No backend/contract implementation or real data
 added, no self-merge/main push and no new scope before 23 November.
@@ -515,3 +581,45 @@ Preserved that owner's row and moved our native reconciliation regression to F-2
 D-137 is still unique. Earlier dated F-248 references above describe the work before
 this correction. Native source behavior/live read-back are unchanged; shared checks
 and formatting pass after renumbering. Next free IDs: D-138/F-250 after rechecking.
+
+## 2026-11-22 - C-29 review-ready sync before the meet-up
+
+Synced main `60d7027`, including reviewed #100 and the locked FastAPI 0.162.5 /
+Ruff 0.17.5 updates. Retained both sides of shared log conflicts and every previous
+handoff/evidence line. No original commit rewritten or new D/F ID allocated.
+
+Root make-check equivalents on the updated locked environment pass: 710 tests,
+93.14% coverage, Ruff/format 162 files, mypy 85 files, schemas/tasks. Frontend
+quality/build passes with 137 units and 12 board-tool cases, lint/format/types.
+Branch-local shared docs/tasks: 10 pass. All eight actual local HTTP/cookie/SQLite setup/planning cases passed with FastAPI 0.162.5. Report prose now links the merged session validator and HTTP regressions; real Google/hosting/ASME acceptance and the blocked README-only attempt remain explicit.
+
+The existing task status remains doing. Current-head CI and fresh independent
+approval are required after push. No new feature scope before 23 November, backend
+implementation/contract change, real private input, self-merge or main push.
+
+### 22 November owner scope update
+
+Christophe has dropped the weekly-review/sprint engineering bonus. The report now
+excludes that claim and no longer lists three meeting records as pending acceptance.
+Keep the existing board as an ordinary task tracker. C-29's fresh README-only setup,
+report incorporation and deployed/provider/club acceptance limits remain unchanged.
+D-133 and the narrowed tracker task are in #91; no other engineering bonus was cut.
+
+## 2026-11-23 - C-29 restored weekly practice and sourced board context
+
+**Did:** Synced main 2bb9f5e, preserving the actual setup row and main's sourced
+inbox/audience/expiry documentation. Restored weekly-practice reporting after
+Christophe reversed D-133 (D-137 in #91). The report links #91's repository-history
+summaries and attributes four Monday dates to Christophe; it does not infer
+attendance, oral decisions or original assignments from commits.
+
+**State:** Web quality/build passes: 137 units and 12 tools. Actual local
+HTTP/cookie/SQLite setup suite: 8/8. Shared tasks/log/failure checks: 10 pass.
+Merged Python baseline gates: 728 tests, 93.21%, Ruff/format 162 files, mypy
+85 files, schemas/tasks. Report remains doing; fresh README-only success,
+report incorporation and actual deployed/provider/club acceptance remain open.
+
+**Next / limits:** Fresh independent review and current-head CI, then a merge
+commit preserving the focused history. #91 performs the separately authorized
+native-field bulk correction. No real club inputs, paid model calls, invented
+meeting decisions or main push/self-merge.
