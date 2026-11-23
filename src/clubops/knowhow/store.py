@@ -20,6 +20,7 @@ from clubops.contracts.knowhow import (
     KnowHowItem,
     KnowHowProposal,
     ProposalOp,
+    RuleDetails,
     Scope,
     Support,
     VerifyDecision,
@@ -32,6 +33,22 @@ from clubops.knowhow.backends import Backend, MemoryBackend
 def _rebuild(item: KnowHowItem, **changes: Any) -> KnowHowItem:
     """Copy with changes, re-running every invariant (model_copy would skip them)."""
     return KnowHowItem.model_validate({**item.model_dump(), **changes})
+
+
+def with_lead_time(item: KnowHowItem, days: int) -> KnowHowItem:
+    """A rule with its notice period changed: the requirement(s) that carry the longest one, the number the
+    Knowledge page shows, get ``days``. Editing the words alone left the planner on the old number (F-309)."""
+    details = item.details
+    if not isinstance(details, RuleDetails):
+        raise CapabilityError(ErrorCode.INVALID_INPUT, "only a rule has a notice period")
+    longest = max((r.lead_time_days for r in details.requirements if r.lead_time_days is not None), default=None)
+    if longest is None:
+        raise CapabilityError(ErrorCode.INVALID_INPUT, "this rule has no notice period to change")
+    changed = [
+        r.model_copy(update={"lead_time_days": days}) if r.lead_time_days == longest else r
+        for r in details.requirements
+    ]
+    return item.model_copy(update={"details": details.model_copy(update={"requirements": changed})})
 
 
 def rescoped(item: KnowHowItem, club_id: ClubId, *, shared: bool) -> KnowHowItem:
@@ -175,6 +192,7 @@ class KnowHowStore:
         statement: str | None = None,
         retire: bool = False,
         undo: bool = False,
+        lead_time_days: int | None = None,
     ) -> KnowHowItem:
         """A cabinet member changes, retires or undoes a fact directly; no second person (D-138).
 
@@ -198,8 +216,9 @@ class KnowHowStore:
             changed = _rebuild(before, version=item.version + 1, status=status, supersedes=None, **stamp)
         elif retire:
             changed = _rebuild(item, status=ItemStatus.RETIRED, version=item.version + 1, valid_to=now.date(), **stamp)
-        elif statement is not None:
-            changed = _rebuild(item, statement=statement, version=item.version + 1, **stamp)
+        elif statement is not None or lead_time_days is not None:
+            base = with_lead_time(item, lead_time_days) if lead_time_days is not None else item
+            changed = _rebuild(base, statement=statement or item.statement, version=item.version + 1, **stamp)
         else:
             raise CapabilityError(ErrorCode.INVALID_INPUT, "nothing to change")
         with self.backend.transaction():
