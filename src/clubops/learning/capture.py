@@ -327,9 +327,11 @@ class Learner:
         extra: list[Candidate] | None = None,
         *,
         audience: int | None = None,
+        unlisted_sender: bool = False,
     ) -> CaptureResult:
-        """Proposals for Review (not yet submitted). ``extra`` are candidates already built by plain code."""
-        prepared = [self._prepare(src, today) for src in request.sources]
+        """Proposals for Review (not yet submitted). ``extra`` are candidates already built by plain code.
+        ``unlisted_sender``: the e-mail's sender is not on the OSA list and a person chose to read it (D-136)."""
+        prepared = [self._prepare(src, today, unlisted_sender) for src in request.sources]
         candidates: list[Candidate] = list(extra or [])
         skipped = 0
         failed = 0
@@ -354,7 +356,7 @@ class Learner:
                 extraction = Extraction(facts=[])
                 failed = len(texts)
             for fact in extraction.facts:
-                candidate = self._candidate(fact, prepared, request, today, audience)
+                candidate = self._candidate(fact, prepared, request, today, audience, unlisted_sender=unlisted_sender)
                 if candidate is None:
                     skipped += 1
                 else:
@@ -376,9 +378,10 @@ class Learner:
         extra: list[Candidate] | None = None,
         *,
         audience: int | None = None,
+        unlisted_sender: bool = False,
     ) -> CaptureResult:
         """Capture, then put every proposal in Review."""
-        result = self.capture(request, today, budget, extra, audience=audience)
+        result = self.capture(request, today, budget, extra, audience=audience, unlisted_sender=unlisted_sender)
         for proposal in result.proposals:
             self.store.submit(proposal)
         return result
@@ -393,9 +396,12 @@ class Learner:
         injection: list[str]
         outdated: str | None
 
-    def _prepare(self, source: Untrusted, today: date) -> Learner._Prepared:
+    def _prepare(self, source: Untrusted, today: date, unlisted_sender: bool = False) -> Learner._Prepared:
         # Verified OSA e-mails keep their links and office contacts: they are the know-how (F-241).
-        red = redact(source.content[:MAX_SOURCE_CHARS], keep_office_contacts=source.source.kind is SourceKind.EMAIL)
+        red = redact(
+            source.content[:MAX_SOURCE_CHARS],
+            keep_office_contacts=source.source.kind is SourceKind.EMAIL and not unlisted_sender,
+        )
         kinds: list[RedactionKind] = sorted({_REDACTION_KINDS[k] for k in red.kinds if k in _REDACTION_KINDS})
         return Learner._Prepared(source, red.text, kinds, injection_flags(red.text), outdated_note(red.text, today))
 
@@ -414,6 +420,8 @@ class Learner:
         request: CaptureRequest,
         today: date,
         audience: int | None = None,
+        *,
+        unlisted_sender: bool = False,
     ) -> Candidate | None:
         if fact.source >= len(prepared):
             return None
@@ -467,6 +475,8 @@ class Learner:
             )
         elif shared and not is_rule:
             why += "; about AUB: shared with every club once a president approves it"
+        if unlisted_sender:
+            why += "; the sender is not on the OSA list: check it is genuine before approving"
         if src.outdated:
             why += f"; {src.outdated}"
         return Candidate(item, why, src.redactions, src.injection)

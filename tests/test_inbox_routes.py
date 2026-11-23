@@ -237,3 +237,41 @@ def test_the_refresh_leaves_read_changed_and_skipped_mail_alone(tmp_path: Path) 
     assert _fetch(tmp_path, mails)["refreshed"] == 0
     notes = InboxNotes(tmp_path / "inbox-notes.db")
     assert notes.audience("read", CLUB) is None and notes.audience("changed", CLUB) is None
+
+
+def test_a_non_osa_mail_can_be_released_and_then_read_with_its_cards_marked(
+    app: tuple[TestClient, Provider, Path],
+) -> None:
+    c, provider, data = app
+    body = BLK + " Form: https://forms.example.test/x call 01 234 567"
+    _fetch(data, {"n1": _mail(CLUB, "Moodle check-in", original="moodle@example.org", body=body)})
+    assert c.get("/api/inbox").json() == []
+    assert c.post("/api/inbox/n1/allow", headers=HEADERS).status_code == 200
+    assert [row["id"] for row in c.get("/api/inbox").json()] == ["n1"]
+    assert c.get("/api/inbox/skipped").json() == []
+    assert provider.prompts == []  # releasing is free; nothing was read
+    provider.answers.append({"facts": [LESSON]})
+    assert c.post("/api/inbox/n1/capture", headers=HEADERS).status_code == 200
+    # contacts are not kept for an unlisted sender, and the card says so
+    assert "https://forms.example.test/x" not in provider.prompts[0]
+    [card] = c.get("/api/review").json()
+    assert card["unlisted"] is True
+
+
+def test_only_a_sender_refusal_can_be_released(app: tuple[TestClient, Provider, Path]) -> None:
+    c, _, data = app
+    _fetch(data, {"n1": _mail("other-club", "Wrong club tag", original="friend@example.org")})
+    assert c.post("/api/inbox/n1/allow", headers=HEADERS).status_code == 404
+    assert c.post("/api/inbox/nope/allow", headers=HEADERS).status_code == 404
+
+
+def test_mail_skipped_before_release_existed_can_still_be_released(app: tuple[TestClient, Provider, Path]) -> None:
+    c, _, data = app
+    _fetch(data, {"n1": _mail(CLUB, "Old skip", original="moodle@example.org")})
+    import sqlite3
+
+    with sqlite3.connect(data / "inbox-notes.db") as db:
+        db.execute("DELETE FROM held")  # as if skipped by the version before D-136
+    assert c.post("/api/inbox/n1/allow", headers=HEADERS).status_code == 404
+    _fetch(data, {"n1": _mail(CLUB, "Old skip", original="moodle@example.org")})  # the next free fetch
+    assert c.post("/api/inbox/n1/allow", headers=HEADERS).status_code == 200

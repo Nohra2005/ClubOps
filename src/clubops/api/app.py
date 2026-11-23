@@ -801,6 +801,19 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         """Forwarded e-mails the free checks refused, with the reason in plain words. Never read."""
         return inbox_notes.skipped(member.club_id)
 
+    @app.post("/api/inbox/{message_id}/allow")
+    def inbox_allow(message_id: str, member: Member = Depends(cabinet)) -> dict[str, bool]:  # noqa: B008
+        """Release an e-mail that was skipped only because its original sender is not on the OSA list. It joins
+        the waiting list; nothing is read until someone confirms the paid read, and its cards say the sender is
+        unlisted (D-136)."""
+        taken = inbox_notes.take_held(message_id, member.club_id)
+        if taken is None:
+            raise HTTPException(404, "No e-mail with that id can be released for your club.")
+        request, fingerprint, audience = taken
+        if inbox.enqueue(message_id, request):
+            inbox_notes.accept(message_id, member.club_id, fingerprint, audience, unlisted=True)
+        return {"waiting": True}
+
     @app.post("/api/inbox/{message_id}/capture")
     def inbox_capture(message_id: str, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
         """One paid model read, started by a person. Proposals go to Review; the e-mail leaves the queue
@@ -822,6 +835,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
                     today(),
                     load_settings().new_budget(),
                     audience=inbox_notes.audience(message_id, member.club_id),
+                    unlisted_sender=inbox_notes.is_unlisted(message_id, member.club_id),
                 )
         except BaseException:
             inbox_ledger.release_read(fingerprint, token)
