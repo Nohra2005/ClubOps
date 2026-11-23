@@ -307,6 +307,9 @@ _REDACTION_KINDS: dict[str, RedactionKind] = {
 }
 
 
+WIDE_AUDIENCE = 10  # an e-mail sent to this many people or more is AUB-wide news, not one club's (D-126)
+
+
 class Learner:
     def __init__(self, client: ModelClient | None, store: KnowHowStore) -> None:
         self.client = client
@@ -315,7 +318,13 @@ class Learner:
     # ------------------------------------------------------------------ public
 
     def capture(
-        self, request: CaptureRequest, today: date, budget: Budget | None = None, extra: list[Candidate] | None = None
+        self,
+        request: CaptureRequest,
+        today: date,
+        budget: Budget | None = None,
+        extra: list[Candidate] | None = None,
+        *,
+        audience: int | None = None,
     ) -> CaptureResult:
         """Proposals for Review (not yet submitted). ``extra`` are candidates already built by plain code."""
         prepared = [self._prepare(src, today) for src in request.sources]
@@ -343,7 +352,7 @@ class Learner:
                 extraction = Extraction(facts=[])
                 failed = len(texts)
             for fact in extraction.facts:
-                candidate = self._candidate(fact, prepared, request, today)
+                candidate = self._candidate(fact, prepared, request, today, audience)
                 if candidate is None:
                     skipped += 1
                 else:
@@ -358,10 +367,16 @@ class Learner:
         )
 
     def learn(
-        self, request: CaptureRequest, today: date, budget: Budget | None = None, extra: list[Candidate] | None = None
+        self,
+        request: CaptureRequest,
+        today: date,
+        budget: Budget | None = None,
+        extra: list[Candidate] | None = None,
+        *,
+        audience: int | None = None,
     ) -> CaptureResult:
         """Capture, then put every proposal in Review."""
-        result = self.capture(request, today, budget, extra)
+        result = self.capture(request, today, budget, extra, audience=audience)
         for proposal in result.proposals:
             self.store.submit(proposal)
         return result
@@ -390,7 +405,12 @@ class Learner:
         return "\n".join(blocks)
 
     def _candidate(
-        self, fact: ExtractedFact, prepared: list[Learner._Prepared], request: CaptureRequest, today: date
+        self,
+        fact: ExtractedFact,
+        prepared: list[Learner._Prepared],
+        request: CaptureRequest,
+        today: date,
+        audience: int | None = None,
     ) -> Candidate | None:
         if fact.source >= len(prepared):
             return None
@@ -405,7 +425,10 @@ class Learner:
             if valid_to < today:
                 return None  # that term is over
         is_rule = fact.kind == "rule"
-        shared = is_rule or fact.about == "aub"  # AUB know-how goes to the layer every club reads (D-91)
+        # AUB know-how goes to the layer every club reads (D-91). When the number of people an e-mail went to is
+        # known, that number decides, not the model's label (D-126); a rule is AUB-scope by contract either way.
+        about_aub = fact.about == "aub" if audience is None else audience >= WIDE_AUDIENCE
+        shared = is_rule or about_aub
         ref = src.source.source
         try:
             item = KnowHowItem.model_validate(
@@ -435,7 +458,11 @@ class Learner:
         except ValidationError:
             return None
         why = f"learned from {ref.kind.value.replace('_', ' ')}"
-        if shared and not is_rule:
+        if audience is not None and not is_rule:
+            why += f"; the e-mail went to {audience} people, so " + (
+                "AUB-wide: shared with every club once approved" if shared else "this club only"
+            )
+        elif shared and not is_rule:
             why += "; about AUB: shared with every club once a president approves it"
         if src.outdated:
             why += f"; {src.outdated}"

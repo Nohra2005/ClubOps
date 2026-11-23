@@ -372,3 +372,38 @@ def test_a_tag_the_model_wrote_loosely_is_tidied_not_thrown_away(store: KnowHowS
     result = capture(store, tmp_path, Provider({"facts": [loose]}), BLK)
     assert len(result.proposals) == 1
     assert result.proposals[0].candidate.tags == ["article-iii", "cabinet-roles"]
+
+
+# -------------------------------------------------------------- who the e-mail went to (D-126)
+
+
+def scoped(store: KnowHowStore, tmp_path: Path, about: str, audience: int | None) -> Any:
+    provider = Provider({"facts": [dict(LESSON, about=about)]})
+    request = CaptureRequest(club_id=CLUB, sources=[source(BLK)])
+    return Learner(provider.client(tmp_path), store).capture(
+        request, TODAY, Budget(max_usd=Decimal("0.05"), max_steps=8), audience=audience
+    )
+
+
+def test_an_e_mail_sent_to_many_people_makes_aub_wide_cards_whatever_the_model_says(
+    store: KnowHowStore, tmp_path: Path
+) -> None:
+    candidate = scoped(store, tmp_path, "club", 95).proposals[0].candidate
+    assert candidate.scope.value == "aub" and candidate.club_id is None
+
+
+def test_an_e_mail_sent_to_few_people_makes_club_cards_whatever_the_model_says(
+    store: KnowHowStore, tmp_path: Path
+) -> None:
+    candidate = scoped(store, tmp_path, "aub", 2).proposals[0].candidate
+    assert candidate.scope.value == "club" and candidate.club_id == CLUB
+
+
+def test_the_threshold_is_ten_people(store: KnowHowStore, tmp_path: Path) -> None:
+    assert scoped(store, tmp_path, "club", 9).proposals[0].candidate.scope.value == "club"
+    assert scoped(store, tmp_path, "club", 10).proposals[0].candidate.scope.value == "aub"
+
+
+def test_when_the_audience_is_unknown_the_models_label_still_decides(store: KnowHowStore, tmp_path: Path) -> None:
+    assert scoped(store, tmp_path, "aub", None).proposals[0].candidate.scope.value == "aub"
+    assert scoped(store, tmp_path, "club", None).proposals[0].candidate.scope.value == "club"

@@ -817,7 +817,12 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             raise HTTPException(409, "This e-mail is already being read, or was read for another club.")
         try:
             with club(member.club_id) as (store, _, _, _):
-                result = Learner(model_client(), store).learn(request, today(), load_settings().new_budget())
+                result = Learner(model_client(), store).learn(
+                    request,
+                    today(),
+                    load_settings().new_budget(),
+                    audience=inbox_notes.audience(message_id, member.club_id),
+                )
         except BaseException:
             inbox_ledger.release_read(fingerprint, token)
             raise

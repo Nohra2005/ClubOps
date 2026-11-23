@@ -26,14 +26,14 @@ OTHER_CLUB = "chess-club"
 OSA = "osa.staff@example.org"
 
 
-def _mail(club: str, subject: str, original: str = OSA, body: str = "") -> bytes:
+def _mail(club: str, subject: str, original: str = OSA, body: str = "", to: str = "") -> bytes:
     """An Outlook-style forward (synthetic): marker line, then the original header lines."""
     return (
         f"From: {FORWARDER}\nTo: clubops.agent+{club}@gmail.com\nSubject: FW: {subject}\n"
         "Date: Tue, 10 Nov 2026 13:00:00 +0200\nContent-Type: text/plain\n\n"
         "________________________________\n"
         f"From: OSA Staff <{original}>\nSent: Tuesday, November 10, 2026 1:00 PM\n"
-        "To: Student A <a@example.org>; Student B <b@example.org>\nCc: Second Staff <s@example.org>\n"
+        f"To: {to or 'Student A <a@example.org>; Student B <b@example.org>'}\nCc: Second Staff <s@example.org>\n"
         f"Subject: {subject}\n\n{body or BLK}\n"
     ).encode()
 
@@ -127,7 +127,7 @@ def test_the_adviser_cannot_see_or_read_the_inbox(app: tuple[TestClient, Provide
 def test_non_osa_mail_is_skipped_with_a_reason_and_never_read(app: tuple[TestClient, Provider, Path]) -> None:
     c, provider, data = app
     counts = _fetch(data, {"n1": _mail(CLUB, "Party", original="friend@example.org")})
-    assert counts == {"queued": 0, "skipped": 1, "not_for_a_club": 0}
+    assert counts == {"queued": 0, "skipped": 1, "not_for_a_club": 0, "refreshed": 0}
     assert c.get("/api/inbox").json() == []
     [row] = c.get("/api/inbox/skipped").json()
     assert row["id"] == "n1" and row["why"] == "ClubOps only reads e-mails forwarded from OSA staff"
@@ -162,3 +162,68 @@ def test_a_read_in_progress_blocks_a_second_paid_read(app: tuple[TestClient, Pro
     assert fingerprint is not None and InboxLedger(data / "inbox-ledger.db").claim_read(fingerprint)
     assert c.post("/api/inbox/m1/capture", headers=HEADERS).status_code == 409
     assert provider.prompts == []
+
+
+def test_the_number_of_people_the_original_went_to_decides_aub_wide_or_club_only(
+    app: tuple[TestClient, Provider, Path],
+) -> None:
+    """D-126: 3 recipients make a club-only card, 40 make an AUB-wide one, whatever the model labels it."""
+    c, provider, data = app
+    crowd = "; ".join(f"Club {i} <club{i}@example.org>" for i in range(40))
+    assert _fetch(data, {"few": _mail(CLUB, "A note"), "many": _mail(CLUB, "A notice", to=crowd)})["queued"] == 2
+    shared = {}
+    for message_id in ("few", "many"):
+        provider.answers.append({"facts": [dict(LESSON, about="club" if message_id == "many" else "aub")]})
+        [proposal_id] = c.post(f"/api/inbox/{message_id}/capture", headers=HEADERS).json()["proposals"]
+        shared[message_id] = next(card["shared"] for card in c.get("/api/review").json() if card["id"] == proposal_id)
+    assert shared == {"few": False, "many": True}
+    assert InboxNotes(data / "inbox-notes.db").audience("many", CLUB) == 41  # 40 in To + 1 in Cc, numbers only
+
+
+def test_notes_made_before_the_audience_count_still_open_and_fall_back(tmp_path: Path) -> None:
+    import sqlite3
+
+    old = tmp_path / "inbox-notes.db"
+    with sqlite3.connect(old) as db:
+        db.execute(
+            "CREATE TABLE accepted (message_id TEXT PRIMARY KEY, club_id TEXT NOT NULL, fingerprint TEXT NOT NULL)"
+        )
+        db.execute("INSERT INTO accepted VALUES ('m0', 'running-club', 'abc')")
+    notes = InboxNotes(old)
+    assert notes.fingerprint("m0", "running-club") == "abc"
+    assert notes.audience("m0", "running-club") is None  # unknown: the model's label decides
+
+
+def _forget_audience(data: Path) -> None:
+    import sqlite3
+
+    with sqlite3.connect(data / "inbox-notes.db") as db:
+        db.execute("UPDATE accepted SET audience=NULL")  # what a message checked before D-126 looks like
+
+
+def test_a_waiting_message_checked_before_the_count_gets_its_count_on_the_next_free_fetch(tmp_path: Path) -> None:
+    crowd = "; ".join(f"Club {i} <club{i}@example.org>" for i in range(40))
+    mails = {"old": _mail(CLUB, "A notice", to=crowd)}
+    assert _fetch(tmp_path, mails)["queued"] == 1
+    _forget_audience(tmp_path)
+    notes = InboxNotes(tmp_path / "inbox-notes.db")
+    assert notes.audience("old", CLUB) is None
+    assert _fetch(tmp_path, mails) == {"queued": 0, "skipped": 0, "not_for_a_club": 0, "refreshed": 1}
+    assert notes.audience("old", CLUB) == 41
+    assert len(PendingInbox(tmp_path / "inbox.db").pending(CLUB)) == 1  # still waiting, never re-queued or read
+    assert _fetch(tmp_path, mails)["refreshed"] == 0  # nothing left to fill in
+
+
+def test_the_refresh_leaves_read_changed_and_skipped_mail_alone(tmp_path: Path) -> None:
+    import sqlite3
+
+    crowd = "; ".join(f"Club {i} <club{i}@example.org>" for i in range(40))
+    mails = {"read": _mail(CLUB, "Read one", to=crowd), "changed": _mail(CLUB, "Changed one", to=crowd)}
+    assert _fetch(tmp_path, mails)["queued"] == 2
+    PendingInbox(tmp_path / "inbox.db").mark_processed("read", CLUB)  # already read through the route
+    _forget_audience(tmp_path)
+    with sqlite3.connect(tmp_path / "inbox-notes.db") as db:  # the stored check no longer matches this mail
+        db.execute("UPDATE accepted SET fingerprint='stale' WHERE message_id='changed'")
+    assert _fetch(tmp_path, mails)["refreshed"] == 0
+    notes = InboxNotes(tmp_path / "inbox-notes.db")
+    assert notes.audience("read", CLUB) is None and notes.audience("changed", CLUB) is None
