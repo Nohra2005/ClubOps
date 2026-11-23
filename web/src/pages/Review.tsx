@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router';
 import { Check, CheckCheck, FileText, GitMerge, Scale, ShieldCheck, Upload, X } from 'lucide-react';
 import { useApp } from '../AppContext';
 import type { ReviewCard, ReviewDecision, ReviewFilter, Source } from '../api/types';
+import { Linkified } from '../components/Linkified';
 import { canBatchApprove, canReview, isShared, reviewGroups } from '../api/review-policy';
 import {
   PageHeading,
@@ -22,7 +23,9 @@ function ReviewSource({ source }: { source: Source }) {
   return (
     <>
       {source.quote ? (
-        <blockquote>{source.quote}</blockquote>
+        <blockquote>
+          <Linkified text={source.quote} />
+        </blockquote>
       ) : (
         <p className="inline-note">
           No source quote supplied. Check the original source before approving.
@@ -112,6 +115,14 @@ function ReviewItem({
         </div>
         <StatusBadge status={card.status} />
       </div>
+      {card.op === 'retire' && (
+        <section className="notice warning" aria-label="Retirement">
+          <p>
+            <strong>This will retire the fact.</strong> If you retire it, ClubOps stops using it. It
+            stays in the list marked retired. If you keep it, nothing changes.
+          </p>
+        </section>
+      )}
       {(card.warning || card.outdated || card.unlisted) && (
         <section className="notice warning" aria-label="Source warnings">
           <div>
@@ -134,7 +145,9 @@ function ReviewItem({
               {card.type === 'merge' ? 'Proposed fact' : 'Version A'}
               {card.type === 'disagreement' && strongerA && <span>Stronger source</span>}
             </div>
-            <p>{card.statement}</p>
+            <p>
+              <Linkified text={card.statement} />
+            </p>
             <ReviewSource source={card.source} />
           </div>
           <div>
@@ -146,13 +159,17 @@ function ReviewItem({
                   <span>Stronger source</span>
                 )}
             </div>
-            <p>{card.alternative.statement}</p>
+            <p>
+              <Linkified text={card.alternative.statement} />
+            </p>
             <ReviewSource source={card.alternative.source} />
           </div>
         </div>
       ) : (
         <>
-          <p className="review-statement">{card.statement}</p>
+          <p className="review-statement">
+            <Linkified text={card.statement} />
+          </p>
           <ReviewSource source={card.source} />
         </>
       )}
@@ -203,6 +220,23 @@ function ReviewItem({
           Your confirmation is recorded. The rule stays unconfirmed until the second president
           responds.
         </p>
+      ) : canDecide && card.op === 'retire' ? (
+        <div className="review-actions">
+          <button
+            className="button small primary"
+            disabled={action.pending}
+            onClick={() => decide('approve')}
+          >
+            {action.pending ? 'Saving…' : 'Retire this fact'}
+          </button>
+          <button
+            className="button small"
+            disabled={action.pending}
+            onClick={() => decide('reject')}
+          >
+            Keep it
+          </button>
+        </div>
       ) : canDecide ? (
         <div className="review-actions">
           {card.type === 'disagreement' ? (
