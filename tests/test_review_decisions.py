@@ -110,7 +110,7 @@ def test_editing_a_fact_that_does_not_exist_answers_404(app_client) -> None:  # 
 
 
 def test_add_as_new_rule_works_on_a_suggested_edit(app_client) -> None:  # type: ignore[no-untyped-def]  # noqa: F811
-    """F-249: the suggested edit carries the old fact's id; adding it next to the original needs its own id."""
+    """F-260: the suggested edit carries the old fact's id; adding it next to the original needs its own id."""
     c, provider = app_client
     known = _known(c, provider)
     text = "Tell Cafe B ten days before a run: https://example.test/cafe"
