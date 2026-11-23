@@ -77,3 +77,10 @@ def test_one_giant_paragraph_is_cut_at_sentence_or_space_not_mid_word() -> None:
 
 def test_short_text_stays_one_piece() -> None:
     assert split_text("Short note.\n\nSecond line.") == ["Short note.\n\nSecond line."]
+
+
+def test_a_pdf_over_the_page_limit_is_refused_with_its_length_not_cut_in_silence() -> None:
+    """F-251: 61 short pages must not lose page 61 and report success."""
+    with pytest.raises(DocumentError, match="61 pages"):
+        read_pdf(make_pdf([f"Page {i}" for i in range(61)]))
+    assert read_pdf(make_pdf([f"Page {i}" for i in range(60)])).pages == 60

@@ -35,7 +35,13 @@ def read_pdf(data: bytes) -> PdfText:
         reader = PdfReader(io.BytesIO(data))
         if reader.is_encrypted:
             raise DocumentError("This PDF is password protected.")
-        pages = reader.pages[:MAX_PAGES]
+        if len(reader.pages) > MAX_PAGES:
+            # Never drop pages in silence (F-251): say how long it is and what the limit is.
+            raise DocumentError(
+                f"This PDF has {len(reader.pages)} pages. ClubOps reads up to {MAX_PAGES}. "
+                "Split it and upload the parts."
+            )
+        pages = list(reader.pages)
         texts = [(page.extract_text() or "").strip() for page in pages]
         images = sum(len(page.images) for page in pages)
     except DocumentError:
