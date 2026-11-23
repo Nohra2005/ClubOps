@@ -1,5 +1,34 @@
 # Engineering bonus: evidence and remaining work
 
+## Current scope update: 16 November 2026 (C-29)
+
+The tables and runs below are dated history. Setup's service (#55) and application
+wiring (#87) are merged. The new [actual-app setup regression](e2e/setup-live.spec.ts)
+checks real HTTP cookies/SQLite on desktop and phone, without replacing routes:
+skip/resume/completion, separate checklist state, missing-CSRF and adviser denial.
+It uses synthetic clubs and no extraction, so it establishes local integration
+rather than model quality, real Google login or ASME acceptance.
+
+The optional OTLP exporter and synthetic Jaeger proof are implemented; see
+[observability/README.md](observability/README.md). Real producer hooks and hosted
+monitoring remain pending. The actual private
+[task board](https://github.com/users/Nohra2005/projects/4/views/8) was populated and
+verified under [#91](https://github.com/Nohra2005/ClubOps/pull/91); its tooling remains
+in that separate PR. Three genuine team-review records are still needed. C-35's
+inbox preview is separately reviewed in #94; it is not a live mailbox integration.
+
+The [C-29 report draft](report/architecture-and-operations.md) links each architecture,
+web/deployment and monitoring claim to its files and states remaining acceptance.
+New local results are in [VERIFICATION.md](VERIFICATION.md#2026-11-16--c-29-actual-application-setup).
+The baseline main `54d38c1` also has green [CI](https://github.com/Nohra2005/ClubOps/actions/runs/43752096664),
+[Web](https://github.com/Nohra2005/ClubOps/actions/runs/43752096760) and
+[Container](https://github.com/Nohra2005/ClubOps/actions/runs/43752096713) runs;
+these establish that revision's checks, not the new C-29 PR head's result.
+No workflow or backend implementation changed in C-29. Independent review, current
+PR-head CI and the team's merge-freeze decision still govern publication to main.
+
+## Historical baseline: 1 November 2026
+
 Updated 1 November 2026. The course's **Bonus Engineering Practices** section (page 5)
 rewards demonstrated capability and impact; **Final Demo Expectation** (page 6) asks for
 failure/invalid/security cases. This table records evidence, not a predicted grade. Paths are repository-relative; npm commands run from `web/`.
