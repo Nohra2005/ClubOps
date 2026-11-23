@@ -286,6 +286,8 @@ MATCH_SYSTEM = """You compare new facts with facts a club already approved. For 
 precise version of an existing fact),
 "contradiction" (disagrees with an existing fact; a person decides).
 "target" is the id of the existing fact for merge, update and contradiction. Use only the ids shown.
+A deadline or fact that holds for one term or date only is a different fact from a standing rule: answer
+"create" for it, never "update".
 Answer JSON only: {"matches": [{"fact": 0, "op": "...", "target": "kh-...", "why": "<one line>"}]}"""
 
 
@@ -336,6 +338,12 @@ def _same_topic(new: KnowHowItem, known: KnowHowItem) -> bool:
     access must never replace a room-reservation fact (F-246)."""
     new_words = _topic_words(f"{new.title} {new.statement}")
     return len(new_words & _topic_words(f"{known.title} {known.statement}")) >= 2
+
+
+def _same_period(new: KnowHowItem, known: KnowHowItem) -> bool:
+    """A fact that ends on a date (a deadline, this term's rule) and a standing rule can both be true: neither replaces
+    nor contradicts the other (F-252)."""
+    return (new.valid_to is None) == (known.valid_to is None)
 
 
 # ------------------------------------------------------------------- candidates
@@ -565,7 +573,9 @@ class Learner:
                 for m in answer.matches:
                     shown = {h.item_id: h for h in similar.get(m.fact, [])}
                     if m.op == "create" or (
-                        m.target in shown and _same_topic(candidates[m.fact].item, shown[m.target])
+                        m.target in shown
+                        and _same_topic(candidates[m.fact].item, shown[m.target])
+                        and _same_period(candidates[m.fact].item, shown[m.target])
                     ):
                         decided[m.fact] = m
             except CapabilityError:
