@@ -444,6 +444,28 @@ def test_a_match_to_an_unrelated_fact_is_dropped_so_nothing_gets_replaced(known:
     assert p.op is ProposalOp.CREATE and p.target_item is None  # F-246
 
 
+def test_a_deadline_for_this_term_does_not_replace_a_standing_rule(known: KnowHowStore, tmp_path: Path) -> None:
+    """F-252: 'impact reports are due 6 December' is true next to 'fill in an impact report after each event'."""
+    deadline = {
+        **LESSON,
+        "title": "Cafe B notice due 6 December",
+        "statement": "Tell Cafe B ten days before a run: the notice for this term is due on 6 December.",
+        "quote": "notice for this term is due on 6 December",
+        "lasting": "this_term",
+    }
+    provider = Provider(
+        {"facts": [deadline]}, {"matches": [{"fact": 0, "op": "update", "target": "kh-cafe-b-notice", "why": "x"}]}
+    )
+    [p] = capture(
+        known,
+        tmp_path,
+        provider,
+        "Please tell Cafe B ten days before a run: the notice for this term is due on 6 December.",
+    ).proposals
+    assert p.candidate.valid_to is not None  # the model said it holds for one term
+    assert p.op is ProposalOp.CREATE and p.target_item is None
+
+
 def test_a_long_pdf_is_cut_into_pieces_and_pictures_are_flagged(app_client: tuple[TestClient, Provider]) -> None:
     from tests.test_documents import make_pdf
 
