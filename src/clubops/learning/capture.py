@@ -83,8 +83,9 @@ _ISO = re.compile(r"\b(20\d{2})-(\d{2})-(\d{2})\b")
 
 
 def source_date(text: str, quote: str, fallback: date) -> date:
-    """When the quoted line was written: the date on its line (WhatsApp is day/month/year), else the latest
-    date in the source, else ``fallback``."""
+    """When the quoted line was written: the date on its line (WhatsApp is day/month/year), else the nearest
+    date on a line above it, else ``fallback``. The latest date anywhere in the source is not used: it made
+    old facts look new (F-303)."""
 
     def dates(chunk: str) -> list[date]:
         out = []
@@ -102,22 +103,28 @@ def source_date(text: str, quote: str, fallback: date) -> date:
         return out
 
     q = _norm(quote)
-    for line in text.splitlines():
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
         if q[:40] and q[:40] in _norm(line):
-            found = dates(line)
-            if found:
-                return found[0]
-    found = dates(text)
-    return max(found) if found else fallback
+            for above in range(i, -1, -1):
+                found = dates(lines[above])
+                if found:
+                    return found[0]
+            return fallback
+    return fallback
 
 
 def term_end(day: date) -> date:
-    """Last day of the AUB term ``day`` falls in: fall to 31 Dec, spring to 31 May, summer to 31 Aug."""
-    if day.month >= 9:
+    """End of the term a fact written on ``day`` is about: summer (June to 14 August) to 31 Aug; from 15 August
+    it is about the coming fall (31 Dec), so a late-August note is not given an end date three days away; from
+    15 December to May it is spring (31 May, of the next year when written after 14 December) (F-303)."""
+    if (day.month, day.day) >= (12, 15):
+        return date(day.year + 1, 5, 31)
+    if (day.month, day.day) >= (8, 15):
         return date(day.year, 12, 31)
-    if day.month <= 5:
-        return date(day.year, 5, 31)
-    return date(day.year, 8, 31)
+    if day.month >= 6:
+        return date(day.year, 8, 31)
+    return date(day.year, 5, 31)
 
 
 def _norm(text: str) -> str:

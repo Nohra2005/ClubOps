@@ -385,6 +385,22 @@ def test_the_date_of_the_quoted_line_is_read_day_first() -> None:
     assert term_end(date(2026, 2, 1)) == date(2026, 5, 31) and term_end(date(2026, 7, 1)) == date(2026, 8, 31)
 
 
+def test_term_end_covers_late_summer_and_the_winter_break() -> None:
+    """Written 28 Aug it is about the fall, not an end date already past (F-303); mid-December on is spring."""
+    assert term_end(date(2026, 7, 10)) == date(2026, 8, 31)  # summer term, June to August
+    assert term_end(date(2026, 8, 28)) == date(2026, 12, 31)
+    assert term_end(date(2026, 12, 14)) == date(2026, 12, 31)
+    assert term_end(date(2026, 12, 20)) == date(2027, 5, 31)
+    assert term_end(date(2027, 1, 15)) == date(2027, 5, 31)
+
+
+def test_an_undated_quote_takes_the_date_above_it_not_the_latest_in_the_source() -> None:
+    chat = "[01/03/25, 09:00:00] A: hi\nwe book the hall early\n[20/11/26, 11:00:00] C: ok"
+    assert source_date(chat, "we book the hall early", date(2026, 1, 1)) == date(2025, 3, 1)
+    undated = "we book the hall early\n[20/11/26, 11:00:00] C: ok"
+    assert source_date(undated, "we book the hall early", date(2026, 1, 1)) == date(2026, 1, 1)
+
+
 def test_a_tag_the_model_wrote_loosely_is_tidied_not_thrown_away(store: KnowHowStore, tmp_path: Path) -> None:
     """One label in the wrong shape used to fail the whole answer, so a page of rules was lost (F-170)."""
     loose = {**LESSON, "tags": ["Article III", "cabinet_roles", "a", "Article III"]}
