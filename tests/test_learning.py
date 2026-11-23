@@ -308,7 +308,7 @@ def test_uploading_an_expense_form_proposes_prices(app_client: tuple[TestClient,
     }
 
 
-def test_unsupported_files_are_refused(app_client: tuple[TestClient, Provider]) -> None:
+def test_unreadable_files_are_refused(app_client: tuple[TestClient, Provider]) -> None:
     c, _ = app_client
     r = c.post("/api/documents", files={"file": ("x.pdf", b"%PDF-1.4", "application/pdf")}, headers=HEADERS)
     assert r.status_code == 422
@@ -426,3 +426,33 @@ def test_the_threshold_is_ten_people(store: KnowHowStore, tmp_path: Path) -> Non
 def test_when_the_audience_is_unknown_the_models_label_still_decides(store: KnowHowStore, tmp_path: Path) -> None:
     assert scoped(store, tmp_path, "aub", None).proposals[0].candidate.scope.value == "aub"
     assert scoped(store, tmp_path, "club", None).proposals[0].candidate.scope.value == "club"
+
+
+def test_a_long_pdf_is_cut_into_pieces_and_pictures_are_flagged(app_client: tuple[TestClient, Provider]) -> None:
+    from tests.test_documents import make_pdf
+
+    c, provider = app_client
+    pages = [f"Guide step {n}. " + "Click the button and wait. " * 20 for n in range(60)]
+    # 60 pages of text is well over one piece; the first page also holds a picture
+    assert sum(len(p) for p in pages) > 6000
+    data = make_pdf(pages, with_image=True)
+    r = c.post("/api/documents", files={"file": ("guide.pdf", data, "application/pdf")}, headers=HEADERS)
+    assert r.status_code == 200
+    assert "Pictures in the file (1) are not read" in r.json()["statement"]
+    assert len(provider.prompts) >= 2  # more than one read: the guide was cut, not truncated
+    assert all(len(prompt) < 7000 * 3 for prompt in provider.prompts)
+    joined = "\n".join(provider.prompts)
+    assert "Guide step 0." in joined and "Guide step 59." in joined  # the end of the guide is not lost
+
+
+def test_a_pdf_with_only_pictures_is_refused(app_client: tuple[TestClient, Provider]) -> None:
+    from pypdf import PdfWriter
+
+    c, provider = app_client
+    blank = io.BytesIO()
+    writer = PdfWriter()
+    writer.add_blank_page(100, 100)
+    writer.write(blank)
+    r = c.post("/api/documents", files={"file": ("scan.pdf", blank.getvalue(), "application/pdf")}, headers=HEADERS)
+    assert r.status_code == 422 and "pictures" in r.json()["detail"]
+    assert provider.prompts == []
