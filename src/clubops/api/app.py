@@ -971,7 +971,8 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         return {
             "proposals": [p.proposal_id for p in result.proposals if p.proposal_id not in applied],
             "applied": applied,
-            "skipped": ["The model could not use this content."] * result.sources_skipped,
+            "skipped": ["A fact in this content was set aside: a one-off, an opinion, or not quoted exactly."]
+            * result.sources_skipped,  # counts facts, not sources (F-315)
         }
 
     # ----------------------------------------------------------- new-club setup (C-21)
