@@ -59,3 +59,11 @@ club data, credentials or calendar-provider calls are involved.
 provides native draft assignees and project field/iteration updates. Synthetic
 regressions are in scripts/project-native.test.mjs (F-248); they do not contact the
 live board. No live action happens in CI.
+
+## Verified 23 November run
+
+[Live read-back receipt](board/evidence/native-fields-2026-11-23.json): one bulk
+invocation, 93 task cards plus 3 issue cards, native assignees/status/iterations and
+planning values verified; 542 native mutations and zero remaining native changes.
+The source is the pinned merged TASKS revision, not unmerged completion claims.
+All three issue handoffs are In progress: #43 and #84 Christophe, #83 Tatiana.

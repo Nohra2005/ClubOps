@@ -348,3 +348,12 @@ as history, not active acceptance requirements or proof of earned bonus credit.
 No further meeting-record collection, bonus-driven refresh or board deletion.
 The existing tracker PR stays reviewable; no weekly-review completion is claimed.
 This is a docs/scope-only update; shared task/log checks and formatting pass.
+
+
+## 2026-11-23 - Christophe (C-31 restored weekly practice and native bulk repair)
+
+**Did:** Restored C-31 per Christophe, superseding D-133 with D-137. Built the explicit native-field planner/adapter/CLI and 10 new regressions (F-248), kept existing option/iteration identities and card content, and linked commit-history summaries for the four owner-reported Mondays. Executed one authorized bulk run: canonical task mirror plus native status/assignees/Monday iterations/priority/size/points and all 3 issue statuses. No invented attendance, oral decisions or original assignments.
+
+**State:** Live read-back: 93 task cards +3 issues, 542 native mutations, zero remaining native changes; existing views/private board preserved. Issue #43/#84 assigned Christophe, #83 Tatiana, all In progress. Receipt: web/board/evidence/native-fields-2026-11-23.json. Web checks: 137 units/42 tools/types/build; shared checks 10 pass; root baseline 728/93.21%, Ruff/format 162, mypy 85, schemas/tasks. Focused source commits preserved; current-head CI/re-review required.
+
+**Next / limits:** Review/merge #91 and the restored report scope in #99 with merge commits. Maintain native fields after reviewed TASKS changes using npm run board:reconcile; default plan is read-only. User-reported dates and commit history do not prove undocumented decisions; estimates are current planning points. No second bulk mutation run, new backend contract, real data, model calls, main push or self-merge.

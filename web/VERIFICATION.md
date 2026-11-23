@@ -479,3 +479,31 @@ as history, not active acceptance requirements or proof of earned bonus credit.
 No further meeting-record collection, bonus-driven refresh or board deletion.
 The existing tracker PR stays reviewable; no weekly-review completion is claimed.
 This is a docs/scope-only update; shared task/log checks and formatting pass.
+
+## 2026-11-23 - C-31 restored native backlog and one bulk correction
+
+D-137 supersedes D-133 at Christophe's request. Native Status/Assignees/Iteration,
+current Priority/Size/Estimate and the three issue handoffs are reconciled from a
+pinned merged TASKS revision. Four Monday dates are owner-reported; linked weekly
+summaries describe repository commits, not undocumented oral decisions/attendance.
+Older custom sprint fields and original cards/views remain preserved.
+
+One authorized live apply invocation completed: 93 task cards plus 3 issues,
+542 native mutations, read-back verified and zero remaining native operations.
+Mirror added the new T-49 task from main. Issue #43/#84 owners are Christophe;
+#83 is Tatiana; all three open handoffs are In progress. Summary proof is
+board/evidence/native-fields-2026-11-23.json. No second mutation run was needed.
+
+Web check passes: 137 units, 42 board-tool cases, lint/format/types/build. Ten new
+synthetic native-board regressions cover mapping/ownership, option/iteration ID
+preservation, invalid target/dates/owners, interrupted batches, numeric read-back
+and zero repeat writes. Shared docs/tasks: 10 pass. Root baseline: 728 tests,
+93.21%, Ruff/format 162 files, mypy 85 files, schemas/tasks. F-248 uses the existing
+board-tool status convention because covered-Python rows are parsed as Python AST.
+No assertions were suppressed or backend implementation/contracts edited.
+
+Native field operations use bounded batches within one CLI run, not an atomic
+server transaction. Fresh independent review/current-head CI and a merge commit
+remain required. No main push, self-merge, real club input or provider/model call.
+C-31 remains doing pending review of the restored deliverable and weekly evidence;
+no earned-grade or unverified meeting-decision claim is made.
