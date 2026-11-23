@@ -357,3 +357,12 @@ This is a docs/scope-only update; shared task/log checks and formatting pass.
 **State:** Live read-back: 93 task cards +3 issues, 542 native mutations, zero remaining native changes; existing views/private board preserved. Issue #43/#84 assigned Christophe, #83 Tatiana, all In progress. Receipt: web/board/evidence/native-fields-2026-11-23.json. Web checks: 137 units/42 tools/types/build; shared checks 10 pass; root baseline 728/93.21%, Ruff/format 162, mypy 85, schemas/tasks. Focused source commits preserved; current-head CI/re-review required.
 
 **Next / limits:** Review/merge #91 and the restored report scope in #99 with merge commits. Maintain native fields after reviewed TASKS changes using npm run board:reconcile; default plan is read-only. User-reported dates and commit history do not prove undocumented decisions; estimates are current planning points. No second bulk mutation run, new backend contract, real data, model calls, main push or self-merge.
+
+
+### 23 November shared-ID correction
+
+The final fetch found #112 had allocated F-248 during the native-board work.
+Preserved that owner's row and moved our native reconciliation regression to F-249.
+D-137 is still unique. Earlier dated F-248 references above describe the work before
+this correction. Native source behavior/live read-back are unchanged; shared checks
+and formatting pass after renumbering. Next free IDs: D-138/F-250 after rechecking.

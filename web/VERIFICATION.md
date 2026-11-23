@@ -507,3 +507,11 @@ server transaction. Fresh independent review/current-head CI and a merge commit
 remain required. No main push, self-merge, real club input or provider/model call.
 C-31 remains doing pending review of the restored deliverable and weekly evidence;
 no earned-grade or unverified meeting-decision claim is made.
+
+### 23 November shared-ID correction
+
+The final fetch found #112 had allocated F-248 during the native-board work.
+Preserved that owner's row and moved our native reconciliation regression to F-249.
+D-137 is still unique. Earlier dated F-248 references above describe the work before
+this correction. Native source behavior/live read-back are unchanged; shared checks
+and formatting pass after renumbering. Next free IDs: D-138/F-250 after rechecking.

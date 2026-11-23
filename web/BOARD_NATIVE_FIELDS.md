@@ -57,7 +57,7 @@ club data, credentials or calendar-provider calls are involved.
 
 [GitHub's Projects API](https://docs.github.com/en/graphql/reference/projects)
 provides native draft assignees and project field/iteration updates. Synthetic
-regressions are in scripts/project-native.test.mjs (F-248); they do not contact the
+regressions are in scripts/project-native.test.mjs (F-249); they do not contact the
 live board. No live action happens in CI.
 
 ## Verified 23 November run
