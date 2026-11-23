@@ -382,11 +382,12 @@ def test_the_date_of_the_quoted_line_is_read_day_first() -> None:
     chat = "[02/03/25, 09:00:00] A: hi\n[13/04/25, 10:00:00] B: we book the hall early\n[20/05/25, 11:00:00] C: ok"
     assert source_date(chat, "we book the hall early", date(2026, 1, 1)) == date(2025, 4, 13)
     assert source_date("no dates here", "x", date(2026, 1, 1)) == date(2026, 1, 1)
-    assert term_end(date(2026, 2, 1)) == date(2026, 5, 31) and term_end(date(2026, 7, 1)) == date(2026, 12, 31)
+    assert term_end(date(2026, 2, 1)) == date(2026, 5, 31) and term_end(date(2026, 7, 1)) == date(2026, 8, 31)
 
 
 def test_term_end_covers_late_summer_and_the_winter_break() -> None:
     """Written 28 Aug it is about the fall, not an end date already past (F-303); mid-December on is spring."""
+    assert term_end(date(2026, 7, 10)) == date(2026, 8, 31)  # summer term, June to August
     assert term_end(date(2026, 8, 28)) == date(2026, 12, 31)
     assert term_end(date(2026, 12, 14)) == date(2026, 12, 31)
     assert term_end(date(2026, 12, 20)) == date(2027, 5, 31)

@@ -115,13 +115,15 @@ def source_date(text: str, quote: str, fallback: date) -> date:
 
 
 def term_end(day: date) -> date:
-    """End of the term a fact written on ``day`` is about: from June to 14 December that is the fall term
-    (31 Dec; summer announcements are for the coming fall), from 15 December to May it is the spring term
-    (31 May, of the next year when written after 14 December) (F-303)."""
+    """End of the term a fact written on ``day`` is about: summer (June to 14 August) to 31 Aug; from 15 August
+    it is about the coming fall (31 Dec), so a late-August note is not given an end date three days away; from
+    15 December to May it is spring (31 May, of the next year when written after 14 December) (F-303)."""
     if (day.month, day.day) >= (12, 15):
         return date(day.year + 1, 5, 31)
-    if day.month >= 6:
+    if (day.month, day.day) >= (8, 15):
         return date(day.year, 12, 31)
+    if day.month >= 6:
+        return date(day.year, 8, 31)
     return date(day.year, 5, 31)
 
 
