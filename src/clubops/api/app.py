@@ -75,6 +75,7 @@ from clubops.knowhow.directory import Directory
 from clubops.knowhow.handover import build_handover
 from clubops.knowhow.store import KnowHowStore, rescoped
 from clubops.learning.capture import Candidate, Learner, price_list, rows_to_text
+from clubops.learning.documents import MAX_PIECES, DocumentError, read_pdf, split_text
 from clubops.model.client import ModelClient
 from clubops.reports.runs import record_run
 from clubops.reports.usage import usage_details
@@ -194,6 +195,7 @@ _HTTP = {
 
 
 MAX_UPLOAD = 2 * 1024 * 1024
+MAX_PDF_UPLOAD = 10 * 1024 * 1024
 
 # ---------------------------------------------------------------------- app
 
@@ -725,11 +727,13 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
 
     @app.post("/api/documents")
     async def upload(file: UploadFile, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
-        data = await file.read(MAX_UPLOAD + 1)
-        if len(data) > MAX_UPLOAD:
-            raise HTTPException(413, "The file is too big (2 MB at most).")
         name = (file.filename or "document")[:120]
         kind = name.lower().rsplit(".", 1)[-1]
+        limit = MAX_PDF_UPLOAD if kind == "pdf" else MAX_UPLOAD
+        data = await file.read(limit + 1)
+        if len(data) > limit:
+            raise HTTPException(413, f"The file is too big ({limit // (1024 * 1024)} MB at most).")
+        note = ""
         extra: list[Candidate] = []
         if kind == "xlsx":
             try:
@@ -739,11 +743,27 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             rows: list[list[object]] = [list(r) for ws in book.worksheets[:3] for r in ws.iter_rows(values_only=True)]
             extra = price_list(rows, member.club_id, name, clock())
             text = "" if extra else rows_to_text(rows)
+        elif kind == "pdf":
+            try:
+                pdf = read_pdf(data)
+            except DocumentError as error:
+                raise HTTPException(422, str(error)) from None
+            text = pdf.text
+            if pdf.images:
+                note = f" Pictures in the file ({pdf.images}) are not read, only its text."
+            if not text.strip():
+                raise HTTPException(422, "This PDF has no text, only pictures. ClubOps does not read pictures yet.")
         elif kind in {"txt", "md", "csv", "eml"}:
             text = data.decode("utf-8", errors="replace")
         else:
-            raise HTTPException(422, "Upload a .txt, .md, .csv, .eml or .xlsx file (save PDFs and Word files as text).")
-        sources = [untrusted(text, SourceKind.DOCUMENT, f"upload/{name}", name)] if text.strip() else []
+            raise HTTPException(422, "Upload a .pdf, .txt, .md, .csv, .eml or .xlsx file (save Word files as PDF).")
+        pieces = split_text(text) if text.strip() else []
+        if len(pieces) > MAX_PIECES:
+            pieces, note = pieces[:MAX_PIECES], note + f" Only the first {MAX_PIECES} pieces were read."
+        sources = [
+            untrusted(piece, SourceKind.DOCUMENT, f"upload/{name}#{n}", f"{name} (part {n}/{len(pieces)})")
+            for n, piece in enumerate(pieces, 1)
+        ]
         if not sources and not extra:
             return document_view(name, 0)
         if not sources:
@@ -757,15 +777,19 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
                     extra,
                 )
             return document_view(name, len(result.proposals))
-        return document_view(name, len(learn(member, sources, extra=extra)))
+        found: list[str] = []
+        for start in range(0, len(sources), 3):  # three pieces per read: one read answers at most 20 facts
+            found += learn(member, sources[start : start + 3], extra=extra if start == 0 else None)
+        return document_view(name, len(found), note)
 
-    def document_view(name: str, count: int) -> dict[str, Any]:
+    def document_view(name: str, count: int, note: str = "") -> dict[str, Any]:
         return {
             "item_id": f"doc-{uuid.uuid4().hex[:8]}",
             "title": name,
-            "statement": f"{count} fact{'s' if count != 1 else ''} sent for review"
-            if count
-            else "No facts found in this file.",
+            "statement": (
+                f"{count} fact{'s' if count != 1 else ''} sent for review" if count else "No facts found in this file."
+            )
+            + note,
             "tab": "documents",
             "kind": "document",
             "scope": "club",
