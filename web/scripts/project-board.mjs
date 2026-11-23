@@ -6,8 +6,11 @@ import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { log, error } from 'node:console';
 import { planBoard } from './project-plan.mjs';
-import { createBoard } from './project-github.mjs';
+import { createBoard, snapshot } from './project-github.mjs';
 import { syncBoard } from './project-sync.mjs';
+import { inspectAdoption } from './project-adopt.mjs';
+import { publicFailure } from './project-errors.mjs';
+import { configureColumns } from './project-columns.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -38,27 +41,48 @@ export async function github(query, variables) {
   } catch {
     response = null;
   }
-  if (result.status !== 0 || response?.errors?.length || !response?.data) {
-    const diagnostics = `${result.stderr}\n${JSON.stringify(response?.errors ?? [])}`;
-    if (
-      /INSUFFICIENT_SCOPES|missing required scopes|requires.*scope|expected scopes/i.test(
-        diagnostics,
-      )
-    )
-      throw new Error(
-        'GitHub Projects access is missing. Run gh auth refresh -s project and complete authorization; do not paste a token into this tool.',
-      );
-    throw new Error(
-      'GitHub rejected the operation or returned incomplete data. Check account access/schema and rerun; completed task cards are reconciled without deletion.',
-    );
-  }
+  if (result.status !== 0 || response?.errors?.length || !response?.data)
+    throw publicFailure(result, response);
   return response.data;
+}
+
+export async function githubRest(path, method, body) {
+  const result = command(
+    process.platform === 'win32' ? 'gh.exe' : 'gh',
+    [
+      'api',
+      path,
+      '--method',
+      method,
+      '-H',
+      'X-GitHub-Api-Version: 2026-03-10',
+      ...(method === 'GET' ? ['--paginate', '--slurp'] : []),
+      ...(body ? ['--input', '-'] : []),
+    ],
+    body ? JSON.stringify(body) : undefined,
+  );
+  let response;
+  try {
+    response = JSON.parse(result.stdout);
+  } catch {
+    response = null;
+  }
+  if (result.status !== 0 || response === null) throw publicFailure(result, null);
+  return method === 'GET' ? restListPages(response) : response;
+}
+
+export function restListPages(pages) {
+  if (!Array.isArray(pages) || !pages.every(Array.isArray))
+    throw new Error('Expected complete REST list pages; refusing a partial field mapping');
+  return pages.flat();
 }
 
 export function options(args) {
   const result = {
     apply: false,
     create: false,
+    adopt: false,
+    columns: false,
     ref: 'origin/main',
     config: 'web/project-board.json',
     out: 'output/project-board-plan.json',
@@ -68,6 +92,8 @@ export function options(args) {
     const argument = args[index];
     if (argument === '--apply') result.apply = true;
     else if (argument === '--create') result.create = true;
+    else if (argument === '--adopt') result.adopt = true;
+    else if (argument === '--columns') result.columns = true;
     else if (['--ref', '--config', '--out', '--project-number'].includes(argument)) {
       const value = args[++index];
       if (!value || value.startsWith('--')) throw new Error(`${argument} needs a value`);
@@ -84,6 +110,10 @@ export function options(args) {
     throw new Error('--apply needs --project-number or --create');
   if (result.create && result.number !== null)
     throw new Error('Choose --create or --project-number, not both');
+  if (result.adopt && (result.create || result.number === null))
+    throw new Error('--adopt requires an existing --project-number and cannot create a board');
+  if (result.columns && (!result.apply || result.create || result.number === null))
+    throw new Error('--columns requires --apply and an existing --project-number');
   return result;
 }
 
@@ -103,7 +133,14 @@ export async function main(args = process.argv.slice(2)) {
   )
     throw new Error('Plan outputs must stay under output/ so source files cannot be overwritten');
   mkdirSync(dirname(destination), { recursive: true });
-  writeFileSync(destination, `${JSON.stringify(plan, null, 2)}\n`);
+  const adoption =
+    settings.adopt && !settings.apply
+      ? inspectAdoption(await snapshot(github, plan.owner, settings.number), plan, settings.number)
+      : undefined;
+  writeFileSync(
+    destination,
+    `${JSON.stringify({ ...plan, ...(adoption ? { adoption } : {}) }, null, 2)}\n`,
+  );
   if (!settings.apply) {
     log(
       JSON.stringify(
@@ -114,6 +151,7 @@ export async function main(args = process.argv.slice(2)) {
           output: destination,
           sprints: plan.sprints.map((sprint) => sprint.title),
           published: false,
+          ...(adoption ? { adoption } : {}),
         },
         null,
         2,
@@ -122,7 +160,12 @@ export async function main(args = process.argv.slice(2)) {
     return;
   }
   const number = settings.create ? await createBoard(github, plan) : settings.number;
-  const result = await syncBoard(github, plan, number);
+  const result = await syncBoard(github, plan, number, { adopt: settings.adopt });
+  if (settings.columns) {
+    result.columns = await configureColumns(github, githubRest, plan, number);
+    result.view_grouping =
+      'Verified ClubOps status columns via REST creation and GraphQL read-back';
+  }
   writeFileSync(
     resolve(root, 'output/project-board-sync.json'),
     `${JSON.stringify(result, null, 2)}\n`,

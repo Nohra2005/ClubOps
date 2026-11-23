@@ -61,15 +61,12 @@ describe('synthetic API safety boundaries', () => {
     });
     expect((await api.handover('president')).signed_off_at).toBeUndefined();
   });
-  it('proposes shared-rule retirement without retiring the current rule', async () => {
+  it('retires a fact at once and undo brings it back', async () => {
     const api = client();
     await api.retire('kh-demo-venue');
+    expect((await api.fact('kh-demo-venue')).status).toBe('retired');
+    await api.undoFact('kh-demo-venue');
     expect((await api.fact('kh-demo-venue')).status).toBe('current');
-    expect(
-      (await api.review()).some(
-        (card) => card.title.startsWith('Retire:') && card.status === 'pending',
-      ),
-    ).toBe(true);
   });
   it('isolates persisted workspaces and refuses cross-club deep links', async () => {
     const running = client();

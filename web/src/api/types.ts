@@ -230,7 +230,7 @@ export interface ReviewCard {
   source: Source;
   group: string;
   kind: string;
-  op?: 'create' | 'merge' | 'update' | 'contradiction';
+  op?: 'create' | 'merge' | 'update' | 'contradiction' | 'retire';
   alternative?: { statement: string; source: Source };
   event_id?: string;
   status: 'pending' | 'waiting_second_president' | 'approved' | 'rejected';
@@ -294,6 +294,7 @@ export interface KnowledgeItem {
   last_event?: string;
   history: { date: string; description: string; actor: string }[];
   used_in: { event_id: string; title: string }[];
+  auto?: boolean;
 }
 export interface HandoverGuide {
   role: Role;

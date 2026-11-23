@@ -1,12 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { options } from './project-board.mjs';
+import { options, restListPages } from './project-board.mjs';
 
 test('defaults to a read-only plan and requires an explicit target for writes', () => {
   assert.equal(options([]).apply, false);
   assert.equal(options([]).ref, 'origin/main');
   assert.equal(options(['--apply', '--create']).create, true);
   assert.equal(options(['--apply', '--project-number', '1']).number, 1);
+  assert.equal(options(['--adopt', '--project-number', '4']).apply, false);
+  assert.equal(options(['--adopt', '--apply', '--project-number', '4']).adopt, true);
+  assert.equal(options(['--apply', '--columns', '--project-number', '4']).columns, true);
   for (const args of [
     ['--apply'],
     ['--create'],
@@ -15,6 +18,16 @@ test('defaults to a read-only plan and requires an explicit target for writes', 
     ['--project-number', '0'],
     ['--apply', '--create', '--project-number', '1'],
     ['--unknown'],
+    ['--adopt'],
+    ['--adopt', '--create', '--apply'],
+    ['--columns', '--project-number', '4'],
+    ['--columns', '--apply', '--create'],
   ])
     assert.throws(() => options(args));
+});
+
+test('REST field pages are flattened completely, not mistaken for one partial response', () => {
+  assert.deepEqual(restListPages([[{ id: 1 }], [{ id: 2 }]]), [{ id: 1 }, { id: 2 }]);
+  assert.throws(() => restListPages([{ id: 1 }]), /complete REST/);
+  assert.throws(() => restListPages([[{ id: 1 }], { error: 'unexpected shape' }]), /complete REST/);
 });
