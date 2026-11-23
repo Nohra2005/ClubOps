@@ -143,7 +143,7 @@ reconciler maps task statuses and real GitHub assignees, creates those Monday
 iterations and supplies present-day backlog priorities/estimates. Existing custom
 fields, issue cards and historical receipts remain intact.
 
-The [weekly commit-history summaries](../board/weekly-reviews.md) in #91 link
+The [weekly commit-history summaries](https://github.com/Nohra2005/ClubOps/pull/91) in #91 link
 repository activity for those weeks. Dates are owner-reported; the summaries do
 not establish attendance, oral decisions or original assignments. They should not
 be described as contemporaneous minutes or used to claim unverified outcomes.
