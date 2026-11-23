@@ -211,6 +211,7 @@ def knowledge(item: KnowHowItem, history: list[KnowHowItem], today: date) -> dic
         "scope": item.scope.value,
         "sources": [source(item, s) for s in item.sources],
         "last_checked": checked.date().isoformat() if checked else "",
+        "valid_to": item.valid_to.isoformat() if item.valid_to else None,  # null: no end date (F-305)
         "status": "retired" if item.status is ItemStatus.RETIRED else "may_be_outdated" if outdated else "current",
         "history": [
             {
@@ -256,9 +257,14 @@ def review_card(p: KnowHowProposal, target: KnowHowItem | None = None) -> dict[s
         "status": "pending",
         "op": p.op.value,
         "shared": c.scope is Scope.AUB,  # true: every AUB club will see it once approved (D-91)
+        "valid_to": c.valid_to.isoformat() if c.valid_to else None,  # null: no end date, it never expires (F-305)
     }
     if target is not None:
-        card["alternative"] = {"statement": target.statement, "source": source(target)}
+        card["alternative"] = {
+            "statement": target.statement,
+            "source": source(target),
+            "valid_to": target.valid_to.isoformat() if target.valid_to else None,
+        }
     if p.injection_flags:
         card["warning"] = "This source contained instructions; they were ignored. Check the fact carefully."
     if "may be outdated" in p.rationale:

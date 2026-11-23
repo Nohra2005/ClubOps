@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import date
+
 import pytest
 
 from clubops.api import views
@@ -151,3 +153,13 @@ def test_a_verified_fact_is_still_not_created_twice(store) -> None:  # type: ign
     known = _known(store)
     store.submit(proposal(known.model_copy(update={"status": ItemStatus.PROPOSED, "version": 1}), pid="p-dup"))
     assert store.auto_apply("p-dup", CLUB, NOW) is None and "p-dup" in store.pending
+
+
+def test_cards_and_knowledge_show_the_end_date_or_none() -> None:
+    """A person could not tell when a fact stops being true (F-305)."""
+    dated = verified(item("kh-d", valid_to=date(2026, 12, 31)))
+    open_ended = verified(item("kh-o"))
+    assert views.knowledge(dated, [dated], TODAY)["valid_to"] == "2026-12-31"
+    assert views.knowledge(open_ended, [open_ended], TODAY)["valid_to"] is None
+    card = views.review_card(proposal(item("kh-c", valid_to=date(2026, 12, 31))), target=open_ended)
+    assert card["valid_to"] == "2026-12-31" and card["alternative"]["valid_to"] is None

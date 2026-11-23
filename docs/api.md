@@ -114,7 +114,7 @@ activity; a real-provider pilot report remains part of C-20 validation.
 
 ```json
 {"item_id": "k-123", "title": "Venue booking lead time", "statement": "...", "tab": "tips", "kind": "fact",
- "scope": "club", "sources": [], "last_checked": "2026-11-19", "status": "current",
+ "scope": "club", "sources": [], "last_checked": "2026-11-19", "valid_to": null, "status": "current",
  "history": [{"date": "2026-11-19", "description": "version 3: verified", "actor": "president@example.org"}], "used_in": []}
 ```
 
