@@ -800,23 +800,24 @@ export function createMockTransport(
       } else if (action === 'knowledge-edit') {
         const fact = data.knowledge.find((k) => k.item_id === body.item_id);
         if (!fact) throw new ApiError('Fact not found.', 404);
-        addFact(data, requiredText(body.text), `Suggested edit: ${fact.title}`);
+        fact.history.push({
+          date: now().slice(0, 10),
+          description: `edit: ${fact.statement}`,
+          actor: 'You',
+        });
+        fact.statement = requiredText(body.text);
       } else if (action === 'knowledge-retire') {
         const fact = data.knowledge.find((k) => k.item_id === body.item_id);
         if (!fact) throw new ApiError('Fact not found.', 404);
-        if (fact.scope === 'aub') {
-          mutateAllowed(true);
-          data.review.push({
-            id: id('review-rule'),
-            type: 'rule',
-            title: `Retire: ${fact.title}`,
-            statement: `Proposed retirement: ${fact.statement}`,
-            source: fact.sources[0],
-            group: 'Shared rule changes',
-            kind: 'rule',
-            status: 'pending',
-          });
-        } else fact.status = 'retired';
+        fact.status = 'retired';
+      } else if (action === 'knowledge-undo') {
+        const fact = data.knowledge.find((k) => k.item_id === body.item_id);
+        if (!fact) throw new ApiError('Fact not found.', 404);
+        if (fact.status === 'retired') fact.status = 'current';
+        else {
+          const last = fact.history.pop();
+          if (last?.description.startsWith('edit: ')) fact.statement = last.description.slice(6);
+        }
       } else if (action === 'handover-signoff') {
         mutateAllowed(true);
         data.signoffs[body.role as Role] = now();

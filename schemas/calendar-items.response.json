@@ -1,5 +1,5 @@
 {
-  "$comment": "clubops 0.2.3 \u00b7 capability calendar-items 0.1.0 \u00b7 generated",
+  "$comment": "clubops 0.3.0 \u00b7 capability calendar-items 0.1.0 \u00b7 generated",
   "$defs": {
     "CalendarItem": {
       "additionalProperties": false,
@@ -13,6 +13,12 @@
           "format": "date",
           "title": "Date",
           "type": "string"
+        },
+        "edited_by_person": {
+          "default": false,
+          "description": "a person changed it: later mail never overwrites it",
+          "title": "Edited By Person",
+          "type": "boolean"
         },
         "end": {
           "anyOf": [
@@ -62,6 +68,10 @@
           "description": "opens the item in ClubOps",
           "title": "Link"
         },
+        "origin": {
+          "$ref": "#/$defs/ItemOrigin",
+          "default": "plan"
+        },
         "owner_role": {
           "anyOf": [
             {
@@ -85,6 +95,20 @@
           "default": false,
           "title": "Repeat Until Done",
           "type": "boolean"
+        },
+        "source_ref": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "the fact a mail deadline came from",
+          "title": "Source Ref"
         },
         "start": {
           "anyOf": [
@@ -234,6 +258,15 @@
         "task"
       ],
       "title": "ItemKind",
+      "type": "string"
+    },
+    "ItemOrigin": {
+      "enum": [
+        "plan",
+        "mail",
+        "person"
+      ],
+      "title": "ItemOrigin",
       "type": "string"
     },
     "ItemStatus": {

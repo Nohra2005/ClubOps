@@ -9,7 +9,7 @@ from typing import Annotated, Literal, Self
 
 from pydantic import Field, StringConstraints, model_validator
 
-from clubops.contracts.common import ClubId, Contract, EventId, MemberId, Role
+from clubops.contracts.common import CABINET_ROLES, ClubId, Contract, EventId, MemberId, Role
 from clubops.contracts.planning import Plan
 
 # "<event_id>/<task>" for an event's items, "club/<name>" for club-wide reminders.
@@ -25,6 +25,12 @@ class ItemStatus(StrEnum):
     OPEN = "open"
     DONE = "done"  # keep the item, stop its reminders
     CANCELLED = "cancelled"  # delete it from the calendar
+
+
+class ItemOrigin(StrEnum):
+    PLAN = "plan"  # made from an approved event plan
+    MAIL = "mail"  # a deadline found in a trusted OSA e-mail and added without a click (D-138)
+    PERSON = "person"  # made or changed by a cabinet member
 
 
 class Reminder(Contract):
@@ -55,9 +61,14 @@ class CalendarItem(Contract):
     repeat_until_done: bool = False
     link: str | None = Field(default=None, max_length=300, description="opens the item in ClubOps")
     status: ItemStatus = ItemStatus.OPEN
+    origin: ItemOrigin = ItemOrigin.PLAN
+    source_ref: str | None = Field(default=None, max_length=120, description="the fact a mail deadline came from")
+    edited_by_person: bool = Field(default=False, description="a person changed it: later mail never overwrites it")
 
     @model_validator(mode="after")
     def _consistent(self) -> Self:
+        if self.origin is ItemOrigin.MAIL and not self.source_ref:
+            raise ValueError("an item from mail names the fact it came from")
         club_wide = self.item_id.startswith("club/")
         if club_wide != (self.event_id is None):
             raise ValueError("club-wide items ('club/...') have no event; event items start with their event id")
@@ -82,3 +93,52 @@ class CalendarItemsRequest(Contract):
 
 class CalendarItems(Contract):
     items: list[CalendarItem]
+
+
+# ------------------------------------------------- deadlines found in trusted mail (D-138)
+
+
+class DeadlineTask(Contract):
+    """One deadline the reader found. Each role listed gets its own task; nobody is added by name."""
+
+    title: str = Field(min_length=3, max_length=200)
+    date: date
+    owner_roles: list[Role] = Field(min_length=1, max_length=4, description="cabinet roles that must do it")
+    source_ref: str = Field(min_length=1, max_length=120, description="the fact id; the same fact keeps the same tasks")
+
+    @model_validator(mode="after")
+    def _cabinet_roles(self) -> Self:
+        if len(set(self.owner_roles)) != len(self.owner_roles):
+            raise ValueError("each role once")
+        if not set(self.owner_roles) <= CABINET_ROLES:
+            raise ValueError("deadline tasks go to cabinet roles only")
+        return self
+
+
+class DeadlineTasksRequest(Contract):
+    club_id: ClubId
+    today: date
+    trusted: bool = Field(
+        description="the mail passed every check (verified forwarder, OSA sender, no hidden instructions, not outdated)"
+    )
+    tasks: list[DeadlineTask]
+    existing: list[CalendarItem] = Field(
+        default_factory=list, description="the club's mail items already on the calendar"
+    )
+
+
+class HeldReason(StrEnum):
+    PAST = "past_date"
+    TOO_FAR = "too_far"
+    TOO_MANY = "too_many"
+    EDITED = "edited_by_person"
+
+
+class HeldDeadline(Contract):
+    title: str
+    reason: HeldReason
+
+
+class DeadlineItems(Contract):
+    items: list[CalendarItem]
+    held: list[HeldDeadline] = Field(description="not added: a person decides in Review")

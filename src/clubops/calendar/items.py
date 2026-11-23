@@ -2,9 +2,20 @@
 
 from __future__ import annotations
 
+import hashlib
 from datetime import date, datetime, timedelta
 
-from clubops.contracts.calendar import CalendarItem, ItemKind, ItemStatus, Reminder
+from clubops.contracts.calendar import (
+    CalendarItem,
+    DeadlineItems,
+    DeadlineTasksRequest,
+    HeldDeadline,
+    HeldReason,
+    ItemKind,
+    ItemOrigin,
+    ItemStatus,
+    Reminder,
+)
 from clubops.contracts.common import Role
 from clubops.contracts.event import EventSpec
 from clubops.contracts.planning import Plan
@@ -94,3 +105,54 @@ def cabinet_elections_item(club_id: str, year: int) -> CalendarItem:
         owner_role=Role.PRESIDENT,
         reminders=[Reminder(on_day_at="09:00:00")],
     )
+
+
+MAX_DEADLINES_PER_MAIL = 10  # more than this in one e-mail looks like abuse: a person looks at it
+MAX_DAYS_AHEAD = 366
+
+
+def deadline_items(request: DeadlineTasksRequest) -> DeadlineItems:
+    """Calendar tasks for the deadlines in a trusted OSA e-mail, added without a click (D-138).
+
+    One task per role. The same fact always gets the same ids, so a later e-mail updates the task and never
+    duplicates it. A task a person changed is never overwritten; odd dates and floods are held for a person."""
+    if not request.trusted:
+        raise ValueError("only mail that passed every check adds calendar tasks")
+    changed = {i.item_id for i in request.existing if i.edited_by_person}
+    items: list[CalendarItem] = []
+    held: list[HeldDeadline] = []
+    flood = len(request.tasks) > MAX_DEADLINES_PER_MAIL
+    for task in request.tasks:
+        reason = (
+            HeldReason.TOO_MANY
+            if flood
+            else HeldReason.PAST
+            if task.date < request.today
+            else HeldReason.TOO_FAR
+            if task.date > request.today + timedelta(days=MAX_DAYS_AHEAD)
+            else None
+        )
+        if reason is not None:
+            held.append(HeldDeadline(title=task.title, reason=reason))
+            continue
+        stamp = hashlib.sha256(task.source_ref.encode()).hexdigest()[:8]
+        for role in task.owner_roles:
+            item_id = f"club/dl-{stamp}-{role.value.replace('_', '-')}"
+            if item_id in changed:
+                held.append(HeldDeadline(title=task.title, reason=HeldReason.EDITED))
+                continue
+            items.append(
+                CalendarItem(
+                    item_id=item_id,
+                    club_id=request.club_id,
+                    event_id=None,
+                    kind=ItemKind.TASK,
+                    title=task.title,
+                    date=task.date,
+                    owner_role=role,
+                    reminders=[Reminder(before_days=2), Reminder(on_day_at="08:00:00")],
+                    origin=ItemOrigin.MAIL,
+                    source_ref=task.source_ref,
+                )
+            )
+    return DeadlineItems(items=items, held=held)

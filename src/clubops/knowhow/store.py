@@ -13,7 +13,7 @@ from datetime import date, datetime
 from typing import Any
 
 from clubops.capabilities.runner import CapabilityError, Outcome
-from clubops.contracts.common import Actor, ClubId, ErrorCode, ItemId, Role
+from clubops.contracts.common import Actor, ClubId, ErrorCode, ItemId, MemberId, Role
 from clubops.contracts.knowhow import (
     ItemStatus,
     Kind,
@@ -41,6 +41,22 @@ def rescoped(item: KnowHowItem, club_id: ClubId, *, shared: bool) -> KnowHowItem
     return _rebuild(item, scope=Scope.CLUB, club_id=club_id)
 
 
+AUTO_MEMBER: MemberId = "m-clubops-auto"  # `verified_by` of a fact added by code from trusted OSA mail (D-138)
+_NEEDS_A_PERSON = ("may be outdated", "sender is not on the OSA list")
+
+
+def auto_applicable(proposal: KnowHowProposal) -> bool:
+    """Only a plain addition or newer version, with nothing odd about its source, applies without a person (D-138).
+
+    A contradiction, a retirement, hidden instructions, an unlisted sender or an outdated source all wait for one."""
+    return (
+        proposal.op in (ProposalOp.CREATE, ProposalOp.UPDATE, ProposalOp.MERGE)
+        and not proposal.injection_flags
+        and not proposal.conflicts_with
+        and not any(note in proposal.rationale for note in _NEEDS_A_PERSON)
+    )
+
+
 class KnowHowStore:
     def __init__(self, backend: Backend | None = None) -> None:
         self.backend: Backend = backend if backend is not None else MemoryBackend()
@@ -61,6 +77,15 @@ class KnowHowStore:
 
     def history(self, item_id: ItemId) -> list[KnowHowItem]:
         return self.backend.versions(item_id)
+
+    def added_by_code(self, item_id: ItemId) -> bool:
+        """True when the fact was first added by code from trusted OSA mail (D-138).
+
+        This is the fact's stable origin, read from its first version. Later automatic updates or a person's edits
+        never change it, so a person-approved shared fact stays president-only and an automatic one stays
+        correctable by any cabinet member, through every edit, retirement and undo (F-265)."""
+        versions = self.backend.versions(item_id)
+        return bool(versions) and versions[0].verified_by == AUTO_MEMBER
 
     def visible(self, club_id: ClubId) -> list[KnowHowItem]:
         return [i for i in self.backend.latest_all() if i.scope is Scope.AUB or i.club_id == club_id]
@@ -113,6 +138,68 @@ class KnowHowStore:
             self.backend.pending_delete(proposal.proposal_id)
         return Outcome(data=VerifyResult(committed=committed, superseded=to_supersede))
 
+    def auto_apply(self, proposal_id: str, club_id: ClubId, now: datetime) -> KnowHowItem | None:
+        """Apply one queued proposal from trusted OSA mail without a click (D-138), or leave it for a person.
+
+        Returns the committed fact, or ``None`` when the proposal is not eligible or no longer fits the store
+        (it then stays in Review). The old version stays in history, so Undo can bring it back."""
+        queued = self.backend.pending_all().get(proposal_id)
+        if queued is None or not auto_applicable(queued):
+            return None
+        robot = Actor(member_id=AUTO_MEMBER, club_id=club_id, roles=frozenset({Role.PRESIDENT}), verified=True)
+        try:
+            committed, to_supersede = self._next_version(queued, queued.candidate, robot, now)
+        except CapabilityError:
+            return None
+        with self.backend.transaction():
+            for item_id in to_supersede:
+                self._mark_superseded(item_id)
+            self.backend.append(committed)
+            self.backend.pending_delete(queued.proposal_id)
+        return committed
+
+    def revise(
+        self,
+        item_id: ItemId,
+        actor: Actor,
+        now: datetime,
+        *,
+        statement: str | None = None,
+        retire: bool = False,
+        undo: bool = False,
+    ) -> KnowHowItem:
+        """A cabinet member changes, retires or undoes a fact directly; no second person (D-138).
+
+        Every change is a new version and the old ones stay in history. A shared fact needs a president, except one
+        that code first added from trusted mail (its origin, which no later change alters): any cabinet member
+        may correct or undo that."""
+        if not actor.is_cabinet:
+            raise CapabilityError(ErrorCode.NOT_AUTHORIZED, "only verified cabinet members change know-how")
+        item = self.latest(item_id)
+        if item is None or (item.scope is Scope.CLUB and item.club_id != actor.club_id):
+            raise CapabilityError(ErrorCode.NOT_FOUND, "no such item for this club")
+        if item.scope is Scope.AUB and Role.PRESIDENT not in actor.roles and not self.added_by_code(item_id):
+            raise CapabilityError(ErrorCode.NOT_AUTHORIZED, "AUB-wide facts are changed by a club president")
+        stamp = {"verified_by": actor.member_id, "verified_at": now, "last_confirmed_at": now}
+        if undo:
+            versions = self.history(item_id)
+            if len(versions) < 2:
+                raise CapabilityError(ErrorCode.CONFLICT, "there is no earlier version to go back to")
+            changed = _rebuild(
+                versions[-2], version=item.version + 1, status=ItemStatus.VERIFIED, supersedes=None, **stamp
+            )
+        elif retire:
+            changed = _rebuild(item, status=ItemStatus.RETIRED, version=item.version + 1, valid_to=now.date(), **stamp)
+        elif statement is not None:
+            changed = _rebuild(item, statement=statement, version=item.version + 1, **stamp)
+        else:
+            raise CapabilityError(ErrorCode.INVALID_INPUT, "nothing to change")
+        with self.backend.transaction():
+            if item.status is ItemStatus.VERIFIED:
+                self._mark_superseded(item_id)
+            self.backend.append(changed)
+        return changed
+
     def keep_both(
         self, proposal_id: str, edited: KnowHowItem | None, reason: str | None, actor: Actor, now: datetime
     ) -> KnowHowItem:
@@ -130,7 +217,7 @@ class KnowHowStore:
             actor,
         )
         if self.backend.has(candidate.item_id):
-            # A suggested edit carries the old fact's id: the new fact next to it gets its own (F-249).
+            # A suggested edit carries the old fact's id: the new fact next to it gets its own (F-260).
             candidate = _rebuild(candidate, item_id=f"{candidate.item_id[:50]}-{proposal.proposal_id[-8:].lower()}")
             if self.backend.has(candidate.item_id):
                 raise CapabilityError(ErrorCode.CONFLICT, "an item with this id already exists")

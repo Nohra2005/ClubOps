@@ -1,5 +1,5 @@
 {
-  "$comment": "clubops 0.2.3 \u00b7 capability plan-backward 0.1.1 \u00b7 generated",
+  "$comment": "clubops 0.3.0 \u00b7 capability plan-backward 0.1.1 \u00b7 generated",
   "$defs": {
     "Admission": {
       "enum": [

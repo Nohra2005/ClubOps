@@ -294,6 +294,7 @@ export interface KnowledgeItem {
   last_event?: string;
   history: { date: string; description: string; actor: string }[];
   used_in: { event_id: string; title: string }[];
+  auto?: boolean;
 }
 export interface HandoverGuide {
   role: Role;

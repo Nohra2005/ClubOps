@@ -1,13 +1,65 @@
 # Google Calendar setup for each club
 
-## Current architecture boundary (20 November 2026)
+## Trusted-mail adapter (J-23, contract 0.3.0, D-138/D-139)
 
-The instructions above describe the implemented role-calendar adapter. D-116
-supersedes that deployment design with one calendar per club and named per-event
-invitees. Do not create private role calendars as a prerequisite for the new
-integration. J-23 is blocked until Tatiana and Joey separately approve the
-versioned calendar contract; the existing adapter remains covered by fake tests.
-T-46 owns token storage/refresh, callbacks, approved-plan and cabinet triggers.
+This implementation builds on contract PR #119. Use one shared Google calendar
+per club: `CalendarSync(gateway, calendar_ids)` with no role-calendar map. Google
+attendees are derived from the backend's private cabinet role directory, never
+from mail text or a user-selected invitee list. The user confirmed this delivery
+choice on 23 November. Each role task invites its current holder; an unfilled
+role falls back to the president and is reported in `SyncResult.missing_roles`.
+Member/adviser roles are refused, guest invitations/modifications are disabled,
+and cabinet audience changes replace the attendees on the same Google event.
+
+The shared calendar holds the task plus stable reminder events two days before
+and at 08:00 on the day, in Asia/Beirut. Each reminder event invites only that
+task's derived recipient. Google writes use `sendUpdates=all`, including removals.
+This requests invitation/update delivery; recipient acceptance, Google settings
+and actual popup delivery still need live acceptance. ClubOps never accesses
+members' own calendars. Done keeps the task without attendees/reminder events;
+cancelled deletes the task and its reminder events.
+
+### Backend integration (Tatiana)
+
+- Construct a `SyncQueue` in durable private host storage. It retains authoritative
+  task state even after the pending Google write has succeeded.
+- After every mail trust check passes, build `DeadlineTasksRequest` from contract
+  0.3.0 and call `queue.enqueue_deadlines(request, source_key=stable_mail_key)`.
+  This calls the contract builder against persisted state and atomically saves
+  generated items, pending writes and holds. It does not call Google. A false
+  trust flag is refused without saving anything. Never accept this flag from the
+  browser; it asserts the reader's verified trust decision.
+- The queue owns the authoritative `existing` snapshot; import previously stored
+  items with approved `enqueue` calls before adopting it. An old pending queue
+  migrates automatically. Already synced items absent from that old queue need
+  explicit import; they cannot be reconstructed from Google alone.
+- Drain with `queue.drain(sync, roles_for_club)`, supplying a fresh private
+  `Mapping[Role, str]` for each club. One directory address is supported per role.
+  Provider failures stay pending across restart. Missing/invalid configuration
+  raises before that item's first write; fix configuration before retrying.
+- Authenticated edit/remove routes call `queue.change(item, approved=True)` or
+  `queue.remove(club_id, item_id, approved=True)`. They mark a protected personal
+  edit; removal retains a cancellation tombstone so mail replay cannot resurrect
+  it. The backend authorizes the club and person before these calls.
+- Re-enqueue current items after cabinet changes so Google receives the new
+  audience. Expose only own-club state; never expose the unscoped worker queue.
+  A single worker drains the queue; multi-worker leasing is not implemented.
+
+### Calendar and Review integration (Tatiana / Christophe)
+
+`queue.items(club_id)` supplies persisted tasks, including cancellation tombstones
+which the view should hide. `queue.held(club_id)` supplies held deadlines grouped
+by stable mail key, with the contract's title and reason. These hold records are
+never sent to Google. Reprocessing the same mail replaces its holds rather than
+duplicating them; a successful corrected read clears that mail's holds. Pending
+items identify tasks that must display not-synced status.
+
+The contract says holds appear in Review; J-23 also requests Calendar visibility.
+The API and frontend owners must agree that presentation and publish the API
+shape. `HeldDeadline` currently has no task/fact identifier or proposed date:
+the grouped mail key supports source-level review, not an invented per-task
+resolution endpoint. No API, reader, worker schedule, OAuth, or screen wiring
+is implemented by this adapter PR. T-46 retains token storage/refresh ownership.
 
 ## Implemented legacy adapter reference
 `CalendarSync` is a one-way copy from approved ClubOps items. Configure a **separate
