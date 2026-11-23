@@ -221,7 +221,8 @@ def knowledge(item: KnowHowItem, history: list[KnowHowItem], today: date) -> dic
             for v in history
         ],
         "used_in": [],
-        "auto": item.verified_by == AUTO_MEMBER,  # added or last changed by code from trusted OSA mail (D-138)
+        "auto": bool(history)
+        and history[0].verified_by == AUTO_MEMBER,  # first added by code from trusted OSA mail (D-138)
     }
     if isinstance(item.details, RuleDetails):
         out["triggers"] = ", ".join(item.details.triggers)

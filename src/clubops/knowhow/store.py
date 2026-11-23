@@ -78,6 +78,15 @@ class KnowHowStore:
     def history(self, item_id: ItemId) -> list[KnowHowItem]:
         return self.backend.versions(item_id)
 
+    def added_by_code(self, item_id: ItemId) -> bool:
+        """True when the fact was first added by code from trusted OSA mail (D-138).
+
+        This is the fact's stable origin, read from its first version. Later automatic updates or a person's edits
+        never change it, so a person-approved shared fact stays president-only and an automatic one stays
+        correctable by any cabinet member, through every edit, retirement and undo (F-265)."""
+        versions = self.backend.versions(item_id)
+        return bool(versions) and versions[0].verified_by == AUTO_MEMBER
+
     def visible(self, club_id: ClubId) -> list[KnowHowItem]:
         return [i for i in self.backend.latest_all() if i.scope is Scope.AUB or i.club_id == club_id]
 
@@ -162,13 +171,14 @@ class KnowHowStore:
         """A cabinet member changes, retires or undoes a fact directly; no second person (D-138).
 
         Every change is a new version and the old ones stay in history. A shared fact needs a president, except one
-        that code added from trusted mail: any cabinet member may correct or undo that."""
+        that code first added from trusted mail (its origin, which no later change alters): any cabinet member
+        may correct or undo that."""
         if not actor.is_cabinet:
             raise CapabilityError(ErrorCode.NOT_AUTHORIZED, "only verified cabinet members change know-how")
         item = self.latest(item_id)
         if item is None or (item.scope is Scope.CLUB and item.club_id != actor.club_id):
             raise CapabilityError(ErrorCode.NOT_FOUND, "no such item for this club")
-        if item.scope is Scope.AUB and Role.PRESIDENT not in actor.roles and item.verified_by != AUTO_MEMBER:
+        if item.scope is Scope.AUB and Role.PRESIDENT not in actor.roles and not self.added_by_code(item_id):
             raise CapabilityError(ErrorCode.NOT_AUTHORIZED, "AUB-wide facts are changed by a club president")
         stamp = {"verified_by": actor.member_id, "verified_at": now, "last_confirmed_at": now}
         if undo:

@@ -75,6 +75,40 @@ def test_a_shared_fact_needs_a_president_unless_code_added_it(store) -> None:  #
     assert fixed.statement == "Corrected by an events officer."
 
 
+def test_an_automatic_update_does_not_open_a_person_approved_shared_fact(store) -> None:  # type: ignore[no-untyped-def]
+    """F-265 (1): the origin decides, not the latest stamp. A president-approved AUB fact that mail later updates
+    stays president-only: an events officer still cannot edit, retire or undo it."""
+    human = _known(store, item_id="kh-shared-rule-c", scope=Scope.AUB, club_id=None)
+    newer = item(
+        item_id="kh-shared-rule-c", scope=Scope.AUB, club_id=None, statement="Fill the impact report by 6 Dec."
+    )
+    store.submit(proposal(newer, ProposalOp.UPDATE, target_item=human.item_id, pid="p-3"))
+    updated = store.auto_apply("p-3", CLUB, NOW)
+    assert updated is not None and updated.verified_by == AUTO_MEMBER
+    officer = actor(Role.EVENTS)
+    for change in ({"statement": "Edited by an officer."}, {"retire": True}, {"undo": True}):
+        with pytest.raises(CapabilityError) as refused:
+            store.revise(human.item_id, officer, NOW, **change)
+        assert refused.value.code is ErrorCode.NOT_AUTHORIZED
+    assert not store.added_by_code(human.item_id)
+
+
+def test_an_officers_correction_of_an_automatic_fact_can_still_be_undone(store) -> None:  # type: ignore[no-untyped-def]
+    """F-265 (2): edit, retire and undo stay open to any cabinet member on a fact code first added, however many
+    times a person has stamped it."""
+    auto = item(item_id="kh-shared-rule-d", scope=Scope.AUB, club_id=None)
+    store.submit(proposal(auto, pid="p-4"))
+    assert store.auto_apply("p-4", CLUB, NOW) is not None
+    officer = actor(Role.EVENTS)
+    edited = store.revise(auto.item_id, officer, NOW, statement="Corrected by an events officer.")
+    assert edited.verified_by == officer.member_id and store.added_by_code(auto.item_id)
+    undone = store.revise(auto.item_id, officer, NOW, undo=True)
+    assert undone.statement == auto.statement
+    retired = store.revise(auto.item_id, officer, NOW, retire=True)
+    assert retired.status is ItemStatus.RETIRED
+    assert store.revise(auto.item_id, officer, NOW, undo=True).status is ItemStatus.VERIFIED
+
+
 def test_a_non_cabinet_member_cannot_change_a_fact(store) -> None:  # type: ignore[no-untyped-def]
     old = _known(store)
     with pytest.raises(CapabilityError) as refused:
