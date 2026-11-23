@@ -66,7 +66,8 @@ def injection_flags(text: str) -> list[str]:
 
 def outdated_note(text: str, today: date) -> str | None:
     """A document that only mentions past academic years (e.g. '2023-24') may be outdated."""
-    ends = [int(m.group(1)[:2] + m.group(2)) for m in _YEAR_SPAN.finditer(text)]
+    # A pair counts only when it spans one year (2025-26, 2025-2026); an ISO date like 2026-11-19 is not one (F-240).
+    ends = [end for m in _YEAR_SPAN.finditer(text) if (end := int(m.group(1)[:2] + m.group(2))) == int(m.group(1)) + 1]
     if not ends:
         return None
     current_start = today.year if today.month >= 8 else today.year - 1

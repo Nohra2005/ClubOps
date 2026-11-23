@@ -143,6 +143,10 @@ def test_an_old_document_is_flagged_as_maybe_outdated() -> None:
     assert outdated_note("Guidelines for the 2023-2024 academic year", TODAY)
     assert outdated_note("Event proposal 2026-2027", TODAY) is None
     assert outdated_note("No years here", TODAY) is None
+    # F-240: a date in the e-mail header is not an academic year
+    assert outdated_note("Received: 2026-11-19T09:32:52, forwarded 2026-11-20", TODAY) is None
+    assert outdated_note("Deadline 2026-12-27", TODAY) is None
+    assert outdated_note("Guidelines 2025-26 and a note dated 2026-11-19", TODAY)
 
 
 # ------------------------------------------------------------ matching
