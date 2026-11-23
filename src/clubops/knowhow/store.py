@@ -185,9 +185,9 @@ class KnowHowStore:
             versions = self.history(item_id)
             if len(versions) < 2:
                 raise CapabilityError(ErrorCode.CONFLICT, "there is no earlier version to go back to")
-            changed = _rebuild(
-                versions[-2], version=item.version + 1, status=ItemStatus.VERIFIED, supersedes=None, **stamp
-            )
+            before = versions[-2]  # Undo returns to how it was: a retired fact goes back to retired (F-302)
+            status = ItemStatus.RETIRED if before.status is ItemStatus.RETIRED else ItemStatus.VERIFIED
+            changed = _rebuild(before, version=item.version + 1, status=status, supersedes=None, **stamp)
         elif retire:
             changed = _rebuild(item, status=ItemStatus.RETIRED, version=item.version + 1, valid_to=now.date(), **stamp)
         elif statement is not None:
@@ -274,9 +274,16 @@ class KnowHowStore:
 
         match proposal.op:
             case ProposalOp.CREATE:
-                if self.backend.has(candidate.item_id):
+                existing = self.latest(candidate.item_id)
+                if existing is None:
+                    return _rebuild(candidate, version=1, **stamp), []
+                if existing.status is not ItemStatus.RETIRED:
                     raise CapabilityError(ErrorCode.CONFLICT, "an item with this id already exists")
-                return _rebuild(candidate, version=1, **stamp), []
+                # A retired fact told again comes back as the next version of the same fact, in its old layer (F-302).
+                revived = _rebuild(
+                    candidate, version=existing.version + 1, scope=existing.scope, club_id=existing.club_id, **stamp
+                )
+                return revived, []
             case ProposalOp.UPDATE if target is not None:
                 # A new version stays in its fact's layer: a club can't pull an AUB fact into its own (F-163).
                 committed = _rebuild(
