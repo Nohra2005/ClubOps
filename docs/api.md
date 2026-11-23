@@ -24,7 +24,7 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Starting a plan | `POST /api/events/plan` answers 202 `{run_id}` at once and the agent runs in the background. Poll `GET /api/runs/{run_id}`; before the first step it shows `status: running` with no steps. |
 | Questions | The agent asks plain text questions (`steps[-1].state == "question"`, text in `steps[-1].text`). Answer with `POST /api/runs/{id}/answer {text}`; the response is the updated run. The structured "details" confirmation in the demo is not in the backend: send the edited details as plain text, or edit them on the event page (PATCH) afterwards. |
 | Limits | At 8 steps or $0.05 the run stops with `status: at_limit`. `POST /api/runs/{id}/continue` gives one more allowance only when the user clicks it. There is no "stop": an `at_limit` run simply stays stopped. |
-| Approving | `POST /api/events/{id}/approve-plan {revision}`. 409 if the details changed after the plan (`plan_outdated: true`) or the revision is old. On success the event is `approved` and its calendar items exist (`GET /api/calendar`). |
+| Approving | `POST /api/events/{id}/approve-plan {revision}`. 409 if the details changed after the plan (`plan_outdated: true`) or the revision is old. On success the event is `approved`, its calendar items exist (`GET /api/calendar`) and, when the club has a Google calendar, they are queued and sent to it after the reply (T-46). |
 
 ## Endpoints
 
@@ -48,6 +48,8 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Review | `GET /api/review?filter=` | live; card types `fact`, `rule`, `merge` (same or newer version of a known fact) and `disagreement`, with `alternative` = the known fact; optional `warning` (the source had hidden instructions) and `outdated` |
 | Review | `POST /api/review/{id} {decision: approve|reject|edit|keep_a|keep_b|merge|both|keep_both, edited_text?, reason?, shared?}` | live. `keep_a` and `merge` = approve (the new version wins or is merged); `keep_b` = reject; `both` (reason required) and `keep_both` = add this fact next to the known one, which stays unchanged (`both` appends the reason as "Context: ..."). `edited_text` sent with `approve` counts as `edit` |
 | Calendar | `GET /api/calendar?month=2026-11` | live; `connected` is false until Joey's Google sync is wired |
+| Calendar | `GET /api/calendar/sync` | live, cabinet only, own club: `{connected, waiting, problem}`. `waiting` = approved items not yet in Google; `problem` is a short plain sentence or null. Never returns the calendar id, key or an address. |
+| Calendar | `POST /api/calendar/sync` | live, cabinet only: retry now, same reply as above. It sends only what an approved plan queued; it cannot create anything. |
 | Knowledge | `GET /api/knowledge?tab=&q=` | live (tabs rules, tips, contacts, sponsors; `documents` empty) |
 | Knowledge | `GET /api/knowledge/{item_id}` | live |
 | Handover | `GET /api/handover/{role}` | live (C-19): current approved knowledge, all citations and explicit gaps; deterministic, no model call |
