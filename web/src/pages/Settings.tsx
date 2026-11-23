@@ -229,7 +229,7 @@ export default function Settings() {
                   <input
                     className="sr-only"
                     type="file"
-                    accept={api.mode === 'http' ? '.txt,.md,.csv,.eml,.xlsx' : '.pdf,.txt'}
+                    accept={api.mode === 'http' ? '.pdf,.txt,.md,.csv,.eml,.xlsx' : '.pdf,.txt'}
                     ref={uploadRef}
                     aria-label="Upload source document"
                     onChange={async (e) => {

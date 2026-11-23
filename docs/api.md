@@ -52,7 +52,7 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Knowledge | `GET /api/knowledge/{item_id}` | live |
 | Handover | `GET /api/handover/{role}` | live (C-19): current approved knowledge, all citations and explicit gaps; deterministic, no model call |
 | Settings | `GET /api/cabinet`, `POST /api/cabinet`, `DELETE /api/cabinet {member_id}` | live |
-| Settings | `POST /api/documents` (multipart `file`) | live: .txt, .md, .csv, .eml, .xlsx up to 2 MB; past expense forms become a price list without AI; returns a `documents` knowledge item saying how many facts went to Review |
+| Settings | `POST /api/documents` (multipart `file`) | live: .txt, .md, .csv, .eml, .xlsx up to 2 MB, .pdf up to 10 MB (text only: pictures are not read and the answer says how many were skipped; a PDF with no text is refused; long text is cut in code into pieces of about 5,500 characters, 12 pieces at most); past expense forms become a price list without AI; returns a `documents` knowledge item saying how many facts went to Review |
 | Settings | `GET /api/usage` | live (monthly planning cost; `calls_label` identifies planner steps; optional `run_metrics`, `trace_metrics`, `trace_metrics_available`, `metrics_note` explain C-20 outcomes and recorded coverage) |
 | Setup | `POST /api/setup/next` | 501 until C-21 |
 | Inbox | `GET /api/inbox` | live (cabinet only, own club): `[{id, subject, date, forwarded_by}]` for forwarded e-mails waiting to be read; metadata only, no model call |
