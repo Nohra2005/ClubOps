@@ -6,7 +6,7 @@ import sqlite3
 from email.message import EmailMessage
 from pathlib import Path
 
-from clubops.inbox.guards import InboxLedger, check_forward
+from clubops.inbox.guards import InboxLedger, check_forward, count_audience
 
 
 def message(
@@ -159,3 +159,41 @@ def test_outlook_forward_accepts_headers_without_exposing_recipients(tmp_path: P
     assert check_forward(mail.as_bytes(), "other-club", senders, osa, ledger).reason == "already_read"
     mail.set_content(mail.get_content().replace("osa@example.test", "outsider@example.test"))
     assert check_forward(mail.as_bytes(), "other-club", senders, osa, ledger).reason == "original_sender_not_osa"
+
+
+def outlook(to: str, cc: str = "") -> bytes:
+    mail = EmailMessage()
+    mail["From"] = "cabinet@example.test"
+    mail["To"] = "clubops.agent+running-club@gmail.com"
+    cc_line = f"Cc: {cc}\n" if cc else ""
+    mail.set_content(
+        "________________________________\n"
+        "From: OSA Staff <osa@example.test>\n"
+        "Sent: Tuesday, November 10, 2026 1:00:10 PM (UTC+02:00) Beirut\n"
+        f"To: {to}\n"
+        f"{cc_line}"
+        "Subject: Synthetic notice\n\n"
+        "Dear clubs,\nThe office is closed on Monday.\n"
+    )
+    return mail.as_bytes()
+
+
+def test_the_number_of_people_the_original_went_to_is_counted_and_never_kept(tmp_path: Path) -> None:
+    ledger = InboxLedger(tmp_path / "guards.db")
+    senders, osa = {"cabinet@example.test"}, {"osa@example.test"}
+    many = "; ".join(f"Club {i} <club{i}@example.test>" for i in range(94))
+    wide = check_forward(outlook(many, "Second Staff <s@example.test>"), "running-club", senders, osa, ledger)
+    assert wide.audience == 95  # 94 in To + 1 in Cc
+    assert "club1@example.test" not in wide.content
+    one = check_forward(
+        outlook("Running Club <rc@example.test>"), "running-club", senders, osa, InboxLedger(tmp_path / "b.db")
+    )
+    assert one.audience == 1
+
+
+def test_audience_counts_each_address_once_and_says_unknown_when_it_cannot_tell() -> None:
+    assert count_audience(["A <a@example.test>; a@example.test", "B <b@example.test>"]) == 2
+    assert count_audience(["Alice Example; Bob Example"]) == 2  # display names only
+    assert count_audience(["Undisclosed recipients"]) is None  # Bcc: nothing is visible
+    assert count_audience([]) is None
+    assert count_audience([""]) is None

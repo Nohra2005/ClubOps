@@ -37,6 +37,9 @@ The planner can choose its own steps inside a user-started run. It cannot approv
 | Plan approval | Server checks the submitted revision before creating internal calendar items | Event/API contracts, `web/e2e/live-api.spec.ts` |
 | Handover | Existing plain-code assembly becomes a view retaining current sources and explicit gaps; no model call | Handover contracts, `tests/test_handover_view.py`, `tests/test_handover_endpoint.py` |
 | Club setup | Explicit president interview; durable question progress; skips/resume avoid extraction, extracted facts wait in Review | `POST /api/setup/next`, `web/CLUB_SETUP.md`, `web/e2e/setup-live.spec.ts` |
+
+| OSA e-mail inbox | Plain code fetches the ClubOps Gmail inbox (free), checks the forwarder against the cabinet list and the original sender against the private OSA list, cleans the text and takes a read-once fingerprint. Only a person's explicit click starts the one paid model read. Whether the cards are AUB-wide or club-only comes from how many people the original went to (10 or more is AUB-wide), not from the model | `src/clubops/inbox/`, `inbox_intake.py`, `/api/inbox` routes, D-113, D-114, D-126, F-214, F-216, F-227, `tests/test_inbox_*.py` |
+| Expiry archive | Plain code, no model, treats a fact past its end date as expired: the planner ignores it and the president may restore it with a new date. An AUB-wide fact is operator-only | `KnowHowStore.restore`, `/api/knowledge/{id}/restore`, D-115, D-124, F-215, `tests/test_archive.py` |
 | Reporting | Deduplicates cumulative snapshots and trace IDs; absent metrics are unavailable, not zero | `src/clubops/reports/`, report tests |
 
 Draft text is for a person to inspect and copy/send. Handover sign-off and several editing actions remain demo-only; the real transport reports unavailable actions explicitly.
