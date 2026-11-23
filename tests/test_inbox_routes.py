@@ -102,9 +102,19 @@ def test_reading_sends_proposals_to_review_and_leaves_the_queue(app: tuple[TestC
     response = c.post("/api/inbox/m1/capture", headers=HEADERS)
     assert response.status_code == 200 and len(response.json()["proposals"]) == 1
     assert len(provider.prompts) == 1
+    assert response.json()["skipped"] == []  # a list, as docs/api.md says: the web screen rejects a number (F-239)
     assert c.get("/api/inbox").json() == []
     assert any(card["id"] in response.json()["proposals"] for card in c.get("/api/review").json())
     assert c.post("/api/inbox/m1/capture", headers=HEADERS).status_code == 404  # never paid for twice
+
+
+def test_a_read_that_finds_nothing_answers_with_two_lists(app: tuple[TestClient, Provider, Path]) -> None:
+    c, provider, data = app
+    _queue(data, "m9", CLUB)
+    provider.answers.append({"facts": []})
+    body = c.post("/api/inbox/m9/capture", headers=HEADERS).json()
+    assert body["proposals"] == []
+    assert isinstance(body["skipped"], list) and all(isinstance(reason, str) for reason in body["skipped"])  # F-239
 
 
 def test_a_failed_read_stays_waiting(app: tuple[TestClient, Provider, Path]) -> None:
@@ -127,7 +137,7 @@ def test_the_adviser_cannot_see_or_read_the_inbox(app: tuple[TestClient, Provide
 def test_non_osa_mail_is_skipped_with_a_reason_and_never_read(app: tuple[TestClient, Provider, Path]) -> None:
     c, provider, data = app
     counts = _fetch(data, {"n1": _mail(CLUB, "Party", original="friend@example.org")})
-    assert counts == {"queued": 0, "skipped": 1, "not_for_a_club": 0}
+    assert counts == {"queued": 0, "skipped": 1, "not_for_a_club": 0, "refreshed": 0}
     assert c.get("/api/inbox").json() == []
     [row] = c.get("/api/inbox/skipped").json()
     assert row["id"] == "n1" and row["why"] == "ClubOps only reads e-mails forwarded from OSA staff"
@@ -192,3 +202,76 @@ def test_notes_made_before_the_audience_count_still_open_and_fall_back(tmp_path:
     notes = InboxNotes(old)
     assert notes.fingerprint("m0", "running-club") == "abc"
     assert notes.audience("m0", "running-club") is None  # unknown: the model's label decides
+
+
+def _forget_audience(data: Path) -> None:
+    import sqlite3
+
+    with sqlite3.connect(data / "inbox-notes.db") as db:
+        db.execute("UPDATE accepted SET audience=NULL")  # what a message checked before D-126 looks like
+
+
+def test_a_waiting_message_checked_before_the_count_gets_its_count_on_the_next_free_fetch(tmp_path: Path) -> None:
+    crowd = "; ".join(f"Club {i} <club{i}@example.org>" for i in range(40))
+    mails = {"old": _mail(CLUB, "A notice", to=crowd)}
+    assert _fetch(tmp_path, mails)["queued"] == 1
+    _forget_audience(tmp_path)
+    notes = InboxNotes(tmp_path / "inbox-notes.db")
+    assert notes.audience("old", CLUB) is None
+    assert _fetch(tmp_path, mails) == {"queued": 0, "skipped": 0, "not_for_a_club": 0, "refreshed": 1}
+    assert notes.audience("old", CLUB) == 41
+    assert len(PendingInbox(tmp_path / "inbox.db").pending(CLUB)) == 1  # still waiting, never re-queued or read
+    assert _fetch(tmp_path, mails)["refreshed"] == 0  # nothing left to fill in
+
+
+def test_the_refresh_leaves_read_changed_and_skipped_mail_alone(tmp_path: Path) -> None:
+    import sqlite3
+
+    crowd = "; ".join(f"Club {i} <club{i}@example.org>" for i in range(40))
+    mails = {"read": _mail(CLUB, "Read one", to=crowd), "changed": _mail(CLUB, "Changed one", to=crowd)}
+    assert _fetch(tmp_path, mails)["queued"] == 2
+    PendingInbox(tmp_path / "inbox.db").mark_processed("read", CLUB)  # already read through the route
+    _forget_audience(tmp_path)
+    with sqlite3.connect(tmp_path / "inbox-notes.db") as db:  # the stored check no longer matches this mail
+        db.execute("UPDATE accepted SET fingerprint='stale' WHERE message_id='changed'")
+    assert _fetch(tmp_path, mails)["refreshed"] == 0
+    notes = InboxNotes(tmp_path / "inbox-notes.db")
+    assert notes.audience("read", CLUB) is None and notes.audience("changed", CLUB) is None
+
+
+def test_a_non_osa_mail_can_be_released_and_then_read_with_its_cards_marked(
+    app: tuple[TestClient, Provider, Path],
+) -> None:
+    c, provider, data = app
+    body = BLK + " Form: https://forms.example.test/x call 01 234 567"
+    _fetch(data, {"n1": _mail(CLUB, "Moodle check-in", original="moodle@example.org", body=body)})
+    assert c.get("/api/inbox").json() == []
+    assert c.post("/api/inbox/n1/allow", headers=HEADERS).status_code == 200
+    assert [row["id"] for row in c.get("/api/inbox").json()] == ["n1"]
+    assert c.get("/api/inbox/skipped").json() == []
+    assert provider.prompts == []  # releasing is free; nothing was read
+    provider.answers.append({"facts": [LESSON]})
+    assert c.post("/api/inbox/n1/capture", headers=HEADERS).status_code == 200
+    # contacts are not kept for an unlisted sender, and the card says so
+    assert "https://forms.example.test/x" not in provider.prompts[0]
+    [card] = c.get("/api/review").json()
+    assert card["unlisted"] is True
+
+
+def test_only_a_sender_refusal_can_be_released(app: tuple[TestClient, Provider, Path]) -> None:
+    c, _, data = app
+    _fetch(data, {"n1": _mail("other-club", "Wrong club tag", original="friend@example.org")})
+    assert c.post("/api/inbox/n1/allow", headers=HEADERS).status_code == 404
+    assert c.post("/api/inbox/nope/allow", headers=HEADERS).status_code == 404
+
+
+def test_mail_skipped_before_release_existed_can_still_be_released(app: tuple[TestClient, Provider, Path]) -> None:
+    c, _, data = app
+    _fetch(data, {"n1": _mail(CLUB, "Old skip", original="moodle@example.org")})
+    import sqlite3
+
+    with sqlite3.connect(data / "inbox-notes.db") as db:
+        db.execute("DELETE FROM held")  # as if skipped by the version before D-136
+    assert c.post("/api/inbox/n1/allow", headers=HEADERS).status_code == 404
+    _fetch(data, {"n1": _mail(CLUB, "Old skip", original="moodle@example.org")})  # the next free fetch
+    assert c.post("/api/inbox/n1/allow", headers=HEADERS).status_code == 200

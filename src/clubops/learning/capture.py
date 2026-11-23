@@ -66,7 +66,8 @@ def injection_flags(text: str) -> list[str]:
 
 def outdated_note(text: str, today: date) -> str | None:
     """A document that only mentions past academic years (e.g. '2023-24') may be outdated."""
-    ends = [int(m.group(1)[:2] + m.group(2)) for m in _YEAR_SPAN.finditer(text)]
+    # A pair counts only when it spans one year (2025-26, 2025-2026); an ISO date like 2026-11-19 is not one (F-240).
+    ends = [end for m in _YEAR_SPAN.finditer(text) if (end := int(m.group(1)[:2] + m.group(2))) == int(m.group(1)) + 1]
     if not ends:
         return None
     current_start = today.year if today.month >= 8 else today.year - 1
@@ -282,9 +283,67 @@ Answer JSON only: {"facts": [...]}  (an empty list is fine)."""
 
 MATCH_SYSTEM = """You compare new facts with facts a club already approved. For each new fact answer one of:
 "create" (nothing similar), "merge" (says the same thing as an existing fact), "update" (a newer or more
-precise version of an existing fact), "contradiction" (disagrees with an existing fact; a person decides).
+precise version of an existing fact),
+"contradiction" (disagrees with an existing fact; a person decides).
 "target" is the id of the existing fact for merge, update and contradiction. Use only the ids shown.
+A deadline or fact that holds for one term or date only is a different fact from a standing rule: answer
+"create" for it, never "update".
 Answer JSON only: {"matches": [{"fact": 0, "op": "...", "target": "kh-...", "why": "<one line>"}]}"""
+
+
+_FILLER = frozenset(
+    [
+        "that",
+        "this",
+        "with",
+        "from",
+        "they",
+        "must",
+        "have",
+        "been",
+        "will",
+        "through",
+        "their",
+        "there",
+        "which",
+        "when",
+        "where",
+        "what",
+        "your",
+        "each",
+        "into",
+        "also",
+        "than",
+        "then",
+        "only",
+        "about",
+        "because",
+        "after",
+        "before",
+        "could",
+        "should",
+        "would",
+        "these",
+        "those",
+    ]
+)
+
+
+def _topic_words(text: str) -> set[str]:
+    return {w for w in re.findall(r"[a-z]{4,}", text.casefold()) if w not in _FILLER}
+
+
+def _same_topic(new: KnowHowItem, known: KnowHowItem) -> bool:
+    """A match the model proposes must share at least two real words with the fact it points at; a card for campus
+    access must never replace a room-reservation fact (F-246)."""
+    new_words = _topic_words(f"{new.title} {new.statement}")
+    return len(new_words & _topic_words(f"{known.title} {known.statement}")) >= 2
+
+
+def _same_period(new: KnowHowItem, known: KnowHowItem) -> bool:
+    """A fact that ends on a date (a deadline, this term's rule) and a standing rule can both be true: neither replaces
+    nor contradicts the other (F-252)."""
+    return (new.valid_to is None) == (known.valid_to is None)
 
 
 # ------------------------------------------------------------------- candidates
@@ -310,6 +369,14 @@ _REDACTION_KINDS: dict[str, RedactionKind] = {
 WIDE_AUDIENCE = 10  # an e-mail sent to this many people or more is AUB-wide news, not one club's (D-126)
 
 
+_FORWARDER = re.compile(r"^Forwarded by:.*$", re.MULTILINE)
+
+
+def _hide_forwarder(text: str) -> str:
+    """The cabinet member who forwarded the e-mail is private metadata: the model never sees the address."""
+    return _FORWARDER.sub("Forwarded by: [cabinet member]", text)
+
+
 class Learner:
     def __init__(self, client: ModelClient | None, store: KnowHowStore) -> None:
         self.client = client
@@ -325,9 +392,11 @@ class Learner:
         extra: list[Candidate] | None = None,
         *,
         audience: int | None = None,
+        unlisted_sender: bool = False,
     ) -> CaptureResult:
-        """Proposals for Review (not yet submitted). ``extra`` are candidates already built by plain code."""
-        prepared = [self._prepare(src, today) for src in request.sources]
+        """Proposals for Review (not yet submitted). ``extra`` are candidates already built by plain code.
+        ``unlisted_sender``: the e-mail's sender is not on the OSA list and a person chose to read it (D-136)."""
+        prepared = [self._prepare(src, today, unlisted_sender) for src in request.sources]
         candidates: list[Candidate] = list(extra or [])
         skipped = 0
         failed = 0
@@ -352,7 +421,7 @@ class Learner:
                 extraction = Extraction(facts=[])
                 failed = len(texts)
             for fact in extraction.facts:
-                candidate = self._candidate(fact, prepared, request, today, audience)
+                candidate = self._candidate(fact, prepared, request, today, audience, unlisted_sender=unlisted_sender)
                 if candidate is None:
                     skipped += 1
                 else:
@@ -374,9 +443,10 @@ class Learner:
         extra: list[Candidate] | None = None,
         *,
         audience: int | None = None,
+        unlisted_sender: bool = False,
     ) -> CaptureResult:
         """Capture, then put every proposal in Review."""
-        result = self.capture(request, today, budget, extra, audience=audience)
+        result = self.capture(request, today, budget, extra, audience=audience, unlisted_sender=unlisted_sender)
         for proposal in result.proposals:
             self.store.submit(proposal)
         return result
@@ -391,8 +461,13 @@ class Learner:
         injection: list[str]
         outdated: str | None
 
-    def _prepare(self, source: Untrusted, today: date) -> Learner._Prepared:
-        red = redact(source.content[:MAX_SOURCE_CHARS])
+    def _prepare(self, source: Untrusted, today: date, unlisted_sender: bool = False) -> Learner._Prepared:
+        # Verified OSA e-mails keep their links and office contacts: they are the know-how (F-241).
+        is_email = source.source.kind is SourceKind.EMAIL
+        text = source.content[:MAX_SOURCE_CHARS]
+        if is_email:
+            text = _hide_forwarder(text)
+        red = redact(text, keep_office_contacts=is_email and not unlisted_sender)
         kinds: list[RedactionKind] = sorted({_REDACTION_KINDS[k] for k in red.kinds if k in _REDACTION_KINDS})
         return Learner._Prepared(source, red.text, kinds, injection_flags(red.text), outdated_note(red.text, today))
 
@@ -411,6 +486,8 @@ class Learner:
         request: CaptureRequest,
         today: date,
         audience: int | None = None,
+        *,
+        unlisted_sender: bool = False,
     ) -> Candidate | None:
         if fact.source >= len(prepared):
             return None
@@ -464,6 +541,8 @@ class Learner:
             )
         elif shared and not is_rule:
             why += "; about AUB: shared with every club once a president approves it"
+        if unlisted_sender:
+            why += "; the sender is not on the OSA list: check it is genuine before approving"
         if src.outdated:
             why += f"; {src.outdated}"
         return Candidate(item, why, src.redactions, src.injection)
@@ -480,7 +559,7 @@ class Learner:
     def _match(self, candidates: list[Candidate], club_id: str, budget: Budget | None) -> list[KnowHowProposal]:
         similar: dict[int, list[KnowHowItem]] = {}
         for i, c in enumerate(candidates):
-            hits = self.store.search(club_id, f"{c.item.title} {c.item.statement}", limit=3)
+            hits = self.store.search(club_id, f"{c.item.title} {c.item.statement}", limit=6)
             if hits:
                 similar[i] = hits
         decided: dict[int, Match] = {}
@@ -492,8 +571,12 @@ class Learner:
                     budget,
                 )
                 for m in answer.matches:
-                    allowed = {h.item_id for h in similar.get(m.fact, [])}
-                    if m.op == "create" or (m.target in allowed):
+                    shown = {h.item_id: h for h in similar.get(m.fact, [])}
+                    if m.op == "create" or (
+                        m.target in shown
+                        and _same_topic(candidates[m.fact].item, shown[m.target])
+                        and _same_period(candidates[m.fact].item, shown[m.target])
+                    ):
                         decided[m.fact] = m
             except CapabilityError:
                 pass

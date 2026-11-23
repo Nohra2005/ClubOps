@@ -84,7 +84,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return (
       <div className="boot">
         <h1>Let's get you connected.</h1>
-        <p>{user.error}</p>
+        <p role={user.error ? 'alert' : undefined}>{user.error}</p>
         <button className="button primary" onClick={user.reload}>
           Try again
         </button>

@@ -20,6 +20,7 @@ import {
   ChevronDown,
   GraduationCap,
   LogOut,
+  Mail,
   MessageCircle,
   Search,
   Settings2,
@@ -37,6 +38,7 @@ import Knowledge, { KnowledgeFact } from './pages/Knowledge';
 import Handover from './pages/Handover';
 import Settings from './pages/Settings';
 import Setup from './pages/Setup';
+import Inbox from './pages/Inbox';
 import Login from './pages/Login';
 import { storage } from './api';
 import { PageHeading } from './components/ui';
@@ -46,6 +48,7 @@ const navigation = [
   { to: '/events', label: 'Events', icon: CalendarDays },
   { to: '/review', label: 'Review', icon: CheckCheck },
   { to: '/calendar', label: 'Calendar', icon: CalendarDays },
+  { to: '/inbox', label: 'Inbox', icon: Mail },
   { to: '/knowledge', label: 'Knowledge', icon: BookOpen },
   { to: '/handover', label: 'Handover', icon: GraduationCap },
   { to: '/settings', label: 'Settings', icon: Settings2 },
@@ -260,15 +263,19 @@ function Shell() {
         </footer>
       </div>
       <nav className="mobile-nav" aria-label="Mobile navigation">
-        {navigation.slice(0, 5).map(({ to, label, icon: Icon }) => (
-          <NavLink key={to} to={to}>
-            <span>
-              <Icon size={21} />
-              {to === '/review' && me.counts.review > 0 && <b>{me.counts.review}</b>}
-            </span>
-            {label}
-          </NavLink>
-        ))}
+        {navigation
+          .filter((item) =>
+            ['/chat', '/events', '/review', '/calendar', '/inbox', '/knowledge'].includes(item.to),
+          )
+          .map(({ to, label, icon: Icon }) => (
+            <NavLink key={to} to={to}>
+              <span>
+                <Icon size={21} />
+                {to === '/review' && me.counts.review > 0 && <b>{me.counts.review}</b>}
+              </span>
+              {label}
+            </NavLink>
+          ))}
       </nav>
     </div>
   );
@@ -303,6 +310,7 @@ export default function App() {
             <Route path="chat" element={<Chat />} />
             <Route path="review" element={<Review />} />
             <Route path="calendar" element={<Calendar />} />
+            <Route path="inbox" element={<Inbox />} />
             <Route path="knowledge" element={<Knowledge />} />
             <Route path="knowledge/:id" element={<KnowledgeFact />} />
             <Route path="handover" element={<Handover />} />

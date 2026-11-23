@@ -1,6 +1,6 @@
 # Architecture
 
-Updated 9 November 2026 from the published contracts, decisions and API table. Local integration and container checks are recorded in `web/VERIFICATION.md`; provider/evaluation evidence belongs in `results/` and `docs/evidence.md`. Public deployment remains pending.
+Updated 16 November 2026 against main `54d38c1`, published interfaces and merged integration PRs. Local integration and container checks are recorded in `web/VERIFICATION.md`; provider/evaluation evidence belongs in `results/` and `docs/evidence.md`. Public deployment remains pending. Report sections and their evidence limits are in [architecture-and-operations.md](../web/report/architecture-and-operations.md).
 
 ## Request and approval flow
 
@@ -24,7 +24,7 @@ flowchart TB
   records --> reports[Usage screen and report CLI]
 ```
 
-The planner can choose its own steps inside a user-started run. It cannot approve its own plan, verify knowledge or send a message. An edited event requires review of the new revision. Google calendar synchronization, new-club setup, the full chatbot and draft-generation wiring have separate owners/tasks; consult [api.md](api.md) for the current endpoint status rather than assuming a diagram is deployed functionality.
+The planner can choose its own steps inside a user-started run. It cannot approve its own plan, verify knowledge or send a message. An edited event requires review of the new revision. New-club setup is registered in the application through merged [#87](https://github.com/Nohra2005/ClubOps/pull/87). Google calendar synchronization, the full chatbot and draft-generation wiring have separate owners/tasks. The [API table](api.md) remains the interface reference, but its setup 501 and always-complete notes predate #87; the setup status below supersedes those notes, without changing the contract.
 
 ## What makes decisions
 
@@ -36,6 +36,8 @@ The planner can choose its own steps inside a user-started run. It cannot approv
 | Memory approval | A person verifies, rejects or edits proposals. Warnings and outdated sources require individual frontend review rather than batch approval | Verify contracts, Review API, `web/e2e/contracts.spec.ts` |
 | Plan approval | Server checks the submitted revision before creating internal calendar items | Event/API contracts, `web/e2e/live-api.spec.ts` |
 | Handover | Existing plain-code assembly becomes a view retaining current sources and explicit gaps; no model call | Handover contracts, `tests/test_handover_view.py`, `tests/test_handover_endpoint.py` |
+| Club setup | Explicit president interview; durable question progress; skips/resume avoid extraction, extracted facts wait in Review | `POST /api/setup/next`, `web/CLUB_SETUP.md`, `web/e2e/setup-live.spec.ts` |
+
 | OSA e-mail inbox | Plain code fetches the ClubOps Gmail inbox (free), checks the forwarder against the cabinet list and the original sender against the private OSA list, cleans the text and takes a read-once fingerprint. Only a person's explicit click starts the one paid model read. Whether the cards are AUB-wide or club-only comes from how many people the original went to (10 or more is AUB-wide), not from the model | `src/clubops/inbox/`, `inbox_intake.py`, `/api/inbox` routes, D-113, D-114, D-126, F-214, F-216, F-227, `tests/test_inbox_*.py` |
 | Expiry archive | Plain code, no model, treats a fact past its end date as expired: the planner ignores it and the president may restore it with a new date. An AUB-wide fact is operator-only | `KnowHowStore.restore`, `/api/knowledge/{id}/restore`, D-115, D-124, F-215, `tests/test_archive.py` |
 | Reporting | Deduplicates cumulative snapshots and trace IDs; absent metrics are unavailable, not zero | `src/clubops/reports/`, report tests |
@@ -51,7 +53,7 @@ Draft text is for a person to inspect and copy/send. Handover sign-off and sever
 
 ## Knowledge scopes and approval
 
-Two stores: the shared AUB layer, stored once for every club, and each club's own know-how (D-05, D-23, D-91). Rule items carry a source authority, `official_document` above `office_email` above `stated_by_president`; a weaker source that disagrees with a stronger one becomes a contradiction for a person to resolve (D-11). Nothing becomes know-how without a person: AUB-wide cards are approved by the operator for now (later: live when two presidents approve), and club-only cards by the club's president (D-115). A shared decision needs a president and an explicit scope choice (D-104). For forwarded e-mails, AUB-wide or club-only comes from how many people the original went to, not from the model (D-126). Term-only rules carry an end date; after it a plain rule treats the fact as expired, so the planner ignores it, and the president can restore a club fact (D-115, D-124). The planner never invents a rule: when it does not know, it says so and names who to ask (D-49).
+Two stores: the shared AUB layer, stored once for every club, and each club's own know-how (D-05, D-23, D-91). Rule items carry a source authority, `official_document` above `office_email` above `stated_by_president`; a weaker source that disagrees with a stronger one becomes a contradiction for a person to resolve (D-11). Today nothing becomes know-how without a person: any verified cabinet member decides an ordinary club card (the permission table in `api.md`), while a shared (AUB-wide) decision needs a president and an explicit scope choice (D-104, D-124). Planned, not built: operator approval of AUB-wide cards that goes live when two presidents approve (D-115), and no-click auto-apply of clean OSA e-mail with Edit and Undo (D-138). For forwarded e-mails, AUB-wide or club-only comes from how many people the original went to, not from the model, unless the count is unknown (Bcc, undisclosed recipients, older messages): then the model's label decides. Rules stay AUB-scope by contract (D-126). Term-only rules carry an end date; after it a plain rule treats the fact as expired, so the planner ignores it, and the president can restore a club fact (D-115, D-124). The planner never invents a rule: when it does not know, it says so and names who to ask (D-49).
 
 ## Planner details
 
@@ -59,7 +61,7 @@ The planner picks among six tools (D-63, D-64): update the event, search memory 
 
 ## OSA e-mail inbox (T-47, J-22, T-49)
 
-Presidents forward OSA e-mail to the ClubOps Gmail address (`clubops.agent+<club>@gmail.com`). A free fetch reads the inbox with a Gmail read-only OAuth client (D-122) and checks, in plain code, that the forwarder is on the club's cabinet list (or a sender the member proved by a code, D-113), that the original sender inside the forward is on the private OSA list (D-114), and that the e-mail was not already read (a read-once fingerprint, D-123). The text is cleaned (signature, quotes, links) and queued; nothing has reached a model. A person's explicit click starts the single paid read, whose proposals go to Review (D-41). Because the Google app stays in Testing mode, the refresh token expires every seven days and is renewed by the operator before each demo or evaluation (D-122).
+Presidents forward OSA e-mail to the ClubOps Gmail address (`clubops.agent+<club>@gmail.com`). A free fetch reads the inbox with a Gmail read-only OAuth client (D-122) and checks, in plain code, that the forwarder is on the club's cabinet list (or a sender the member proved by a code, D-113), that the original sender inside the forward is on the private OSA list (D-114), and that the e-mail was not already read (a read-once fingerprint, D-123). The text is cleaned (signature, quotes, links) and queued; nothing has reached a model. A person's explicit click starts the single paid read, whose proposals go to Review (D-41). Planned, not built (D-138): the read runs in the background and clean results apply without a click, while flagged mail and contradictions still go to Review. Because the Google app stays in Testing mode, the refresh token expires every seven days and is renewed by the operator before each demo or evaluation (D-122).
 
 ## Calendar
 
@@ -67,7 +69,7 @@ ClubOps is the source of truth; approved plans are copied one way to Google Cale
 
 ## Evaluation
 
-There are no human graders: planning is scored by code against the president's labels (approvals caught, missed, false alarms, fields against the proposal really submitted, cost) (D-82). Four systems answer the same questions with the same approval codes: a checklist, a plain model, a model with the rulebook, and ClubOps (D-75). A full start gives every system the whole description; a short start gives only the event and its date, and a simulated president answers questions only from that event's labelled fields (D-92). Generalization is tested on ASME as a real new club, on made-up events for event types the Running Club never ran, and on other presidents' real questions as a chatbot test (D-50, D-91). The handover test uses eight volunteers from other clubs (D-74). Test sets are frozen by file hash before any run (`eval/FROZEN.md`); every run can be tracked in MLflow (settings in, scores and cost out; off unless asked) (D-89).
+There are no human graders for planning: it is scored by code against the president's labels (approvals caught, missed, false alarms, fields against the proposal really submitted, cost) (D-82). Learning quality is the exception: Tatiana rates the ten learning cases yes, partly or no by hand, and a second command counts the categories (C-27, D-87). Four systems answer the same questions with the same approval codes: a checklist, a plain model, a model with the rulebook, and ClubOps (D-75). A full start gives every system the whole description; a short start gives only the event and its date, and a simulated president answers questions only from that event's labelled fields (D-92). Generalization is tested on ASME as a real new club, on made-up events for event types the Running Club never ran, and on other presidents' real questions as a chatbot test (D-50, D-91). The handover test uses eight volunteers from other clubs (D-74). Test sets are frozen by file hash before any run (`eval/FROZEN.md`); every run can be tracked in MLflow (settings in, scores and cost out; off unless asked) (D-89).
 
 ## Hosting and authentication
 
@@ -87,7 +89,7 @@ The separate Compose `local` target compiles an explicit dev sign-in form, boots
 ## Current operations and limits
 
 - Python CI checks lint, strict types, coverage and schema drift; dependency auditing remains active.
-- Frontend quality/browser and container/persistence checks are established on main after #44/#46. Main requires five passing checks (Python, dependency audit, container, web browser/API and web quality) and one approval from a non-author, with no administrator bypass; see the Actions tab for the latest runs. These checks are separate from evidence of independent teammate review; AGENTS/CONTRIBUTING require that review and merge commits.
+- Frontend quality/browser and container/persistence checks are established on main after #44/#46. Main requires five passing checks (Python, dependency audit, container, web browser/API and web quality) and one approval from a non-author, with no administrator bypass; see the Actions tab for the latest runs. Reproducible commands and dated results are in [`../web/VERIFICATION.md`](../web/VERIFICATION.md); a green workflow establishes checks on its particular revision, not a deployed service or a model-quality result. These checks are separate from evidence of independent teammate review; AGENTS/CONTRIBUTING require that review and merge commits.
 - C-25 has an optional closed-run metadata-only OTLP/HTTP JSON exporter and a synthetic local Jaeger proof in [`../web/observability/README.md`](../web/observability/README.md). It requires explicit real run/step/model-call timing and associations; it never infers them from unrelated JSONL records. Producer hooks remain with the agent/model owners, so real-run instrumentation, deployed monitoring/alerts and final evaluation thresholds remain C-25/C-26/C-22 work. The synthetic proof does not establish production operation.
 - Runs execute in-process; a single worker/instance is the supported deployment configuration. Finish active planning before a restart. Durable job recovery and horizontal scaling are not claimed.
 - Real provider quality, production OAuth, persistent hosting recovery and real-world pilot outcomes are not established by scripted tests.
@@ -95,3 +97,28 @@ The separate Compose `local` target compiles an explicit dev sign-in form, boots
 ## New-club setup (C-21, D-103, D-112)
 
 A new club starts empty except for the shared AUB rules. Its president answers a short interview (about ten minutes, one question at a time, skippable). `src/clubops/api/setup.py` keeps durable per-club question progress and an extraction outbox; the app wires it in `app.py` with the session's own actor, `Learner.capture` (proposals only) under the standard 8-step / $0.05 budget, an idempotent Review submit and a count of approved AUB rules. Answers are `Untrusted` interview sources; nothing in setup verifies knowledge or changes cabinet or profile records, so every learned fact waits in Review. A failed extraction (`sources_failed`) cannot advance progress or queue partial facts, and a retry skips a card that is already pending or already approved. `/api/me` reports `setup_complete`; the Running Club, set up by hand before this existed, is listed as already complete. Chat histories are not required (members have not consented). The answer-only contract has a known stale-tab limitation, accepted for one-time, president-only setup (D-102); the screen asks for one tab. See [the integration guide](../web/CLUB_SETUP.md).
+
+## Integrated setup service (C-21, PRs #55 and #87)
+
+`src/clubops/api/setup.py` owns durable per-club question progress and an extraction
+outbox. It accepts authenticated Actor, capture, idempotent Review submission and
+shared-rule count callbacks; it imports contracts rather than backend implementation.
+Answers are Untrusted interview sources. Nothing in setup verifies knowledge or
+changes cabinet/profile records. The UI supports resume and preserves failed drafts.
+
+PR #55 supplies the service; merged #87 registers it and connects
+`/me.club.setup_complete` to its durable progress. The no-interception browser
+regression in `web/e2e/setup-live.spec.ts` exercises the actual application factory,
+real cookies and SQLite: an empty club is routed to setup, can pause/resume and
+complete with skips, and then reports completion. Missing CSRF and adviser writes
+are denied. Skips leave Review empty and do not complete the four starter checks.
+This checks local HTTP integration, not Google sign-in, worker-restart recovery,
+model extraction quality or actual ASME onboarding. Older
+`tests/test_setup_endpoint.py` checks still use a reference adapter; do not confuse
+that fixture with production registration. The submit callback must preserve earlier
+Review decisions on retry; F-201 records the known rejected-proposal retry limit.
+See [the integration guide](../web/CLUB_SETUP.md) for the exact boundary and current
+answer-only contract's stale-tab limitation, accepted by Tatiana in #43 for one-time,
+president-only setup. Reported extraction failures (`sources_failed`) cannot advance
+progress or queue partial facts. Authorized ASME starter sources and acceptance
+remain T-44 and the owning team's work.

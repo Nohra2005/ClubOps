@@ -4,8 +4,12 @@ export default defineConfig({
   testDir: './e2e',
   testIgnore: [
     'contracts.spec.ts',
+    'session-http.spec.ts',
+    'inbox-actions.spec.ts',
+    'restore-http.spec.ts',
     'live-api.spec.ts',
     'local-login.spec.ts',
+    'setup-live.spec.ts',
     'routing.spec.ts',
     'demo-rehearsal.spec.ts',
   ],

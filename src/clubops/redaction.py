@@ -47,7 +47,9 @@ class Redacted:
         return [k for k in order if self.counts[k]]
 
 
-def redact(text: str) -> Redacted:
+def redact(text: str, keep_office_contacts: bool = False) -> Redacted:
+    """``keep_office_contacts``: leave links, e-mail addresses and phone numbers as written. Only for e-mails
+    forwarded from verified OSA senders: office forms and office numbers are the know-how itself (F-241)."""
     counts: Counter[Kind] = Counter()
 
     def sub(pattern: re.Pattern[str], kind: Kind, replacement: str, value: str) -> str:
@@ -58,9 +60,11 @@ def redact(text: str) -> Redacted:
         return pattern.sub(replace, value)
 
     out = _INVISIBLE.sub("", text)
-    out = sub(_URL, "other_pii", r"[LINK \1]", out)
-    out = sub(_EMAIL, "email", "[EMAIL]", out)
+    if not keep_office_contacts:
+        out = sub(_URL, "other_pii", r"[LINK \1]", out)
+        out = sub(_EMAIL, "email", "[EMAIL]", out)
     out = sub(_AUB_ID, "aub_id", "[AUB_ID]", out)
-    out = sub(_PHONE_INTL, "phone", "[PHONE]", out)
-    out = sub(_PHONE_LB, "phone", "[PHONE]", out)
+    if not keep_office_contacts:
+        out = sub(_PHONE_INTL, "phone", "[PHONE]", out)
+        out = sub(_PHONE_LB, "phone", "[PHONE]", out)
     return Redacted(text=out, counts=counts)

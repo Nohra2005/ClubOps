@@ -273,3 +273,106 @@ No entries yet.
 **Next:** Restart the #93 watch after pushing; merge only with current approval and green required checks.
 
 **Open questions / blockers:** T-47 paid-read integration remains in #95. Host watcher access is unreliable; the direct authenticated GitHub API remains readable.
+
+## 2026-11-20 - Joey: complete task and owner-handoff audit
+
+**Did:** Pulled current main, reconciled #81/#82 preserving shared histories, completed J-13 report sections, and reran focused/full checks. Reviewed and merged #96 as 0ac0b5b after seven archive tests and all five CI checks passed. Re-reviewed #95: 15 focused inbox tests pass and the earlier J-22 bypass is fixed. Approval is posted; merge failed because #96 creates documentation conflicts. Aborted the local merge cleanly rather than edit owner-maintained docs/api.md. Updated J-04/J-12/J-22 to done at their explicit synthetic gates and made remaining external blockers concrete. Added live Calendar and cabinet draft-review receipt procedures in owned READMEs.
+
+**State:** #81 head c9070fd: five tests and 15 checklist rows, no measured model curve. #82 head 797a3c3: 696 passed, 1 skipped, 1 strict expected failure, 92.77% coverage; lint/format/types/schemas/tasks passed. Those PRs remain draft for their documented evidence gates. This audit PR is documentation/status work, not live acceptance. No secret, private data, dependency or production setting changed.
+
+**Next:** Tatiana reconciles #95 with #96 and requests current-head review, fixes F-204, supplies legitimate recordings/private evaluation, and coordinates T-46/J-23 contracts with Joey. Christophe reviews the audit and finishes C-35/deployment integration against the published owner responses. Joey then runs approved live/cabinet acceptance when those prerequisites exist.
+
+**Open questions / blockers:** T-46 OAuth/worker/cabinet triggers, J-23 contract, J-10 live forward/proof/removal, scheduled durable J-11, two cabinet reviewers and private style examples, private chatbot/new-club/security evaluation, J-16 workflow ownership/gates, and T-26 poster numbers remain external gates. Docker Linux engine is unavailable, so README-only fresh startup is blocked before Compose. Email connectors are unconnected; team notification uses explicit GitHub mentions/review requests. The earlier repeating #92/#93 watches monitored already merged PRs and should be stopped.
+
+**Audit validation:** On main plus merged #96, the complete pytest/coverage gate passed with one skipped test and 92.80% coverage. Ruff lint/format, strict mypy, schemas, task validation and diff checks passed. GNU Make is absent, so its listed equivalent commands ran. No new application behavior or design decision is introduced by the audit status/receipt documentation.
+
+**Published review handoff:** Audit PR #102 is open. After #96 merged, #81 was reconciled again to ae922e3 and #82 to 84a08e7, preserving all shared rows; #81's five tests pass and #82's shared-log/security checks pass with F-204 still expected-failing. The initial focused command named a nonexistent test file; it was corrected to the repository's actual task/log/failure test paths and passed. Docker Desktop was started locally; its engine version API returned HTTP 500, so fresh Compose acceptance remains unverified. No production service was started.
+
+
+## 2026-11-21 - Joey: coordination, independent reviews and email workflow (J-24)
+
+**Did:** Fetched current main and inspected open/recent PRs, reviews, CI, issues #43/#83/#84 and owner handoffs. Verified #95/#94/#102 landed in main before this pass. Re-reviewed #103's pending-mail audience backfill: 93 focused tests pass; approved e5392e3. Reviewed/approved #100, #101, #91, #99 and the narrow #97/#98 lock updates. Merged #100 as c53948f, #97 as 72640d9 and #98 as 60d7027 with merge commits. These are verified GitHub merge responses, not promises to merge. Requested Christophe's owner review on #104. Sent specific owner PR/sync requests in #83/#84; no finished unsubmitted feature was assumed to exist.
+
+**State:** #91/#99/#101 have approvals but conflict after main changed. A trial #101 merge identified shared design/failure logs plus Christophe-owned docs/handoff/web.md and web/VERIFICATION.md; aborted cleanly without editing those files. #99 merge returned 405 conflicts. #103 also needs Tatiana's main sync, preserving merged Inbox/frontend and handoff evidence; #104 awaits Christophe and its dependency/base handling. #81/#82 remain drafts for genuine missing measurements. T-48 is corrected to done at the merged #96 synthetic gate; J-10 now names merged #95/#94 while retaining its live proof/removal/Review gates. No deployment, private acceptance or model evaluation was performed.
+
+**Verification:** Board tooling: 32 Node tests pass. Development lock audit: zero vulnerabilities; existing production lock entries unchanged. Local Vitest could not run because node_modules/Vitest is absent; current-head CI supplied the web unit/browser gates and this review installed no packages. Python inbox/learning review: 93 pass. The complete local check result is recorded below after completion; no local installation of the bot dependency updates is claimed.
+
+**Email:** Gmail and Outlook were confirmed unconnected. Both teammate addresses were verified from their Git author history; ready-to-send drafts stay in ignored data/private/coordination-2026-11-21/, never in Git. No project email thread could be read, duplicates checked by email, or email sent. GitHub comments are actual notifications, not email delivery. AGENTS.md now specifies the user's project-coordination email triggers, verified recipients, thread/deduplication rules and honest draft fallback; this does not change the application's human-approval boundary.
+
+**Next:** Tatiana and Christophe review the J-24 instructions/status PR. Christophe synchronizes #91/#99/#101, obtains fresh review/green CI and reviews #104. Tatiana synchronizes #103 and links or opens the missing T-06 review PR if ready; requests for any finished unpublished integration work are in #83/#84. Do not mark C-13/C-29/C-31 or real integrations complete merely because their bounded PRs are approved/merged. Team email drafts need connected email access before sending.
+
+### Active-task reconciliation at this pass
+
+TASKS.md remains authoritative. "No open PR" means no matching current open PR was found, not that the task is abandoned. Dependencies remain explicit; no private results or meetings are inferred. Next actions below belong to the named owner unless another owner is stated.
+
+| Task | Owner | Status | PR / dependency | Next action |
+|---|---|---|---|---|
+| T-06 | tatiana | review | No open PR | Link existing review or open baseline PR if ready (#83). |
+| T-09 | tatiana | doing | T-18 merged | Finish private seed review; record counts privately. |
+| T-26 | tatiana | todo | T-44, J-13/J-15/J-20 | Collect legitimate private runs and final evidence at freeze. |
+| T-27 | tatiana | todo | #99 / #104 | Incorporate reviewed report sections and measured results. |
+| T-28 | tatiana | doing | #43 / #83 / #84 | Coordinate owner syncs and record real team decisions. |
+| T-29 | tatiana | todo | T-26 | Back poster/report claims with actual evidence files. |
+| T-32 | tatiana | todo | No open PR | Run the approved real pilot and retain private evidence. |
+| T-33 | tatiana | doing | No open PR | Complete consented handover sessions and actual observations. |
+| T-39 | tatiana | doing | #92/#95 merged | Finish private account/access prerequisites and live mail acceptance. |
+| T-40 | tatiana | doing | Reviewed merge history | Confirm available branch protections; retain genuine approvals. |
+| T-44 | tatiana | todo | J-20 / #81 | Finish private ASME onboarding and leak-check evidence. |
+| T-46 | tatiana | todo | No open PR / #83 | Publish scoped OAuth/worker/ACL integration PR if ready; otherwise state blocker. |
+| T-47 | tatiana | doing | #95/#94 merged; #103 open | Finish proof/removal and real forward-to-Review acceptance. |
+| C-13 | christophe | doing | #100 merged | Complete deployed Google/every-screen acceptance. |
+| C-14 | christophe | todo | C-18 | Supply hosted frontend acceptance after authorized deployment. |
+| C-15 | christophe | todo | C-28 | Finish actual demo support and disclose synthetic evidence. |
+| C-18 | christophe | doing | #84 | Finish host/Google/persistent storage setup; deployment still needs authorization. |
+| C-20 | christophe | doing | T-26 | Integrate known-club provider metadata and real report evidence. |
+| C-21 | christophe | doing | #55/#87 merged; #99 | Finish genuine new-club acceptance beyond synthetic setup tests. |
+| C-22 | christophe | todo | T-26 / #84 | Link/open evaluation CI PR if ready; keep results replay-only in CI. |
+| C-25 | christophe | doing | Local exporter evidence | Finish actual producer hooks/hosted evidence before claiming live traces. |
+| C-26 | christophe | todo | C-18 | Supply deployed monitoring/alert evidence after hosting. |
+| C-28 | christophe | doing | Synthetic rehearsal | Finish actual demo/backup recording and final measured narrative. |
+| C-29 | christophe | doing | #99 approved, conflicts | Sync owner docs, re-review, then complete fresh README setup/report incorporation. |
+| C-30 | christophe | todo | T-27, C-29 | Update grading links to final real evidence. |
+| C-31 | christophe | blocked | #91 approved, conflicts | Sync/re-review; record three genuine weekly reviews. |
+| C-33 | christophe | doing | Merged starter UI | Finish actual ASME onboarding acceptance; retain browser-local checklist limits. |
+| C-35 | christophe | doing | #94 merged; T-46/T-47 | Complete forwarding proof/settings and agreed deadline/audience UI contracts. |
+| J-01 | joey | blocked | T-46 | Run cabinet-approved live Google setup acceptance after OAuth integration. |
+| J-03 | joey | blocked | T-46, J-23 | Validate live approved reminders/audience with durable worker. |
+| J-07 | joey | blocked | Private approved style examples | Obtain consented examples and complete cabinet template acceptance. |
+| J-08 | joey | blocked | J-07 | Collect two cabinet reviews on three consented events; apply/recheck edits. |
+| J-09 | joey | blocked | C-18, T-46 | Run approved deployed sync/retry/restart receipt. |
+| J-10 | joey | blocked | #95/#94 merged; #103 | After Tatiana proof/removal work, run approved skip/retry/read-once Review receipt. |
+| J-11 | joey | blocked | #84 scheduler/storage | Obtain durable scheduled checks and restart evidence. |
+| J-13 | joey | blocked | #82 draft; F-204 | Tatiana resolves detector behavior; obtain reviewed attack/benign on/off outcomes. |
+| J-15 | joey | blocked | API wiring/private questions | Confirm app integration and run private 42-question evaluation. |
+| J-16 | joey | blocked | #83/#84 workflow ownership | Tatiana assigns workflow paths; implement pinned scanning only after ownership agreement. |
+| J-18 | joey | blocked | T-26/T-27 | Use final evidence files and Tatiana-checked poster numbers. |
+| J-20 | joey | blocked | #81 draft; T-44 | Obtain legitimate matching model recordings and measured replay curve. |
+| J-21 | joey | blocked | #79 merged; T-46 | Run cabinet-approved reader ACL add/remove acceptance. |
+| J-23 | joey | blocked | Tatiana / #83 | Agree standalone versioned deadline/named-audience contract before implementation. |
+| J-24 | joey | review | Instructions/status PR | Obtain independent review; distinguish actual merges/emails from pending work/drafts. |
+| T-49 | tatiana | review (open PR) | #103 approved, conflicts | Sync main, obtain fresh CI/review, then perform the free pending-mail refresh. |
+| C-36 | christophe | review (open PR) | #101 approved, conflicts | Sync owner docs, obtain fresh CI/review, then merge the development-tool fix. |
+
+**J-24 final local validation:** GNU Make is absent; ran the equivalent Ruff lint/format, mypy (85 source files), schema export check, task check and pytest/coverage using `uv run --no-sync` in the existing environment. All passed: 709 tests, 1 skipped, 92.85% coverage. The bot lock updates were merged without installing them locally; their exact-head GitHub CI passed before merge, and fresh-lock CI on this PR remains required. `git diff --check` passes. Only AGENTS.md, TASKS.md and this additive handoff change. No application behavior, contract, new failure mode or secret changed.
+
+**Published:** J-24 PR [#105](https://github.com/Nohra2005/ClubOps/pull/105), with Tatiana and Christophe requested for independent review. Full owner requests: [#83](https://github.com/Nohra2005/ClubOps/issues/83#issuecomment-7061168557) and [#84](https://github.com/Nohra2005/ClubOps/issues/84#issuecomment-7061168242). No private email addresses or drafts are committed.
+
+## 2026-11-22 - Joey: J-24 review follow-up
+
+**Did:** Removed the Project coordination emails section from AGENTS.md in #105 at Tatiana's request and adjusted J-24 wording to the remaining task/status handoff scope. Earlier entries describe the historical proposal, not an active shared email policy. Re-reviewed #103 after its main sync: the previously approved inbox/backfill and learner changes are preserved, all 93 focused tests passed on 8bf0429 and all five exact-head CI checks passed. Posted a fresh approval for Tatiana to merge.
+
+**Next:** Tatiana reviews the revised #105 and merges #103 when ready. Private live Gmail/Review acceptance remains separate. No application or contract change; no email sent.
+
+**Validation:** Equivalent make check commands passed again: Ruff lint/format, mypy, schemas, tasks, 709 passed / 1 skipped, 92.85% coverage; diff check clean. AGENTS.md now has no diff against main.
+
+## 2026-11-22 - Joey: J-24 readiness and J-15 integration check
+
+**Did:** Audited local configuration with presence/shape checks only and no secret output. Prepared ignored private configuration status, 48 blank cabinet review slots (three event aliases, two reviewer aliases, eight draft types), and Gmail/Calendar NOT_RUN acceptance receipts. No live/private result is asserted. Confirmed the current POST /api/chat/ask implementation is still a placeholder; the source-gated core awaits Tatiana's API integration. Sent the concrete integration and missing OSA-allowlist example findings to Tatiana in issue #83 (comment 7082598727). Configuration and security settings were not changed.
+
+**State:** Focused Calendar sync/config/ACL, inbox routes/guards/capture, chat/scorer, daily checks, draft/proposal/WhatsApp and security tests passed without provider calls. Existing live/private tasks remain blocked, not marked complete by synthetic tests or blank receipts. No new feature, contract or failure mode.
+
+**Next:** User/cabinet supplies consented examples and two reviewers; Tatiana supplies API/Google integration and private evaluation prerequisites. Before any approved private run, configure the agreed provider/prices and private recording/trace/runtime destinations; preserve replay until explicit live/paid approval. Adding credentials cannot replace T-46/J-23 or chatbot wiring. This checkout's live credentials are absent; values and private worksheets stay out of git.
+
+**Local runtime:** docker version still cannot reach dockerDesktopLinuxEngine (named pipe absent). No Compose startup or deployment is claimed. Private receipt CSVs were checked for blank reviews and NOT_RUN statuses.
+
+**Validation:** Focused owned-area suite passed; full make-check equivalents passed (709 passed, 1 skipped, 92.85% coverage; Ruff lint/format, mypy, schemas/tasks and diff checks). Private preparation files remain ignored.

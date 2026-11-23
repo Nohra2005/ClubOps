@@ -15,6 +15,7 @@ describe('review scope and individual approval boundaries', () => {
       { type: 'merge' },
       { warning: 'Check the source' },
       { outdated: true },
+      { op: 'retire' },
       { status: 'approved' },
     ] satisfies Partial<ReviewCard>[])
       expect(canBatchApprove({ ...fact, ...update })).toBe(false);

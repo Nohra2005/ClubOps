@@ -11,6 +11,7 @@ test('main screens meet automated accessibility checks', async ({ page }) => {
     '/chat',
     '/review',
     '/calendar',
+    '/inbox',
     '/knowledge',
     '/handover',
     '/settings',
