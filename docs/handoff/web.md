@@ -505,3 +505,19 @@ independent C-36 approval remain required. No application/dependency change.
 **Next:** Review the corrected CI head before merge. #91 merged by explicit
 Chris request with its current-head independent approval and five green checks.
 Reviewed #81/#82 separately; their draft measurement limitations remain open.
+
+
+## 2026-11-23 - C-36 duplicate-ID CI correction
+
+**Did:** Inspected the final-head failed Python CI: both failing assertions found
+the duplicate F-249 inherited from main, not a frontend failure. Merged main
+b23e9d4 including Tatiana's reviewed #122 correction (suggested-edit row and its
+test docstring become F-260; the board keeps F-249). No new IDs or runtime edits.
+
+**State:** All 10 task/failure/log-number checks pass from this worktree's own
+working directory; task validation, verification formatting and 42 board-tool
+tests pass. Previous head's Web quality, browser/API, container and dependency
+checks were green. Fresh combined-head CI and independent re-approval remain.
+
+**Next:** Re-approve after the new CI run, then merge with a merge commit.
+Azure deployment continues separately; no direct main push or self-merge.

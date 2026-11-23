@@ -611,6 +611,7 @@ Reference documents:
 ### C-36 Patch the frontend development dependency audit
 - Owner: christophe
 - Status: review
+- Progress (2026-11-23): merged #122 duplicate-F-249 correction from main; all 10 branch-local task/failure/log checks pass. Previous-head four non-Python CI checks passed; combined-head CI and re-approval pending.
 - Progress (2026-11-23): resolved current-main shared logs without losing either history; 733 Python tests/93.16%, 137 frontend units/12 tools, quality/build and both npm audits pass. Production dependency records unchanged; fresh-head CI and independent approval pending.
 - Progress (2026-11-22): synced reviewed session frontend and locked FastAPI/Ruff updates; full/production npm audits zero, 137 units and updated-main checks pass; existing remediation remains in review.
 - Needs: C-23
