@@ -258,6 +258,7 @@ def review_card(p: KnowHowProposal, target: KnowHowItem | None = None) -> dict[s
         "op": p.op.value,
         "shared": c.scope is Scope.AUB,  # true: every AUB club will see it once approved (D-91)
         "valid_to": c.valid_to.isoformat() if c.valid_to else None,  # null: no end date, it never expires (F-305)
+        "why": p.rationale[:300],  # why ClubOps proposed this action, plain text (F-311)
     }
     if target is not None:
         if p.op.value in ("merge", "update"):

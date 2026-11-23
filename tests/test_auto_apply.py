@@ -191,3 +191,11 @@ def test_the_share_box_is_locked_on_a_replace_card_and_ignored(store) -> None:  
     assert card["shared"] is False and card["shared_locked"] is True
     fresh = views.review_card(proposal(new))
     assert fresh["shared"] is True and "shared_locked" not in fresh
+
+
+def test_a_review_card_says_why_it_was_proposed() -> None:
+    """The card gave the person the action but not the reason for it (F-311)."""
+    p = proposal(item("kh-why"), ProposalOp.MERGE, target_item="kh-known").model_copy(
+        update={"rationale": "from an OSA mail; merge: nearly the same words"}
+    )
+    assert views.review_card(p)["why"] == "from an OSA mail; merge: nearly the same words"
