@@ -139,8 +139,15 @@ class KnowHowStore:
 
     # ----------------------------------------------------------------- writes
 
-    def submit(self, proposal: KnowHowProposal) -> None:
+    def submit(self, proposal: KnowHowProposal, *, override_rejection: bool = False) -> bool:
+        """Queue a proposal for Review. A proposal a person already rejected is not queued again (F-312), unless a
+        person taught it again on purpose (``override_rejection``). Returns whether it was queued."""
+        if proposal.proposal_id in self.backend.rejected_all():
+            if not override_rejection:
+                return False
+            self.backend.rejected_delete(proposal.proposal_id)
         self.backend.pending_put(proposal)
+        return True
 
     def verify(self, request: VerifyRequest, actor: Actor, now: datetime) -> Outcome[VerifyResult]:
         """Apply a cabinet member's decision to a queued proposal.
@@ -152,7 +159,9 @@ class KnowHowStore:
         """
         proposal, candidate = self._checked(request, actor)
         if request.decision is VerifyDecision.REJECT:
-            self.backend.pending_delete(proposal.proposal_id)
+            with self.backend.transaction():
+                self.backend.pending_delete(proposal.proposal_id)
+                self.backend.rejected_add(proposal.proposal_id)  # a rejection is remembered (F-312)
             return Outcome(data=VerifyResult(committed=None))
 
         committed, to_supersede = self._next_version(proposal, candidate, actor, now)

@@ -990,7 +990,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
 
         A retry after a partial queue failure must not duplicate a card, nor bring back one already
         approved. A proposal the president *rejected* leaves no record in the store, so that one case
-        can still reappear once (F-201).
+        no longer reappears: a rejection is remembered (F-201, F-312).
         """
         with club(proposed.candidate.club_id or "invalid") as (store, _, _, _):
             if proposed.proposal_id in store.pending:
