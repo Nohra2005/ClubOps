@@ -831,9 +831,10 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             raise HTTPException(502, "The e-mail could not be read this time. It is still waiting; try again.")
         inbox_ledger.mark_read(fingerprint, token)
         inbox.mark_processed(message_id, member.club_id)
+        # `skipped` is a list of plain reasons, as docs/api.md says; the web screen rejects a number (F-239)
         return {
             "proposals": [p.proposal_id for p in result.proposals],
-            "skipped": result.sources_skipped,
+            "skipped": ["The model could not use this content."] * result.sources_skipped,
         }
 
     # ----------------------------------------------------------- new-club setup (C-21)

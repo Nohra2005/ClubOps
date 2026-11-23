@@ -24,7 +24,6 @@ _FORWARD_MARKER = re.compile(
     r"(?im)^\s*(?:-{2,}\s*(?:forwarded message|original message)\s*-{2,}|begin forwarded message:|_{5,})\s*$"
 )
 _HEADER = re.compile(r"(?im)^(from|subject|date|sent|to|cc|message-id):\s*(.+)$")
-_LINK = re.compile(r"https?://\S+", re.IGNORECASE)
 _QUOTE = re.compile(r"(?m)^(?:>|On .+ wrote:|From: .+)$")
 
 
@@ -216,7 +215,6 @@ def check_forward(
     content = _FORWARD_MARKER.split(content, maxsplit=1)[0]
     content = re.split(r"(?m)^\s*--\s*$", content, maxsplit=1)[0]
     content = _QUOTE.split(content, maxsplit=1)[0]
-    content = _LINK.sub("[link removed]", content)
     content = re.sub(r"[ \t]+", " ", content).strip()[:20_000]
     if not content:
         return CheckedMail("empty_forward")

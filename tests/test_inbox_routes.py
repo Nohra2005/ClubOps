@@ -102,9 +102,19 @@ def test_reading_sends_proposals_to_review_and_leaves_the_queue(app: tuple[TestC
     response = c.post("/api/inbox/m1/capture", headers=HEADERS)
     assert response.status_code == 200 and len(response.json()["proposals"]) == 1
     assert len(provider.prompts) == 1
+    assert response.json()["skipped"] == []  # a list, as docs/api.md says: the web screen rejects a number (F-239)
     assert c.get("/api/inbox").json() == []
     assert any(card["id"] in response.json()["proposals"] for card in c.get("/api/review").json())
     assert c.post("/api/inbox/m1/capture", headers=HEADERS).status_code == 404  # never paid for twice
+
+
+def test_a_read_that_finds_nothing_answers_with_two_lists(app: tuple[TestClient, Provider, Path]) -> None:
+    c, provider, data = app
+    _queue(data, "m9", CLUB)
+    provider.answers.append({"facts": []})
+    body = c.post("/api/inbox/m9/capture", headers=HEADERS).json()
+    assert body["proposals"] == []
+    assert isinstance(body["skipped"], list) and all(isinstance(reason, str) for reason in body["skipped"])  # F-239
 
 
 def test_a_failed_read_stays_waiting(app: tuple[TestClient, Provider, Path]) -> None:
