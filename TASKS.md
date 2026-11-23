@@ -549,9 +549,10 @@ Reference documents:
 - What: The grader is likely an AI agent reading the repo. Add a "How to grade this project" section at the top of the README: each rubric item → the file that proves it → the command that reproduces it (see `docs/plan.md`). Then have a fresh AI session, with no context, grade the repo against the rubric and fix every gap it finds.
 - Done when: a fresh-session review finds no rubric item without evidence.
 
-### C-31 Existing GitHub Projects task tracker (weekly-review bonus dropped)
+### C-31 GitHub Projects board and weekly sprints (bonus)
 - Owner: christophe
-- Status: review
+- Status: doing
+- Scope restored (2026-11-23, Christophe, D-137): restore C-31 and supersede D-133. Christophe reports four Monday meetings on 2, 9, 16 and 23 November. Reconcile native Status, Assignees and Iteration plus current backlog planning fields in one bulk run. Commit-history summaries are retrospective repository context, not verified minutes or inferred attendance/decisions.
 - Scope decision (2026-11-22, Christophe, D-133): do not pursue the weekly-review/sprint engineering bonus or collect three meeting records. Keep the existing board as an ordinary task tracker; no weekly-review bonus completion is claimed. This supersedes the older requirements and blockers recorded below.
 - Progress (2026-11-22): existing private board #4 refreshed from merged main 60d7027: 92 tasks, no new cards, 92 managed updates; repeat creates/updates zero. Manual cards/fields/views preserved. New proof is web/board/evidence/refresh-2026-11-22.json; three genuine weekly-review records remain open.
 - Progress (2026-11-20, after #94/#102): board refresh now pins main 0f3bb09, including Joey's merged task reconciliation: 92 tasks, no new cards, 107 managed updates; repeat zero changes. New receipt: web/board/evidence/refresh-2026-11-20-after-inbox-merge.json. Manual objects preserved; real weekly-review evidence remains open.
@@ -564,8 +565,8 @@ Reference documents:
 - Progress (2026-11-11): Christophe supplied https://github.com/users/Nohra2005/projects/4. CLI viewer chrs-005 has project scope, but view/fields/items for Nohra2005 project 4 all return Could not resolve. Asked Tatiana to verify access/target in #43. No board changes or duplicate; adoption/sync and three actual weekly reviews remain unverified. See web/PROJECT_BOARD.md.
 - Owner response (2026-11-09): Tatiana reports the existing ClubOps board is in the repo's Projects tab with Christophe as admin; weekly sprints start 4 November and reviews are Wednesdays after office hours. Local plan now targets Nohra2005/ClubOps and that cadence; no duplicate board should be created. Current-main dry run reads 85 tasks. Projects scope is still missing; live owner/number/access/fields/cards/iterations and safe adoption of any manual cards must be inspected before sync. No actual weekly review is claimed here.
 - Needs: none
-- What: Retain the existing private GitHub Projects board as an ordinary TASKS.md tracker and preserve manual cards/fields/views. Weekly sprint reviews and their engineering bonus evidence are no longer in scope; previous proposed iterations remain historical plans.
-- Done when: existing tracker tooling is independently reviewed and merged with its read-back proof; this does not mean three weekly reviews happened or the dropped bonus was earned.
+- What: Maintain the existing private board from pinned TASKS.md, including native statuses/assignees, four Monday iterations and current priority/size estimates. Retain original issue cards, custom fields and earlier receipts. Record reported meeting dates and linked repository history without inventing oral decisions or backdating assignments.
+- Done when: board fields and owners verify against the pinned task source, the four reported Monday weeks exist and the team reviews the linked weekly evidence. Dates are owner-reported; commit summaries alone do not verify meeting decisions or attendance.
 - Progress (2026-11-03): PR #55 adds the pinned TASKS.md plan, private Projects v2 create/sync CLI, board fields, proposed weekly iterations and read-back verification. 12 synthetic tool tests run in web CI; dry run reads 77 tasks from main. See `web/PROJECT_BOARD.md`.
 - Blocker (updated 2026-11-09): Projects scope is now enabled for chrs-005, but full read-only discovery returns no visible boards under Nohra2005, chrs-005 or the repository. Need Tatiana's direct board URL/access before inspecting and adopting the existing board; do not create a duplicate. Three actual weekly team reviews still need evidence under T-28; planned iterations are not completed-review evidence.
 

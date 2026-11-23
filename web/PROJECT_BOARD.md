@@ -1,10 +1,11 @@
 # Task board and weekly sprints (C-31)
 
-**Current scope, 22 November (D-133):** Christophe has dropped the weekly-review /
-sprint engineering bonus. Keep the existing board as an ordinary task tracker;
-do not collect three meeting records or claim that bonus. Older cadence, checklist
-and missing-record statements below are historical and superseded for active scope.
-No existing board, manual card or view is deleted by this decision.
+**Current scope, 23 November (D-137):** C-31 is restored; D-133 is superseded.
+The authorized reconciler fills native Status, Assignees and Iteration, with current
+backlog priorities/estimates. Monday dates are reported by Christophe; linked commit
+summaries provide repository context without asserting undocumented meeting decisions.
+See [the current native-field workflow](BOARD_NATIVE_FIELDS.md). Older scope/cadence
+statements below are historical. Existing cards, views and custom fields are retained.
 
 **Live result, 12 November:** the existing private board now has **90 task drafts +
 the three original manual cards (93 total)**. Source is merged main `2fff794`.
