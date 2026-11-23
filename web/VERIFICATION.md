@@ -268,15 +268,63 @@ D-104/F-175-F-178 and `REVIEW_GUIDE.md` record behavior and limits. Existing pub
 HTTP UI checks use synthetic intercepted responses, not a deployed service or user
 study. Final-head CI and independent teammate review are on the C-34 PR.
 
-## 2026-11-20 - C-36 approved-PR main sync
+## 2026-11-16 — C-29 actual application setup
 
-Merged main `0ac0b5b` without rewriting the original small commits. Preserved both
-sides of the additive design-log conflict. Frontend quality/build checks pass:
-68 units and 12 board-tool tests, lint, format and types. Python source, tests,
-scripts, schemas and locked dependencies are byte-identical to the synced C-35
-checkout whose full root gates passed (700 tests, 93.09%, Ruff/format 159 files,
-mypy 84 files, schema/tasks). Shared docs/tasks are checked in this checkout.
-Full development npm audit remains at zero vulnerabilities; production application dependencies are unchanged.
+Baseline: main `54d38c1`, with #87 application wiring and #89 Windows UTF-8 fix.
+The C-29 branch adds `e2e/setup-live.spec.ts` to the existing live-API suite. This
+fixture launches the actual production application factory, real HTTP cookies and
+temporary SQLite stores. It does not install a substitute setup route or intercept
+API responses. Empty synthetic clubs are separate for desktop and 375px phone.
+
+Observed checks:
+
+- `npm run test:e2e:live`: **8 passed**, including four new setup cases. The president
+  flow checks initial `/me` false, redirect, skip, stop/reload/resume at the same
+  question, unchanged progress after missing CSRF (403), completion with skips and
+  `/me` true after completion. Reopening reads completed progress. Review stays an
+  empty array; starter ticks stay 0 of 4. Actual adviser sessions receive 403 on
+  writes and cannot open the interview controls. Existing plan approval, calendar,
+  handover, usage and local-login regressions remain green.
+- `npm run check`: lint, format, strict app/rehearsal types, **68 frontend unit
+  tests**, **12 board-tool tests** and production build passed.
+- Root `make check` equivalents: Ruff/format (**153 files**), strict mypy (**82
+  files**), schema/task checks and **681 tests passed**, **93.11% coverage**.
+  A fresh `uv sync --all-extras --dev` environment used the current lockfile; Node
+  dependencies were installed independently with `npm ci` in this worktree.
+
+The first test attempt used an incorrect `{items: []}` assertion for Review's bare
+array response; correcting the assertion did not change application behavior.
+An earlier worktree dependency junction caused local font-serving warnings; the
+successful run used an independent install with those warnings resolved. Windows
+setup required the existing workspace uv executable on PATH. The existing
+Starlette/httpx and MLflow/SQLAlchemy deprecation warnings are not test failures.
+
+Limits: no extraction/model calls in setup, real identities, private sources,
+Google provider login, worker-restart claim, public deployment, live mailbox,
+actual ASME acceptance or measured learning quality. The Python adapter tests and
+synthetic rehearsal prove different boundaries. F-151 and F-201 remain known limits.
+CI on the new PR head and independent review are tracked on its PR, not assumed from
+this local result. C-29 still needs Joey's fresh README-only setup and report review.
+
+## 2026-11-20 - C-29 synced report and sourced teammate setup blocker
+
+Merged main `e4090c6` after #95/#96 landed; kept the main and C-29 shared rows.
+Renumbered only C-29's decision/failure to D-132/F-237 because new #103 uses
+D-126/F-227. Historical dated references remain unchanged. No backend implementation
+or contract authored. Report baseline now matches this merged API.
+
+Root gates on the final stable tree pass: 710 tests, 93.14% coverage, Ruff/format
+162 files, mypy 85 files, schemas/tasks. Frontend quality/build passes (68 units,
+12 board-tool cases). Actual local API/cookie/SQLite suite reran on this final
+baseline: all 8 desktop/phone cases pass, including setup and adviser denial.
+Ten shared-doc/task checks also pass.
+
+Joey's independently reported README-only attempt stopped before startup because
+Docker's Linux engine pipe was absent. The sourced receipt is
+[report/setup-attempt-2026-11-20.md](report/setup-attempt-2026-11-20.md). It is not a
+successful fresh install, Compose/login or deployed acceptance. C-29 remains doing;
+report incorporation and a successful fresh README-only setup remain open. No real
+provider/ASME result, new feature scope, self-merge or main push.
 
 ## 2026-11-19 - C-13 HTTP session view validation
 
@@ -402,9 +450,6 @@ forwarding proof/settings and Review expiry/calendar payloads are unpublished.
 main's failure rows and each unique frontend row once. Both #95 and #96 are now
 merged. Root gates on the final Python tree pass: 710 tests, 93.14% coverage,
 Ruff/format 162 files, mypy 85 files, schema/task checks. Branch-local shared docs
-are checked before push; frontend quality/build remains green (68 units,
-12 board-tool cases). The development dependency patch is unchanged; full npm audit remains zero. Final Python source/tests/scripts/schemas/lock match the fully checked C-35 tree.
-
 are checked before push; frontend quality/build remains green (97 units,
 12 board-tool cases). The approved session validator is unchanged. Final Python source/tests/scripts/schemas/lock match the fully checked C-35 tree.
 
@@ -416,13 +461,13 @@ C-29 uses D-132/F-237 to avoid #103's D-126/F-227. Historical dated evidence
 retains its old references. No new feature scope, real provider/club acceptance,
 self-merge or main push. Current-head CI and fresh independent approval remain.
 
-## 20 November - C-36 sync after #94 and #102 merged
+## 20 November - C-29 sync after #94 and #102 merged
 
 Merged main `0f3bb09`, preserving all earlier handoff/evidence lines and both
 shared logs. No new feature scope or D/F IDs. Frontend quality/build passes with
 108 units and 12 board-tool tests, lint/format/types; branch-local shared
 checks pass. Root make-check equivalents pass on the shared Python tree: 710
-tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Full npm dependency audit reports zero vulnerabilities. The patched lint chain checks the now-merged Inbox/Restore frontend.
+tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Report/setup evidence and the blocked README-only receipt remain intact; successful fresh complete-app acceptance is still open.
 
 Original individual commits remain; fresh independent review and current-head CI
 are required after this sync. No backend/contract implementation or real data
@@ -452,6 +497,90 @@ C-13 deployed Google/every-screen acceptance remains open. Current-head CI and
 fresh independent re-review are required after push; original commits are retained.
 No self-merge/main push, real provider calls or new scope before 23 November.
 
+## 2026-11-22 - C-29 review-ready sync before the meet-up
+
+Synced main `60d7027`, including reviewed #100 and the locked FastAPI 0.162.5 /
+Ruff 0.17.5 updates. Retained both sides of shared log conflicts and every previous
+handoff/evidence line. No original commit rewritten or new D/F ID allocated.
+
+Root make-check equivalents on the updated locked environment pass: 710 tests,
+93.14% coverage, Ruff/format 162 files, mypy 85 files, schemas/tasks. Frontend
+quality/build passes with 137 units and 12 board-tool cases, lint/format/types.
+Branch-local shared docs/tasks: 10 pass. All eight actual local HTTP/cookie/SQLite setup/planning cases passed with FastAPI 0.162.5. Report prose now links the merged session validator and HTTP regressions; real Google/hosting/ASME acceptance and the blocked README-only attempt remain explicit.
+
+The existing task status remains doing. Current-head CI and fresh independent
+approval are required after push. No new feature scope before 23 November, backend
+implementation/contract change, real private input, self-merge or main push.
+
+### 22 November owner scope update
+
+Christophe has dropped the weekly-review/sprint engineering bonus. The report now
+excludes that claim and no longer lists three meeting records as pending acceptance.
+Keep the existing board as an ordinary task tracker. C-29's fresh README-only setup,
+report incorporation and deployed/provider/club acceptance limits remain unchanged.
+D-133 and the narrowed tracker task are in #91; no other engineering bonus was cut.
+
+## 2026-11-23 - C-29 restored weekly practice and sourced board context
+
+**Did:** Synced main 2bb9f5e, preserving the actual setup row and main's sourced
+inbox/audience/expiry documentation. Restored weekly-practice reporting after
+Christophe reversed D-133 (D-137 in #91). The report links #91's repository-history
+summaries and attributes four Monday dates to Christophe; it does not infer
+attendance, oral decisions or original assignments from commits.
+
+**State:** Web quality/build passes: 137 units and 12 tools. Actual local
+HTTP/cookie/SQLite setup suite: 8/8. Shared tasks/log/failure checks: 10 pass.
+Merged Python baseline gates: 728 tests, 93.21%, Ruff/format 162 files, mypy
+85 files, schemas/tasks. Report remains doing; fresh README-only success,
+report incorporation and actual deployed/provider/club acceptance remain open.
+
+**Next / limits:** Fresh independent review and current-head CI, then a merge
+commit preserving the focused history. #91 performs the separately authorized
+native-field bulk correction. No real club inputs, paid model calls, invented
+meeting decisions or main push/self-merge.
+
+## 2026-11-20 - C-36 approved-PR main sync
+
+Merged main `0ac0b5b` without rewriting the original small commits. Preserved both
+sides of the additive design-log conflict. Frontend quality/build checks pass:
+68 units and 12 board-tool tests, lint, format and types. Python source, tests,
+scripts, schemas and locked dependencies are byte-identical to the synced C-35
+checkout whose full root gates passed (700 tests, 93.09%, Ruff/format 159 files,
+mypy 84 files, schema/tasks). Shared docs/tasks are checked in this checkout.
+Full development npm audit remains at zero vulnerabilities; production application dependencies are unchanged.
+
+### 20 November follow-up - newly merged Inbox baseline
+
+#95 merged while checks were running. Synced again to main `e4090c6`, retaining
+main's failure rows and each unique frontend row once. Both #95 and #96 are now
+merged. Root gates on the final Python tree pass: 710 tests, 93.14% coverage,
+Ruff/format 162 files, mypy 85 files, schema/task checks. Branch-local shared docs
+are checked before push; frontend quality/build remains green (68 units,
+12 board-tool cases). The development dependency patch is unchanged; full npm audit remains zero. Final Python source/tests/scripts/schemas/lock match the fully checked C-35 tree.
+
+are checked before push; frontend quality/build remains green (97 units,
+12 board-tool cases). The approved session validator is unchanged. Final Python source/tests/scripts/schemas/lock match the fully checked C-35 tree.
+
+are checked before push; frontend quality/build remains green (108 units,
+12 board-tool cases). All 82 HTTP cases passed in a completed run with normal Windows process cleanup. Frontend source/tests/lock are unchanged by the second main sync.
+
+C-35 preview role row is now F-238, preserving main's adviser-route F-217.
+C-29 uses D-132/F-237 to avoid #103's D-126/F-227. Historical dated evidence
+retains its old references. No new feature scope, real provider/club acceptance,
+self-merge or main push. Current-head CI and fresh independent approval remain.
+
+## 20 November - C-36 sync after #94 and #102 merged
+
+Merged main `0f3bb09`, preserving all earlier handoff/evidence lines and both
+shared logs. No new feature scope or D/F IDs. Frontend quality/build passes with
+108 units and 12 board-tool tests, lint/format/types; branch-local shared
+checks pass. Root make-check equivalents pass on the shared Python tree: 710
+tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Full npm dependency audit reports zero vulnerabilities. The patched lint chain checks the now-merged Inbox/Restore frontend.
+
+Original individual commits remain; fresh independent review and current-head CI
+are required after this sync. No backend/contract implementation or real data
+added, no self-merge/main push and no new scope before 23 November.
+
 ## 2026-11-22 - C-36 review-ready sync before the meet-up
 
 Synced main `60d7027`, including reviewed #100 and the locked FastAPI 0.162.5 /
@@ -466,3 +595,23 @@ Branch-local shared docs/tasks: 10 pass. Full and production-only npm audits bot
 The existing task status remains review. Current-head CI and fresh independent
 approval are required after push. No new feature scope before 23 November, backend
 implementation/contract change, real private input, self-merge or main push.
+
+
+## 2026-11-23 - Christophe (C-36 current-main conflict resolution)
+
+**Did:** Merged main 9b12718 into #101; kept both unique design/failure rows and
+all earlier handoff/evidence lines. Preserved the separate C-29 and C-36 entries
+as complete sections rather than splicing their headings and paragraphs. Original
+focused commits and the development-only lockfile remediation remain intact.
+
+**State:** Python gates pass: 733 tests, 93.16% coverage, Ruff/format 162 files,
+mypy 85 files, schemas/tasks. Web checks pass: 137 unit tests, 12 board-tool tests,
+lint/format/types/build. Full and production-only npm audits report zero; production
+lock records match current main. C-36 stays review pending current-head CI and
+fresh independent approval.
+
+**Next / limits:** Tatiana re-reviews the synced head and merges with Create a
+merge commit once CI is green. #91 already contains current main and all five
+checks pass; #99 is already merged. Independently reviewed #104 and requested
+corrections to approval roles, unknown-audience fallback and C-27 human scoring.
+No new scope, provider calls, private inputs, direct main push or self-merge.

@@ -167,6 +167,7 @@ Reference documents:
 - Status: todo
 - Needs: T-26
 - What: Final report from the design log: problem, evaluation and results chapters, plus putting the whole report together (Christophe and Joey write their own sections in C-29 and J-13). Update `docs/evidence.md` so every number matches the new results. Poster: J-18. Demo: C-28.
+- Condition (2026-11-23, Tatiana): Dr. Mohanna accepts Google Testing mode if the report acknowledges the limitation (D-122). The report's limits section must say: only listed test users can sign in, the Gmail key expires every 7 days, and publishing needs Google's review plus a paid security check.
 - Done when: submitted by 30 November.
 
 ### T-28 Coordination
@@ -300,6 +301,13 @@ Reference documents:
 - What: Each card can carry an expiry date (the model suggests it, the reviewer can change it); a plain rule, no model, moves an expired card to an archive the planner never uses; the president can restore it; the archive is kept. Cards are sorted AUB-wide or club-only: AUB-wide cards are approved by the operator now (later: live when two presidents approve), club-only cards by the president. After ASME and the final evaluation: simple approved rules (date cut-offs) checked by code in the planner, and reading OSA e-mails without a click.
 - Done when: synthetic tests for expiry, restore and the two card kinds, each with a failure-matrix row.
 - Progress (2026-11-15): expiry and AUB-wide sorting already existed (D-124); added the president's restore route with tests (F-215). Still after the final evaluation: planner date checks in code, reading OSA e-mails without a click.
+
+### T-49 Count who an e-mail went to: AUB-wide or club-only (D-126)
+- Owner: tatiana
+- Status: review
+- Needs: T-47
+- What: The model's AUB-wide or club-only label cannot be trusted for who sees a card. At fetch time count the distinct addresses on the original To and Cc lines (store the number only). 10 or more makes AUB-wide cards, fewer makes club-only; a rule stays AUB-scope by contract. Unknown counts (Bcc, undisclosed, older notes) fall back to the model's label. The Review card says how many people the e-mail went to. No model cost, no contract change.
+- Done when: tests for the count, the threshold, both overrides, the fallback and an old notes database; F-227 has its row. PR #103 reviewed and merged; then one free fetch refreshes the waiting e-mails so they use the count (the fetch fills in only the number, for the same mail).
 
 ## Christophe: frontend
 
@@ -530,6 +538,10 @@ Reference documents:
 ### C-29 Keep the docs true (was T-31)
 - Owner: christophe
 - Status: doing
+- Progress (2026-11-23): synced sourced audience policy, retained actual setup documentation and restored weekly-practice reporting per Christophe. Four Monday dates are owner-reported; linked repository summaries are not asserted meeting decisions. Web checks (137 units/12 tools), actual setup/API 8/8 and updated-main root gates pass; existing real acceptance gaps remain open.
+- Progress (2026-11-22): synced reviewed session frontend and locked FastAPI/Ruff updates; report now cites merged session validation against main 60d7027; 137 units and eight actual local API/setup cases pass with the updated FastAPI. Fresh README-only success, report incorporation and deployed acceptance remain open.
+- Progress (2026-11-20): synced #99 with merged main 0ac0b5b; report/setup evidence uses D-132/F-237 after the new #103 ID collision. Joey recorded a README-only attempt that stopped at the unavailable Docker Linux engine; web/report/setup-attempt-2026-11-20.md preserves the source and exact prerequisite blocker. Fresh complete-app startup/login acceptance remains open.
+- Progress (2026-11-16): verifying the merged #87 setup through the actual application over HTTP with synthetic new clubs; refreshing owned setup/architecture/provenance docs and preparing architecture, web, deployment and monitoring report sections. Fresh README-only teammate setup, deployed acceptance and report review remain pending. Work is prepared for review after the stated merge freeze, not merged automatically.
 - Progress (2026-11-09): refreshed owned architecture, memory and provenance docs against main `4b3f17e`: green main CI evidence, lasting/this-term filtering, failed-source retries, wrong-replacement review limit, shared-scope approval and private debug/review-sheet content. Setup's accepted one-tab limit and owner integration are explicit. Fresh teammate setup and final deployed verification remain open.
 - Needs: T-22
 - What: Update `docs/architecture.md`, `docs/data-provenance.md`, `docs/knowledge-base.md` and the README setup to the new scope (agent loop, learning, web app, deployment, monitoring). Ask Tatiana when unsure how the backend works. Setup must work from a fresh clone in one command. Write the report sections on architecture, the web app, deployment and monitoring.
@@ -586,6 +598,7 @@ Reference documents:
 ### C-36 Patch the frontend development dependency audit
 - Owner: christophe
 - Status: review
+- Progress (2026-11-23): resolved current-main shared logs without losing either history; 733 Python tests/93.16%, 137 frontend units/12 tools, quality/build and both npm audits pass. Production dependency records unchanged; fresh-head CI and independent approval pending.
 - Progress (2026-11-22): synced reviewed session frontend and locked FastAPI/Ruff updates; full/production npm audits zero, 137 units and updated-main checks pass; existing remediation remains in review.
 - Needs: C-23
 - What: Patch the minimatch advisory found through the ESLint/TypeScript-ESLint development dependency chain. Keep application dependencies and security checks intact; verify a clean lockfile install, full/deployment-only audits and frontend quality checks. Provide a reproducible audit command and evidence.

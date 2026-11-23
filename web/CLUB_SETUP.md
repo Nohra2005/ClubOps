@@ -13,15 +13,18 @@ existing `POST /api/setup/next {answer?}` response fields: `question`, `index`,
 `total`, `done`, `rules_count`. Empty requests resume; `[skip]` advances without
 extraction. No request changes cabinet accounts, renames a club or approves memory.
 
-**Integration is pending in PR #55.** Main's application still registers the 501
-placeholder and reports `setup_complete: true`. The new module is tested through
-an explicit integration adapter; this is not evidence that the production route
-has already been replaced. Tatiana was notified in coordination issue #43.
+**The service and application wiring are merged:** #55 supplies the owned module;
+[#87](https://github.com/Nohra2005/ClubOps/pull/87) replaces the placeholder and wires
+`/me.club.setup_complete` to saved progress. The older setup 501/always-true notes in
+`docs/api.md` predate that merge. Local browser verification now uses the actual
+application factory over HTTP, real session cookies and SQLite, without replacing
+the setup route. This is distinct from deployed/Google/ASME acceptance.
 
-## API owner wiring
+## Maintainer integration boundary
 
-Create one `SetupService(config.data_dir)` and include its `router(...)` in place
-of the placeholder, supplying these public callbacks:
+The wiring introduced in #87 connects `SetupService(config.data_dir)` and its
+`router(...)` using these public callbacks. Keep these requirements when maintaining
+the integration:
 
 | Argument                   | Required behavior                                                                                                                                                                                                                                                                                                                          |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -31,7 +34,7 @@ of the placeholder, supplying these public callbacks:
 | `rules_count(club_id, on)` | Count current approved AUB-scope **rules**, not club facts or pending proposals. The date is calculated in Asia/Beirut. Shared rules are read, never cloned or invented during setup.                                                                                                                                                      |
 | `clock()`                  | Return an aware datetime, using the application's existing clock.                                                                                                                                                                                                                                                                          |
 
-Wire `/api/me.club.setup_complete` to `service.complete(member.club_id)`. Missing
+`/api/me.club.setup_complete` reads `service.complete(member.club_id)`. Missing
 progress means incomplete; decide explicitly whether any existing club should be
 migrated as already complete. Do not infer completion from unapproved knowledge.
 The service has no member/profile mutation interface.
@@ -42,7 +45,8 @@ placeholder **only in the test app**, and connects actual SQLite Review/shared-r
 storage with synthetic extraction. It checks club isolation and a partial queue
 failure before any Review decision. It is not an application-wiring patch or a
 real-model quality test. The production submit callback's decided-card idempotence
-still needs owner review.
+has a known limit: F-201 documents reappearance of a rejected proposal after a partial
+queue failure. Nothing is approved automatically; this is not a solved retry guarantee.
 
 ## Progress, retry and data
 
@@ -80,10 +84,16 @@ synthetic accounts and facts. Tatiana must provide/seed the actual non-personal 
 facts with sources and human approval; no real ASME facts were invented or committed.
 The approved shared rulebook applies from the start without approving setup answers.
 
-After owner wiring: repeat setup on a new authenticated club, reload mid-flow,
-complete with skips, inspect pending Review cards, approve one explicitly and check
-that only that club can retrieve it. Recheck `/me`, persistence across restart and
-the actual ASME demo. C-21 stays open until this is verified.
+The local no-interception regression covers a fresh synthetic president club,
+redirect, skip, stop/reload/resume, unchanged progress after missing CSRF, completion,
+`/me`, empty Review and adviser denial on desktop and phone. Separate empty clubs
+isolate each browser's durable progress. It deliberately skips extraction: it is
+not a model-quality, proposed-fact approval or live-provider test.
+
+Still verify on the deployed service: Google sign-in, a sourced answer's pending
+Review card, explicit approval, cross-club retrieval denial, restart persistence and
+actual authorized ASME onboarding. C-21 stays open until this acceptance is recorded.
+Interview completion and browser-local starter checklist completion are separate.
 
 ## Verification
 
@@ -92,8 +102,10 @@ uv run pytest tests/test_setup.py tests/test_setup_endpoint.py
 cd web
 npm run test:e2e -- setup.spec.ts
 npm run test:e2e:http -- --grep setup
+npm run test:e2e:live -- setup-live.spec.ts
 ```
 
-On Windows, run the schema generator with Python UTF-8 mode (`python -X utf8
-scripts/export_schemas.py --check`); its generated Markdown contains Unicode. A
-locale-decoding mismatch is not a reason to regenerate or edit the frozen contracts.
+Main includes #89's explicit UTF-8 file handling for Windows. Older checkouts can
+run the schema generator with Python UTF-8 mode (`python -X utf8
+scripts/export_schemas.py --check`). A locale-decoding mismatch is not a reason to
+regenerate or edit the frozen contracts.

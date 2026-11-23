@@ -22,6 +22,11 @@ def build() -> FastAPI:
     load(data_dir, None)
     members = MemberStore(data_dir)
     members.add("running-club", "Synthetic President", "president@example.com", Role.PRESIDENT)
+    # Separate empty clubs keep durable setup progress isolated between browser projects.
+    for browser in ("desktop", "phone"):
+        club = f"setup-{browser}"
+        members.add(club, "Synthetic Setup President", f"{club}@example.com", Role.PRESIDENT)
+        members.add(club, "Synthetic Setup Adviser", f"{club}-adviser@example.com", Role.ADVISER)
     members.close()
     scripts = Scripts()
     scripts.queue = [PLAN for _ in range(4)]

@@ -186,20 +186,30 @@ Merged main afbdead into #76 without squashing. Preserved all six distinct C-33/
 
 The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C-33/C-21 acceptance is actual deployed/new-club verification, not the former 501 placeholder.
 
-## 2026-11-19 - Christophe (C-36 development dependency audit)
+## 2026-11-16 - Christophe, with Codex (C-29 setup verification and report draft)
 
-**Did:** Isolated fix/c36-minimatch-audit from main 166f27e after npm audit found GHSA-g3hv-75wg-m249 through the ESLint/TypeScript-ESLint development chain. npm-compatible lock updates resolve minimatch 11.0.9, ESLint 10.15.0, TypeScript-ESLint 8.73.0 and config-array 0.23.6 without force/overrides or application dependency-range changes. Structural comparison proves every production lock entry is unchanged. Added npm run audit:dependencies as an explicit full development-inclusive audit regression command; no workflow files changed.
+**Did:** Updated isolated branch docs/c29-verified-setup-report to main 54d38c1. Corrected owned architecture/setup/provenance/API notes that still described setup as 501 before merged #87. Added synthetic per-browser clubs to the existing live fixture and four browser cases against the actual app factory, HTTP sessions and SQLite, without route replacement/interception. Covers redirect, skip, stop/reload/resume, completion, /me, empty Review, separate starter ticks and missing-CSRF/adviser 403. Drafted architecture, web, deployment and monitoring report sections in web/report/architecture-and-operations.md with source links and explicit local/provider/deployed evidence limits.
 
-**State / next:** C-36 review. Clean npm ci and both full/production-only audits report zero findings (previous full audit: nine affected development package nodes; production-only zero). Web check: 68 units/12 tools/types/build and lint/format pass. Full root gates: 693 tests, 93.06%; Ruff/format 158 files, mypy 84, schemas/tasks. Advisory and reproducible commands: web/security/dependency-audit-2026-11-19.md. D-130/F-234 reserved after C-13 D-129/F-233. Await current-head CI and independent review; preserve small commits and merge commits. Owner should link evidence in her index.
+**State:** Small commits preserved; C-29 stays doing. Local root make-check equivalents pass: 681 tests, 93.11% coverage, Ruff/format (153 files), strict mypy (82 files), schemas/tasks. Web check: 68 unit and 12 board-tool cases, lint/format/types/build. Complete actual-API suite: 8 browser cases pass, including the four new setup cases on desktop/375px phone. Current-head remote CI and independent review remain required. D-126/F-227 were checked beyond main and all open-PR ranges. The new report/evidence files are owned; docs/evidence.md, docs/rubric-map.md, docs/api.md and README remain untouched for their owner.
 
-**Open / limits:** This is a tooling dependency remediation and live advisory scan, not a production incident or measured security-rate result. The audit needs registry connectivity and its database changes over time. Windows uses the trusted system CA store with certificate validation enabled. No backend implementation/contracts, real club data, credentials, source text or provider calls involved. C-13 session validation and C-35 integration remain independent PRs.
+**Next:** Tatiana reviews/incorporates the report sections and links their evidence in her index; Joey records a fresh README-only setup outcome. Respect the stated merge freeze: this batch is prepared for review, not self-merged. Use Create a merge commit when the team authorizes merge. C-35 has newly published route shapes in #95/#96, but those PRs and J-22 remain separate; do not call preview controls live.
+
+**Open questions / blockers:** No actual deployment, Google/provider/ASME outcome or real producer instrumentation is claimed. F-151's one-tab setup limit and F-201's rejected-proposal retry reappearance remain. The test skips extraction and does not prove learning/consent/restart recovery. Windows junction cleanup unexpectedly affected shared dependencies; restored the original preview checkout with npm ci and installed independent dependencies/Python environment in this worktree. Successful rerun has no font warnings. Output stays untracked; the original C-35 checkout/preview branch is preserved.
+
+## 2026-11-18 - Christophe (C-29 main sync)
+
+**Did:** Merged current main 166f27e into #99, keeping both sides of the shared failure log and the original small report/setup commits. No report, application implementation or contract changed. Gmail fetch and J-22 guards are merged; candidate Inbox HTTP routes #95 remain open, so no new live-mailbox claim is added to the report.
+
+**State / next:** Actual application/cookie/SQLite browser suite rerun: all 8 desktop/phone cases pass after sync. Full main-based Python gates are also verified in the parallel C-35 checkout (693 tests, 93.06%; Ruff/format, mypy, schema/tasks); C-29 current-head CI/review still required. C-29 remains doing until Tatiana reviews/incorporates the report and Joey records genuine README-only setup. Retain D-126/F-227, known F-151/F-201 limits, private-source/provider/deployment boundaries and independent review/merge commits. No self-merge under the stated freeze.
 
 
-## 2026-11-20 - Christophe (C-36 approved-PR main sync)
+## 2026-11-20 - Christophe (C-29 current-main evidence and teammate attempt)
 
-**Did:** Merged main 0ac0b5b as Tatiana requested and retained both sides of the shared design-log conflict. Approved implementation and individual commits remain unchanged. Existing IDs checked across main/open PRs; no new IDs.
+**Did:** Synced #99 to main e4090c6, retaining both sides of design/failure logs. Moved only C-29 D-126/F-227 to D-132/F-237 to avoid #103. Added a sourced receipt of Joey's README-only attempt, which stopped at the unavailable Docker Linux engine; updated report baseline and task progress. Historical handoffs remain unchanged.
 
-**State:** Web quality/build checks pass with 68 units and 12 tools. Python source/tests/scripts/schemas/lock match the C-35 checkout whose full root gates pass (700 tests, 93.09%); branch-local shared checks are run before publishing. Full development npm audit remains at zero vulnerabilities; production application dependencies are unchanged.
+**State:** C-29 doing. Final root gates: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. Frontend quality/build: 68 units/12 tools. Actual app HTTP/cookie/SQLite setup/planning suite reran 8/8 on final main baseline; shared docs/tasks 10/10. Separate small sync, ID, receipt and verification commits preserved; current-head CI/review required.
+
+**Next / limits:** Tatiana reviews/incorporates the report and owner evidence links; a teammate repeats the exact README flow when a working Linux container engine is available. Joey's attempt is a prerequisite failure, not completed app acceptance. Known setup limits F-151/F-201 and deployed/provider/ASME evidence remain separate. No new feature scope before 23 November, no authored backend/contract edit or self-merge/main push.
 
 ## 2026-11-19 - Christophe (C-13 session response validation)
 
@@ -218,12 +228,6 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 
 **Next / limits:** Tatiana re-approves the synced head after current-head CI and merges with Create a merge commit. No backend/auth contract change, real provider acceptance, self-merge or direct main push.
 
-
-### 20 November follow-up - C-36, final Inbox main sync
-
-**Did:** #95 merged as e4090c6 during verification, so merged that main as well. Retained each main/own failure once. C-35 preview role row moves to F-238; main's F-217 stays unchanged. C-29 D-132/F-237 avoid #103's IDs. Earlier dated references remain history.
-
-**State / next:** Final root tree passes 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. The development dependency patch is unchanged; full npm audit remains zero. Final Python source/tests/scripts/schemas/lock match the fully checked C-35 tree. Existing approved implementation and small commits remain. Re-review after final-head CI; Tatiana merges using Create a merge commit. No new scope before the 23 November meet-up or real mailbox/provider/deployed claim.
 
 ### 20 November follow-up - C-13, final Inbox main sync
 
@@ -284,11 +288,11 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 **State / next:** Final root tree passes 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. All 82 HTTP cases passed in a completed run with normal Windows process cleanup. Frontend source/tests/lock are unchanged by the second main sync. Existing approved implementation and small commits remain. Re-review after final-head CI; Tatiana merges using Create a merge commit. No new scope before the 23 November meet-up or real mailbox/provider/deployed claim.
 
 
-## 2026-11-20 - Christophe (C-36 after reviewed Inbox merge)
+## 2026-11-20 - Christophe (C-29 after reviewed Inbox merge)
 
 **Did:** Tatiana merged #94 and Joey's #102 as main 0f3bb09. Synced this existing PR, retaining both shared logs and every earlier handoff/evidence line. Original focused commits stay intact; no new feature scope or design/failure IDs.
 
-**State:** Frontend checks pass: 108 units/12 tools, lint/format/types/build and branch-local shared docs/tasks. Shared Python-tree root gates pass: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Full npm dependency audit reports zero vulnerabilities. The patched lint chain checks the now-merged Inbox/Restore frontend.
+**State:** Frontend checks pass: 108 units/12 tools, lint/format/types/build and branch-local shared docs/tasks. Shared Python-tree root gates pass: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Report/setup evidence and the blocked README-only receipt remain intact; successful fresh complete-app acceptance is still open.
 
 **Next / limits:** Fresh independent review after current-head CI, then a merge commit. Existing deployed/provider/club acceptance gaps remain separate; no authored backend/contract edit, new scope, self-merge or main push.
 
@@ -301,6 +305,72 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 **Next / limits:** Fresh independent approval after current-head CI, then merge with Create a merge commit. Deployed Google/every-screen acceptance remains open. No real provider/private inputs, backend/contract implementation changes, new scope before 23 November or main push/self-merge.
 
 
+## 2026-11-22 - Christophe (C-29 reviewed-session and dependency sync)
+
+**Did:** Synced the existing PR to main 60d7027 after #100 and the Python dependency updates merged. Kept all shared rows and earlier handoff/evidence lines, retaining individual commits. No new scope or design/failure IDs. All eight actual local HTTP/cookie/SQLite setup/planning cases passed with FastAPI 0.162.5. Report prose now links the merged session validator and HTTP regressions; real Google/hosting/ASME acceptance and the blocked README-only attempt remain explicit.
+
+**State:** Root locked-environment gates pass: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. Web quality/build: 137 units/12 tools; branch shared docs/tasks 10 pass. Original acceptance limits remain open; fresh-head CI and independent re-review are required.
+
+**Next / limits:** Re-review the synced PR, then Create a merge commit for the 23 November meet-up. No new backend/auth contract, model calls, real data, main push or self-merge. Genuine deployment/club/weekly-review acceptance is not inferred from these tests.
+
+
+### 22 November owner scope update
+
+Christophe has dropped the weekly-review/sprint engineering bonus. The report now
+excludes that claim and no longer lists three meeting records as pending acceptance.
+Keep the existing board as an ordinary task tracker. C-29's fresh README-only setup,
+report incorporation and deployed/provider/club acceptance limits remain unchanged.
+D-133 and the narrowed tracker task are in #91; no other engineering bonus was cut.
+
+
+## 2026-11-23 - C-29 restored weekly practice and sourced board context
+
+**Did:** Synced main 2bb9f5e, preserving the actual setup row and main's sourced
+inbox/audience/expiry documentation. Restored weekly-practice reporting after
+Christophe reversed D-133 (D-137 in #91). The report links #91's repository-history
+summaries and attributes four Monday dates to Christophe; it does not infer
+attendance, oral decisions or original assignments from commits.
+
+**State:** Web quality/build passes: 137 units and 12 tools. Actual local
+HTTP/cookie/SQLite setup suite: 8/8. Shared tasks/log/failure checks: 10 pass.
+Merged Python baseline gates: 728 tests, 93.21%, Ruff/format 162 files, mypy
+85 files, schemas/tasks. Report remains doing; fresh README-only success,
+report incorporation and actual deployed/provider/club acceptance remain open.
+
+**Next / limits:** Fresh independent review and current-head CI, then a merge
+commit preserving the focused history. #91 performs the separately authorized
+native-field bulk correction. No real club inputs, paid model calls, invented
+meeting decisions or main push/self-merge.
+
+## 2026-11-19 - Christophe (C-36 development dependency audit)
+
+**Did:** Isolated fix/c36-minimatch-audit from main 166f27e after npm audit found GHSA-g3hv-75wg-m249 through the ESLint/TypeScript-ESLint development chain. npm-compatible lock updates resolve minimatch 11.0.9, ESLint 10.15.0, TypeScript-ESLint 8.73.0 and config-array 0.23.6 without force/overrides or application dependency-range changes. Structural comparison proves every production lock entry is unchanged. Added npm run audit:dependencies as an explicit full development-inclusive audit regression command; no workflow files changed.
+
+**State / next:** C-36 review. Clean npm ci and both full/production-only audits report zero findings (previous full audit: nine affected development package nodes; production-only zero). Web check: 68 units/12 tools/types/build and lint/format pass. Full root gates: 693 tests, 93.06%; Ruff/format 158 files, mypy 84, schemas/tasks. Advisory and reproducible commands: web/security/dependency-audit-2026-11-19.md. D-130/F-234 reserved after C-13 D-129/F-233. Await current-head CI and independent review; preserve small commits and merge commits. Owner should link evidence in her index.
+
+**Open / limits:** This is a tooling dependency remediation and live advisory scan, not a production incident or measured security-rate result. The audit needs registry connectivity and its database changes over time. Windows uses the trusted system CA store with certificate validation enabled. No backend implementation/contracts, real club data, credentials, source text or provider calls involved. C-13 session validation and C-35 integration remain independent PRs.
+
+
+## 2026-11-20 - Christophe (C-36 approved-PR main sync)
+
+**Did:** Merged main 0ac0b5b as Tatiana requested and retained both sides of the shared design-log conflict. Approved implementation and individual commits remain unchanged. Existing IDs checked across main/open PRs; no new IDs.
+
+**State:** Web quality/build checks pass with 68 units and 12 tools. Python source/tests/scripts/schemas/lock match the C-35 checkout whose full root gates pass (700 tests, 93.09%); branch-local shared checks are run before publishing. Full development npm audit remains at zero vulnerabilities; production application dependencies are unchanged.
+
+### 20 November follow-up - C-36, final Inbox main sync
+
+**Did:** #95 merged as e4090c6 during verification, so merged that main as well. Retained each main/own failure once. C-35 preview role row moves to F-238; main's F-217 stays unchanged. C-29 D-132/F-237 avoid #103's IDs. Earlier dated references remain history.
+
+**State / next:** Final root tree passes 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. The development dependency patch is unchanged; full npm audit remains zero. Final Python source/tests/scripts/schemas/lock match the fully checked C-35 tree. Existing approved implementation and small commits remain. Re-review after final-head CI; Tatiana merges using Create a merge commit. No new scope before the 23 November meet-up or real mailbox/provider/deployed claim.
+
+## 2026-11-20 - Christophe (C-36 after reviewed Inbox merge)
+
+**Did:** Tatiana merged #94 and Joey's #102 as main 0f3bb09. Synced this existing PR, retaining both shared logs and every earlier handoff/evidence line. Original focused commits stay intact; no new feature scope or design/failure IDs.
+
+**State:** Frontend checks pass: 108 units/12 tools, lint/format/types/build and branch-local shared docs/tasks. Shared Python-tree root gates pass: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Full npm dependency audit reports zero vulnerabilities. The patched lint chain checks the now-merged Inbox/Restore frontend.
+
+**Next / limits:** Fresh independent review after current-head CI, then a merge commit. Existing deployed/provider/club acceptance gaps remain separate; no authored backend/contract edit, new scope, self-merge or main push.
+
 ## 2026-11-22 - Christophe (C-36 reviewed-session and dependency sync)
 
 **Did:** Synced the existing PR to main 60d7027 after #100 and the Python dependency updates merged. Kept all shared rows and earlier handoff/evidence lines, retaining individual commits. No new scope or design/failure IDs. Full and production-only npm audits both report zero vulnerabilities on 22 November. An initial sandboxed registry/cache request failed; the normal registry-access retry used the system trust store and a writable workspace cache. No audit exception, package update or TLS bypass was needed.
@@ -308,3 +378,23 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 **State:** Root locked-environment gates pass: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. Web quality/build: 137 units/12 tools; branch shared docs/tasks 10 pass. Original acceptance limits remain open; fresh-head CI and independent re-review are required.
 
 **Next / limits:** Re-review the synced PR, then Create a merge commit for the 23 November meet-up. No new backend/auth contract, model calls, real data, main push or self-merge. Genuine deployment/club/weekly-review acceptance is not inferred from these tests.
+
+
+## 2026-11-23 - Christophe (C-36 current-main conflict resolution)
+
+**Did:** Merged main 9b12718 into #101; kept both unique design/failure rows and
+all earlier handoff/evidence lines. Preserved the separate C-29 and C-36 entries
+as complete sections rather than splicing their headings and paragraphs. Original
+focused commits and the development-only lockfile remediation remain intact.
+
+**State:** Python gates pass: 733 tests, 93.16% coverage, Ruff/format 162 files,
+mypy 85 files, schemas/tasks. Web checks pass: 137 unit tests, 12 board-tool tests,
+lint/format/types/build. Full and production-only npm audits report zero; production
+lock records match current main. C-36 stays review pending current-head CI and
+fresh independent approval.
+
+**Next / limits:** Tatiana re-reviews the synced head and merges with Create a
+merge commit once CI is green. #91 already contains current main and all five
+checks pass; #99 is already merged. Independently reviewed #104 and requested
+corrections to approval roles, unknown-audience fallback and C-27 human scoring.
+No new scope, provider calls, private inputs, direct main push or self-merge.

@@ -39,8 +39,10 @@ class InboxNotes:
         with closing(sqlite3.connect(path)) as db, db:
             db.execute(
                 "CREATE TABLE IF NOT EXISTS accepted (message_id TEXT PRIMARY KEY, club_id TEXT NOT NULL, "
-                "fingerprint TEXT NOT NULL)"
+                "fingerprint TEXT NOT NULL, audience INTEGER)"
             )
+            if "audience" not in {row[1] for row in db.execute("PRAGMA table_info(accepted)")}:
+                db.execute("ALTER TABLE accepted ADD COLUMN audience INTEGER")  # notes made before D-126
             db.execute(
                 "CREATE TABLE IF NOT EXISTS skipped (message_id TEXT PRIMARY KEY, club_id TEXT NOT NULL, "
                 "reason TEXT NOT NULL, subject TEXT NOT NULL)"
@@ -53,13 +55,42 @@ class InboxNotes:
                 for table in ("accepted", "skipped")
             )
 
-    def accept(self, message_id: str, club_id: str, fingerprint: str) -> None:
+    def accept(self, message_id: str, club_id: str, fingerprint: str, audience: int | None = None) -> None:
         with closing(sqlite3.connect(self.path)) as db, db:
-            db.execute("INSERT OR IGNORE INTO accepted VALUES (?, ?, ?)", (message_id, club_id, fingerprint))
+            db.execute(
+                "INSERT OR IGNORE INTO accepted (message_id, club_id, fingerprint, audience) VALUES (?, ?, ?, ?)",
+                (message_id, club_id, fingerprint, audience),
+            )
+
+    def audience(self, message_id: str, club_id: str) -> int | None:
+        """How many people the original went to, or None when it was not visible."""
+        with closing(sqlite3.connect(self.path)) as db:
+            row = db.execute(
+                "SELECT audience FROM accepted WHERE message_id=? AND club_id=?", (message_id, club_id)
+            ).fetchone()
+        return int(row[0]) if row and row[0] is not None else None
 
     def skip(self, message_id: str, club_id: str, reason: str, subject: str) -> None:
         with closing(sqlite3.connect(self.path)) as db, db:
             db.execute("INSERT OR IGNORE INTO skipped VALUES (?, ?, ?, ?)", (message_id, club_id, reason, subject))
+
+    def unknown_audience(self, message_id: str) -> tuple[str, str] | None:
+        """(club, fingerprint) of an accepted message whose audience was never counted (checked before D-126)."""
+        with closing(sqlite3.connect(self.path)) as db:
+            row = db.execute(
+                "SELECT club_id, fingerprint FROM accepted WHERE message_id=? AND audience IS NULL", (message_id,)
+            ).fetchone()
+        return (str(row[0]), str(row[1])) if row else None
+
+    def backfill_audience(self, message_id: str, club_id: str, fingerprint: str, audience: int) -> bool:
+        """Fill in a missing count, only for the same checked message (same fingerprint) and never over a count."""
+        with closing(sqlite3.connect(self.path)) as db, db:
+            cursor = db.execute(
+                "UPDATE accepted SET audience=? "
+                "WHERE message_id=? AND club_id=? AND fingerprint=? AND audience IS NULL",
+                (audience, message_id, club_id, fingerprint),
+            )
+        return cursor.rowcount == 1
 
     def fingerprint(self, message_id: str, club_id: str) -> str | None:
         with closing(sqlite3.connect(self.path)) as db:
@@ -98,9 +129,23 @@ def intake(
 ) -> dict[str, int]:
     """Queue only mail that passed every free check; note the reason for everything else."""
     senders = {club: set(addresses) | ledger.verified_senders(club) for club, addresses in cabinet.items()}
-    counts = {"queued": 0, "skipped": 0, "not_for_a_club": 0}
+    counts = {"queued": 0, "skipped": 0, "not_for_a_club": 0, "refreshed": 0}
+    waiting = {message_id for club in cabinet for message_id, _ in queue.pending(club)}
     for message_id in gateway.list_ids():
         if notes.seen(message_id):
+            # A message checked before the audience count existed and still waiting gets its count now: re-run the
+            # free checks on the same mail and fill in only the number. Read, skipped and changed mail is left alone.
+            old = notes.unknown_audience(message_id) if message_id in waiting else None
+            if old is not None:
+                raw = gateway.get_raw(message_id)
+                again = capture_email(raw, message_id, senders, received_at)
+                if again is not None and again.club_id == old[0]:
+                    checked = check_forward(raw, again.club_id, senders[again.club_id], osa_senders, ledger)
+                    same_mail = checked.fingerprint == old[1]  # only the mail that was checked before
+                    if checked.reason is None and checked.audience is not None and same_mail:
+                        counts["refreshed"] += int(
+                            notes.backfill_audience(message_id, old[0], old[1], checked.audience)
+                        )
             continue
         raw = gateway.get_raw(message_id)
         request = capture_email(raw, message_id, senders, received_at)
@@ -114,7 +159,7 @@ def intake(
             counts["skipped"] += 1
             continue
         if queue.enqueue(message_id, _cleaned(request, checked.content)):
-            notes.accept(message_id, request.club_id, checked.fingerprint)
+            notes.accept(message_id, request.club_id, checked.fingerprint, checked.audience)
             counts["queued"] += 1
     return counts
 

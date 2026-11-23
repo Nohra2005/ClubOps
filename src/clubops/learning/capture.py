@@ -66,7 +66,8 @@ def injection_flags(text: str) -> list[str]:
 
 def outdated_note(text: str, today: date) -> str | None:
     """A document that only mentions past academic years (e.g. '2023-24') may be outdated."""
-    ends = [int(m.group(1)[:2] + m.group(2)) for m in _YEAR_SPAN.finditer(text)]
+    # A pair counts only when it spans one year (2025-26, 2025-2026); an ISO date like 2026-11-19 is not one (F-240).
+    ends = [end for m in _YEAR_SPAN.finditer(text) if (end := int(m.group(1)[:2] + m.group(2))) == int(m.group(1)) + 1]
     if not ends:
         return None
     current_start = today.year if today.month >= 8 else today.year - 1
@@ -282,7 +283,8 @@ Answer JSON only: {"facts": [...]}  (an empty list is fine)."""
 
 MATCH_SYSTEM = """You compare new facts with facts a club already approved. For each new fact answer one of:
 "create" (nothing similar), "merge" (says the same thing as an existing fact), "update" (a newer or more
-precise version of an existing fact), "contradiction" (disagrees with an existing fact; a person decides).
+precise version of an existing fact, or the same topic with different details such as another form, office or deadline),
+"contradiction" (disagrees with an existing fact; a person decides).
 "target" is the id of the existing fact for merge, update and contradiction. Use only the ids shown.
 Answer JSON only: {"matches": [{"fact": 0, "op": "...", "target": "kh-...", "why": "<one line>"}]}"""
 
@@ -307,6 +309,17 @@ _REDACTION_KINDS: dict[str, RedactionKind] = {
 }
 
 
+WIDE_AUDIENCE = 10  # an e-mail sent to this many people or more is AUB-wide news, not one club's (D-126)
+
+
+_FORWARDER = re.compile(r"^Forwarded by:.*$", re.MULTILINE)
+
+
+def _hide_forwarder(text: str) -> str:
+    """The cabinet member who forwarded the e-mail is private metadata: the model never sees the address."""
+    return _FORWARDER.sub("Forwarded by: [cabinet member]", text)
+
+
 class Learner:
     def __init__(self, client: ModelClient | None, store: KnowHowStore) -> None:
         self.client = client
@@ -315,7 +328,13 @@ class Learner:
     # ------------------------------------------------------------------ public
 
     def capture(
-        self, request: CaptureRequest, today: date, budget: Budget | None = None, extra: list[Candidate] | None = None
+        self,
+        request: CaptureRequest,
+        today: date,
+        budget: Budget | None = None,
+        extra: list[Candidate] | None = None,
+        *,
+        audience: int | None = None,
     ) -> CaptureResult:
         """Proposals for Review (not yet submitted). ``extra`` are candidates already built by plain code."""
         prepared = [self._prepare(src, today) for src in request.sources]
@@ -343,7 +362,7 @@ class Learner:
                 extraction = Extraction(facts=[])
                 failed = len(texts)
             for fact in extraction.facts:
-                candidate = self._candidate(fact, prepared, request, today)
+                candidate = self._candidate(fact, prepared, request, today, audience)
                 if candidate is None:
                     skipped += 1
                 else:
@@ -358,10 +377,16 @@ class Learner:
         )
 
     def learn(
-        self, request: CaptureRequest, today: date, budget: Budget | None = None, extra: list[Candidate] | None = None
+        self,
+        request: CaptureRequest,
+        today: date,
+        budget: Budget | None = None,
+        extra: list[Candidate] | None = None,
+        *,
+        audience: int | None = None,
     ) -> CaptureResult:
         """Capture, then put every proposal in Review."""
-        result = self.capture(request, today, budget, extra)
+        result = self.capture(request, today, budget, extra, audience=audience)
         for proposal in result.proposals:
             self.store.submit(proposal)
         return result
@@ -377,7 +402,10 @@ class Learner:
         outdated: str | None
 
     def _prepare(self, source: Untrusted, today: date) -> Learner._Prepared:
-        red = redact(source.content[:MAX_SOURCE_CHARS])
+        # Verified OSA e-mails keep their links and office contacts: they are the know-how (F-241).
+        is_email = source.source.kind is SourceKind.EMAIL
+        text = _hide_forwarder(source.content[:MAX_SOURCE_CHARS]) if is_email else source.content[:MAX_SOURCE_CHARS]
+        red = redact(text, keep_office_contacts=is_email)
         kinds: list[RedactionKind] = sorted({_REDACTION_KINDS[k] for k in red.kinds if k in _REDACTION_KINDS})
         return Learner._Prepared(source, red.text, kinds, injection_flags(red.text), outdated_note(red.text, today))
 
@@ -390,7 +418,12 @@ class Learner:
         return "\n".join(blocks)
 
     def _candidate(
-        self, fact: ExtractedFact, prepared: list[Learner._Prepared], request: CaptureRequest, today: date
+        self,
+        fact: ExtractedFact,
+        prepared: list[Learner._Prepared],
+        request: CaptureRequest,
+        today: date,
+        audience: int | None = None,
     ) -> Candidate | None:
         if fact.source >= len(prepared):
             return None
@@ -405,7 +438,10 @@ class Learner:
             if valid_to < today:
                 return None  # that term is over
         is_rule = fact.kind == "rule"
-        shared = is_rule or fact.about == "aub"  # AUB know-how goes to the layer every club reads (D-91)
+        # AUB know-how goes to the layer every club reads (D-91). When the number of people an e-mail went to is
+        # known, that number decides, not the model's label (D-126); a rule is AUB-scope by contract either way.
+        about_aub = fact.about == "aub" if audience is None else audience >= WIDE_AUDIENCE
+        shared = is_rule or about_aub
         ref = src.source.source
         try:
             item = KnowHowItem.model_validate(
@@ -435,7 +471,11 @@ class Learner:
         except ValidationError:
             return None
         why = f"learned from {ref.kind.value.replace('_', ' ')}"
-        if shared and not is_rule:
+        if audience is not None and not is_rule:
+            why += f"; the e-mail went to {audience} people, so " + (
+                "AUB-wide: shared with every club once approved" if shared else "this club only"
+            )
+        elif shared and not is_rule:
             why += "; about AUB: shared with every club once a president approves it"
         if src.outdated:
             why += f"; {src.outdated}"
@@ -453,7 +493,7 @@ class Learner:
     def _match(self, candidates: list[Candidate], club_id: str, budget: Budget | None) -> list[KnowHowProposal]:
         similar: dict[int, list[KnowHowItem]] = {}
         for i, c in enumerate(candidates):
-            hits = self.store.search(club_id, f"{c.item.title} {c.item.statement}", limit=3)
+            hits = self.store.search(club_id, f"{c.item.title} {c.item.statement}", limit=6)
             if hits:
                 similar[i] = hits
         decided: dict[int, Match] = {}

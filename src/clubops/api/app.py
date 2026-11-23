@@ -817,7 +817,12 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             raise HTTPException(409, "This e-mail is already being read, or was read for another club.")
         try:
             with club(member.club_id) as (store, _, _, _):
-                result = Learner(model_client(), store).learn(request, today(), load_settings().new_budget())
+                result = Learner(model_client(), store).learn(
+                    request,
+                    today(),
+                    load_settings().new_budget(),
+                    audience=inbox_notes.audience(message_id, member.club_id),
+                )
         except BaseException:
             inbox_ledger.release_read(fingerprint, token)
             raise
@@ -826,9 +831,10 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             raise HTTPException(502, "The e-mail could not be read this time. It is still waiting; try again.")
         inbox_ledger.mark_read(fingerprint, token)
         inbox.mark_processed(message_id, member.club_id)
+        # `skipped` is a list of plain reasons, as docs/api.md says; the web screen rejects a number (F-239)
         return {
             "proposals": [p.proposal_id for p in result.proposals],
-            "skipped": result.sources_skipped,
+            "skipped": ["The model could not use this content."] * result.sources_skipped,
         }
 
     # ----------------------------------------------------------- new-club setup (C-21)

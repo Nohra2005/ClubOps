@@ -99,7 +99,7 @@ activity; a real-provider pilot report remains part of C-20 validation.
 [{"id": "msg-002", "subject": "Hello", "reason": "original_sender_not_osa", "why": "ClubOps only reads e-mails forwarded from OSA staff"}]
 ```
 
-`POST /api/inbox/{id}/capture` (CSRF header, president or cabinet, one paid model call):
+`POST /api/inbox/{id}/capture` (CSRF header, president or cabinet, one paid model call). Whether its cards are AUB-wide (`shared: true` in Review) or club-only comes from how many people the original went to: 10 or more is AUB-wide (D-126), not from the model:
 - Success with cards: `{"proposals": ["p-1", "p-2"], "skipped": []}`. The ids are Review card ids.
 - No fact found: `{"proposals": [], "skipped": []}`. The e-mail is still marked read.
 - Content the model could not use: `{"proposals": [], "skipped": ["<plain reason>"]}`.

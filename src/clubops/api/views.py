@@ -251,6 +251,7 @@ def review_card(p: KnowHowProposal, target: KnowHowItem | None = None) -> dict[s
         "group": tab(c),
         "kind": c.kind.value,
         "status": "pending",
+        "op": p.op.value,
         "shared": c.scope is Scope.AUB,  # true: every AUB club will see it once approved (D-91)
     }
     if target is not None:
