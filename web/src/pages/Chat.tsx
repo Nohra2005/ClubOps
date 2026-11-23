@@ -3,7 +3,9 @@ import { Link, useSearchParams } from 'react-router';
 import { ArrowUp, CheckCheck, FileText, MessageCircle, Plus, Sparkles } from 'lucide-react';
 import { useApp } from '../AppContext';
 import { storage } from '../api';
-import type { ChatMessage, ChatReply } from '../api/types';
+import { roleLabels, type ChatMessage, type ChatReply } from '../api/types';
+import { useRoleLearning } from '../handover/RoleLearning';
+import { learningQuestion, steps } from '../handover/progress';
 import { Feedback } from '../components/Feedback';
 import {
   PageHeading,
@@ -69,6 +71,7 @@ function Reply({ reply, id }: { reply: ChatReply; id: string }) {
 export default function Chat() {
   const { api, me, canEdit, refresh } = useApp();
   const [search] = useSearchParams();
+  const { progress, update } = useRoleLearning();
   const historyKey = `clubops.chat.demo.${me.club.id}.${me.user.member_id}`;
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     if (api.mode !== 'demo') return [];
@@ -82,9 +85,15 @@ export default function Chat() {
     }
   });
   const [text, setText] = useState(
-    search.get('role') ? `What should the ${search.get('role')?.replaceAll('_', ' ')} know?` : '',
+    search.get('prepare') === '1'
+      ? 'For the next cabinet: what happened, what worked, and what still needs checking: '
+      : search.get('role')
+        ? `What should the ${search.get('role')?.replaceAll('_', ' ')} know?`
+        : '',
   );
-  const [mode, setMode] = useState<'ask' | 'teach'>('ask');
+  const [mode, setMode] = useState<'ask' | 'teach'>(
+    search.get('prepare') === '1' ? 'teach' : 'ask',
+  );
   const [paste, setPaste] = useState(false);
   const [document, setDocument] = useState('');
   const action = useAction();
@@ -102,11 +111,15 @@ export default function Chat() {
   async function send(content = text, inputMode = mode) {
     if (!content.trim() || sending.current || !canEdit) return;
     sending.current = true;
+    const submitted =
+      inputMode === 'ask' && progress.learning
+        ? learningQuestion(me.role, progress.step, content)
+        : content;
     const userId = crypto.randomUUID();
-    setMessages((previous) => [...previous, { id: userId, role: 'user', text: content }]);
+    setMessages((previous) => [...previous, { id: userId, role: 'user', text: submitted }]);
     setText('');
     const result = await action.run(() =>
-      inputMode === 'teach' ? api.teach(content) : api.ask(content),
+      inputMode === 'teach' ? api.teach(content) : api.ask(submitted),
     );
     if (result.ok) {
       setMessages((previous) => [
@@ -127,11 +140,17 @@ export default function Chat() {
     }
     sending.current = false;
   }
-  const suggestions = [
-    'What do I need for an event with outside guests?',
-    'Who do we contact about the venue?',
-    'What did we learn from the last run?',
-  ];
+  const suggestions = progress.learning
+    ? [
+        `What should I check first as the ${roleLabels[me.role].toLowerCase()}?`,
+        'How did previous cabinets handle this, and what sources support it?',
+        'What is still unknown that I should ask the outgoing officer?',
+      ]
+    : [
+        'What do I need for an event with outside guests?',
+        'Who do we contact about the venue?',
+        'What did we learn from the last run?',
+      ];
   return (
     <>
       <PageHeading
@@ -153,6 +172,36 @@ export default function Chat() {
           )
         }
       />
+      {canEdit && (
+        <section className="role-chat-help" aria-label="Role-learning help">
+          <label>
+            <input
+              type="checkbox"
+              checked={progress.learning}
+              disabled={action.pending}
+              onChange={(event) => update({ learning: event.target.checked })}
+            />{' '}
+            Help me learn my {roleLabels[me.role].toLowerCase()} role
+          </label>
+          <p>
+            {progress.learning
+              ? `Ask questions include your signed-in role and introduction step: ${steps[progress.step].title}. This changes the question you send, not permissions or the club?s memory.`
+              : 'Turn this on for step-by-step questions grounded in the club?s approved history.'}
+          </p>
+          {progress.learning && mode === 'ask' && (
+            <details>
+              <summary>See the context included with my question</summary>
+              <p>{learningQuestion(me.role, progress.step, text || '[your question]')}</p>
+            </details>
+          )}
+          {mode === 'teach' && (
+            <p>
+              Teaching sends your note through the existing proposal workflow. Role-learning context
+              is never added to a fact you teach.
+            </p>
+          )}
+        </section>
+      )}
       <section className="chat-workspace">
         <div className="chat-messages" aria-live="polite" aria-relevant="additions">
           {messages.length === 0 ? (
