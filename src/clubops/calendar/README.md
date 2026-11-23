@@ -45,7 +45,7 @@ cancelled deletes the task and its reminder events.
   audience. Expose only own-club state; never expose the unscoped worker queue.
   A single worker drains the queue; multi-worker leasing is not implemented.
 
-### Host settings and status (T-46, first slice, D-140)
+### Host settings and status (T-46, first slice, D-141)
 
 Approving a plan queues its calendar items (`CalendarService.enqueue_approved`) and, after the reply, drains the
 queue to the club's shared calendar. Set these private values on the host; never commit them:
