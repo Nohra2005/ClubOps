@@ -494,3 +494,25 @@ def test_a_pdf_with_only_pictures_is_refused(app_client: tuple[TestClient, Provi
     r = c.post("/api/documents", files={"file": ("scan.pdf", blank.getvalue(), "application/pdf")}, headers=HEADERS)
     assert r.status_code == 422 and "pictures" in r.json()["detail"]
     assert provider.prompts == []
+
+
+def test_a_changed_number_is_a_different_fact_not_a_repeat(known: KnowHowStore) -> None:
+    """F-300: short numbers count in the word match. "10 days" vs "14 days" and "6 December" vs "13 December" were
+    scored identical, so the new value was merged away or dropped as a duplicate."""
+    from clubops.learning.capture import Candidate, similarity
+
+    assert similarity("BLK needs 10 days notice", "BLK needs 14 days notice") < 0.8
+    assert similarity("A banner costs $5 each", "A banner costs $9 each") < 0.8
+    assert similarity("A banner costs $5 each", "A banner costs $5 each") == 1.0
+    learner = Learner(None, known)
+    june = Candidate(item("kh-due-aa", title="Impact report", statement="The impact report is due on 6 December."), "x")
+    later = Candidate(
+        item("kh-due-bb", title="Impact report", statement="The impact report is due on 13 December."), "x"
+    )
+    assert len(learner._dedupe([june, later])) == 2  # two different deadlines in one mail both survive
+    known.backend.append(
+        verified(item("kh-blk-days", title="BLK notice", statement="BLK needs 10 days notice for rooms."))
+    )
+    changed = Candidate(item("kh-blk-new", title="BLK notice", statement="BLK needs 14 days notice for rooms."), "x")
+    (proposal,) = learner._match([changed], CLUB, None)
+    assert proposal.op is ProposalOp.CREATE  # never "same as": a person sees both numbers

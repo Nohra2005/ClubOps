@@ -125,7 +125,8 @@ def _norm(text: str) -> str:
 
 
 def _words(text: str) -> set[str]:
-    return {w for w in re.findall(r"[a-z0-9$]+", text.lower()) if len(w) > 2}
+    """Words of 3+ letters, and every number however short: "10 days" and "14 days" are different facts (F-300)."""
+    return {w for w in re.findall(r"[a-z0-9$]+", text.lower()) if len(w) > 2 or any(c.isdigit() for c in w)}
 
 
 def similarity(a: str, b: str) -> float:
