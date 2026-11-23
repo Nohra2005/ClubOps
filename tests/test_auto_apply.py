@@ -129,3 +129,25 @@ def test_a_retirement_card_says_so(store) -> None:  # type: ignore[no-untyped-de
     old = _known(store)
     card = views.review_card(proposal(item(), ProposalOp.RETIRE, target_item=old.item_id))
     assert card["op"] == "retire"
+
+
+def test_a_retired_fact_told_again_comes_back_and_undo_retires_it_again(store) -> None:  # type: ignore[no-untyped-def]
+    """F-302: re-learning a retired fact gave the same id and failed with "an item with this id already exists",
+    so the card could never be approved (auto-apply left it in Review for good). It now returns as the next version."""
+    fact = item("kh-guest-parking", title="Guest parking", statement="Guests park behind West Hall with a permit.")
+    store.backend.append(verified(fact))
+    president = actor(Role.PRESIDENT)
+    store.revise(fact.item_id, president, NOW, retire=True)
+    assert store.current(CLUB, TODAY) == []
+    store.submit(proposal(fact.model_copy(update={"status": ItemStatus.PROPOSED, "version": 1}), pid="p-again"))
+    back = store.auto_apply("p-again", CLUB, NOW)
+    assert back is not None and back.status is ItemStatus.VERIFIED and back.version == 3
+    assert [i.item_id for i in store.current(CLUB, TODAY)] == [fact.item_id] and store.pending == {}
+    undone = store.revise(fact.item_id, president, NOW, undo=True)
+    assert undone.status is ItemStatus.RETIRED and store.current(CLUB, TODAY) == []  # Undo goes back to retired
+
+
+def test_a_verified_fact_is_still_not_created_twice(store) -> None:  # type: ignore[no-untyped-def]
+    known = _known(store)
+    store.submit(proposal(known.model_copy(update={"status": ItemStatus.PROPOSED, "version": 1}), pid="p-dup"))
+    assert store.auto_apply("p-dup", CLUB, NOW) is None and "p-dup" in store.pending
