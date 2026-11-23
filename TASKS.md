@@ -167,6 +167,7 @@ Reference documents:
 - Status: todo
 - Needs: T-26
 - What: Final report from the design log: problem, evaluation and results chapters, plus putting the whole report together (Christophe and Joey write their own sections in C-29 and J-13). Update `docs/evidence.md` so every number matches the new results. Poster: J-18. Demo: C-28.
+- Condition (2026-11-23, Tatiana): Dr. Mohanna accepts Google Testing mode if the report acknowledges the limitation (D-122). The report's limits section must say: only listed test users can sign in, the Gmail key expires every 7 days, and publishing needs Google's review plus a paid security check.
 - Done when: submitted by 30 November.
 
 ### T-28 Coordination
