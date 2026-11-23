@@ -154,7 +154,9 @@ class FieldsBody(BaseModel):
 
 
 class DecisionBody(BaseModel):
-    decision: Literal["approve", "reject", "edit"]
+    # approve/reject/edit are the plain decisions; the Review screen also sends keep_a, keep_b, merge, both and
+    # keep_both for disagreement and merge cards (F-245)
+    decision: Literal["approve", "reject", "edit", "keep_a", "keep_b", "merge", "both", "keep_both"]
     edited_text: str | None = Field(default=None, max_length=1500)
     reason: str | None = Field(default=None, max_length=300)
     # None keeps ClubOps' suggestion; True shares the fact with every AUB club, False keeps it in this club (D-91).
@@ -571,32 +573,47 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             if proposal is None:
                 raise HTTPException(404, "Nothing to review with this id.")
             card = views.review_card(proposal)
+            choice = {"keep_a": "approve", "merge": "approve", "keep_b": "reject"}.get(body.decision, body.decision)
+            if body.edited_text and choice == "approve":
+                choice = "edit"  # the Edit dialog sends its text with a plain approve; it must not be dropped (F-245)
+            both = choice in {"both", "keep_both"}
+            if choice == "both" and not (body.reason or "").strip():
+                raise HTTPException(422, "Explain when both versions are true.")
             edited = None
-            if body.decision == "edit":
+            if choice == "edit":
                 if not body.edited_text:
                     raise HTTPException(422, "Write the corrected fact first.")
                 edited = proposal.candidate.model_copy(update={"statement": body.edited_text})
-            if body.shared is not None and body.decision != "reject":
+            if body.shared is not None and choice != "reject":
                 if proposal.candidate.kind is Kind.RULE and not body.shared:
                     raise HTTPException(422, "AUB rules are always shared with every club.")
                 edited = rescoped(edited or proposal.candidate, member.club_id, shared=body.shared)
                 if edited == proposal.candidate:
                     edited = None
-            decision = {
-                "approve": VerifyDecision.ACCEPT,
-                "reject": VerifyDecision.REJECT,
-                "edit": VerifyDecision.ACCEPT_EDITED,
-            }[body.decision]
-            if edited is not None and decision is VerifyDecision.ACCEPT:
-                decision = VerifyDecision.ACCEPT_EDITED  # only the sharing changed
-            outcome = store.verify(
-                VerifyRequest(proposal=proposal, decision=decision, edited_candidate=edited, reason=body.reason),
-                member.actor(),
-                clock(),
-            )
-            if outcome.data is None:
+            if both:
+                # Keep the known fact as it is and add this one next to it, with the context when one was given.
+                note = (body.reason or "").strip()
+                if note:
+                    base = edited or proposal.candidate
+                    edited = base.model_copy(update={"statement": f"{base.statement} Context: {note}"[:1500]})
+                store.keep_both(proposal.proposal_id, edited, body.reason, member.actor(), clock())
+                outcome = None
+            else:
+                decision = {
+                    "approve": VerifyDecision.ACCEPT,
+                    "reject": VerifyDecision.REJECT,
+                    "edit": VerifyDecision.ACCEPT_EDITED,
+                }[choice]
+                if edited is not None and decision is VerifyDecision.ACCEPT:
+                    decision = VerifyDecision.ACCEPT_EDITED  # only the sharing changed
+                outcome = store.verify(
+                    VerifyRequest(proposal=proposal, decision=decision, edited_candidate=edited, reason=body.reason),
+                    member.actor(),
+                    clock(),
+                )
+            if outcome is not None and outcome.data is None:
                 raise HTTPException(409, "This needs another cabinet member's decision first.")
-        card["status"] = "rejected" if body.decision == "reject" else "approved"
+        card["status"] = "rejected" if choice == "reject" else "approved"
         card["decided_at"] = clock().isoformat()
         return card
 

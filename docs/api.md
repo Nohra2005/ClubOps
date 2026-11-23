@@ -46,7 +46,7 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Chat | `POST /api/chat/ask {text}` | cabinet only (the read-only adviser gets 403: a question will cost a model call); placeholder: always "not known, ask the club president" until J-15 |
 | Chat | `POST /api/chat/teach {text}` | live: returns `{kind: "learned", text, review_id}`; `review_id` is empty when no fact was found |
 | Review | `GET /api/review?filter=` | live; card types `fact`, `rule`, `merge` (same or newer version of a known fact) and `disagreement`, with `alternative` = the known fact; optional `warning` (the source had hidden instructions) and `outdated` |
-| Review | `POST /api/review/{id} {decision: approve|reject|edit, edited_text?, reason?}` | live |
+| Review | `POST /api/review/{id} {decision: approve|reject|edit|keep_a|keep_b|merge|both|keep_both, edited_text?, reason?, shared?}` | live. `keep_a` and `merge` = approve (the new version wins or is merged); `keep_b` = reject; `both` (reason required) and `keep_both` = add this fact next to the known one, which stays unchanged (`both` appends the reason as "Context: ..."). `edited_text` sent with `approve` counts as `edit` |
 | Calendar | `GET /api/calendar?month=2026-11` | live; `connected` is false until Joey's Google sync is wired |
 | Knowledge | `GET /api/knowledge?tab=&q=` | live (tabs rules, tips, contacts, sponsors; `documents` empty) |
 | Knowledge | `GET /api/knowledge/{item_id}` | live |
