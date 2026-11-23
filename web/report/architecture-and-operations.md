@@ -1,6 +1,6 @@
 # Report sections: architecture, web app, deployment and monitoring
 
-Christophe's C-29 draft, updated 22 November 2026. Interface baseline: main `60d7027`.
+Christophe's C-29 draft, updated 23 November 2026. Interface baseline: main `2bb9f5e`.
 For Tatiana to review and incorporate into T-27. These sections describe implemented
 boundaries and local evidence. Final provider/evaluation results, hosted acceptance
 and team/user observations must be added from their actual records.
@@ -135,10 +135,16 @@ this concrete failure alongside the automated local evidence rather than replaci
 it with an inferred success. Repeat the documented flow when a working engine is
 available; real deployment and provider acceptance remain separate.
 
-## Weekly-review bonus excluded
+## Weekly-review and backlog evidence
 
-On 22 November, Christophe chose not to pursue the weekly-review/sprint engineering
-bonus. The existing GitHub board is retained as an ordinary task tracker. Planned
-iterations and sync receipts are not evidence of completed meetings; this report
-makes no weekly-review bonus claim and does not require those records to complete
-C-29. Other CI, testing and observability evidence keeps its stated scope and limits.
+C-31 was restored on 23 November, superseding the earlier D-133 cut (D-137 in #91).
+Christophe reports Monday meetings on 2, 9, 16 and 23 November. The native board
+reconciler maps task statuses and real GitHub assignees, creates those Monday
+iterations and supplies present-day backlog priorities/estimates. Existing custom
+fields, issue cards and historical receipts remain intact.
+
+The [weekly commit-history summaries](../board/weekly-reviews.md) in #91 link
+repository activity for those weeks. Dates are owner-reported; the summaries do
+not establish attendance, oral decisions or original assignments. They should not
+be described as contemporaneous minutes or used to claim unverified outcomes.
+Other CI, testing and observability evidence retains its stated scope and limits.
