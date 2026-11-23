@@ -25,7 +25,6 @@ def test_frozen_cases_cover_untrusted_surfaces_and_trigger_review_flags() -> Non
     assert all(injection_flags(case["text"]) for case in cases)
 
 
-@pytest.mark.xfail(reason="Tatiana owns the detector fix for benign governance wording (F-204)", strict=True)
 def test_benign_source_text_is_not_an_injection() -> None:
     assert len(benign_ids()) == 4
     cases = json.loads(BENIGN.read_text(encoding="utf-8"))["cases"]

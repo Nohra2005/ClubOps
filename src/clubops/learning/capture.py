@@ -46,15 +46,19 @@ MAX_SOURCE_CHARS = 6000
 
 # ---------------------------------------------------------------- plain-code checks
 
+# Phrases aimed at ClubOps itself. Ordinary OSA wording ("approve this form", "do not ask OSA", "act as the club's
+# representative") is not an attack and must not push a clean mail into Review (F-307).
 _INJECTION = re.compile(
     r"ignore (all |the |any )?(previous|above|prior|earlier) (instructions|rules|messages)"
-    r"|disregard (the|all|your|previous)"
-    r"|you are now|act as (an?|the) "
-    r"|system prompt"
-    r"|approve (this|it|all|everything)"
+    r"|disregard (the|all|your|previous|prior|earlier) (\w+ )?(instructions|rules|messages|prompt)"
+    r"|you are now (an? |the (president|admin|adviser|verifier|system)|in |free|my )"
+    r"|act as (an? |the )?(system|admin|administrator|assistant|ai|developer|verifier)\b"
+    r"|(your|reveal|show|print|ignore) system prompt|system prompt\s*:"
+    r"|approve (this|it|all|everything)( proposed| pending)?"
+    r" (and |facts?|rules?|proposals?|items?|automatically|without|immediately)"
     r"|mark (this|it|them) (as )?(verified|approved)"
     r"|forget (the|your|all) (rules|instructions)"
-    r"|do not (tell|ask|check)",
+    r"|do not (tell|ask|check with) (the )?(user|human|reviewer|verifier|cabinet)",
     re.IGNORECASE,
 )
 _YEAR_SPAN = re.compile(r"\b(20\d{2})\s*[-/–]\s*(?:20)?(\d{2})\b")
