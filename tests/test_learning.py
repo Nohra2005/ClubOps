@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import io
 import json
+import re
 from collections.abc import Iterator
 from datetime import UTC, date, datetime
 from decimal import Decimal
@@ -606,3 +607,10 @@ def test_reading_a_mail_again_does_not_add_a_second_card_for_the_same_fact(store
     request = CaptureRequest(club_id=CLUB, sources=[source(BLK, SourceKind.EMAIL)])
     assert len(learner.learn(request, TODAY).proposals) == 1
     assert learner.learn(request, TODAY).proposals == [] and len(store.pending) == 1
+
+
+def test_item_ids_have_eight_hash_characters_and_still_fit(store: KnowHowStore, tmp_path: Path) -> None:
+    """Four hash characters let two same-title facts collide about once in 65,000 (F-314)."""
+    long_title = {**LESSON, "title": "Cafe B " + "needs ten days notice " * 4}
+    [p] = capture(store, tmp_path, Provider({"facts": [long_title]}), BLK).proposals
+    assert re.fullmatch(r"kh-[a-z0-9-]+-[0-9a-f]{8}", p.candidate.item_id) and len(p.candidate.item_id) <= 63

@@ -557,7 +557,7 @@ class Learner:
         try:
             item = KnowHowItem.model_validate(
                 {
-                    "item_id": f"kh-{_slug(fact.title)}-{_hash(fact.title, fact.statement)[:4]}",
+                    "item_id": f"kh-{_slug(fact.title)}-{_hash(fact.title, fact.statement)[:8]}",
                     "scope": "aub" if shared else "club",
                     "club_id": None if shared else request.club_id,
                     "title": fact.title,
@@ -719,7 +719,7 @@ def price_list(rows: list[list[object]], club_id: str, file_name: str, seen: dat
         )
         fact = KnowHowItem.model_validate(
             {
-                "item_id": f"kh-prices-{_slug(seller, 30)}-{_hash(seller, event)[:4]}",
+                "item_id": f"kh-prices-{_slug(seller, 30)}-{_hash(seller, event)[:8]}",
                 "scope": "club",
                 "club_id": club_id,
                 "title": f"Prices at {seller}"[:120],
