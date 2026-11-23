@@ -303,7 +303,11 @@ class KnowHowStore:
                     events=sorted({*target.support.events, *candidate.support.events}),
                     source_count=max(len(sources), target.support.source_count),
                 )
-                committed = _rebuild(target, sources=sources, support=support, version=target.version + 1, **stamp)
+                # Edit-then-approve on a "same as" card corrects the known wording; a plain approve keeps it (F-301).
+                words = candidate.statement if candidate.statement != proposal.candidate.statement else target.statement
+                committed = _rebuild(
+                    target, statement=words, sources=sources, support=support, version=target.version + 1, **stamp
+                )
                 return committed, [target.item_id]
             case ProposalOp.RETIRE if target is not None:
                 committed = _rebuild(
