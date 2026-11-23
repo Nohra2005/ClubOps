@@ -230,6 +230,7 @@ export interface ReviewCard {
   source: Source;
   group: string;
   kind: string;
+  op?: 'create' | 'merge' | 'update' | 'contradiction';
   alternative?: { statement: string; source: Source };
   event_id?: string;
   status: 'pending' | 'waiting_second_president' | 'approved' | 'rejected';

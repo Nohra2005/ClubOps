@@ -230,14 +230,14 @@ function ReviewItem({
                 disabled={action.pending}
                 onClick={() => decide('merge')}
               >
-                <GitMerge size={12} /> Merge
+                <GitMerge size={12} /> {card.op === 'update' ? 'Replace old' : 'Merge'}
               </button>
               <button
                 className="button small"
                 disabled={action.pending}
                 onClick={() => decide('keep_both')}
               >
-                Keep both
+                {card.op === 'update' ? 'Add as new rule' : 'Keep both'}
               </button>
             </>
           ) : card.type === 'document' ? (

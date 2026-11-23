@@ -283,7 +283,8 @@ Answer JSON only: {"facts": [...]}  (an empty list is fine)."""
 
 MATCH_SYSTEM = """You compare new facts with facts a club already approved. For each new fact answer one of:
 "create" (nothing similar), "merge" (says the same thing as an existing fact), "update" (a newer or more
-precise version of an existing fact), "contradiction" (disagrees with an existing fact; a person decides).
+precise version of an existing fact, or the same topic with different details such as another form, office or deadline),
+"contradiction" (disagrees with an existing fact; a person decides).
 "target" is the id of the existing fact for merge, update and contradiction. Use only the ids shown.
 Answer JSON only: {"matches": [{"fact": 0, "op": "...", "target": "kh-...", "why": "<one line>"}]}"""
 
@@ -393,7 +394,8 @@ class Learner:
         outdated: str | None
 
     def _prepare(self, source: Untrusted, today: date) -> Learner._Prepared:
-        red = redact(source.content[:MAX_SOURCE_CHARS])
+        # Verified OSA e-mails keep their links and office contacts: they are the know-how (F-241).
+        red = redact(source.content[:MAX_SOURCE_CHARS], keep_office_contacts=source.source.kind is SourceKind.EMAIL)
         kinds: list[RedactionKind] = sorted({_REDACTION_KINDS[k] for k in red.kinds if k in _REDACTION_KINDS})
         return Learner._Prepared(source, red.text, kinds, injection_flags(red.text), outdated_note(red.text, today))
 
@@ -481,7 +483,7 @@ class Learner:
     def _match(self, candidates: list[Candidate], club_id: str, budget: Budget | None) -> list[KnowHowProposal]:
         similar: dict[int, list[KnowHowItem]] = {}
         for i, c in enumerate(candidates):
-            hits = self.store.search(club_id, f"{c.item.title} {c.item.statement}", limit=3)
+            hits = self.store.search(club_id, f"{c.item.title} {c.item.statement}", limit=6)
             if hits:
                 similar[i] = hits
         decided: dict[int, Match] = {}
