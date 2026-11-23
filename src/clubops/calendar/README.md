@@ -45,6 +45,21 @@ cancelled deletes the task and its reminder events.
   audience. Expose only own-club state; never expose the unscoped worker queue.
   A single worker drains the queue; multi-worker leasing is not implemented.
 
+### Host settings and status (T-46, first slice, D-140)
+
+Approving a plan queues its calendar items (`CalendarService.enqueue_approved`) and, after the reply, drains the
+queue to the club's shared calendar. Set these private values on the host; never commit them:
+
+- `CLUBOPS_GOOGLE_CALENDAR_IDS_JSON`: club slug to calendar id.
+- `CLUBOPS_CALENDAR_CLIENT_ID`, `CLUBOPS_CALENDAR_CLIENT_SECRET`, `CLUBOPS_CALENDAR_REFRESH_TOKEN`: a Google OAuth
+  client and a refresh token for the account that owns the calendar, scope `calendar.events`. This key is separate
+  from the Gmail key and from sign-in. In Testing mode Google cancels it every 7 days.
+
+`GET /api/calendar/sync` returns `{connected, waiting, problem}` for the signed-in club; `POST /api/calendar/sync`
+retries now. Attendees come only from the private cabinet directory (`cabinet_addresses`). Not built yet: the
+in-app connect/disconnect and callback with encrypted token storage, cabinet add/remove reader grants, and the
+deadline-from-mail trigger (`enqueue_deadlines`).
+
 ### Calendar and Review integration (Tatiana / Christophe)
 
 `queue.items(club_id)` supplies persisted tasks, including cancellation tombstones

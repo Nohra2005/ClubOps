@@ -50,6 +50,7 @@ from clubops.api.setup import SetupService
 from clubops.api.setup import router as setup_router
 from clubops.api.store import ApiStore, PlannedEvent
 from clubops.calendar.items import event_items, impact_form_item
+from clubops.calendar.service import CalendarService, CalendarSettings, settings_from_env
 from clubops.capabilities.runner import CapabilityError
 from clubops.config import _read_dotenv, load_settings
 from clubops.contracts.agent import AgentRun, PlanEventRequest, RunStatus
@@ -90,6 +91,7 @@ class ApiConfig:
     dev_login: bool = False
     google_client_id: str | None = None
     cookie_secure: bool = True
+    calendar: CalendarSettings | None = None  # the host's private Calendar key and calendar ids (T-46)
 
 
 def load_api_config(env: dict[str, str] | None = None, dotenv: Path = Path(".env")) -> ApiConfig:
@@ -106,6 +108,7 @@ def load_api_config(env: dict[str, str] | None = None, dotenv: Path = Path(".env
         dev_login=dev,
         google_client_id=values.get("CLUBOPS_GOOGLE_CLIENT_ID") or None,
         cookie_secure=values.get("CLUBOPS_COOKIE_SECURE", "1") != "0",
+        calendar=settings_from_env(values),
     )
 
 
@@ -216,11 +219,15 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
     google_transport: httpx.BaseTransport | None = None,
     model_client: Callable[[], ModelClient] = lambda: ModelClient(load_settings()),
     *,
+    calendar_transport: httpx.BaseTransport | None = None,
     setup_overrides: Mapping[str, Callable[..., Any]] | None = None,
 ) -> FastAPI:
     app = FastAPI(title="ClubOps API", docs_url="/api/docs", openapi_url="/api/openapi.json")
     members = MemberStore(config.data_dir)
     setup_service = SetupService(config.data_dir)
+    calendar_service = CalendarService(
+        config.data_dir, config.calendar or CalendarSettings({}), transport=calendar_transport
+    )
     starting: dict[str, str] = {}  # run_id -> club, between "plan" and the agent's first saved step
 
     def today() -> date:
@@ -481,7 +488,12 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         return event_detail(member.club_id, event_id)
 
     @app.post("/api/events/{event_id}/approve-plan")
-    def approve_plan(event_id: str, body: ApproveBody, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    def approve_plan(
+        event_id: str,
+        body: ApproveBody,
+        background: BackgroundTasks,
+        member: Member = Depends(cabinet),  # noqa: B008
+    ) -> dict[str, Any]:
         with club(member.club_id) as (_, directory, _, api):
             event = api.event(event_id)
             if event is None:
@@ -494,6 +506,8 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
                 raise HTTPException(422, "Add the event's title, date and times before approving.")
             items = [*event_items(spec, plan, approved=True), impact_form_item(spec.club_id, event_id, spec.end)]
             api.put_calendar(items)
+            if calendar_service.enqueue_approved(items):
+                background.add_task(calendar_service.drain)  # after the reply; a failure leaves the items queued
             event.approved_by, event.approved_at = member.member_id, clock().isoformat()
             event.approved_revision = spec.revision
             api.save_event(event)
@@ -513,6 +527,17 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         return next(t for t in event_detail(member.club_id, event_id)["tasks"] if t["task_id"] == task_id)
 
     # ----------------------------------------------------------- calendar
+
+    @app.get("/api/calendar/sync")
+    def calendar_sync_status(member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+        """Own club only: is Google connected, how many items wait, and the last problem (T-46)."""
+        return calendar_service.status(member.club_id)
+
+    @app.post("/api/calendar/sync")
+    def calendar_sync_now(member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+        """Retry now. Sends only what an approved plan queued; it never creates anything."""
+        calendar_service.drain()
+        return calendar_service.status(member.club_id)
 
     @app.get("/api/calendar")
     def calendar(month: str, member: Member = Depends(signed_in)) -> dict[str, Any]:  # noqa: B008
