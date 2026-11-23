@@ -799,10 +799,12 @@ Reference documents:
 
 ### J-23 Deadline cards on the club calendar (D-116)
 - Owner: joey
-- Status: blocked
+- Status: review
 - Needs: J-02, T-48
 - What: One calendar per club on `clubops.agent`. A deadline found in a trusted OSA e-mail becomes a task for each cabinet role it names, with reminders, through the role holder's Gmail; no approval click and no invitee list (D-138, contract 0.3.0 in `docs/calendar-contract.md`). ClubOps never gets access to members' own calendars. Joey builds the sync for `deadline_items` output (create, update by `item_id`, held items shown on the Calendar screen).
 - Done when: synthetic tests (no live Google calls) and failure-matrix rows.
 
 - Blocked (2026-11-16): T-48 is not merged and the frozen CalendarItem contract has no per-event invitee or deadline-card approval fields. Coordinate a standalone contract-change PR with Tatiana before implementing D-116; do not reuse the old role-calendar behavior as acceptance.
 - Blocked (2026-11-20): T-48 restore slice is now merged as #96, but CalendarItem still lacks approved deadline-card choice and named per-event audience. Tatiana must agree the standalone versioned contract-change with Joey, including audience replacement/removal, done/cancel and retry semantics; both owners approve. Then Joey implements the one-calendar-per-club adapter and synthetic regressions. No contract was changed unilaterally.
+
+- Progress (2026-11-23): Adapter implementation built on contract PR #119: one shared calendar, cabinet attendees derived from the private role directory (user-confirmed), stable task/reminder IDs, durable trusted-mail queue/holds, person-edit protection and cancellation tombstones. Synthetic sync tests pass. Tatiana still owns reader/API/OAuth/worker wiring; Christophe owns Calendar/Review display of held reasons. Legacy blockers above are superseded for this adapter scope; live delivery and complete screen acceptance are not claimed.
