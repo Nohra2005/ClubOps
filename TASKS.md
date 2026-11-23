@@ -792,9 +792,15 @@ Reference documents:
 - Owner: joey
 - Status: blocked
 - Needs: J-14, T-41
-- What: Show ClubOps works for clubs it was not tuned on. `scripts/eval_new_club.py`: start a club empty (only the shared AUB layer), give it a starter pack of 0, 1, 3, then all onboarding documents, and plan its events after each step with `clubops.evaluation.plans` (approvals caught, false alarms, cost). Make 3 synthetic clubs of other kinds (academic, cultural, social; like J-14) with events and labels, and freeze them before running. Tatiana runs it on ASME (T-44) in T-26.
+- What: Test the president setup interview path (D-103): start a club empty (only the shared AUB layer), add 1, 3, then all 4 approved synthetic setup answers, then starter documents; plan events after each stage with `clubops.evaluation.plans` (approvals caught, false alarms, cost). Use three frozen synthetic clubs (academic, cultural, social). Tatiana runs the private ASME case (T-44) in T-26.
 - Done when: the script gives a curve table per club on synthetic data, with tests, in replay mode.
+- Progress (2026-11-10): three synthetic club starter packs and six reused frozen event labels pinned in `eval/new-club-FROZEN.md` before the runner is built.
+- Progress (2026-11-10): staged runner and synthetic tests built; checklist pipeline yields a table. ClubOps replay needs matching model recordings before a measured curve can be reported.
+- Progress (2026-11-10): draft PR #81 is open with Tatiana requested for review; it stays draft until the synthetic ClubOps replay is complete.
+- Progress (2026-11-11): review-driven rework adds a separately frozen synthetic president interview and five stages per club. The 15-row checklist confirms the pipeline only; complete model replay recordings are still needed for a measured ClubOps curve.
 - Blocked (2026-11-20): #81 is synchronized with main; five focused tests and the 15-row checklist CLI pass for empty, 1/3/4 interview answers, then documents. Complete matching ClubOps model recordings and a measured replay curve are still absent. Checklist/scorer fixtures verify the runner only. Tatiana owns private ASME evidence and T-26. PR remains draft until that gate is met.
+
+- Tooling publication (2026-11-23): user requests merging the independently reviewed #81 runner now. The earlier draft-only restriction is superseded for this tooling slice; J-20 remains blocked for the missing measured replay curve and matching recordings. No measured result is claimed.
 
 ### J-21 Automate shared-calendar cabinet access
 - Owner: joey

@@ -1,0 +1,38 @@
+{
+  "source_events": "eval/synthetic-events.csv",
+  "clubs": [
+    {
+      "club_id": "synthetic-academic",
+      "kind": "academic",
+      "event_ids": ["S01", "S02"],
+      "documents": [
+        {"id": "a1", "on": "2026-10-01", "statement": "Our student club usually teaches spreadsheet and research skills in classrooms."},
+        {"id": "a2", "on": "2026-10-02", "statement": "The cabinet prefers an afternoon workshop of about 25 students."},
+        {"id": "a3", "on": "2026-10-03", "statement": "For conferences we invite a guest speaker and collect their biography privately."},
+        {"id": "a4", "on": "2026-10-04", "statement": "The academic club archives a short summary after each workshop."}
+      ]
+    },
+    {
+      "club_id": "synthetic-cultural",
+      "kind": "cultural",
+      "event_ids": ["S03", "S05"],
+      "documents": [
+        {"id": "c1", "on": "2026-10-01", "statement": "Our club hosts small film discussions and student art displays."},
+        {"id": "c2", "on": "2026-10-02", "statement": "We normally reserve a classroom for discussion screenings."},
+        {"id": "c3", "on": "2026-10-03", "statement": "Exhibition volunteers prepare printed posters for campus displays."},
+        {"id": "c4", "on": "2026-10-04", "statement": "The cultural club keeps an inventory of display boards for reuse."}
+      ]
+    },
+    {
+      "club_id": "synthetic-social",
+      "kind": "social",
+      "event_ids": ["S04", "S10"],
+      "documents": [
+        {"id": "s1", "on": "2026-10-01", "statement": "Our student club stages concerts and plays with student performers."},
+        {"id": "s2", "on": "2026-10-02", "statement": "The cabinet prefers an auditorium for performances."},
+        {"id": "s3", "on": "2026-10-03", "statement": "Volunteers help with seating before performances."},
+        {"id": "s4", "on": "2026-10-04", "statement": "The social club keeps an internal list of reusable stage props."}
+      ]
+    }
+  ]
+}
