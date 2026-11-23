@@ -1,3 +1,4 @@
+import { Linkified } from '../components/Linkified';
 import { useState } from 'react';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router';
 import {
@@ -50,7 +51,9 @@ function KnowledgeRow({ item }: { item: KnowledgeItem }) {
         <Link to={`/knowledge/${encodeURIComponent(item.item_id)}`}>
           <h3>{item.title}</h3>
         </Link>
-        <p>{item.statement}</p>
+        <p>
+          <Linkified text={item.statement} />
+        </p>
         {item.tab === 'rules' && (
           <div className="rule-details">
             <span>
@@ -274,7 +277,9 @@ export function KnowledgeFact() {
               action={<StatusBadge status={item.status} />}
             />
             <section className="panel fact-statement">
-              <p>{item.statement}</p>
+              <p>
+                <Linkified text={item.statement} />
+              </p>
               {api.mode === 'http' && item.status === 'may_be_outdated' && (
                 <p className="notice warning">
                   This fact's end date has passed; it is not used for current planning.
@@ -438,7 +443,7 @@ export function KnowledgeFact() {
                       fact.reload();
                       refresh();
                       notify(
-                        item.scope === 'aub'
+                        item.scope === 'aub' || api.mode === 'http'
                           ? 'Retirement proposal sent to Review.'
                           : 'Fact retired. History is retained.',
                       );

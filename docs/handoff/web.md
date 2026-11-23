@@ -170,6 +170,11 @@ No entries yet.
 **Open questions / blockers:** C-21 production wiring remains Tatiana's app.py task; C-33 depends on it. C-31 still needs the direct board URL/access: project scope is enabled but the last discovery returned no boards. No duplicate project or attendance record invented. HTTP browser checks intercept synthetic responses; existing T-41 tests enforce server authorization, while frontend controls do not replace it. Runtime output stays untracked.
 
 
+## 2026-11-11 - Christophe (C-31 exact board target and access audit)
+
+Recorded the user-provided Nohra2005 project #4 URL in the owned guide/task. Current CLI viewer is chrs-005 and response scopes include project, but project view, field-list and item-list all fail to resolve #4. The error cannot prove whether the board is missing or private to another account. Asked Tatiana in #43 to verify target/access; no duplicate, permission/visibility change, marker adoption, card sync or review attendance invented. Gmail connector unavailable; browser app access timed out. C-31 stays blocked until actual read-back/inspection and eventual three weekly reviews. This is metadata/docs maintenance, with no new design/failure IDs or backend change.
+
+Checks for this C-31 documentation update: root gates 603 passed, 1 skipped, 92.47%; web check 46 units, 12 board-tool tests and build; targeted task/failure docs 8 passed. No new test implementation is needed for the reversible URL/documentation change. Current-head CI and teammate review remain required.
 ## 2026-11-11 - Christophe (C-28 review revision)
 
 Synced main afbdead and retained both shared logs. Removed all edits to Tatiana-owned evidence/rubric files; owned demo guides/proofs remain for her to link. Added primary president onboarding before planning: one explicit synthetic name answer pending Review, stop/resume with no resubmission, then reject the practice fact. Interview stays incomplete/paused; no chat history or personal data. Seven chapters still budget 300 seconds. D-117/F-202 follow #90's D-113-D-116 and other PRs through F-201.
@@ -185,6 +190,51 @@ Verification on the synced C-25 branch: full root gates pass with 667 passed, 1 
 Merged main afbdead into #76 without squashing. Preserved all six distinct C-33/C-34 HTTP tests and both sides of additive logs/evidence. C-34 is done after #75 merged; C-25/C-28/C-33 stay doing while their PRs/acceptance remain open. Root gates: 603 passed, 1 skipped, 92.47%; web check 52 units + 12 tool tests/build; full HTTP 38 passed. Setup wiring from #87 is retained; deployed/real-club acceptance remains pending. No new shared IDs or backend implementation changed.
 
 The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C-33/C-21 acceptance is actual deployed/new-club verification, not the former 501 placeholder.
+
+## 2026-11-12 - Christophe (C-31 access restored; manual board inspected)
+
+**Did:** Synced #91 with main 2fff794 through a merge commit; resolved TASKS and handoff conflicts additively, retaining every merged C-25/C-28/C-33 update and the previous C-31 audit. Read project #4 as chrs-005: ClubOps, owner Nohra2005, private/open, 17 fields, three manual issue cards (#43/#83/#84), all Backlog. Recorded exact status options, existing Iteration field and absent management marker. Access is resolved; C-31 is doing. No fields/cards/permissions or visibility changed, no duplicate board, and no importer's marker stamped over manual history.
+
+**Checks:** All root make-check equivalents pass: 667 passed, 1 skipped, 92.79%, Ruff/format, strict mypy, schema/task checks. Web check: 68 units, 12 board-tool cases, types/build. Read-only plan pins main 2fff794, reads 90 tasks and reports published:false at output/c31-current-main-plan.json. Documentation-only refresh adds no test implementation or shared IDs. CI/re-review still required on the pushed head.
+
+**Next / limits:** Add an explicit additive adoption adapter that preserves the three issue cards, existing status/iteration identities and unrelated/manual content. Inspect actual iteration configuration before publishing sprint assignments. Existing normal --apply must keep refusing this incompatible unmanaged layout; do not change it to bypass inspection. Verify the full live sync afterward; three actual weekly reviews are still missing. #94 separately holds C-35's 11 small commits and D-124/F-214-F-218; do not lose either branch's additive task/handoff entries. Independent review plus Create a merge commit required. No private data or real club actions were introduced.
+
+## 2026-11-12 - Christophe (C-31 additive import and actual board evidence)
+
+**Did:** Continued #91 in output/c31-worktree so the main checkout and C-35 preview at port 5173 stay untouched. Added dedicated/additive field profiles, strict target/namespace/view/card preflight, explicit read-only --adopt preview, bound README append and normal resumable sync. Namespaced ClubOps status/owner/task id/needs/sprint fields avoid claiming the original Status/Iteration. Full read-back checks task fields and selected manual objects/README/visibility. No collaborators, visibility, existing card content or original field/view IDs were changed. Separate small commits preserve the reviewed-PR workflow.
+
+**Actual live result:** Imported 90 task drafts from merged main 2fff794 into the existing private project #4; its three original cards remain (93 total, 22 fields). Initial larger mutation batches stopped after partial creations while quota was available; read-back recovered 29 existing tasks. Batches bounded at five completed the remaining 61 creations and 372 field updates. A repeat run verified created:0, updates:0 and unmanaged_preserved:true. Metadata-only proof is web/board/evidence/live-sync.json, including source/tool commits, actual status counts and limits. No raw manual body, credential or real club data goes into this proof. Board statuses intentionally mirror merged TASKS, not unmerged PR progress.
+
+**Checks:** All root make-check equivalents passed: Ruff/format, mypy, schemas/tasks, 667 passed, 1 skipped, 92.79% coverage. Final shared docs/tasks checks: 10 passed. Web check: 68 units, 25 synthetic tool cases, strict app/rehearsal types and production build. Synthetic tests cover 123 tasks plus manual cards, unsafe/ambiguous target refusal before writes, namespace collisions, partial field/card recovery, no-op repeat sync, preservation/tampering and cyclic pagination. API schema inputs were inspected; the receipt never equates field verification with visual grouping. D-125/F-219-F-224 follow all main/open-PR reservations. Final-head CI and independent review remain required on the pushed PR.
+
+**Next / remaining:** C-31 stays doing. View #7 ClubOps tasks by status exists as BOARD_LAYOUT, but groupByFields is empty. Supported create/update view configuration only accepts visibleFieldIds, not grouping. CUA was stopped because it could not verify the current Chrome URL; no UI workaround was attempted. User was asked to choose Group by -> ClubOps status and save; verify the result through the read-only groupByFields API when confirmed. Three actual weekly reviews still lack evidence; automatically completed past iteration dates do not prove meetings. Ask Tatiana to link this owned guide/proof from her evidence/rubric docs. Re-sync merged main after reviewed task PRs merge. Preserve both #94 and #91 additive handoffs/tasks, use independent review and Create a merge commit, no self-merge/direct-main push. C-35 HTTP shapes and J-16 ownership remain with the owners.
+
+**Same-session column completion (supersedes the manual-step request above):** Official GitHub documentation distinguishes horizontal Group by from the board Column field. Supported GraphQL view input only edits visible fields, but the documented REST create-view endpoint accepts vertical_group_by. Added --columns to create a separate ClubOps status columns view (#8) through REST and verify GraphQL verticalGroupByFields. Original views, including #7, remain intact. Exact live link: https://github.com/users/Nohra2005/projects/4/views/8 . REST omits some unrelated GraphQL built-ins, so numeric mapping checks every required identity rather than total equality; pages are fully read. The completed command verifies the correct column field and preserves previous views; repeating it creates no cards, updates or view. Proof includes the separate column receipt and observation timestamp. No manual UI step remains. Christophe was told to ignore the earlier Group by request after he could not find it.
+
+Final local web check passes with 68 units, 32 tool tests, lint/format, strict app/rehearsal types and build. Final shared docs checks: 10 passed. Root 667 passed/1 skipped/92.79% remains the relevant unchanged backend run. New F-225/F-226 cover horizontal-vs-vertical semantics and REST/GraphQL field projections; D-125 describes the final REST choice. Earlier all-green CI was for the previous head; current final-head checks are on #91. This batch retains 14 new small commits. C-31 remains doing solely for the three actual weekly review records and owner review/merge, not a claimed browser limitation. Please link the owned guide/proof in Tatiana-maintained evidence/rubric docs, use Create a merge commit and re-sync main after merged task changes. The running C-35 preview and original checkout were not changed.
+
+## 2026-11-16 - Christophe (C-31 merged-task refresh)
+
+**Did:** Fast-forwarded the existing board branch to Tatiana's main sync (8d31e2f). Refreshed private project #4 from merged main 54d38c1: 92 task drafts, 2 new cards, 99 field/body updates, verified with unmanaged cards preserved. Existing status-columns view #8 was reused. A second full sync verified 0 creates and 0 updates, no new view. Metadata-only proof is web/board/evidence/refresh-2026-11-16.json; the 12 November receipt remains historical.
+
+**State / next:** C-31 stays doing; three actual team-review records remain absent. No code or contract changed. Shared-doc/task checks and proof formatting are rerun; previous head's five CI checks were green, new proof head needs its own CI/review. Follow the team's merge-freeze decision and preserve commits. Only merged TASKS statuses are imported, not this branch's or other PRs' unmerged progress.
+
+**Open questions / blockers:** No participants/meeting outcomes invented; no public exposure, duplicate board, changed manual Status/Iteration, private club data, provider usage or main merge. Tatiana should link the dated proof from her evidence index. The 90-task count in earlier entries is the actual 12 November snapshot, superseded by this dated refresh.
+
+## 2026-11-18 - Christophe (C-31 main sync and current task refresh)
+
+**Did:** Resolved #91 main-sync conflicts additively, retaining the new Gmail/J-22 rows and the board evidence/history. Actual private project #4 now mirrors merged main 166f27e: 92 tasks, 0 new cards, 100 field/body updates. The same status-columns view #8 and manual objects are preserved. Repeat full sync verifies 0 creates/0 updates and no new view. Full metadata-only receipts: web/board/evidence/refresh-2026-11-18.json; earlier dated proofs remain history.
+
+**State / next:** C-31 stays doing, because three genuine weekly team reviews still lack records. This batch changes no importer or contract behavior. Shared-doc/task checks and board-tool/front-end checks are rerun; current-head CI/review remains required. Main-based Python gates verified separately in C-35: 693 tests, 93.06% coverage and static/schema/task checks pass. Only merged statuses are reflected; no pending PR status or invented meeting history. Please link dated proof in the owner evidence index and preserve merge commits after the team freeze decision.
+
+
+## 2026-11-20 - Christophe (C-31 existing-board merged-task refresh)
+
+**Did:** Synced #91 to main e4090c6 and preserved shared logs. Refreshed only managed fields/cards on the existing private board #4: 92 tasks, no new cards, 93 updates; verified zero changes on a repeat. Original 3 manual cards, fields and status-column view #8 remain. Dated read-back receipt is web/board/evidence/refresh-2026-11-20.json.
+
+**State:** C-31 doing. Web checks pass with 68 units/32 tools/types/build; branch shared docs/tasks 10 pass. Python tree matches C-35's final full root verification (710 tests, 93.14%, Ruff/format 162, mypy 85, schema/tasks). Current-head CI and independent review required; no new design/failure ID.
+
+**Next / limits:** Review/merge the prepared board PR with a merge commit; record three genuine weekly team reviews separately. Only merged TASKS was mirrored; pending PR statuses and meetings were not invented. No duplicate board, manual field change, new feature scope or main push/self-merge.
 
 ## 2026-11-16 - Christophe, with Codex (C-29 setup verification and report draft)
 
@@ -288,6 +338,12 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 **State / next:** Final root tree passes 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. All 82 HTTP cases passed in a completed run with normal Windows process cleanup. Frontend source/tests/lock are unchanged by the second main sync. Existing approved implementation and small commits remain. Re-review after final-head CI; Tatiana merges using Create a merge commit. No new scope before the 23 November meet-up or real mailbox/provider/deployed claim.
 
 
+## 2026-11-20 - Christophe (C-31 after reviewed Inbox merge)
+
+**Did:** Tatiana merged #94 and Joey's #102 as main 0f3bb09. Synced this existing PR, retaining both shared logs and every earlier handoff/evidence line. Original focused commits stay intact; no new feature scope or design/failure IDs.
+
+**State:** Frontend checks pass: 108 units/32 tools, lint/format/types/build and branch-local shared docs/tasks. Shared Python-tree root gates pass: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Board refresh source/read-back and zero-change repeat are in the new follow-up receipt; three real weekly-review records remain open.
+
 ## 2026-11-20 - Christophe (C-29 after reviewed Inbox merge)
 
 **Did:** Tatiana merged #94 and Joey's #102 as main 0f3bb09. Synced this existing PR, retaining both shared logs and every earlier handoff/evidence line. Original focused commits stay intact; no new feature scope or design/failure IDs.
@@ -304,6 +360,43 @@ The starter guide and C-21 task now acknowledge #87's merged wiring; remaining C
 
 **Next / limits:** Fresh independent approval after current-head CI, then merge with Create a merge commit. Deployed Google/every-screen acceptance remains open. No real provider/private inputs, backend/contract implementation changes, new scope before 23 November or main push/self-merge.
 
+
+## 2026-11-22 - Christophe (C-31 pre-meet-up sync and board verification)
+
+**Did:** Synced #91 to main 60d7027, retaining shared rows and every earlier handoff/evidence line. Refreshed existing private board #4 from merged TASKS only: 92 tasks, no new cards, 92 updates; repeat zero changes. Original three manual cards, fields and status-column view #8 remain. New dated receipt is web/board/evidence/refresh-2026-11-22.json; prior receipts preserved.
+
+**State:** C-31 doing. Web checks pass: 137 units/32 tools/types/build; branch shared docs/tasks 10 pass. Identical Python tree passes root gates with updated locked dependencies: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Fresh independent re-review and current-head CI required; original commits retained.
+
+**Next / limits:** Re-review/merge with Create a merge commit for 23 November, then record actual weekly reviews separately. No unmerged task states, meeting history, deployed/provider/club acceptance, new scope, D/F IDs, main push or self-merge invented.
+
+
+## 2026-11-22 - C-31 weekly-review bonus withdrawn by owner
+
+Christophe explicitly chose not to pursue the weekly-review/sprint bonus. D-133
+and the current TASKS entry record that decision; the existing board remains an
+ordinary task tracker. Earlier receipts and missing-record statements are retained
+as history, not active acceptance requirements or proof of earned bonus credit.
+No further meeting-record collection, bonus-driven refresh or board deletion.
+The existing tracker PR stays reviewable; no weekly-review completion is claimed.
+This is a docs/scope-only update; shared task/log checks and formatting pass.
+
+
+## 2026-11-23 - Christophe (C-31 restored weekly practice and native bulk repair)
+
+**Did:** Restored C-31 per Christophe, superseding D-133 with D-137. Built the explicit native-field planner/adapter/CLI and 10 new regressions (F-248), kept existing option/iteration identities and card content, and linked commit-history summaries for the four owner-reported Mondays. Executed one authorized bulk run: canonical task mirror plus native status/assignees/Monday iterations/priority/size/points and all 3 issue statuses. No invented attendance, oral decisions or original assignments.
+
+**State:** Live read-back: 93 task cards +3 issues, 542 native mutations, zero remaining native changes; existing views/private board preserved. Issue #43/#84 assigned Christophe, #83 Tatiana, all In progress. Receipt: web/board/evidence/native-fields-2026-11-23.json. Web checks: 137 units/42 tools/types/build; shared checks 10 pass; root baseline 728/93.21%, Ruff/format 162, mypy 85, schemas/tasks. Focused source commits preserved; current-head CI/re-review required.
+
+**Next / limits:** Review/merge #91 and the restored report scope in #99 with merge commits. Maintain native fields after reviewed TASKS changes using npm run board:reconcile; default plan is read-only. User-reported dates and commit history do not prove undocumented decisions; estimates are current planning points. No second bulk mutation run, new backend contract, real data, model calls, main push or self-merge.
+
+
+### 23 November shared-ID correction
+
+The final fetch found #112 had allocated F-248 during the native-board work.
+Preserved that owner's row and moved our native reconciliation regression to F-249.
+D-137 is still unique. Earlier dated F-248 references above describe the work before
+this correction. Native source behavior/live read-back are unchanged; shared checks
+and formatting pass after renumbering. Next free IDs: D-138/F-250 after rechecking.
 
 ## 2026-11-22 - Christophe (C-29 reviewed-session and dependency sync)
 
@@ -341,3 +434,90 @@ report incorporation and actual deployed/provider/club acceptance remain open.
 commit preserving the focused history. #91 performs the separately authorized
 native-field bulk correction. No real club inputs, paid model calls, invented
 meeting decisions or main push/self-merge.
+
+## 2026-11-19 - Christophe (C-36 development dependency audit)
+
+**Did:** Isolated fix/c36-minimatch-audit from main 166f27e after npm audit found GHSA-g3hv-75wg-m249 through the ESLint/TypeScript-ESLint development chain. npm-compatible lock updates resolve minimatch 11.0.9, ESLint 10.15.0, TypeScript-ESLint 8.73.0 and config-array 0.23.6 without force/overrides or application dependency-range changes. Structural comparison proves every production lock entry is unchanged. Added npm run audit:dependencies as an explicit full development-inclusive audit regression command; no workflow files changed.
+
+**State / next:** C-36 review. Clean npm ci and both full/production-only audits report zero findings (previous full audit: nine affected development package nodes; production-only zero). Web check: 68 units/12 tools/types/build and lint/format pass. Full root gates: 693 tests, 93.06%; Ruff/format 158 files, mypy 84, schemas/tasks. Advisory and reproducible commands: web/security/dependency-audit-2026-11-19.md. D-130/F-234 reserved after C-13 D-129/F-233. Await current-head CI and independent review; preserve small commits and merge commits. Owner should link evidence in her index.
+
+**Open / limits:** This is a tooling dependency remediation and live advisory scan, not a production incident or measured security-rate result. The audit needs registry connectivity and its database changes over time. Windows uses the trusted system CA store with certificate validation enabled. No backend implementation/contracts, real club data, credentials, source text or provider calls involved. C-13 session validation and C-35 integration remain independent PRs.
+
+
+## 2026-11-20 - Christophe (C-36 approved-PR main sync)
+
+**Did:** Merged main 0ac0b5b as Tatiana requested and retained both sides of the shared design-log conflict. Approved implementation and individual commits remain unchanged. Existing IDs checked across main/open PRs; no new IDs.
+
+**State:** Web quality/build checks pass with 68 units and 12 tools. Python source/tests/scripts/schemas/lock match the C-35 checkout whose full root gates pass (700 tests, 93.09%); branch-local shared checks are run before publishing. Full development npm audit remains at zero vulnerabilities; production application dependencies are unchanged.
+
+### 20 November follow-up - C-36, final Inbox main sync
+
+**Did:** #95 merged as e4090c6 during verification, so merged that main as well. Retained each main/own failure once. C-35 preview role row moves to F-238; main's F-217 stays unchanged. C-29 D-132/F-237 avoid #103's IDs. Earlier dated references remain history.
+
+**State / next:** Final root tree passes 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. The development dependency patch is unchanged; full npm audit remains zero. Final Python source/tests/scripts/schemas/lock match the fully checked C-35 tree. Existing approved implementation and small commits remain. Re-review after final-head CI; Tatiana merges using Create a merge commit. No new scope before the 23 November meet-up or real mailbox/provider/deployed claim.
+
+## 2026-11-20 - Christophe (C-36 after reviewed Inbox merge)
+
+**Did:** Tatiana merged #94 and Joey's #102 as main 0f3bb09. Synced this existing PR, retaining both shared logs and every earlier handoff/evidence line. Original focused commits stay intact; no new feature scope or design/failure IDs.
+
+**State:** Frontend checks pass: 108 units/12 tools, lint/format/types/build and branch-local shared docs/tasks. Shared Python-tree root gates pass: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schemas/tasks. Full npm dependency audit reports zero vulnerabilities. The patched lint chain checks the now-merged Inbox/Restore frontend.
+
+**Next / limits:** Fresh independent review after current-head CI, then a merge commit. Existing deployed/provider/club acceptance gaps remain separate; no authored backend/contract edit, new scope, self-merge or main push.
+
+## 2026-11-22 - Christophe (C-36 reviewed-session and dependency sync)
+
+**Did:** Synced the existing PR to main 60d7027 after #100 and the Python dependency updates merged. Kept all shared rows and earlier handoff/evidence lines, retaining individual commits. No new scope or design/failure IDs. Full and production-only npm audits both report zero vulnerabilities on 22 November. An initial sandboxed registry/cache request failed; the normal registry-access retry used the system trust store and a writable workspace cache. No audit exception, package update or TLS bypass was needed.
+
+**State:** Root locked-environment gates pass: 710 tests, 93.14%, Ruff/format 162 files, mypy 85 files, schema/tasks. Web quality/build: 137 units/12 tools; branch shared docs/tasks 10 pass. Original acceptance limits remain open; fresh-head CI and independent re-review are required.
+
+**Next / limits:** Re-review the synced PR, then Create a merge commit for the 23 November meet-up. No new backend/auth contract, model calls, real data, main push or self-merge. Genuine deployment/club/weekly-review acceptance is not inferred from these tests.
+
+
+## 2026-11-23 - Christophe (C-36 current-main conflict resolution)
+
+**Did:** Merged main 9b12718 into #101; kept both unique design/failure rows and
+all earlier handoff/evidence lines. Preserved the separate C-29 and C-36 entries
+as complete sections rather than splicing their headings and paragraphs. Original
+focused commits and the development-only lockfile remediation remain intact.
+
+**State:** Python gates pass: 733 tests, 93.16% coverage, Ruff/format 162 files,
+mypy 85 files, schemas/tasks. Web checks pass: 137 unit tests, 12 board-tool tests,
+lint/format/types/build. Full and production-only npm audits report zero; production
+lock records match current main. C-36 stays review pending current-head CI and
+fresh independent approval.
+
+**Next / limits:** Tatiana re-reviews the synced head and merges with Create a
+merge commit once CI is green. #91 already contains current main and all five
+checks pass; #99 is already merged. Independently reviewed #104 and requested
+corrections to approval roles, unknown-audience fallback and C-27 human scoring.
+No new scope, provider calls, private inputs, direct main push or self-merge.
+
+
+## 2026-11-23 - C-36 formatting check correction
+
+**Did:** Fixed the actual Web CI failure: the final appended VERIFICATION.md
+entry had not been formatted after the earlier local check. Merged approved
+#91 main 5c66db9, preserving both failure-log sides and existing commits.
+
+**State:** Rerun full web checks after formatting; current-head CI and fresh
+independent C-36 approval remain required. No application/dependency change.
+
+**Next:** Review the corrected CI head before merge. #91 merged by explicit
+Chris request with its current-head independent approval and five green checks.
+Reviewed #81/#82 separately; their draft measurement limitations remain open.
+
+
+## 2026-11-23 - C-36 duplicate-ID CI correction
+
+**Did:** Inspected the final-head failed Python CI: both failing assertions found
+the duplicate F-249 inherited from main, not a frontend failure. Merged main
+b23e9d4 including Tatiana's reviewed #122 correction (suggested-edit row and its
+test docstring become F-260; the board keeps F-249). No new IDs or runtime edits.
+
+**State:** All 10 task/failure/log-number checks pass from this worktree's own
+working directory; task validation, verification formatting and 42 board-tool
+tests pass. Previous head's Web quality, browser/API, container and dependency
+checks were green. Fresh combined-head CI and independent re-approval remain.
+
+**Next:** Re-approve after the new CI run, then merge with a merge commit.
+Azure deployment continues separately; no direct main push or self-merge.

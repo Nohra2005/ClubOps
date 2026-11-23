@@ -113,6 +113,40 @@ class KnowHowStore:
             self.backend.pending_delete(proposal.proposal_id)
         return Outcome(data=VerifyResult(committed=committed, superseded=to_supersede))
 
+    def keep_both(
+        self, proposal_id: str, edited: KnowHowItem | None, reason: str | None, actor: Actor, now: datetime
+    ) -> KnowHowItem:
+        """Approve a proposal as a new fact next to the known one, which stays as it is. Same checks as ``verify``."""
+        queued = self.backend.pending_all().get(proposal_id)
+        if queued is None:
+            raise CapabilityError(ErrorCode.NOT_FOUND, "no pending proposal with this id")
+        proposal, candidate = self._checked(
+            VerifyRequest(
+                proposal=queued,
+                decision=VerifyDecision.ACCEPT_EDITED if edited is not None else VerifyDecision.ACCEPT,
+                edited_candidate=edited,
+                reason=reason,
+            ),
+            actor,
+        )
+        if self.backend.has(candidate.item_id):
+            # A suggested edit carries the old fact's id: the new fact next to it gets its own (F-249).
+            candidate = _rebuild(candidate, item_id=f"{candidate.item_id[:50]}-{proposal.proposal_id[-8:].lower()}")
+            if self.backend.has(candidate.item_id):
+                raise CapabilityError(ErrorCode.CONFLICT, "an item with this id already exists")
+        committed = _rebuild(
+            candidate,
+            version=1,
+            status=ItemStatus.VERIFIED,
+            verified_by=actor.member_id,
+            verified_at=now,
+            last_confirmed_at=now,
+        )
+        with self.backend.transaction():
+            self.backend.append(committed)
+            self.backend.pending_delete(proposal.proposal_id)
+        return committed
+
     def _checked(self, request: VerifyRequest, actor: Actor) -> tuple[KnowHowProposal, KnowHowItem]:
         """Every refusal happens here, before the store changes."""
         proposal = self.backend.pending_all().get(request.proposal.proposal_id)
