@@ -618,6 +618,13 @@ Reference documents:
 - What: Patch the minimatch advisory found through the ESLint/TypeScript-ESLint development dependency chain. Keep application dependencies and security checks intact; verify a clean lockfile install, full/deployment-only audits and frontend quality checks. Provide a reproducible audit command and evidence.
 - Done when: the patched lockfile and audit command pass current checks and independent review, with the advisory and development-only scope documented.
 
+### C-37 Guided cabinet handover
+- Owner: christophe
+- Status: doing
+- Needs: C-10, C-19
+- What: Replace the permanent handover navigation item with a contextual role introduction and cabinet transition entry. Provide a resumable, skippable walkthrough, approved reference knowledge and outgoing questions. Add explicit role-learning chat prompts using the published text API; do not infer membership changes or invent persistent backend onboarding routes.
+- Done when: desktop/phone and permission/isolation/no-automatic-call regressions pass; guided frontend and reference guide are independently reviewed. Server-stored invitations/progress and structured chatbot context require separately agreed owner contracts.
+
 ## Joey: calendar, reminders, drafts
 
 ### J-01 Read the calendar contract and set up Google
