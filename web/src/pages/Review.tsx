@@ -112,11 +112,17 @@ function ReviewItem({
         </div>
         <StatusBadge status={card.status} />
       </div>
-      {(card.warning || card.outdated) && (
+      {(card.warning || card.outdated || card.unlisted) && (
         <section className="notice warning" aria-label="Source warnings">
           <div>
             {card.warning && <p>{card.warning}</p>}
             {card.outdated && <p>This source may be outdated. Check the current version first.</p>}
+            {card.unlisted && (
+              <p>
+                The sender of this e-mail is not on the OSA list. Check it is genuine before
+                approving.
+              </p>
+            )}
             <p>Review this proposal individually. It is excluded from batch approval.</p>
           </div>
         </section>

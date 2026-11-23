@@ -13,6 +13,7 @@ function HttpInbox() {
   const waiting = useResource(() => api.inbox(), [api]);
   const skipped = useResource(() => api.skippedInbox(), [api]);
   const read = useAction();
+  const release = useAction();
   const [selected, setSelected] = useState<WaitingEmail>();
   const [completed, setCompleted] = useState<string[]>([]);
   const [unconfirmed, setUnconfirmed] = useState<{ id: string; snapshot?: WaitingEmail[] }[]>([]);
@@ -27,6 +28,13 @@ function HttpInbox() {
           waiting.loading ||
           Boolean(waiting.error)),
     );
+  async function readAnyway(id: string) {
+    const result = await release.run(() => api.allowInbox(id));
+    if (!result.ok) return;
+    setFeedback('Released. It is in the waiting list above; nothing has been read yet.');
+    waiting.reload();
+    skipped.reload();
+  }
   async function confirmRead() {
     if (!selected) return;
     const message = selected;
@@ -116,6 +124,7 @@ function HttpInbox() {
           </button>
         </div>
         <p>These messages were refused before a model read. The server supplies each reason.</p>
+        <ErrorNotice message={release.error} />
         <Resource loading={skipped.loading} error={skipped.error} retry={skipped.reload}>
           {skipped.value?.length === 0 && <p>No skipped email.</p>}
           <div className="inbox-message-list">
@@ -124,6 +133,15 @@ function HttpInbox() {
                 <h3>{message.subject || '(No subject)'}</h3>
                 <p>{message.why}</p>
                 <p className="inline-note">Reason: {message.reason}</p>
+                {message.reason === 'original_sender_not_osa' && (
+                  <button
+                    className="button small"
+                    disabled={release.pending}
+                    onClick={() => void readAnyway(message.id)}
+                  >
+                    Read anyway
+                  </button>
+                )}
               </article>
             ))}
           </div>
