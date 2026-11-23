@@ -136,6 +136,27 @@ No entries yet.
 
 **Open questions / blockers:** Results belong in Tatiana's `results/` area; coordinate the measured run and evidence before poster claims.
 
+## 2026-11-10 — J-13 frozen attack corpus (test/j13-adversarial-corpus)
+
+**Did:** Froze ten synthetic injections across five untrusted surfaces and added a scorer that accepts only complete, reviewed defense-off/on boolean outcomes. Added detector and scorer regressions, D-118 and F-203, and updated the threat model.
+
+**State:** The corpus and static checks are ready. No model comparison or attack success rate has been recorded. This remains doing until Tatiana runs the isolated model configurations and reviews private outcomes.
+
+**Next:** Tatiana should run each frozen case with defenses on and off, judge whether the stated unauthorized objective happened, keep traces private, and place aggregate evidence in results/.
+
+**Open questions / blockers:** Tatiana owns the model configuration and results/ area. Do not infer model success from plain-code injection flags.
+
+
+## 2026-11-11 - J-13 review follow-up (PR #82)
+
+**Did:** Merged current main, moved shared IDs to D-118/F-203, added a frozen benign corpus, and required false-positive counts beside attack outcomes. F-204 records the current ordinary-text false positive. Strict UTF-8 reading is verified.
+
+**State:** The scorer and corpus tests pass; the benign detector test is an explicit expected failure. No model attack success or false-positive rate has been measured. Tatiana owns the learning detector change and private defense-off/on run.
+
+**Next:** Tatiana fixes the detector so benign role descriptions are not rejected, then Joey removes the expected-failure marker and reruns the corpus and full checks.
+
+**Open questions / blockers:** Do not edit Tatiana-owned learning code in this PR. Keep the private outcome file and traces outside Git.
+
 ## 2026-11-10 — J-20 dataset freeze
 
 **Did:** Prepared three synthetic clubs (academic, cultural and social), each with four dated starter documents. Reused six existing frozen synthetic event labels and pinned the new starter set before writing or running the evaluator.
@@ -311,6 +332,15 @@ No entries yet.
 
 **Open questions / blockers:** T-47 paid-read integration remains in #95. Host watcher access is unreliable; the direct authenticated GitHub API remains readable.
 
+## 2026-11-20 - Joey: J-13 current-main reconciliation and report sections
+
+**Did:** Merged main 166f27e into #82, preserving both shared log histories. Added report sections on security, calendar and inbox to the owned threat model, separating tested boundaries from provider/deployed/model acceptance.
+
+**State:** The frozen attack/benign scorer remains ready for independent review; F-204 is a strict expected failure in Tatiana's detector. No outcome or performance number was invented.
+
+**Next:** Tatiana fixes or explicitly accepts F-204, then runs and reviews both modes with private traces and publishes aggregate results in her results area.
+
+**Open questions / blockers:** Matching measured outcomes, the coordinated J-23 contract, T-46 hosted integration and live Gmail/Calendar acceptance remain required. Existing tests do not certify those gates.
 ## 2026-11-20 - Joey: complete task and owner-handoff audit
 
 **Did:** Pulled current main, reconciled #81/#82 preserving shared histories, completed J-13 report sections, and reran focused/full checks. Reviewed and merged #96 as 0ac0b5b after seven archive tests and all five CI checks passed. Re-reviewed #95: 15 focused inbox tests pass and the earlier J-22 bypass is fixed. Approval is posted; merge failed because #96 creates documentation conflicts. Aborted the local merge cleanly rather than edit owner-maintained docs/api.md. Updated J-04/J-12/J-22 to done at their explicit synthetic gates and made remaining external blockers concrete. Added live Calendar and cabinet draft-review receipt procedures in owned READMEs.
@@ -414,6 +444,14 @@ TASKS.md remains authoritative. "No open PR" means no matching current open PR w
 
 **Validation:** Focused owned-area suite passed; full make-check equivalents passed (709 passed, 1 skipped, 92.85% coverage; Ruff lint/format, mypy, schemas/tasks and diff checks). Private preparation files remain ignored.
 
+## 2026-11-23 - Joey: J-13 reviewed tooling publication
+
+**Did:** User requested merging reviewed #82 tooling. Synced current main, preserving both J-13 progress histories and all handoff entries. Retained blocked task status for missing measured outcomes and F-204. Included the identical shared F-260 correction from #81 for main's duplicate F-249; this is the same suggested-edit failure, not a second new failure ID.
+
+**Next:** Validate, push, mark ready and request fresh teammate review if needed. Merge only with current-head review and green CI. No private data, paid calls or real attack-rate claim.
+
+**Validation:** Full make-check equivalents passed: Ruff lint/format, mypy, schemas/tasks and 768 passed / 1 skipped / 1 documented xfail, 93.08% coverage. Focused security/shared-document suite: 18 passed / 1 xfailed. F-204 and measured outcomes remain open.
+
 ## 2026-11-23 - Joey: J-20 reviewed tooling publication
 
 **Did:** User requested merging approved #81/#82 as tooling, retaining measurement limits. Synced #81 with current main and resolved only the J-20 TASKS conflict: kept both histories and the interview-first scope, retained blocked task status for missing model recordings/measured curve, and recorded the tooling publication authorization. No runtime or contract change in the sync.
@@ -423,3 +461,11 @@ TASKS.md remains authoritative. "No open PR" means no matching current open PR w
 **Integration correction:** Current main contains two F-249 rows (native board and suggested-edit Add-as-new). Renumbered the latter shared matrix row F-260, after the maximum F-259 across fetched branches, retaining its regression-test link and legacy-ID note. No owner implementation changed.
 
 **Validation:** Ruff lint/format, mypy, schemas/tasks and full pytest/coverage passed: 769 passed, 1 skipped, 93.08% coverage. Focused runner/shared-document checks: 13 passed after resolving the duplicate ID. Checklist CLI produced all 15 synthetic rows without model calls; this is not a measured ClubOps curve.
+
+## 2026-11-23 - Joey: J-13 sync after J-20 merge
+
+**Did:** GitHub refused the approved #82 head because #81 had just merged into main. Merged that current main and preserved both J-13/J-20 handoff histories in the sole conflicting file. No authored runtime change or new scope; J-13 measurement and F-204 gates stay blocked.
+
+**Next:** Fresh current-head review and CI, then merge #82 without bypassing protection.
+
+**Validation:** Full make-check equivalents passed after combining the published #81 tooling: 773 passed, 1 skipped, 1 documented expected failure, 93.08% coverage; Ruff lint/format, mypy, schemas/tasks and diff checks passed.
