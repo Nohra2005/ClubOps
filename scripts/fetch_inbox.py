@@ -17,7 +17,9 @@ from pathlib import Path
 from clubops.config import _read_dotenv
 from clubops.gmail_access import GmailKeyError, access_token, cabinet_senders, parse_extra_senders
 from clubops.inbox.capture import PendingInbox
-from clubops.inbox.gmail import GmailGateway, fetch_into_queue
+from clubops.inbox.gmail import GmailGateway
+from clubops.inbox.guards import InboxLedger
+from clubops.inbox_intake import InboxNotes, intake, parse_osa_senders
 
 
 def main() -> int:
@@ -37,20 +39,32 @@ def main() -> int:
         return 2
 
     senders = cabinet_senders(args.data_dir, parse_extra_senders(values.get("CLUBOPS_INBOX_SENDERS")))
+    osa = parse_osa_senders(values.get("CLUBOPS_OSA_SENDERS"))
+    if not osa:
+        print("Inbox: CLUBOPS_OSA_SENDERS is empty in .env, so every e-mail would be skipped.", file=sys.stderr)
+        return 2
     queue = PendingInbox(args.data_dir / "inbox.db")
-    gateway = GmailGateway(token)
-    listed = len(gateway.list_ids())
-    added = fetch_into_queue(gateway, queue, senders, datetime.now(UTC))
-    print(f"Gmail: {listed} e-mails in the inbox, {added} new ones queued.")
+    notes = InboxNotes(args.data_dir / "inbox-notes.db")
+    counts = intake(
+        GmailGateway(token),
+        queue,
+        notes=notes,
+        ledger=InboxLedger(args.data_dir / "inbox-ledger.db"),
+        cabinet=senders,
+        osa_senders=osa,
+        received_at=datetime.now(UTC),
+    )
+    print(
+        f"Gmail: {counts['queued']} new e-mails queued, {counts['skipped']} skipped with a reason, "
+        f"{counts['not_for_a_club']} not forwarded by a known cabinet address to a club. "
+        f"{counts['refreshed']} waiting e-mails got their recipient count."
+    )
     for club_id in sorted(senders):
-        waiting = len(queue.pending(club_id))
-        if waiting:
-            print(f"  {club_id}: {waiting} waiting to be read")
-    if listed and not added:
-        print(
-            "  Nothing new queued. E-mails already queued are skipped; others were not forwarded by a known "
-            "cabinet address to clubops.agent+<club>@gmail.com."
-        )
+        waiting, skipped = len(queue.pending(club_id)), notes.skipped(club_id)
+        if waiting or skipped:
+            print(f"  {club_id}: {waiting} waiting to be read, {len(skipped)} skipped")
+            for row in skipped:
+                print(f"    skipped: {row['why']}")
     return 0
 
 

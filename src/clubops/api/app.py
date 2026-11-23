@@ -12,6 +12,7 @@ Conventions (agreed for C-13):
 
 from __future__ import annotations
 
+import hashlib
 import io
 import os
 import re
@@ -63,15 +64,20 @@ from clubops.contracts.knowhow import (
     Kind,
     KnowHowItem,
     KnowHowProposal,
+    ProposalOp,
     Scope,
     VerifyDecision,
     VerifyRequest,
 )
+from clubops.inbox.capture import PendingInbox
+from clubops.inbox.guards import InboxLedger
+from clubops.inbox_intake import InboxNotes
 from clubops.knowhow.backends import open_club_store_backend
 from clubops.knowhow.directory import Directory
 from clubops.knowhow.handover import build_handover
 from clubops.knowhow.store import KnowHowStore, rescoped
 from clubops.learning.capture import Candidate, Learner, price_list, rows_to_text
+from clubops.learning.documents import MAX_PIECES, DocumentError, read_pdf, split_text
 from clubops.model.client import ModelClient
 from clubops.reports.runs import record_run
 from clubops.reports.usage import usage_details
@@ -151,13 +157,19 @@ class FieldsBody(BaseModel):
 
 
 class DecisionBody(BaseModel):
-    decision: Literal["approve", "reject", "edit"]
+    # approve/reject/edit are the plain decisions; the Review screen also sends keep_a, keep_b, merge, both and
+    # keep_both for disagreement and merge cards (F-245)
+    decision: Literal["approve", "reject", "edit", "keep_a", "keep_b", "merge", "both", "keep_both"]
     edited_text: str | None = Field(default=None, max_length=1500)
     reason: str | None = Field(default=None, max_length=300)
     # None keeps ClubOps' suggestion; True shares the fact with every AUB club, False keeps it in this club (D-91).
     shared: bool | None = None
     opened_at: str | None = None
     decided_at: str | None = None
+
+
+class EditBody(BaseModel):
+    text: str = Field(min_length=3, max_length=1500)
 
 
 class MemberBody(BaseModel):
@@ -189,6 +201,7 @@ _HTTP = {
 
 
 MAX_UPLOAD = 2 * 1024 * 1024
+MAX_PDF_UPLOAD = 10 * 1024 * 1024
 
 # ---------------------------------------------------------------------- app
 
@@ -542,6 +555,37 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
                 raise HTTPException(404, "No such item.")
             return views.knowledge(item, store.history(item_id), today())
 
+    def _knowledge_proposal(member: Member, item_id: str, op: ProposalOp, text: str | None, why: str) -> dict[str, str]:
+        """A change to an approved fact goes to Review; the fact stays as it is until someone approves (F-247)."""
+        with club(member.club_id) as (store, _, _, _):
+            item = next((i for i in visible(store, member.club_id) if i.item_id == item_id), None)
+            if item is None:
+                raise HTTPException(404, "No such item.")
+            changes: dict[str, Any] = {"status": ItemStatus.PROPOSED, "verified_by": None, "verified_at": None}
+            if text is not None:
+                changes["statement"] = text
+            candidate = KnowHowItem.model_validate({**item.model_dump(), **changes})
+            stamp = hashlib.sha256(f"{item_id}|{op.value}|{text or ''}".encode()).hexdigest()[:8]
+            proposal = KnowHowProposal(
+                proposal_id=f"p-{stamp}",
+                op=op,
+                candidate=candidate,
+                target_item=item.item_id,
+                rationale=why[:600],
+            )
+            store.submit(proposal)
+        return {"review_id": proposal.proposal_id}
+
+    @app.post("/api/knowledge/{item_id}/edit")
+    def suggest_edit(item_id: str, body: EditBody, member: Member = Depends(cabinet)) -> dict[str, str]:  # noqa: B008
+        return _knowledge_proposal(
+            member, item_id, ProposalOp.UPDATE, body.text.strip(), f"edit suggested by {member.name}"
+        )
+
+    @app.post("/api/knowledge/{item_id}/retire")
+    def suggest_retire(item_id: str, member: Member = Depends(cabinet)) -> dict[str, str]:  # noqa: B008
+        return _knowledge_proposal(member, item_id, ProposalOp.RETIRE, None, f"retirement suggested by {member.name}")
+
     # ------------------------------------------------------------- review
 
     _FILTER = {
@@ -568,32 +612,47 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             if proposal is None:
                 raise HTTPException(404, "Nothing to review with this id.")
             card = views.review_card(proposal)
+            choice = {"keep_a": "approve", "merge": "approve", "keep_b": "reject"}.get(body.decision, body.decision)
+            if body.edited_text and choice == "approve":
+                choice = "edit"  # the Edit dialog sends its text with a plain approve; it must not be dropped (F-245)
+            both = choice in {"both", "keep_both"}
+            if choice == "both" and not (body.reason or "").strip():
+                raise HTTPException(422, "Explain when both versions are true.")
             edited = None
-            if body.decision == "edit":
+            if choice == "edit":
                 if not body.edited_text:
                     raise HTTPException(422, "Write the corrected fact first.")
                 edited = proposal.candidate.model_copy(update={"statement": body.edited_text})
-            if body.shared is not None and body.decision != "reject":
+            if body.shared is not None and choice != "reject":
                 if proposal.candidate.kind is Kind.RULE and not body.shared:
                     raise HTTPException(422, "AUB rules are always shared with every club.")
                 edited = rescoped(edited or proposal.candidate, member.club_id, shared=body.shared)
                 if edited == proposal.candidate:
                     edited = None
-            decision = {
-                "approve": VerifyDecision.ACCEPT,
-                "reject": VerifyDecision.REJECT,
-                "edit": VerifyDecision.ACCEPT_EDITED,
-            }[body.decision]
-            if edited is not None and decision is VerifyDecision.ACCEPT:
-                decision = VerifyDecision.ACCEPT_EDITED  # only the sharing changed
-            outcome = store.verify(
-                VerifyRequest(proposal=proposal, decision=decision, edited_candidate=edited, reason=body.reason),
-                member.actor(),
-                clock(),
-            )
-            if outcome.data is None:
+            if both:
+                # Keep the known fact as it is and add this one next to it, with the context when one was given.
+                note = (body.reason or "").strip()
+                if note:
+                    base = edited or proposal.candidate
+                    edited = base.model_copy(update={"statement": f"{base.statement} Context: {note}"[:1500]})
+                store.keep_both(proposal.proposal_id, edited, body.reason, member.actor(), clock())
+                outcome = None
+            else:
+                decision = {
+                    "approve": VerifyDecision.ACCEPT,
+                    "reject": VerifyDecision.REJECT,
+                    "edit": VerifyDecision.ACCEPT_EDITED,
+                }[choice]
+                if edited is not None and decision is VerifyDecision.ACCEPT:
+                    decision = VerifyDecision.ACCEPT_EDITED  # only the sharing changed
+                outcome = store.verify(
+                    VerifyRequest(proposal=proposal, decision=decision, edited_candidate=edited, reason=body.reason),
+                    member.actor(),
+                    clock(),
+                )
+            if outcome is not None and outcome.data is None:
                 raise HTTPException(409, "This needs another cabinet member's decision first.")
-        card["status"] = "rejected" if body.decision == "reject" else "approved"
+        card["status"] = "rejected" if choice == "reject" else "approved"
         card["decided_at"] = clock().isoformat()
         return card
 
@@ -705,11 +764,13 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
 
     @app.post("/api/documents")
     async def upload(file: UploadFile, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
-        data = await file.read(MAX_UPLOAD + 1)
-        if len(data) > MAX_UPLOAD:
-            raise HTTPException(413, "The file is too big (2 MB at most).")
         name = (file.filename or "document")[:120]
         kind = name.lower().rsplit(".", 1)[-1]
+        limit = MAX_PDF_UPLOAD if kind == "pdf" else MAX_UPLOAD
+        data = await file.read(limit + 1)
+        if len(data) > limit:
+            raise HTTPException(413, f"The file is too big ({limit // (1024 * 1024)} MB at most).")
+        note = ""
         extra: list[Candidate] = []
         if kind == "xlsx":
             try:
@@ -719,11 +780,27 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             rows: list[list[object]] = [list(r) for ws in book.worksheets[:3] for r in ws.iter_rows(values_only=True)]
             extra = price_list(rows, member.club_id, name, clock())
             text = "" if extra else rows_to_text(rows)
+        elif kind == "pdf":
+            try:
+                pdf = read_pdf(data)
+            except DocumentError as error:
+                raise HTTPException(422, str(error)) from None
+            text = pdf.text
+            if pdf.images:
+                note = f" Pictures in the file ({pdf.images}) are not read, only its text."
+            if not text.strip():
+                raise HTTPException(422, "This PDF has no text, only pictures. ClubOps does not read pictures yet.")
         elif kind in {"txt", "md", "csv", "eml"}:
             text = data.decode("utf-8", errors="replace")
         else:
-            raise HTTPException(422, "Upload a .txt, .md, .csv, .eml or .xlsx file (save PDFs and Word files as text).")
-        sources = [untrusted(text, SourceKind.DOCUMENT, f"upload/{name}", name)] if text.strip() else []
+            raise HTTPException(422, "Upload a .pdf, .txt, .md, .csv, .eml or .xlsx file (save Word files as PDF).")
+        pieces = split_text(text) if text.strip() else []
+        if len(pieces) > MAX_PIECES:
+            pieces, note = pieces[:MAX_PIECES], note + f" Only the first {MAX_PIECES} pieces were read."
+        sources = [
+            untrusted(piece, SourceKind.DOCUMENT, f"upload/{name}#{n}", f"{name} (part {n}/{len(pieces)})")
+            for n, piece in enumerate(pieces, 1)
+        ]
         if not sources and not extra:
             return document_view(name, 0)
         if not sources:
@@ -737,15 +814,19 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
                     extra,
                 )
             return document_view(name, len(result.proposals))
-        return document_view(name, len(learn(member, sources, extra=extra)))
+        found: list[str] = []
+        for start in range(0, len(sources), 3):  # three pieces per read: one read answers at most 20 facts
+            found += learn(member, sources[start : start + 3], extra=extra if start == 0 else None)
+        return document_view(name, len(found), note)
 
-    def document_view(name: str, count: int) -> dict[str, Any]:
+    def document_view(name: str, count: int, note: str = "") -> dict[str, Any]:
         return {
             "item_id": f"doc-{uuid.uuid4().hex[:8]}",
             "title": name,
-            "statement": f"{count} fact{'s' if count != 1 else ''} sent for review"
-            if count
-            else "No facts found in this file.",
+            "statement": (
+                f"{count} fact{'s' if count != 1 else ''} sent for review" if count else "No facts found in this file."
+            )
+            + note,
             "tab": "documents",
             "kind": "document",
             "scope": "club",
@@ -759,8 +840,9 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
     # -------------------------------------------------- not built yet (501)
 
     @app.post("/api/chat/ask")
-    def ask(member: Member = Depends(signed_in)) -> dict[str, Any]:  # noqa: B008
-        """Until the chatbot (T-17) exists: say so honestly, with who to ask (D-49)."""
+    def ask(member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+        """Until the chatbot (T-17) exists: say so honestly, with who to ask (D-49). Cabinet only: the read-only
+        adviser must not start a question that will cost a model call once the chatbot is on (F-217)."""
         return {
             "known": False,
             "text": "The chatbot isn't switched on yet, so I can't answer from the club's memory.",
@@ -768,6 +850,83 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             "basis": "none",
             "ask": {"who": "the club president", "role": None},
             "look_in": None,
+        }
+
+    # ------------------------------------------------------------- OSA inbox (T-47)
+
+    inbox = PendingInbox(config.data_dir / "inbox.db")
+    inbox_notes = InboxNotes(config.data_dir / "inbox-notes.db")
+    inbox_ledger = InboxLedger(config.data_dir / "inbox-ledger.db")
+
+    def _summary(message_id: str, request: CaptureRequest) -> dict[str, str]:
+        """Metadata only: subject, date and who forwarded it. The body is shown nowhere before Review."""
+        text = request.sources[0].content if request.sources else ""
+        lines = {k: v.strip() for k, _, v in (line.partition(":") for line in text.splitlines()[:5])}
+        return {
+            "id": message_id,
+            "subject": lines.get("Subject", "")[:200],
+            "date": lines.get("Date", "")[:40],
+            "forwarded_by": lines.get("Forwarded by", "")[:200],
+        }
+
+    @app.get("/api/inbox")
+    def inbox_list(member: Member = Depends(cabinet)) -> list[dict[str, str]]:  # noqa: B008
+        """Forwarded e-mails waiting for this club. Free: nothing has been read by a model yet."""
+        return [_summary(mid, req) for mid, req in inbox.pending(member.club_id)]
+
+    @app.get("/api/inbox/skipped")
+    def inbox_skipped(member: Member = Depends(cabinet)) -> list[dict[str, str]]:  # noqa: B008
+        """Forwarded e-mails the free checks refused, with the reason in plain words. Never read."""
+        return inbox_notes.skipped(member.club_id)
+
+    @app.post("/api/inbox/{message_id}/allow")
+    def inbox_allow(message_id: str, member: Member = Depends(cabinet)) -> dict[str, bool]:  # noqa: B008
+        """Release an e-mail that was skipped only because its original sender is not on the OSA list. It joins
+        the waiting list; nothing is read until someone confirms the paid read, and its cards say the sender is
+        unlisted (D-136)."""
+        taken = inbox_notes.take_held(message_id, member.club_id)
+        if taken is None:
+            raise HTTPException(404, "No e-mail with that id can be released for your club.")
+        request, fingerprint, audience = taken
+        if inbox.enqueue(message_id, request):
+            inbox_notes.accept(message_id, member.club_id, fingerprint, audience, unlisted=True)
+        return {"waiting": True}
+
+    @app.post("/api/inbox/{message_id}/capture")
+    def inbox_capture(message_id: str, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+        """One paid model read, started by a person. Proposals go to Review; the e-mail leaves the queue
+        only when the read worked, so a failed read can be retried (F-214). Nothing is approved here (D-41)."""
+        waiting = dict(inbox.pending(member.club_id))
+        request = waiting.get(message_id)
+        if request is None or request.club_id != member.club_id:
+            raise HTTPException(404, "No waiting e-mail with that id for your club.")
+        fingerprint = inbox_notes.fingerprint(message_id, member.club_id)
+        if fingerprint is None:  # queued without J-22's checks: never paid for (D-114)
+            raise HTTPException(409, "This e-mail has not passed the inbox checks. Fetch the inbox again.")
+        token = inbox_ledger.claim_read(fingerprint)
+        if token is None:
+            raise HTTPException(409, "This e-mail is already being read, or was read for another club.")
+        try:
+            with club(member.club_id) as (store, _, _, _):
+                result = Learner(model_client(), store).learn(
+                    request,
+                    today(),
+                    load_settings().new_budget(),
+                    audience=inbox_notes.audience(message_id, member.club_id),
+                    unlisted_sender=inbox_notes.is_unlisted(message_id, member.club_id),
+                )
+        except BaseException:
+            inbox_ledger.release_read(fingerprint, token)
+            raise
+        if result.sources_failed:
+            inbox_ledger.release_read(fingerprint, token)
+            raise HTTPException(502, "The e-mail could not be read this time. It is still waiting; try again.")
+        inbox_ledger.mark_read(fingerprint, token)
+        inbox.mark_processed(message_id, member.club_id)
+        # `skipped` is a list of plain reasons, as docs/api.md says; the web screen rejects a number (F-239)
+        return {
+            "proposals": [p.proposal_id for p in result.proposals],
+            "skipped": ["The model could not use this content."] * result.sources_skipped,
         }
 
     # ----------------------------------------------------------- new-club setup (C-21)

@@ -1,0 +1,58 @@
+{
+  "kind": "live GitHub Projects merged-task refresh before 23 November meet-up; metadata only",
+  "observed_at_utc": "2026-11-22T11:09:23.094184+00:00",
+  "tool_commit": "c038d0914a5b7cce4941f8c3a5b76a5d8ec2e465",
+  "completed_refresh": {
+    "url": "https://github.com/users/Nohra2005/projects/4",
+    "tasks": 92,
+    "created": 0,
+    "updates": 92,
+    "source_commit": "60d7027200ea01c81a323fc548bd45b9067a7482",
+    "verified": true,
+    "profile": "additive",
+    "unmanaged_preserved": true,
+    "field_names": {
+      "Status": "ClubOps status",
+      "Owner": "ClubOps owner",
+      "Task ID": "ClubOps task id",
+      "Needs": "ClubOps needs",
+      "Sprint": "ClubOps sprint"
+    },
+    "view_grouping": "Verified ClubOps status columns via REST creation and GraphQL read-back",
+    "columns": {
+      "url": "https://github.com/users/Nohra2005/projects/4/views/8",
+      "name": "ClubOps status columns",
+      "column_field": "ClubOps status",
+      "verified": true,
+      "created": false,
+      "previous_views_preserved": true
+    }
+  },
+  "repeat_sync": {
+    "url": "https://github.com/users/Nohra2005/projects/4",
+    "tasks": 92,
+    "created": 0,
+    "updates": 0,
+    "source_commit": "60d7027200ea01c81a323fc548bd45b9067a7482",
+    "verified": true,
+    "profile": "additive",
+    "unmanaged_preserved": true,
+    "field_names": {
+      "Status": "ClubOps status",
+      "Owner": "ClubOps owner",
+      "Task ID": "ClubOps task id",
+      "Needs": "ClubOps needs",
+      "Sprint": "ClubOps sprint"
+    },
+    "view_grouping": "Verified ClubOps status columns via REST creation and GraphQL read-back",
+    "columns": {
+      "url": "https://github.com/users/Nohra2005/projects/4/views/8",
+      "name": "ClubOps status columns",
+      "column_field": "ClubOps status",
+      "verified": true,
+      "created": false,
+      "previous_views_preserved": true
+    }
+  },
+  "limits": "Merged TASKS only; three manual cards, original fields and status-column view preserved. No actual meeting, provider or deployed acceptance inferred."
+}

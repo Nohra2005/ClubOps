@@ -230,6 +230,7 @@ export interface ReviewCard {
   source: Source;
   group: string;
   kind: string;
+  op?: 'create' | 'merge' | 'update' | 'contradiction' | 'retire';
   alternative?: { statement: string; source: Source };
   event_id?: string;
   status: 'pending' | 'waiting_second_president' | 'approved' | 'rejected';
@@ -237,6 +238,7 @@ export interface ReviewCard {
   decided_at?: string;
   warning?: string;
   outdated?: boolean;
+  unlisted?: boolean;
   shared?: boolean;
 }
 export interface ReviewDecision {
