@@ -478,8 +478,22 @@ class Learner:
         teaching a fact on purpose (chat) may bring a rejected one back."""
         result = self.capture(request, today, budget, extra, audience=audience, unlisted_sender=unlisted_sender)
         on_purpose = any(src.source.kind is SourceKind.USER_INPUT for src in request.sources)
-        queued = [p for p in result.proposals if self.store.submit(p, override_rejection=on_purpose)]
+        waiting = list(self.store.pending.values())
+        fresh = [p for p in result.proposals if not self._already_waiting(p, waiting)]
+        queued = [p for p in fresh if self.store.submit(p, override_rejection=on_purpose)]
         return result.model_copy(update={"proposals": queued})
+
+    @staticmethod
+    def _already_waiting(proposal: KnowHowProposal, waiting: list[KnowHowProposal]) -> bool:
+        """The same fact worded a little differently is already a card in Review: reading the mail again must not
+        add a second card for it (F-313). The same id is handled by the queue itself."""
+        return any(
+            w.proposal_id != proposal.proposal_id
+            and w.op is proposal.op
+            and w.target_item == proposal.target_item
+            and similarity(w.candidate.statement, proposal.candidate.statement) >= 0.8
+            for w in waiting
+        )
 
     # ------------------------------------------------------------------ steps
 

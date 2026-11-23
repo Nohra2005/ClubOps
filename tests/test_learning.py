@@ -596,3 +596,13 @@ def test_reading_the_same_mail_again_does_not_bring_back_a_rejected_card(store: 
     provider.answers.append({"facts": [LESSON]})
     taught = CaptureRequest(club_id=CLUB, sources=[source(BLK)])  # a person teaching it in chat, on purpose
     assert len(learner.learn(taught, TODAY).proposals) == 1
+
+
+def test_reading_a_mail_again_does_not_add_a_second_card_for_the_same_fact(store: KnowHowStore, tmp_path: Path) -> None:
+    """The model worded the fact differently the second time, so a second card appeared (F-313)."""
+    again = {**LESSON, "statement": "Tell Cafe B ten days before a run to get free coffee for the run."}
+    provider = Provider({"facts": [LESSON]}, {"facts": [again]})
+    learner = Learner(provider.client(tmp_path), store)
+    request = CaptureRequest(club_id=CLUB, sources=[source(BLK, SourceKind.EMAIL)])
+    assert len(learner.learn(request, TODAY).proposals) == 1
+    assert learner.learn(request, TODAY).proposals == [] and len(store.pending) == 1
