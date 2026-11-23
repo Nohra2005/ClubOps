@@ -260,6 +260,10 @@ def review_card(p: KnowHowProposal, target: KnowHowItem | None = None) -> dict[s
         "valid_to": c.valid_to.isoformat() if c.valid_to else None,  # null: no end date, it never expires (F-305)
     }
     if target is not None:
+        if p.op.value in ("merge", "update"):
+            # A new version stays in the known fact's layer (F-163), so the box cannot change it (F-310).
+            card["shared"] = target.scope is Scope.AUB
+            card["shared_locked"] = True
         card["alternative"] = {
             "statement": target.statement,
             "source": source(target),

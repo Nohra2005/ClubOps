@@ -64,6 +64,7 @@ from clubops.contracts.knowhow import (
     Kind,
     KnowHowItem,
     KnowHowProposal,
+    ProposalOp,
     Scope,
     VerifyDecision,
     VerifyRequest,
@@ -656,7 +657,8 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
                 if not body.edited_text:
                     raise HTTPException(422, "Write the corrected fact first.")
                 edited = proposal.candidate.model_copy(update={"statement": body.edited_text})
-            if body.shared is not None and choice != "reject":
+            keeps_layer = proposal.op in (ProposalOp.UPDATE, ProposalOp.MERGE)  # F-163: the known fact's layer wins
+            if body.shared is not None and choice != "reject" and not keeps_layer:
                 if proposal.candidate.kind is Kind.RULE and not body.shared:
                     raise HTTPException(422, "AUB rules are always shared with every club.")
                 edited = rescoped(edited or proposal.candidate, member.club_id, shared=body.shared)
