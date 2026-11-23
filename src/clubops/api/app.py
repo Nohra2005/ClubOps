@@ -165,6 +165,8 @@ class DecisionBody(BaseModel):
     reason: str | None = Field(default=None, max_length=300)
     # None keeps ClubOps' suggestion; True shares the fact with every AUB club, False keeps it in this club (D-91).
     shared: bool | None = None
+    # None keeps the end date ClubOps found; "" means no end date; "YYYY-MM-DD" sets it (F-306).
+    valid_to: str | None = Field(default=None, max_length=10)
     opened_at: str | None = None
     decided_at: str | None = None
 
@@ -638,6 +640,17 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
                 if proposal.candidate.kind is Kind.RULE and not body.shared:
                     raise HTTPException(422, "AUB rules are always shared with every club.")
                 edited = rescoped(edited or proposal.candidate, member.club_id, shared=body.shared)
+                if edited == proposal.candidate:
+                    edited = None
+            if body.valid_to is not None and choice != "reject":
+                try:
+                    end = date.fromisoformat(body.valid_to) if body.valid_to else None
+                    edited = (edited or proposal.candidate).model_copy(update={"valid_to": end})
+                    KnowHowItem.model_validate(edited.model_dump())  # an end date before the start is refused
+                except ValueError:
+                    raise HTTPException(
+                        422, "The end date must be a real date, YYYY-MM-DD, not before the start."
+                    ) from None
                 if edited == proposal.candidate:
                     edited = None
             if both:

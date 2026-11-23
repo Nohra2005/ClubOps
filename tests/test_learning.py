@@ -279,6 +279,22 @@ def test_teaching_in_chat_puts_a_fact_in_review_not_in_memory(app_client: tuple[
     assert [k["title"] for k in c.get("/api/knowledge?tab=tips").json()] == [LESSON["title"]]
 
 
+def test_a_person_can_change_or_clear_the_end_date_on_a_card(app_client: tuple[TestClient, Provider]) -> None:
+    """The card showed an end date the person could not correct (F-306)."""
+    c, provider = app_client
+    provider.answers.append({"facts": [{**TERM_FACT}]})
+    first = c.post("/api/chat/teach", json={"text": TERM_CHAT}, headers=HEADERS).json()["review_id"]
+    assert c.get("/api/review").json()[0]["valid_to"] == "2026-12-31"
+    assert (
+        c.post(f"/api/review/{first}", json={"decision": "approve", "valid_to": "nope"}, headers=HEADERS).status_code
+        == 422
+    )
+    c.post(f"/api/review/{first}", json={"decision": "approve", "valid_to": "2027-05-31"}, headers=HEADERS)
+    assert [
+        k["valid_to"] for k in c.get("/api/knowledge?tab=tips").json() + c.get("/api/knowledge?tab=decisions").json()
+    ] == ["2027-05-31"]
+
+
 def test_the_adviser_cannot_teach(app_client: tuple[TestClient, Provider]) -> None:
     c, _ = app_client
     c.post("/api/auth/dev", json={"email": "ta03@aub.edu.lb"}, headers=HEADERS)
