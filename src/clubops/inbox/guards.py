@@ -33,6 +33,7 @@ class CheckedMail:
     content: str = ""
     fingerprint: str = ""
     audience: int | None = None  # how many people the original was sent to (To + Cc); None when unknown (D-126)
+    unlisted_sender: bool = False  # the original sender is not on the OSA list; a person chose to read it (D-136)
 
 
 class InboxLedger:
@@ -176,8 +177,11 @@ def check_forward(
     authorized_senders: Collection[str],
     osa_senders: Collection[str],
     ledger: InboxLedger,
+    *,
+    allow_unlisted_sender: bool = False,
 ) -> CheckedMail:
-    """Validate a forward and return clean, still-untrusted text or a skip reason."""
+    """Validate a forward and return clean, still-untrusted text or a skip reason. ``allow_unlisted_sender`` skips
+    only the OSA-list check, for an e-mail a cabinet member chose to read anyway; every other check still runs."""
     mail = BytesParser(policy=policy.default).parsebytes(raw)
     senders = [address.casefold() for _, address in getaddresses(mail.get_all("From", []))]
     recipients = [address.casefold() for _, address in getaddresses(mail.get_all("To", []))]
@@ -209,7 +213,8 @@ def check_forward(
         elif name != "sent":
             headers[name] = match.group(2).strip()
     origins = [address.casefold() for _, address in getaddresses([headers.get("from", "")])]
-    if len(origins) != 1 or origins[0] not in {address.casefold() for address in osa_senders}:
+    unlisted = len(origins) != 1 or origins[0] not in {address.casefold() for address in osa_senders}
+    if unlisted and not (allow_unlisted_sender and len(origins) == 1):
         return CheckedMail("original_sender_not_osa")
     content = "\n".join(lines[body_start:])
     content = _FORWARD_MARKER.split(content, maxsplit=1)[0]
@@ -227,4 +232,4 @@ def check_forward(
     fingerprint = hashlib.sha256(stable.encode()).hexdigest()
     if ledger.was_read(fingerprint):
         return CheckedMail("already_read")
-    return CheckedMail(None, content, fingerprint, count_audience(audience_lines))
+    return CheckedMail(None, content, fingerprint, count_audience(audience_lines), unlisted)

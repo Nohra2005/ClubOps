@@ -1,0 +1,58 @@
+{
+  "kind": "live GitHub Projects merged-task refresh; metadata only",
+  "observed_at_utc": "2026-11-20T12:04:49.114678+00:00",
+  "tool_commit": "ad34b58074f3d7887f3b2f13fc631549afd5e2ad",
+  "completed_refresh": {
+    "url": "https://github.com/users/Nohra2005/projects/4",
+    "tasks": 92,
+    "created": 0,
+    "updates": 93,
+    "source_commit": "e4090c66f5856b01e97526fb07067c13fb568c67",
+    "verified": true,
+    "profile": "additive",
+    "unmanaged_preserved": true,
+    "field_names": {
+      "Status": "ClubOps status",
+      "Owner": "ClubOps owner",
+      "Task ID": "ClubOps task id",
+      "Needs": "ClubOps needs",
+      "Sprint": "ClubOps sprint"
+    },
+    "view_grouping": "Verified ClubOps status columns via REST creation and GraphQL read-back",
+    "columns": {
+      "url": "https://github.com/users/Nohra2005/projects/4/views/8",
+      "name": "ClubOps status columns",
+      "column_field": "ClubOps status",
+      "verified": true,
+      "created": false,
+      "previous_views_preserved": true
+    }
+  },
+  "repeat_sync": {
+    "url": "https://github.com/users/Nohra2005/projects/4",
+    "tasks": 92,
+    "created": 0,
+    "updates": 0,
+    "source_commit": "e4090c66f5856b01e97526fb07067c13fb568c67",
+    "verified": true,
+    "profile": "additive",
+    "unmanaged_preserved": true,
+    "field_names": {
+      "Status": "ClubOps status",
+      "Owner": "ClubOps owner",
+      "Task ID": "ClubOps task id",
+      "Needs": "ClubOps needs",
+      "Sprint": "ClubOps sprint"
+    },
+    "view_grouping": "Verified ClubOps status columns via REST creation and GraphQL read-back",
+    "columns": {
+      "url": "https://github.com/users/Nohra2005/projects/4/views/8",
+      "name": "ClubOps status columns",
+      "column_field": "ClubOps status",
+      "verified": true,
+      "created": false,
+      "previous_views_preserved": true
+    }
+  },
+  "limits": "Merged TASKS only; manual cards and existing columns preserved. No weekly meeting, provider or deployed acceptance evidence."
+}

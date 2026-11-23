@@ -23,7 +23,9 @@
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run lint && npm run format:check && npm test && npm run test:tools && npm run typecheck:rehearsal && npm run build"
+    "check": "npm run lint && npm run format:check && npm test && npm run test:tools && npm run typecheck:rehearsal && npm run build",
+    "board:reconcile:plan": "node scripts/project-native-board.mjs",
+    "board:reconcile": "node scripts/project-native-board.mjs --apply --native-fields"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.3.0",

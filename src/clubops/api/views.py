@@ -260,6 +260,8 @@ def review_card(p: KnowHowProposal, target: KnowHowItem | None = None) -> dict[s
         card["warning"] = "This source contained instructions; they were ignored. Check the fact carefully."
     if "may be outdated" in p.rationale:
         card["outdated"] = True
+    if "sender is not on the OSA list" in p.rationale:
+        card["unlisted"] = True  # a person chose to read an e-mail whose sender is not on the OSA list (D-136)
     return card
 
 

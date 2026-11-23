@@ -296,11 +296,12 @@ Reference documents:
 
 ### T-48 Expiry archive and AUB-wide cards (D-115)
 - Owner: tatiana
-- Status: todo
+- Status: done
 - Needs: T-47
 - What: Each card can carry an expiry date (the model suggests it, the reviewer can change it); a plain rule, no model, moves an expired card to an archive the planner never uses; the president can restore it; the archive is kept. Cards are sorted AUB-wide or club-only: AUB-wide cards are approved by the operator now (later: live when two presidents approve), club-only cards by the president. After ASME and the final evaluation: simple approved rules (date cut-offs) checked by code in the planner, and reading OSA e-mails without a click.
 - Done when: synthetic tests for expiry, restore and the two card kinds, each with a failure-matrix row.
 - Progress (2026-11-15): expiry and AUB-wide sorting already existed (D-124); added the president's restore route with tests (F-215). Still after the final evaluation: planner date checks in code, reading OSA e-mails without a click.
+- Verified (2026-11-21): #96 merged into main as 0ac0b5b; its seven archive regressions and CI passed before merge. The synthetic expiry/restore/scope gate is complete. This does not complete T-47 live mail, future shared governance or automatic reads.
 
 ### T-49 Count who an e-mail went to: AUB-wide or club-only (D-126)
 - Owner: tatiana
@@ -556,11 +557,23 @@ Reference documents:
 
 ### C-31 GitHub Projects board and weekly sprints (bonus)
 - Owner: christophe
-- Status: blocked
+- Status: doing
+- Live native verification (2026-11-23): one bulk invocation reconciled 93 TASKS cards plus 3 issues, native Status/Assignees/four Monday Iteration weeks and current priority/size estimates; 542 native mutations, zero remaining changes. Existing custom fields, views and content preserved. Receipt: web/board/evidence/native-fields-2026-11-23.json. Weekly topics are linked commit history; meeting dates are owner-reported.
+- Scope restored (2026-11-23, Christophe, D-137): restore C-31 and supersede D-133. Christophe reports four Monday meetings on 2, 9, 16 and 23 November. Reconcile native Status, Assignees and Iteration plus current backlog planning fields in one bulk run. Commit-history summaries are retrospective repository context, not verified minutes or inferred attendance/decisions.
+- Scope decision (2026-11-22, Christophe, D-133): do not pursue the weekly-review/sprint engineering bonus or collect three meeting records. Keep the existing board as an ordinary task tracker; no weekly-review bonus completion is claimed. This supersedes the older requirements and blockers recorded below.
+- Progress (2026-11-22): existing private board #4 refreshed from merged main 60d7027: 92 tasks, no new cards, 92 managed updates; repeat creates/updates zero. Manual cards/fields/views preserved. New proof is web/board/evidence/refresh-2026-11-22.json; three genuine weekly-review records remain open.
+- Progress (2026-11-20, after #94/#102): board refresh now pins main 0f3bb09, including Joey's merged task reconciliation: 92 tasks, no new cards, 107 managed updates; repeat zero changes. New receipt: web/board/evidence/refresh-2026-11-20-after-inbox-merge.json. Manual objects preserved; real weekly-review evidence remains open.
+- Progress (2026-11-20): refreshed existing private board #4 from merged main e4090c6: 92 tasks, no new cards, 93 managed updates; repeat creates/updates zero. Original manual cards and status columns preserved. Dated read-back proof is web/board/evidence/refresh-2026-11-20.json. Three genuine weekly-review records remain outstanding.
+- Live refresh (2026-11-18): merged main 166f27e is reflected in the existing private board: 92 tasks, 0 new cards, 100 field/body updates; manual objects and view #8 preserved. Repeat sync makes 0 creates/0 updates. Dated proof: `web/board/evidence/refresh-2026-11-18.json`. Three real weekly reviews remain unevidenced.
+- Live refresh (2026-11-16): 92 merged-main tasks from 54d38c1 verified on existing project #4; 2 new cards, 99 field/body updates, original manual cards preserved and status-columns view #8 reused. Repeat sync creates 0/updates 0. Dated proof: `web/board/evidence/refresh-2026-11-16.json`. Three actual weekly team reviews still need records; this remains doing.
+- Progress (2026-11-12, adoption): explicit read-only adoption preview and resumable import implemented with separate ClubOps fields/view, preserving existing manual Status/Iteration/cards/README. Synthetic refusal, partial-write retry, identity-preservation and no-op checks pass. Actual sync and UI grouping verification are being checked; three genuine weekly reviews still remain open.
+- Live verification (2026-11-12): project #4 has 90 tasks from merged main 2fff794 plus its three original manual cards. All fields verify; repeat sync creates 0 cards/0 updates. REST-created view #8, ClubOps status columns, verifies the actual vertical column field; repeat creates no view. No manual UI step remains. Metadata: `web/board/evidence/live-sync.json`. Three actual weekly reviews remain unrecorded, so C-31 stays doing. No unmerged task statuses, public visibility, duplicate project or review history invented.
+- Progress (2026-11-12): access resolved: project #4 is private/open with 17 fields and three manual issue cards (#43/#83/#84). Its Status options, Iteration field and absent management marker differ from the dedicated importer. Adoption/iteration reconciliation and verified sync remain open; no board mutation, duplicate or completed weekly review. Earlier permission blockers below are historical. See `web/PROJECT_BOARD.md`.
+- Progress (2026-11-11): Christophe supplied https://github.com/users/Nohra2005/projects/4. CLI viewer chrs-005 has project scope, but view/fields/items for Nohra2005 project 4 all return Could not resolve. Asked Tatiana to verify access/target in #43. No board changes or duplicate; adoption/sync and three actual weekly reviews remain unverified. See web/PROJECT_BOARD.md.
 - Owner response (2026-11-09): Tatiana reports the existing ClubOps board is in the repo's Projects tab with Christophe as admin; weekly sprints start 4 November and reviews are Wednesdays after office hours. Local plan now targets Nohra2005/ClubOps and that cadence; no duplicate board should be created. Current-main dry run reads 85 tasks. Projects scope is still missing; live owner/number/access/fields/cards/iterations and safe adoption of any manual cards must be inspected before sync. No actual weekly review is claimed here.
 - Needs: none
-- What: A GitHub Projects board fed by `TASKS.md` (one card per task, columns = status), so ownership is visible on GitHub. One-week sprints (a Projects iteration per week with the tasks planned for it); a 10-minute review with the team each week, noted in one line under T-28.
-- Done when: the board matches `TASKS.md` and 3 weekly sprints are recorded.
+- What: Maintain the existing private board from pinned TASKS.md, including native statuses/assignees, four Monday iterations and current priority/size estimates. Retain original issue cards, custom fields and earlier receipts. Record reported meeting dates and linked repository history without inventing oral decisions or backdating assignments.
+- Done when: board fields and owners verify against the pinned task source, the four reported Monday weeks exist and the team reviews the linked weekly evidence. Dates are owner-reported; commit summaries alone do not verify meeting decisions or attendance.
 - Progress (2026-11-03): PR #55 adds the pinned TASKS.md plan, private Projects v2 create/sync CLI, board fields, proposed weekly iterations and read-back verification. 12 synthetic tool tests run in web CI; dry run reads 77 tasks from main. See `web/PROJECT_BOARD.md`.
 - Blocker (updated 2026-11-09): Projects scope is now enabled for chrs-005, but full read-only discovery returns no visible boards under Nohra2005, chrs-005 or the repository. Need Tatiana's direct board URL/access before inspecting and adopting the existing board; do not create a duplicate. Three actual weekly team reviews still need evidence under T-28; planned iterations are not completed-review evidence.
 
@@ -692,7 +705,7 @@ Reference documents:
 - What: Read the ClubOps inbox (Gmail API) and turn each forwarded e-mail into input for learning. One inbox for all clubs: each club forwards to its own address with a "+" tag (`clubops.agent+running-club@gmail.com`), and the tag says the club. Drop e-mails whose sender is not on that club's cabinet list, and e-mails with an unknown tag. Pass the rest as `Untrusted` text (sender, date, subject, body; attachments listed by name only) to T-18's capture step, so every fact waits in Review. Never auto-approve; never reply to the sender. Code in `src/clubops/inbox/`.
 - Done when: forwarding a real OSA e-mail puts a proposed fact in that club's Review, and tests (with made-up e-mails) cover: wrong tag, sender not on the list, the same e-mail twice (no duplicate), and an e-mail with instructions inside ("ignore the rules...") treated as data. Each case has a failure-matrix row.
 - Progress (2026-10-31): Gmail read adapter, designated `clubops.agent+<club>@gmail.com` tag/sender filtering and durable deduplicated private queue added with synthetic tests. Human-click capture integration and live forward remain pending Gmail API access and Tatiana's API wiring.
-- Blocked (2026-11-20): #92/#93 are merged. #95 implements the guarded paid-read route and passed Joey's 15 focused inbox tests; Joey approved it, but it now conflicts with merged #96 in owner-maintained docs/api.md. Tatiana must reconcile that response documentation and shared failure rows, obtain current-head re-review/CI, finish proof/removal routes, then coordinate the approved real-forward acceptance with #94. J-22 code completion does not prove live Review delivery.
+- Blocked (2026-11-21): #92/#93/#95 and frontend #94 are merged into main. The guarded paid-read route and confirmed Inbox/Restore UI are available for acceptance. Tatiana still owns forwarding-address proof/removal routes and approved real-forward-to-Review evidence; coordinate the audience backfill in #103 after its main sync. Joey then runs the approved skip/retry/read-once check. J-22 code completion does not prove live Review delivery.
 
 ### J-11 Daily check and OSA rule check (was T-21)
 - Owner: joey
@@ -740,6 +753,7 @@ Reference documents:
 - Done when: the chatbot answers on the app with sources, says "not sure" with who to ask when it should, and Tatiana's 42-question run is recorded.
 - Progress (2026-10-31): source-gated chat core and synthetic tests added. App endpoint wiring and Tatiana's private 42-question run remain pending.
 - Blocked (2026-11-20): synthetic source/citation/unknown-answer tests pass. Tatiana must confirm current app wiring and record the private 42-question run for T-26. No private question set or matching model recordings exist in this checkout; no score is invented.
+- Verified (2026-11-22): inspected the current app route: POST /api/chat/ask still returns the explicit not-switched-on placeholder; the source-gated core is not wired into it. Tatiana owns the authenticated own-club API integration and private 42-question evaluation. Adding a model key alone will not complete J-15.
 
 ### J-16 Secret scanning in CI (bonus)
 - Owner: joey
@@ -815,3 +829,16 @@ Reference documents:
 
 - Blocked (2026-11-16): T-48 is not merged and the frozen CalendarItem contract has no per-event invitee or deadline-card approval fields. Coordinate a standalone contract-change PR with Tatiana before implementing D-116; do not reuse the old role-calendar behavior as acceptance.
 - Blocked (2026-11-20): T-48 restore slice is now merged as #96, but CalendarItem still lacks approved deadline-card choice and named per-event audience. Tatiana must agree the standalone versioned contract-change with Joey, including audience replacement/removal, done/cancel and retry semantics; both owners approve. Then Joey implements the one-calendar-per-club adapter and synthetic regressions. No contract was changed unilaterally.
+
+
+### J-24 Coordinate reviewed merges and team handoffs
+- Owner: joey
+- Status: review
+- Needs: none
+- What: Reconcile current PR/task/handoff evidence, review ready work, merge only independently approved green changes, request missing owner PRs/reviews.
+- Done when: the coordination status PR is independently reviewed and merged, with actual merges, remaining owner actions and sent emails versus drafts recorded in the handoff.
+- Progress (2026-11-21): PR #105 is open with Tatiana and Christophe requested for review. #100 merged as c53948f after Joey review; #91/#99/#101 and fixed #103 reviewed. Other merges and exact blockers are recorded in the session handoff. Gmail/Outlook connectors are unconnected, so no email delivery is claimed.
+
+- Review update (2026-11-22): Per Tatiana, removed the Project coordination emails section from #105; this PR now only reconciles task status and owner handoffs. Re-approved #103 at synced head 8bf0429 after all 93 focused tests and five CI checks passed. #105 still needs independent review.
+
+- Readiness (2026-11-22): checked local configuration without exposing values; live provider/sign-in/Calendar/Gmail setup is missing. Prepared ignored private cabinet review and Gmail/Calendar acceptance worksheets with no results claimed. Confirmed the chatbot route is still a placeholder and requested the API owner handoff. No configuration, paid call, live mailbox access or Google write was performed.

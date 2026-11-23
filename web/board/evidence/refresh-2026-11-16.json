@@ -1,0 +1,40 @@
+{
+  "kind": "live GitHub Projects task mirror refresh; metadata only",
+  "observed_at_utc": "2026-11-16T10:16:40Z",
+  "source_commit": "54d38c1807e9f6d8f47df335cef87f4299d983d4",
+  "tool_commit": "8d31e2f00745d6281f3d0b27166ce6fab201c4f8",
+  "completed_refresh": {
+    "tasks": 92,
+    "created": 2,
+    "updates": 99,
+    "verified": true,
+    "unmanaged_preserved": true
+  },
+  "repeat_sync": {
+    "url": "https://github.com/users/Nohra2005/projects/4",
+    "tasks": 92,
+    "created": 0,
+    "updates": 0,
+    "source_commit": "54d38c1807e9f6d8f47df335cef87f4299d983d4",
+    "verified": true,
+    "profile": "additive",
+    "unmanaged_preserved": true,
+    "field_names": {
+      "Status": "ClubOps status",
+      "Owner": "ClubOps owner",
+      "Task ID": "ClubOps task id",
+      "Needs": "ClubOps needs",
+      "Sprint": "ClubOps sprint"
+    },
+    "view_grouping": "Verified ClubOps status columns via REST creation and GraphQL read-back",
+    "columns": {
+      "url": "https://github.com/users/Nohra2005/projects/4/views/8",
+      "name": "ClubOps status columns",
+      "column_field": "ClubOps status",
+      "verified": true,
+      "created": false,
+      "previous_views_preserved": true
+    }
+  },
+  "limits": "Mirrors merged TASKS only. No new view or manual-card changes. No genuine weekly review or deployed club acceptance is established."
+}

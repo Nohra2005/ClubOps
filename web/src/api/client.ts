@@ -86,6 +86,21 @@ export class ApiClient {
       throw new ApiError('Use the disclosed demo Inbox to practice with synthetic email.', 501);
     return readSkippedEmail(await this.request<unknown>('/inbox/skipped'));
   }
+  /** Release an e-mail skipped only because its sender is not on the OSA list. Free; nothing is read (D-136). */
+  async allowInbox(id: string) {
+    if (this.mode !== 'http' || !id.trim())
+      throw new ApiError('Choose a skipped email from the server Inbox.', 422);
+    try {
+      await this.post<unknown>(`/inbox/${encodeURIComponent(id)}/allow`);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404)
+        throw new ApiError(
+          'This email cannot be released. Run the free fetch again and refresh Inbox.',
+          404,
+        );
+      throw error;
+    }
+  }
   async captureInbox(id: string) {
     if (this.mode !== 'http' || !id.trim())
       throw new ApiError('Choose a waiting email from the server Inbox.', 422);
@@ -226,9 +241,12 @@ export class ApiClient {
     return this.extension('feedback', { id, value, reason });
   }
   suggestEdit(item_id: string, text: string) {
+    if (this.mode === 'http')
+      return this.post(`/knowledge/${encodeURIComponent(item_id)}/edit`, { text });
     return this.extension('knowledge-edit', { item_id, text });
   }
   retire(item_id: string) {
+    if (this.mode === 'http') return this.post(`/knowledge/${encodeURIComponent(item_id)}/retire`);
     return this.extension('knowledge-retire', { item_id });
   }
   signOff(role: Role) {

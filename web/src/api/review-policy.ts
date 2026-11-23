@@ -20,7 +20,9 @@ export function canBatchApprove(card: ReviewCard) {
     card.status === 'pending' &&
     !isShared(card) &&
     !card.warning &&
-    !card.outdated
+    !card.outdated &&
+    !card.unlisted &&
+    card.op !== 'retire'
   );
 }
 
