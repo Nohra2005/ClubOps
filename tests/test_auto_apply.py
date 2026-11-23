@@ -10,7 +10,7 @@ from clubops.api import views
 from clubops.capabilities.runner import CapabilityError
 from clubops.contracts.common import ErrorCode, Role
 from clubops.contracts.knowhow import ItemStatus, ProposalOp, Scope
-from clubops.knowhow.store import AUTO_MEMBER
+from clubops.knowhow.store import AUTO_MEMBER, KnowHowStore
 from tests.factories import CLUB, NOW, TODAY, actor, item, proposal, verified
 
 
@@ -163,3 +163,21 @@ def test_cards_and_knowledge_show_the_end_date_or_none() -> None:
     assert views.knowledge(open_ended, [open_ended], TODAY)["valid_to"] is None
     card = views.review_card(proposal(item("kh-card", valid_to=date(2026, 12, 31))), target=open_ended)
     assert card["valid_to"] == "2026-12-31" and card["alternative"]["valid_to"] is None
+
+
+def test_search_skips_expired_facts_but_learning_can_still_match_them(store: KnowHowStore) -> None:
+    """The planner used to find a fact months after its end date (F-304)."""
+    old = verified(
+        item("kh-old", title="Cafe B notice", statement="Cafe B needs ten days notice", valid_to=date(2020, 1, 1))
+    )
+    live = verified(
+        item("kh-live", title="Cafe B notice now", statement="Cafe B needs ten days notice", valid_to=date(2099, 1, 1))
+    )
+    store.backend.append(old)
+    store.backend.append(live)
+    assert [i.item_id for i in store.search(old.club_id, "Cafe B notice")] == ["kh-live"]
+    assert {i.item_id for i in store.search(old.club_id, "Cafe B notice", include_expired=True)} == {
+        "kh-old",
+        "kh-live",
+    }
+    assert [i.item_id for i in store.search(old.club_id, "Cafe B notice", today=date(2019, 6, 1))].count("kh-old") == 1
