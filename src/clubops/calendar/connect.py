@@ -43,7 +43,7 @@ def token_key(session_secret: str, explicit: str | None = None) -> bytes:
     return base64.urlsafe_b64encode(derived)
 
 
-def authorization_url(client_id: str, redirect_uri: str, state: str) -> str:
+def authorization_url(client_id: str, redirect_uri: str, state: str, scopes: tuple[str, ...] = SCOPES) -> str:
     """Where the president's browser goes. Offline access and a forced consent screen make Google return a
     refresh token every time; ``include_granted_scopes`` is off so the token holds only these two scopes."""
     query = urlencode(
@@ -51,7 +51,7 @@ def authorization_url(client_id: str, redirect_uri: str, state: str) -> str:
             "client_id": client_id,
             "redirect_uri": redirect_uri,
             "response_type": "code",
-            "scope": " ".join(SCOPES),
+            "scope": " ".join(scopes),
             "access_type": "offline",
             "prompt": "consent",
             "include_granted_scopes": "false",

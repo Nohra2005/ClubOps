@@ -125,3 +125,13 @@ No entries yet — `capture`'s contract (`CaptureRequest`/`CaptureResult` in `sr
 **Next:** Set the Google client values on the host and add the redirect address in Google Cloud; Christophe adds Connect, Disconnect and a status line to the Calendar screen; then one live connect and one cabinet add/remove with a test address.
 
 **Open questions / blockers:** Google cancels keys of apps in Testing mode every 7 days; publish the app or accept reconnecting weekly.
+
+## 2026-11-24 — Tatiana Nohra, with Claude (feat/t47-gmail-connect)
+
+**Did:** T-47 in-app Gmail (D-156): `gmail_connect.py` (operator-only connect, encrypted key shared with the Calendar vault, free fetch with a 20 second guard), routes `GET /api/inbox/gmail`, `POST` and `DELETE /api/inbox/gmail/connect`, `GET /api/inbox/gmail/callback`, `POST /api/inbox/fetch`. Tests `tests/test_gmail_connect.py`; rows F-327 to F-330.
+
+**State:** Passes with a fake Google. Not tried against real Google.
+
+**Next:** Host settings (`CLUBOPS_OPERATOR_EMAILS`, `CLUBOPS_GMAIL_REDIRECT_URI`, `CLUBOPS_OSA_SENDERS`, `CLUBOPS_INBOX_SENDERS`, optional `CLUBOPS_GMAIL_ADDRESS`); add the redirect address to the "ClubOps inbox" client in Google Cloud; Christophe adds Connect and Fetch to the Inbox screen; one live connect and one fetch.
+
+**Open questions / blockers:** Testing mode still cancels the key every 7 days; renewing is now one click by the inbox owner.

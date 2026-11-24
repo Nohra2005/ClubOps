@@ -295,6 +295,7 @@ Reference documents:
 - Needs: J-10, T-39
 - What: The parts that need the API owner or her accounts. Gmail read access for `clubops.agent` (`gmail.readonly`, refresh token only in `.env`). The private OSA sender list (operator data, never the repo). Routes in `app.py`: add/verify an extra sending address, `GET /api/inbox` (cabinet only, own club), `POST /api/inbox/{id}/capture` (one paid model call, triggered by a click). Prompt caching for the fixed capture instructions. Inbox checks are J-22; screens are C-35.
 - Done when: a real forwarded OSA e-mail becomes Review cards for its club through the routes, with synthetic route tests and failure-matrix rows.
+- Progress (2026-11-24): the inbox is connected and fetched inside the app (D-156): operator-only connect/disconnect, encrypted key, `GET /api/inbox/gmail`, `POST /api/inbox/fetch` (free, counts only). Left: Connect and Fetch buttons on the Inbox screen (Christophe), host settings, a live check on the deployed app.
 
 ### T-48 Expiry archive and AUB-wide cards (D-115)
 - Owner: tatiana
