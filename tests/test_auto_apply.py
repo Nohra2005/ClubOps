@@ -199,3 +199,11 @@ def test_a_review_card_says_why_it_was_proposed() -> None:
         update={"rationale": "from an OSA mail; merge: nearly the same words"}
     )
     assert views.review_card(p)["why"] == "from an OSA mail; merge: nearly the same words"
+
+
+def test_a_rule_card_shows_its_notice_period_so_it_can_be_corrected() -> None:
+    """The web edit field starts from the number the planner would enforce (F-309)."""
+    from tests.factories import rule
+
+    assert views.review_card(proposal(rule()))["lead_time_days"] == 14
+    assert "lead_time_days" not in views.review_card(proposal(item("kh-plain")))

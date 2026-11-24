@@ -260,6 +260,10 @@ def review_card(p: KnowHowProposal, target: KnowHowItem | None = None) -> dict[s
         "valid_to": c.valid_to.isoformat() if c.valid_to else None,  # null: no end date, it never expires (F-305)
         "why": p.rationale[:300],  # why ClubOps proposed this action, plain text (F-311)
     }
+    if isinstance(c.details, RuleDetails):
+        leads = [r.lead_time_days for r in c.details.requirements if r.lead_time_days is not None]
+        if leads:
+            card["lead_time_days"] = max(leads)  # the notice period a person may correct before approving (F-309)
     if target is not None:
         if p.op.value in ("merge", "update"):
             # A new version stays in the known fact's layer (F-163), so the box cannot change it (F-310).

@@ -246,6 +246,8 @@ export interface ReviewCard {
   valid_to?: string | null;
   /** Why ClubOps proposed this card, plain text. */
   why?: string;
+  /** A rule's notice period in days (the longest one). */
+  lead_time_days?: number;
 }
 export interface ReviewDecision {
   decision: string;
@@ -253,6 +255,8 @@ export interface ReviewDecision {
   edited_text?: string;
   /** YYYY-MM-DD sets the end date, '' clears it, absent keeps ClubOps' guess. */
   valid_to?: string;
+  /** A rule's notice period in days; absent keeps ClubOps' guess. */
+  lead_time_days?: number;
   reason?: string;
   opened_at: string;
   decided_at: string;

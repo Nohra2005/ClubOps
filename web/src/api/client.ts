@@ -240,9 +240,12 @@ export class ApiClient {
   feedback(id: string, value: string, reason: string) {
     return this.extension('feedback', { id, value, reason });
   }
-  suggestEdit(item_id: string, text: string) {
+  suggestEdit(item_id: string, text: string, lead_time_days?: number) {
     if (this.mode === 'http')
-      return this.post(`/knowledge/${encodeURIComponent(item_id)}/edit`, { text });
+      return this.post(`/knowledge/${encodeURIComponent(item_id)}/edit`, {
+        text,
+        ...(lead_time_days === undefined ? {} : { lead_time_days }),
+      });
     return this.extension('knowledge-edit', { item_id, text });
   }
   undoFact(item_id: string) {
