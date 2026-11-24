@@ -35,3 +35,7 @@ was used. Tests still require successful replay with network access forbidden.
 Never put real recordings here. Keep frozen/private evaluation inputs and recordings
 private; map their columns explicitly without changing the frozen CSV. Scoring rules,
 human-rating workflow and limitations are documented in `web/LEARNING_EVALUATION.md`.
+
+On 2026-11-24 the two extraction recordings were regenerated the same way (public CLI, `httpx.MockTransport`,
+the same fake answers) because the extraction prompt now also lists deadlines (`learn-extract-v4`, F-316). The
+answer recording is unchanged. No provider, private input or human rating was used.

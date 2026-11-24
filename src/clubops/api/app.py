@@ -932,7 +932,11 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         return {"waiting": True}
 
     @app.post("/api/inbox/{message_id}/capture")
-    def inbox_capture(message_id: str, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    def inbox_capture(
+        message_id: str,
+        background: BackgroundTasks,
+        member: Member = Depends(cabinet),  # noqa: B008
+    ) -> dict[str, Any]:
         """One paid model read, started by a person. Proposals go to Review; the e-mail leaves the queue
         only when the read worked, so a failed read can be retried (F-214). Nothing is approved here (D-41)."""
         waiting = dict(inbox.pending(member.club_id))
@@ -962,6 +966,9 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             raise HTTPException(502, "The e-mail could not be read this time. It is still waiting; try again.")
         inbox_ledger.mark_read(fingerprint, token)
         inbox.mark_processed(message_id, member.club_id)
+        # Dated deadlines in clean OSA mail become calendar tasks per role, without a click (D-138, F-316)
+        if calendar_service.enqueue_mail_deadlines(member.club_id, result.deadlines, today(), message_id):
+            background.add_task(calendar_service.drain)
         # Clean facts from trusted OSA mail apply at once; anything odd waits in Review (D-138)
         with club(member.club_id) as (store, _, _, _):
             applied = [
