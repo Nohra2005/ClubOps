@@ -25,8 +25,8 @@ from clubops.contracts.knowhow import Answer, AskRequest
 from clubops.evaluation.chat_sheet import ask_sheet, read_questions, read_sheet, score_sheet, table, write_sheet
 from clubops.knowhow.backends import open_club_store_backend
 from clubops.knowhow.store import KnowHowStore
-from clubops.redaction import redact
 from clubops.model.client import ModelClient
+from clubops.redaction import redact
 
 REPO = Path(__file__).resolve().parents[1]
 
