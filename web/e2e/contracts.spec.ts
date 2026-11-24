@@ -972,3 +972,130 @@ test('HTTP inbox does not request cabinet metadata in an adviser session', async
   await expect(page.getByRole('button', { name: /Refresh.*email/ })).toHaveCount(0);
   expect(calls).toEqual([]);
 });
+
+test('C-35 expiry drafts are excluded from batch approval and preserved on failure', async ({
+  page,
+}) => {
+  const base = createWorkspace('running-club').review.find((card) => card.type === 'fact')!;
+  const cards = [
+    {
+      ...base,
+      id: 'expiry-change',
+      title: 'Synthetic dated fact',
+      statement: 'Synthetic standing instruction.',
+      group: 'Expiry fixtures',
+      shared: false,
+      valid_to: '2099-12-31',
+    },
+    {
+      ...base,
+      id: 'expiry-clear',
+      title: 'Synthetic clear date',
+      statement: 'Synthetic standing instruction.',
+      group: 'Expiry fixtures',
+      shared: false,
+      valid_to: '2099-12-31',
+    },
+    {
+      ...base,
+      id: 'expiry-hint',
+      title: 'Synthetic dated text',
+      statement: 'Synthetic deadline December 4.',
+      group: 'Expiry fixtures',
+      shared: false,
+      valid_to: null,
+    },
+    {
+      ...base,
+      id: 'expiry-comparison',
+      type: 'merge',
+      title: 'Synthetic comparison',
+      group: 'Expiry fixtures',
+      valid_to: '2099-12-31',
+      alternative: {
+        statement: 'Previous synthetic version.',
+        source: base.source,
+        valid_to: '2098-12-31',
+      },
+    },
+  ];
+  const writes: { id: string; body: Record<string, unknown> }[] = [];
+  let fail = true;
+  await page.route('**/api/review**', (route) => {
+    if (!new URL(route.request().url()).pathname.startsWith('/api/')) return route.fallback();
+    if (route.request().method() === 'GET') return route.fulfill({ json: cards });
+    const id = new URL(route.request().url()).pathname.split('/').pop()!;
+    writes.push({ id, body: route.request().postDataJSON() });
+    return route.fulfill(
+      fail
+        ? { status: 422, json: { detail: 'Synthetic validation failure' } }
+        : { json: { status: 'approved' } },
+    );
+  });
+  await page.goto('/review');
+  const change = page.locator('#expiry-change');
+  const clear = page.locator('#expiry-clear');
+  await expect(change).toContainText('Valid until 31 December 2099');
+  await expect(page.locator('#expiry-comparison')).toContainText('Valid until 31 December 2098');
+  await expect(page.locator('#expiry-hint')).toContainText('Check the source and confirm');
+  await change.getByLabel('End date', { exact: true }).fill('2099-06-30');
+  await clear.getByRole('button', { name: 'No end date', exact: true }).click();
+  await expect(page.getByRole('button', { name: /Approve .* facts/ })).toHaveCount(0);
+  expect(writes).toEqual([]);
+  await change.getByRole('button', { name: 'Approve', exact: true }).click();
+  await expect(change.getByRole('alert')).toBeVisible();
+  await expect(change.getByLabel('End date', { exact: true })).toHaveValue('2099-06-30');
+  expect(writes[0].body.valid_to).toBe('2099-06-30');
+  fail = false;
+  await clear.getByRole('button', { name: 'Approve', exact: true }).click();
+  await expect.poll(() => writes.length).toBe(2);
+  expect(writes[1].body.valid_to).toBe('');
+});
+
+test('C-35 Knowledge shows expiry years in list and detail without guessing missing metadata', async ({
+  page,
+}) => {
+  const base = createWorkspace('running-club').knowledge[0];
+  const items = [
+    {
+      ...base,
+      item_id: 'dated',
+      title: 'Synthetic expiry',
+      statement: 'Synthetic fact.',
+      valid_to: '2099-12-31',
+      status: 'current',
+      tab: 'rules',
+    },
+    {
+      ...base,
+      item_id: 'undated',
+      title: 'Synthetic dated statement',
+      statement: 'Deadline December 4.',
+      valid_to: null,
+      status: 'current',
+      tab: 'rules',
+    },
+    {
+      ...base,
+      item_id: 'legacy',
+      title: 'Synthetic older server',
+      valid_to: undefined,
+      status: 'current',
+      tab: 'rules',
+    },
+  ];
+  await page.route('**/api/knowledge**', (route) => {
+    const id = new URL(route.request().url()).pathname.split('/')[3];
+    return route.fulfill({ json: id ? items.find((item) => item.item_id === id) : items });
+  });
+  await page.goto('/knowledge');
+  await expect(page.getByText('Valid until 31 December 2099', { exact: true })).toBeVisible();
+  await expect(page.getByText('No end date', { exact: true })).toBeVisible();
+  await expect(
+    page.getByText('End date unavailable on this server', { exact: true }),
+  ).toBeVisible();
+  await page.getByRole('link', { name: 'Synthetic expiry', exact: true }).click();
+  await expect(page.locator('.fact-statement')).toContainText('Valid until 31 December 2099');
+  await page.goto('/knowledge/undated');
+  await expect(page.locator('.fact-statement')).toContainText('Check the source and confirm');
+});
