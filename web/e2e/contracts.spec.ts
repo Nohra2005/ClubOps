@@ -1099,3 +1099,37 @@ test('C-35 Knowledge shows expiry years in list and detail without guessing miss
   await page.goto('/knowledge/undated');
   await expect(page.locator('.fact-statement')).toContainText('Check the source and confirm');
 });
+
+test('C-35 adviser can read expiry but cannot clear or approve it', async ({ page }) => {
+  const workspace = createWorkspace('running-club');
+  await page.route('**/api/me', (route) =>
+    route.fulfill({
+      json: {
+        user: workspace.members[0],
+        role: 'adviser',
+        club: clubs[0],
+        counts: { overdue_events: 0, review: 1, reminders: 0 },
+      },
+    }),
+  );
+  const card = {
+    ...workspace.review.find((card) => card.type === 'fact')!,
+    id: 'read-only-expiry',
+    valid_to: '2099-12-31',
+  };
+  const writes: string[] = [];
+  await page.route('**/api/review**', (route) => {
+    if (!new URL(route.request().url()).pathname.startsWith('/api/')) return route.fallback();
+    if (route.request().method() !== 'GET') writes.push(route.request().method());
+    return route.fulfill({ json: [card] });
+  });
+  await page.goto('/review');
+  await expect(page.getByText('Valid until 31 December 2099', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('End date', { exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'No end date', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(0);
+  expect(
+    (await new AxeBuilder({ page }).include('#read-only-expiry').analyze()).violations,
+  ).toEqual([]);
+  expect(writes).toEqual([]);
+});
