@@ -11,6 +11,7 @@ import threading
 from collections.abc import Mapping
 from contextlib import closing
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -19,7 +20,7 @@ import httpx
 from clubops.calendar.config import calendar_ids_from_json
 from clubops.calendar.queue import SyncQueue
 from clubops.calendar.sync import CalendarSync, GoogleCalendarGateway
-from clubops.contracts.calendar import CalendarItem
+from clubops.contracts.calendar import CalendarItem, DeadlineTask, DeadlineTasksRequest
 from clubops.contracts.common import CABINET_ROLES, Role
 
 TOKEN_URL = "https://oauth2.googleapis.com/token"  # noqa: S105 - a public endpoint, not a secret
@@ -123,6 +124,17 @@ class CalendarService:
                 self.queue.enqueue(item, approved=True)
                 queued += 1
         return queued
+
+    def enqueue_mail_deadlines(self, club_id: str, tasks: list[DeadlineTask], today: date, source_key: str) -> int:
+        """Queue the deadlines of one clean trusted OSA e-mail, one task per role (D-138). The caller has already
+        checked the mail (listed sender, no hidden instructions, not outdated); odd dates are held by the queue.
+        Returns how many tasks were queued (F-316)."""
+        if not tasks or not self.has_calendar(club_id):
+            return 0
+        result = self.queue.enqueue_deadlines(
+            DeadlineTasksRequest(club_id=club_id, today=today, trusted=True, tasks=tasks), source_key=source_key
+        )
+        return len(result.items)
 
     def drain(self) -> str | None:
         """Send what is waiting. Returns a short problem text, or ``None``. A failure leaves work queued."""
