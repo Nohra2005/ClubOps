@@ -71,7 +71,7 @@ suggestion (#135/#136). The published Knowledge Edit contract currently carries
 text and optional lead_time_days, so changing expiry after approval still needs
 an API extension. Restore is a separate president-only expired-club-fact action.
 Web follow-up #152 covers full-year/detail/comparison labels, source-check hints
-and unsaved metadata protection; it remains a candidate until merged.
+and unsaved metadata protection; it merged as 62d1787 after all five checks passed.
 
 The learning quality sheet (C-27, D-87) and chatbot quality sheet (D-152, #151)
 are human-marked private artifacts. Their offline score commands count ratings;

@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import FactValidity from '../knowledge/FactValidity';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Check, CheckCheck, FileText, GitMerge, Scale, ShieldCheck, Upload, X } from 'lucide-react';
 import { useApp } from '../AppContext';
@@ -72,6 +73,10 @@ function ReviewItem({
   const endChanged = showEnd && end !== (card.valid_to ?? '');
   const showLead = card.lead_time_days !== undefined;
   const leadChanged = showLead && lead !== '' && Number(lead) !== card.lead_time_days;
+  const draftChanged = endChanged || leadChanged || shared !== isShared(card);
+  useEffect(() => {
+    scopeChanged(card.id, draftChanged);
+  }, [card.id, draftChanged, scopeChanged]);
   async function decide(decision: string) {
     const payload: ReviewDecision = {
       decision,
@@ -158,6 +163,7 @@ function ReviewItem({
             <p>
               <Linkified text={card.statement} />
             </p>
+            <FactValidity validTo={showEnd ? end || null : card.valid_to} text={card.statement} />
             <ReviewSource source={card.source} />
           </div>
           <div>
@@ -172,6 +178,7 @@ function ReviewItem({
             <p>
               <Linkified text={card.alternative.statement} />
             </p>
+            <FactValidity validTo={card.alternative.valid_to} text={card.alternative.statement} />
             <ReviewSource source={card.alternative.source} />
           </div>
         </div>
@@ -180,6 +187,7 @@ function ReviewItem({
           <p className="review-statement">
             <Linkified text={card.statement} />
           </p>
+          <FactValidity validTo={showEnd ? end || null : card.valid_to} text={card.statement} />
           <ReviewSource source={card.source} />
         </>
       )}
@@ -222,7 +230,12 @@ function ReviewItem({
               aria-label="End date"
             />{' '}
             {end ? (
-              <button type="button" className="button small" onClick={() => setEnd('')}>
+              <button
+                type="button"
+                className="button small"
+                disabled={action.pending || !canDecide}
+                onClick={() => setEnd('')}
+              >
                 No end date
               </button>
             ) : (
@@ -246,7 +259,6 @@ function ReviewItem({
               disabled={action.pending || card.shared_locked}
               onChange={(event) => {
                 setShared(event.target.checked);
-                scopeChanged(card.id, event.target.checked !== isShared(card));
               }}
               aria-label="Share with all AUB clubs"
             />{' '}
@@ -476,13 +488,16 @@ export default function Review() {
   const batch = useAction();
   const [scopeDrafts, setScopeDrafts] = useState<Set<string>>(new Set());
   const batchEligible = (card: ReviewCard) => canBatchApprove(card) && !scopeDrafts.has(card.id);
-  const scopeChanged = (id: string, changed: boolean) =>
-    setScopeDrafts((previous) => {
-      const next = new Set(previous);
-      if (changed) next.add(id);
-      else next.delete(id);
-      return next;
-    });
+  const scopeChanged = useCallback(
+    (id: string, changed: boolean) =>
+      setScopeDrafts((previous) => {
+        const next = new Set(previous);
+        if (changed) next.add(id);
+        else next.delete(id);
+        return next;
+      }),
+    [],
+  );
   const groupOpenedAt = useRef(new Date().toISOString());
   const groups = reviewGroups(review.value ?? []);
   const reload = () => {
