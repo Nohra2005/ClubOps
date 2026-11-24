@@ -9,7 +9,7 @@ import pytest
 from clubops.api import views
 from clubops.capabilities.runner import CapabilityError
 from clubops.contracts.common import ErrorCode, Role
-from clubops.contracts.knowhow import ItemStatus, ProposalOp, Scope
+from clubops.contracts.knowhow import ItemStatus, ProposalOp, Scope, VerifyDecision, VerifyRequest
 from clubops.knowhow.store import AUTO_MEMBER, KnowHowStore
 from tests.factories import CLUB, NOW, TODAY, actor, item, proposal, verified
 
@@ -44,12 +44,17 @@ def test_anything_odd_waits_for_a_person(store, extra) -> None:  # type: ignore[
     assert "p-1" in store.pending and store.current(CLUB, TODAY) == []
 
 
-def test_a_newer_version_updates_the_old_one_and_undo_brings_it_back(store) -> None:  # type: ignore[no-untyped-def]
+def test_a_newer_version_waits_for_a_person_then_undo_brings_the_old_one_back(store) -> None:  # type: ignore[no-untyped-def]
+    """F-317: a change to a fact the club already has is never applied by code (D-151). The reader checks it."""
     old = _known(store)
     newer = item(statement="Book the green field four weeks ahead, not three.")
-    store.submit(proposal(newer, ProposalOp.UPDATE, target_item=old.item_id))
-    updated = store.auto_apply("p-1", CLUB, NOW)
-    assert updated is not None and updated.version == 2 and updated.statement == newer.statement
+    waiting = proposal(newer, ProposalOp.UPDATE, target_item=old.item_id)
+    store.submit(waiting)
+    assert store.auto_apply("p-1", CLUB, NOW) is None
+    assert "p-1" in store.pending and store.latest(old.item_id).statement == old.statement
+    request = VerifyRequest(proposal=waiting, decision=VerifyDecision.ACCEPT)
+    updated = store.verify(request, actor(Role.PRESIDENT), NOW).data.committed
+    assert updated.version == 2 and updated.statement == newer.statement
     assert [v.version for v in store.history(old.item_id)] == [1, 2]
     undone = store.revise(old.item_id, actor(Role.EVENTS), NOW, undo=True)  # any cabinet member, club fact
     assert undone.version == 3 and undone.statement == old.statement and undone.status is ItemStatus.VERIFIED
@@ -77,16 +82,16 @@ def test_a_shared_fact_needs_a_president_unless_code_added_it(store) -> None:  #
     assert fixed.statement == "Corrected by an events officer."
 
 
-def test_an_automatic_update_does_not_open_a_person_approved_shared_fact(store) -> None:  # type: ignore[no-untyped-def]
-    """F-265 (1): the origin decides, not the latest stamp. A president-approved AUB fact that mail later updates
-    stays president-only: an events officer still cannot edit, retire or undo it."""
+def test_an_update_never_touches_a_person_approved_shared_fact_without_a_person(store) -> None:  # type: ignore[no-untyped-def]
+    """F-265 (1), F-317: mail cannot change a president-approved AUB fact by itself; the card waits and the
+    fact stays as approved, still president-only for an events officer."""
     human = _known(store, item_id="kh-shared-rule-c", scope=Scope.AUB, club_id=None)
     newer = item(
         item_id="kh-shared-rule-c", scope=Scope.AUB, club_id=None, statement="Fill the impact report by 6 Dec."
     )
     store.submit(proposal(newer, ProposalOp.UPDATE, target_item=human.item_id, pid="p-3"))
-    updated = store.auto_apply("p-3", CLUB, NOW)
-    assert updated is not None and updated.verified_by == AUTO_MEMBER
+    assert store.auto_apply("p-3", CLUB, NOW) is None and "p-3" in store.pending
+    assert store.latest(human.item_id).statement == human.statement
     officer = actor(Role.EVENTS)
     for change in ({"statement": "Edited by an officer."}, {"retire": True}, {"undo": True}):
         with pytest.raises(CapabilityError) as refused:

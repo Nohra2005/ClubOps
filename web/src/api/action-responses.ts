@@ -6,7 +6,11 @@ function object(value: unknown, message: string): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-export function readInboxCapture(value: unknown): { proposals: string[]; skipped: string[] } {
+export function readInboxCapture(value: unknown): {
+  proposals: string[];
+  skipped: string[];
+  applied?: string[];
+} {
   const message =
     'The read result was not confirmed. Refresh Inbox and check Review before trying again.';
   const result = object(value, message);
@@ -18,7 +22,10 @@ export function readInboxCapture(value: unknown): { proposals: string[]; skipped
   )
     throw new ApiError(message, 502);
   // The contract does not forbid repeated IDs or a mix of proposed and skipped material.
-  return { proposals: [...result.proposals], skipped: [...result.skipped] };
+  const applied = Array.isArray(result.applied)
+    ? result.applied.filter((id): id is string => typeof id === 'string' && id.trim() !== '')
+    : undefined;
+  return { proposals: [...result.proposals], skipped: [...result.skipped], applied };
 }
 
 export function validRestoreDate(value: unknown): value is string | null {
