@@ -9,6 +9,8 @@ from pathlib import Path
 import pytest
 from scripts.eval_chat import main
 
+from clubops.capabilities.runner import CapabilityError
+from clubops.contracts.common import ErrorCode
 from clubops.contracts.knowhow import Answer, AskRequest
 from clubops.evaluation.chat import ChatCase, load_cases, score, table
 from clubops.evaluation.chat_sheet import ask_sheet, read_questions, read_sheet, score_sheet, unmarked
@@ -99,7 +101,7 @@ def test_the_sheet_fills_what_code_can_decide_and_leaves_the_rest_to_a_person(tm
     result = score_sheet(rows)
     assert (result["answered_partly"], result["missed"], result["correct_not_sure"], result["invented"]) == (1, 1, 1, 1)
     assert result["cost_usd"] == Decimal("0.04")
-    assert "| 4 | 0 | 1 | 0 | 1 | 1 | 1 | 1 of 1 | 0.0400 |" in sheet_table(result)
+    assert "| 4 | 0 | 1 | 0 | 1 | 1 | 1 | 1 of 1 | 0 | 0.0400 |" in sheet_table(result)
 
 
 def test_cli_asks_unknown_questions_then_scores_the_sheet(tmp_path: Path, monkeypatch, capsys) -> None:  # type: ignore[no-untyped-def]
@@ -126,7 +128,7 @@ def test_cli_asks_unknown_questions_then_scores_the_sheet(tmp_path: Path, monkey
     assert read_sheet(sheet)[0]["correct"] == "yes"
     monkeypatch.setattr("sys.argv", ["eval_chat.py", "score", "--sheet", str(sheet)])
     main()
-    assert "| 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 of 0 | 0.0000 |" in capsys.readouterr().out
+    assert "| 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 of 0 | 0 | 0.0000 |" in capsys.readouterr().out
 
 
 def test_the_sheet_is_refused_inside_the_repository(tmp_path: Path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
@@ -137,3 +139,23 @@ def test_the_sheet_is_refused_inside_the_repository(tmp_path: Path, monkeypatch)
     )
     with pytest.raises(SystemExit, match="outside the ClubOps folder"):
         main()
+
+
+def test_a_failed_question_is_recorded_and_the_run_goes_on(tmp_path: Path) -> None:
+    """F-320: one cut-off answer stopped the whole paid run and lost every answer already bought."""
+    path = tmp_path / "q.csv"
+    path.write_text(QUESTIONS, encoding="utf-8")
+    good = fake_answers()
+
+    def flaky(text: str) -> object:
+        if text == "Who has the key?":
+            raise CapabilityError(ErrorCode.INVALID_INPUT, "the model's answer was cut off")
+        return good(text)  # type: ignore[operator]
+
+    rows = ask_sheet(read_questions(path), flaky)  # type: ignore[arg-type]
+    failed = next(r for r in rows if r["id"] == "Q3")
+    assert len(rows) == 4 and failed["clubops_known"] == "error" and failed["clubops_answer"].startswith("ERROR:")
+    assert unmarked(rows) == ["Q1"]  # an error needs no marking and is not counted as a right "not sure"
+    rows[0].update(correct="yes", sources_ok="yes")
+    result = score_sheet(rows)
+    assert result["errors"] == 1 and result["correct_not_sure"] == 1 and result["invented"] == 0

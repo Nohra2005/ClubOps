@@ -44,7 +44,7 @@ def ask(request: AskRequest, store: KnowHowStore, model: ModelClient, budget: Bu
             "Return JSON matching the Answer schema."
         ),
         user=json.dumps({"question": safe_question, "facts": facts}, ensure_ascii=False),
-        max_tokens=600,
+        max_tokens=1500,  # 600 cut real answers off mid-JSON on a long fact list (F-319)
     )
     answer, _usage = model.complete(prompt, Answer, budget or Budget(max_usd=Decimal("0.05"), max_steps=1))
     allowed = {item.item_id for item in candidates}
