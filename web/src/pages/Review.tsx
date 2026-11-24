@@ -55,6 +55,9 @@ function ReviewItem({
   const [reason, setReason] = useState('');
   const [shared, setShared] = useState(isShared(card));
   const [end, setEnd] = useState(card.valid_to ?? '');
+  const [lead, setLead] = useState(
+    card.lead_time_days === undefined ? '' : String(card.lead_time_days),
+  );
   const file = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -67,6 +70,8 @@ function ReviewItem({
   const scopeChoice = ['fact', 'merge', 'disagreement', 'rule'].includes(card.type);
   const showEnd = scopeChoice && card.valid_to !== undefined;
   const endChanged = showEnd && end !== (card.valid_to ?? '');
+  const showLead = card.lead_time_days !== undefined;
+  const leadChanged = showLead && lead !== '' && Number(lead) !== card.lead_time_days;
   async function decide(decision: string) {
     const payload: ReviewDecision = {
       decision,
@@ -76,6 +81,7 @@ function ReviewItem({
       ...(reason.trim() ? { reason } : {}),
       ...(scopeChoice && isPresident && !card.shared_locked ? { shared } : {}),
       ...(endChanged ? { valid_to: end } : {}),
+      ...(leadChanged ? { lead_time_days: Number(lead) } : {}),
     };
     const result = await action.run(() => api.decide(card.id, payload));
     if (result.ok) {
@@ -184,6 +190,26 @@ function ReviewItem({
         </p>
       )}
       {card.why && <p className="inline-note">Why: {card.why}</p>}
+      {showLead && (
+        <label className="field">
+          <span>Notice period (days)</span>
+          <span>
+            <input
+              type="number"
+              min={0}
+              max={365}
+              value={lead}
+              disabled={action.pending || !canDecide}
+              onChange={(event) => setLead(event.target.value)}
+              aria-label="Notice period in days"
+            />
+          </span>
+          <span className="inline-note">
+            How many days ahead the planner must allow for this rule. The choice is saved when you
+            confirm a decision.
+          </span>
+        </label>
+      )}
       {showEnd && (
         <label className="field">
           <span>End date</span>
