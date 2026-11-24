@@ -282,11 +282,12 @@ Reference documents:
 
 ### T-46 Connect Google Calendar on the backend
 - Owner: tatiana
-- Status: todo
+- Status: review
 - Needs: T-22
 - What: Keep Google sign-in separate from Calendar authorization. Add president-only connect/disconnect and OAuth callback endpoints with state validation, server-side encrypted refresh-token storage and refresh/reconnect handling. Use the private club calendar ID, `calendar.events` and `calendar.acls` scopes. After an approved plan is saved, drain Joey's sync queue to Google and report pending/error/connected status. On cabinet add/remove, use Joey's J-21 reader ACL adapter with retryable failures; never grant writer or owner access. Agree the endpoint response fields with Christophe before changing the UI contract.
 - Done when: synthetic API tests prove unauthorized users cannot connect, unapproved plans never sync, retries do not duplicate events, and cabinet add/remove grants/revokes only reader access; a cabinet-approved local Google test completes after J-01's private calendar ID is supplied.
 - Progress (2026-11-23): first slice built (D-141): approving a plan queues its items and sends them to the club's shared Google calendar through Joey's queue, using the Calendar key in private host settings (`CLUBOPS_CALENDAR_*`); `GET`/`POST /api/calendar/sync` show status and retry. Not yet built: the in-app connect/disconnect and OAuth callback with encrypted token storage, the cabinet add/remove reader grants (J-21), and the deadline-from-mail trigger. Joey can run J-09 live acceptance once the host has the Calendar key.
+- Progress (2026-11-24): second slice (D-155): president-only connect, callback and disconnect with a one-use proof, encrypted key, per-club drain, reconnect state, read-only access on cabinet add/remove with retry, `GET /api/calendar/connection`, `POST /api/calendar/share-cabinet`. Tests use a fake Google. Left: the Calendar screen buttons (Christophe, C-xx, fields in `docs/api.md`) and a live check on the deployed app with the real Google client.
 
 ### T-47 OSA e-mail reaches Review: API and accounts (D-113, D-114)
 - Owner: tatiana

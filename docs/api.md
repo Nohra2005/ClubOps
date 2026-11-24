@@ -50,6 +50,11 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Calendar | `GET /api/calendar?month=2026-11` | live; `connected` is false until Joey's Google sync is wired |
 | Calendar | `GET /api/calendar/sync` | live, cabinet only, own club: `{connected, waiting, problem}`. `waiting` = approved items not yet in Google; `problem` is a short plain sentence or null. Never returns the calendar id, key or an address. |
 | Calendar | `POST /api/calendar/sync` | live, cabinet only: retry now, same reply as above. It sends only what an approved plan queued; it cannot create anything. |
+| Calendar | `GET /api/calendar/connection` | live, cabinet only, own club: `{state, source, can_connect, access_changes_waiting}`. `state` is `not_set_up` (the host has no Google app or no calendar for this club), `not_connected`, `connected` or `reconnect`; `source` is `app`, `host` or null. Never returns a key, calendar id or address. |
+| Calendar | `POST /api/calendar/connect` | president only: `{url}`, the Google address to open (501 when not set up). Nothing is stored yet. |
+| Calendar | `GET /api/calendar/callback?code=&state=` | president only, the page Google sends the president back to; answers with a redirect to `/calendar?google=connected`, `denied` or `failed`. |
+| Calendar | `DELETE /api/calendar/connect` | president only (204): forgets the key and asks Google to cancel it; queued items stay queued. |
+| Calendar | `POST /api/calendar/share-cabinet` | president only: `{queued}`; gives the current cabinet read-only access. Adding or removing a cabinet member does this by itself. |
 | Knowledge | `GET /api/knowledge?tab=&q=` | live (tabs rules, tips, contacts, sponsors; `documents` empty) |
 | Knowledge | `GET /api/knowledge/{item_id}` | live |
 | Handover | `GET /api/handover/{role}` | live (C-19): current approved knowledge, all citations and explicit gaps; deterministic, no model call |
