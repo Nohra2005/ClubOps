@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+from datetime import date
+
 import pytest
 
 from clubops.api import views
 from clubops.capabilities.runner import CapabilityError
 from clubops.contracts.common import ErrorCode, Role
 from clubops.contracts.knowhow import ItemStatus, ProposalOp, Scope
-from clubops.knowhow.store import AUTO_MEMBER
+from clubops.knowhow.store import AUTO_MEMBER, KnowHowStore
 from tests.factories import CLUB, NOW, TODAY, actor, item, proposal, verified
 
 
@@ -129,3 +131,71 @@ def test_a_retirement_card_says_so(store) -> None:  # type: ignore[no-untyped-de
     old = _known(store)
     card = views.review_card(proposal(item(), ProposalOp.RETIRE, target_item=old.item_id))
     assert card["op"] == "retire"
+
+
+def test_a_retired_fact_told_again_comes_back_and_undo_retires_it_again(store) -> None:  # type: ignore[no-untyped-def]
+    """F-302: re-learning a retired fact gave the same id and failed with "an item with this id already exists",
+    so the card could never be approved (auto-apply left it in Review for good). It now returns as the next version."""
+    fact = item("kh-guest-parking", title="Guest parking", statement="Guests park behind West Hall with a permit.")
+    store.backend.append(verified(fact))
+    president = actor(Role.PRESIDENT)
+    store.revise(fact.item_id, president, NOW, retire=True)
+    assert store.current(CLUB, TODAY) == []
+    store.submit(proposal(fact.model_copy(update={"status": ItemStatus.PROPOSED, "version": 1}), pid="p-again"))
+    back = store.auto_apply("p-again", CLUB, NOW)
+    assert back is not None and back.status is ItemStatus.VERIFIED and back.version == 3
+    assert [i.item_id for i in store.current(CLUB, TODAY)] == [fact.item_id] and store.pending == {}
+    undone = store.revise(fact.item_id, president, NOW, undo=True)
+    assert undone.status is ItemStatus.RETIRED and store.current(CLUB, TODAY) == []  # Undo goes back to retired
+
+
+def test_a_verified_fact_is_still_not_created_twice(store) -> None:  # type: ignore[no-untyped-def]
+    known = _known(store)
+    store.submit(proposal(known.model_copy(update={"status": ItemStatus.PROPOSED, "version": 1}), pid="p-dup"))
+    assert store.auto_apply("p-dup", CLUB, NOW) is None and "p-dup" in store.pending
+
+
+def test_cards_and_knowledge_show_the_end_date_or_none() -> None:
+    """A person could not tell when a fact stops being true (F-305)."""
+    dated = verified(item("kh-dated", valid_to=date(2026, 12, 31)))
+    open_ended = verified(item("kh-open"))
+    assert views.knowledge(dated, [dated], TODAY)["valid_to"] == "2026-12-31"
+    assert views.knowledge(open_ended, [open_ended], TODAY)["valid_to"] is None
+    card = views.review_card(proposal(item("kh-card", valid_to=date(2026, 12, 31))), target=open_ended)
+    assert card["valid_to"] == "2026-12-31" and card["alternative"]["valid_to"] is None
+
+
+def test_search_skips_expired_facts_but_learning_can_still_match_them(store: KnowHowStore) -> None:
+    """The planner used to find a fact months after its end date (F-304)."""
+    old = verified(
+        item("kh-old", title="Cafe B notice", statement="Cafe B needs ten days notice", valid_to=date(2020, 1, 1))
+    )
+    live = verified(
+        item("kh-live", title="Cafe B notice now", statement="Cafe B needs ten days notice", valid_to=date(2099, 1, 1))
+    )
+    store.backend.append(old)
+    store.backend.append(live)
+    assert [i.item_id for i in store.search(old.club_id, "Cafe B notice")] == ["kh-live"]
+    assert {i.item_id for i in store.search(old.club_id, "Cafe B notice", include_expired=True)} == {
+        "kh-old",
+        "kh-live",
+    }
+    assert [i.item_id for i in store.search(old.club_id, "Cafe B notice", today=date(2019, 6, 1))].count("kh-old") == 1
+
+
+def test_the_share_box_is_locked_on_a_replace_card_and_ignored(store) -> None:  # type: ignore[no-untyped-def]
+    """The box and label said "shared" while the result kept the old fact's layer (F-310)."""
+    known = verified(item("kh-club-fact"))  # a club fact
+    new = item("kh-club-fact2", scope=Scope.AUB, club_id=None)
+    card = views.review_card(proposal(new, ProposalOp.UPDATE, target_item=known.item_id), target=known)
+    assert card["shared"] is False and card["shared_locked"] is True
+    fresh = views.review_card(proposal(new))
+    assert fresh["shared"] is True and "shared_locked" not in fresh
+
+
+def test_a_review_card_says_why_it_was_proposed() -> None:
+    """The card gave the person the action but not the reason for it (F-311)."""
+    p = proposal(item("kh-why"), ProposalOp.MERGE, target_item="kh-known").model_copy(
+        update={"rationale": "from an OSA mail; merge: nearly the same words"}
+    )
+    assert views.review_card(p)["why"] == "from an OSA mail; merge: nearly the same words"

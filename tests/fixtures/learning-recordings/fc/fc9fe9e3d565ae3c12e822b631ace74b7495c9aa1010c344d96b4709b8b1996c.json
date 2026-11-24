@@ -1,0 +1,8 @@
+{
+ "key": "fc9fe9e3d565ae3c12e822b631ace74b7495c9aa1010c344d96b4709b8b1996c",
+ "model": "fake-model",
+ "prompt_version": "learn-extract-v4",
+ "text": "{\"facts\": []}",
+ "tokens_in": 500,
+ "tokens_out": 100
+}

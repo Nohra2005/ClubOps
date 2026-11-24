@@ -64,6 +64,7 @@ from clubops.contracts.knowhow import (
     Kind,
     KnowHowItem,
     KnowHowProposal,
+    ProposalOp,
     Scope,
     VerifyDecision,
     VerifyRequest,
@@ -74,7 +75,7 @@ from clubops.inbox_intake import InboxNotes
 from clubops.knowhow.backends import open_club_store_backend
 from clubops.knowhow.directory import Directory
 from clubops.knowhow.handover import build_handover
-from clubops.knowhow.store import KnowHowStore, rescoped
+from clubops.knowhow.store import KnowHowStore, rescoped, with_lead_time
 from clubops.learning.capture import Candidate, Learner, price_list, rows_to_text
 from clubops.learning.documents import MAX_PIECES, DocumentError, read_pdf, split_text
 from clubops.model.client import ModelClient
@@ -165,12 +166,34 @@ class DecisionBody(BaseModel):
     reason: str | None = Field(default=None, max_length=300)
     # None keeps ClubOps' suggestion; True shares the fact with every AUB club, False keeps it in this club (D-91).
     shared: bool | None = None
+    # None keeps the end date ClubOps found; "" means no end date; "YYYY-MM-DD" sets it (F-306).
+    valid_to: str | None = Field(default=None, max_length=10)
+    # A rule's notice period in days; absent keeps the number ClubOps found (F-309).
+    lead_time_days: int | None = Field(default=None, ge=0, le=365)
     opened_at: str | None = None
     decided_at: str | None = None
 
 
+def _card_edits(candidate: KnowHowItem, body: DecisionBody) -> KnowHowItem:
+    """The notice period and end date a person typed on a Review card (F-306, F-309)."""
+    try:
+        if body.lead_time_days is not None:
+            candidate = with_lead_time(candidate, body.lead_time_days)
+        if body.valid_to is not None:
+            end = date.fromisoformat(body.valid_to) if body.valid_to else None
+            candidate = candidate.model_copy(update={"valid_to": end})
+            KnowHowItem.model_validate(candidate.model_dump())  # an end date before the start is refused
+    except CapabilityError as err:
+        raise HTTPException(422, str(err)) from None
+    except ValueError:
+        raise HTTPException(422, "The end date must be a real date, YYYY-MM-DD, not before the start.") from None
+    return candidate
+
+
 class EditBody(BaseModel):
     text: str = Field(min_length=3, max_length=1500)
+    # A rule's notice period in days. Editing the words alone leaves the number the planner enforces (F-309).
+    lead_time_days: int | None = Field(default=None, ge=0, le=365)
 
 
 class MemberBody(BaseModel):
@@ -586,7 +609,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
 
     @app.post("/api/knowledge/{item_id}/edit")
     def edit_fact(item_id: str, body: EditBody, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
-        return _revise(member, item_id, statement=body.text.strip())
+        return _revise(member, item_id, statement=body.text.strip(), lead_time_days=body.lead_time_days)
 
     @app.post("/api/knowledge/{item_id}/retire")
     def retire_fact(item_id: str, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
@@ -634,10 +657,15 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
                 if not body.edited_text:
                     raise HTTPException(422, "Write the corrected fact first.")
                 edited = proposal.candidate.model_copy(update={"statement": body.edited_text})
-            if body.shared is not None and choice != "reject":
+            keeps_layer = proposal.op in (ProposalOp.UPDATE, ProposalOp.MERGE)  # F-163: the known fact's layer wins
+            if body.shared is not None and choice != "reject" and not keeps_layer:
                 if proposal.candidate.kind is Kind.RULE and not body.shared:
                     raise HTTPException(422, "AUB rules are always shared with every club.")
                 edited = rescoped(edited or proposal.candidate, member.club_id, shared=body.shared)
+                if edited == proposal.candidate:
+                    edited = None
+            if choice != "reject" and (body.lead_time_days is not None or body.valid_to is not None):
+                edited = _card_edits(edited or proposal.candidate, body)
                 if edited == proposal.candidate:
                     edited = None
             if both:
@@ -904,7 +932,11 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         return {"waiting": True}
 
     @app.post("/api/inbox/{message_id}/capture")
-    def inbox_capture(message_id: str, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    def inbox_capture(
+        message_id: str,
+        background: BackgroundTasks,
+        member: Member = Depends(cabinet),  # noqa: B008
+    ) -> dict[str, Any]:
         """One paid model read, started by a person. Proposals go to Review; the e-mail leaves the queue
         only when the read worked, so a failed read can be retried (F-214). Nothing is approved here (D-41)."""
         waiting = dict(inbox.pending(member.club_id))
@@ -934,6 +966,9 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             raise HTTPException(502, "The e-mail could not be read this time. It is still waiting; try again.")
         inbox_ledger.mark_read(fingerprint, token)
         inbox.mark_processed(message_id, member.club_id)
+        # Dated deadlines in clean OSA mail become calendar tasks per role, without a click (D-138, F-316)
+        if calendar_service.enqueue_mail_deadlines(member.club_id, result.deadlines, today(), message_id):
+            background.add_task(calendar_service.drain)
         # Clean facts from trusted OSA mail apply at once; anything odd waits in Review (D-138)
         with club(member.club_id) as (store, _, _, _):
             applied = [
@@ -943,7 +978,8 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         return {
             "proposals": [p.proposal_id for p in result.proposals if p.proposal_id not in applied],
             "applied": applied,
-            "skipped": ["The model could not use this content."] * result.sources_skipped,
+            "skipped": ["A fact in this content was set aside: a one-off, an opinion, or not quoted exactly."]
+            * result.sources_skipped,  # counts facts, not sources (F-315)
         }
 
     # ----------------------------------------------------------- new-club setup (C-21)
@@ -962,7 +998,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
 
         A retry after a partial queue failure must not duplicate a card, nor bring back one already
         approved. A proposal the president *rejected* leaves no record in the store, so that one case
-        can still reappear once (F-201).
+        no longer reappears: a rejection is remembered (F-201, F-312).
         """
         with club(proposed.candidate.club_id or "invalid") as (store, _, _, _):
             if proposed.proposal_id in store.pending:

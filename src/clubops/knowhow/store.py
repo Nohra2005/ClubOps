@@ -20,6 +20,7 @@ from clubops.contracts.knowhow import (
     KnowHowItem,
     KnowHowProposal,
     ProposalOp,
+    RuleDetails,
     Scope,
     Support,
     VerifyDecision,
@@ -32,6 +33,22 @@ from clubops.knowhow.backends import Backend, MemoryBackend
 def _rebuild(item: KnowHowItem, **changes: Any) -> KnowHowItem:
     """Copy with changes, re-running every invariant (model_copy would skip them)."""
     return KnowHowItem.model_validate({**item.model_dump(), **changes})
+
+
+def with_lead_time(item: KnowHowItem, days: int) -> KnowHowItem:
+    """A rule with its notice period changed: the requirement(s) that carry the longest one, the number the
+    Knowledge page shows, get ``days``. Editing the words alone left the planner on the old number (F-309)."""
+    details = item.details
+    if not isinstance(details, RuleDetails):
+        raise CapabilityError(ErrorCode.INVALID_INPUT, "only a rule has a notice period")
+    longest = max((r.lead_time_days for r in details.requirements if r.lead_time_days is not None), default=None)
+    if longest is None:
+        raise CapabilityError(ErrorCode.INVALID_INPUT, "this rule has no notice period to change")
+    changed = [
+        r.model_copy(update={"lead_time_days": days}) if r.lead_time_days == longest else r
+        for r in details.requirements
+    ]
+    return item.model_copy(update={"details": details.model_copy(update={"requirements": changed})})
 
 
 def rescoped(item: KnowHowItem, club_id: ClubId, *, shared: bool) -> KnowHowItem:
@@ -90,8 +107,15 @@ class KnowHowStore:
     def visible(self, club_id: ClubId) -> list[KnowHowItem]:
         return [i for i in self.backend.latest_all() if i.scope is Scope.AUB or i.club_id == club_id]
 
-    def search(self, club_id: ClubId, text: str, limit: int = 10) -> list[KnowHowItem]:
-        """Approved items this club may see, best match first (plain full-text search, no model)."""
+    def search(
+        self, club_id: ClubId, text: str, limit: int = 10, *, include_expired: bool = False, today: date | None = None
+    ) -> list[KnowHowItem]:
+        """Approved items this club may see, best match first (plain full-text search, no model).
+
+        Items past their end date are left out, so the planner never plans from an expired fact (F-304);
+        learning passes ``include_expired`` to still match new mail against them.
+        """
+        day = today or date.today()
         found: list[KnowHowItem] = []
         for item_id, _score in self.backend.search(text, limit * 3):
             item = self.latest(item_id)
@@ -99,6 +123,7 @@ class KnowHowStore:
                 item is not None
                 and item.status in (ItemStatus.VERIFIED, ItemStatus.DISPUTED)
                 and (item.scope is Scope.AUB or item.club_id == club_id)
+                and (include_expired or item.valid_to is None or item.valid_to >= day)
             ):
                 found.append(item)
             if len(found) == limit:
@@ -114,8 +139,15 @@ class KnowHowStore:
 
     # ----------------------------------------------------------------- writes
 
-    def submit(self, proposal: KnowHowProposal) -> None:
+    def submit(self, proposal: KnowHowProposal, *, override_rejection: bool = False) -> bool:
+        """Queue a proposal for Review. A proposal a person already rejected is not queued again (F-312), unless a
+        person taught it again on purpose (``override_rejection``). Returns whether it was queued."""
+        if proposal.proposal_id in self.backend.rejected_all():
+            if not override_rejection:
+                return False
+            self.backend.rejected_delete(proposal.proposal_id)
         self.backend.pending_put(proposal)
+        return True
 
     def verify(self, request: VerifyRequest, actor: Actor, now: datetime) -> Outcome[VerifyResult]:
         """Apply a cabinet member's decision to a queued proposal.
@@ -127,7 +159,9 @@ class KnowHowStore:
         """
         proposal, candidate = self._checked(request, actor)
         if request.decision is VerifyDecision.REJECT:
-            self.backend.pending_delete(proposal.proposal_id)
+            with self.backend.transaction():
+                self.backend.pending_delete(proposal.proposal_id)
+                self.backend.rejected_add(proposal.proposal_id)  # a rejection is remembered (F-312)
             return Outcome(data=VerifyResult(committed=None))
 
         committed, to_supersede = self._next_version(proposal, candidate, actor, now)
@@ -167,6 +201,7 @@ class KnowHowStore:
         statement: str | None = None,
         retire: bool = False,
         undo: bool = False,
+        lead_time_days: int | None = None,
     ) -> KnowHowItem:
         """A cabinet member changes, retires or undoes a fact directly; no second person (D-138).
 
@@ -185,13 +220,14 @@ class KnowHowStore:
             versions = self.history(item_id)
             if len(versions) < 2:
                 raise CapabilityError(ErrorCode.CONFLICT, "there is no earlier version to go back to")
-            changed = _rebuild(
-                versions[-2], version=item.version + 1, status=ItemStatus.VERIFIED, supersedes=None, **stamp
-            )
+            before = versions[-2]  # Undo returns to how it was: a retired fact goes back to retired (F-302)
+            status = ItemStatus.RETIRED if before.status is ItemStatus.RETIRED else ItemStatus.VERIFIED
+            changed = _rebuild(before, version=item.version + 1, status=status, supersedes=None, **stamp)
         elif retire:
             changed = _rebuild(item, status=ItemStatus.RETIRED, version=item.version + 1, valid_to=now.date(), **stamp)
-        elif statement is not None:
-            changed = _rebuild(item, statement=statement, version=item.version + 1, **stamp)
+        elif statement is not None or lead_time_days is not None:
+            base = with_lead_time(item, lead_time_days) if lead_time_days is not None else item
+            changed = _rebuild(base, statement=statement or item.statement, version=item.version + 1, **stamp)
         else:
             raise CapabilityError(ErrorCode.INVALID_INPUT, "nothing to change")
         with self.backend.transaction():
@@ -274,9 +310,16 @@ class KnowHowStore:
 
         match proposal.op:
             case ProposalOp.CREATE:
-                if self.backend.has(candidate.item_id):
+                existing = self.latest(candidate.item_id)
+                if existing is None:
+                    return _rebuild(candidate, version=1, **stamp), []
+                if existing.status is not ItemStatus.RETIRED:
                     raise CapabilityError(ErrorCode.CONFLICT, "an item with this id already exists")
-                return _rebuild(candidate, version=1, **stamp), []
+                # A retired fact told again comes back as the next version of the same fact, in its old layer (F-302).
+                revived = _rebuild(
+                    candidate, version=existing.version + 1, scope=existing.scope, club_id=existing.club_id, **stamp
+                )
+                return revived, []
             case ProposalOp.UPDATE if target is not None:
                 # A new version stays in its fact's layer: a club can't pull an AUB fact into its own (F-163).
                 committed = _rebuild(
@@ -296,7 +339,19 @@ class KnowHowStore:
                     events=sorted({*target.support.events, *candidate.support.events}),
                     source_count=max(len(sources), target.support.source_count),
                 )
-                committed = _rebuild(target, sources=sources, support=support, version=target.version + 1, **stamp)
+                # Edit-then-approve on a "same as" card corrects the known wording; a plain approve keeps it (F-301).
+                words = candidate.statement if candidate.statement != proposal.candidate.statement else target.statement
+                # An end date a person typed on the card is kept; otherwise the known one stays (F-306).
+                end = candidate.valid_to if candidate.valid_to != proposal.candidate.valid_to else target.valid_to
+                committed = _rebuild(
+                    target,
+                    statement=words,
+                    sources=sources,
+                    support=support,
+                    valid_to=end,
+                    version=target.version + 1,
+                    **stamp,
+                )
                 return committed, [target.item_id]
             case ProposalOp.RETIRE if target is not None:
                 committed = _rebuild(

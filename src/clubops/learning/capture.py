@@ -25,7 +25,8 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from clubops.capabilities.runner import CapabilityError
-from clubops.contracts.common import Contract, ItemId, Slug, SourceKind, SourceRef, Untrusted
+from clubops.contracts.calendar import DeadlineTask
+from clubops.contracts.common import CABINET_ROLES, Contract, ItemId, Role, Slug, SourceKind, SourceRef, Untrusted
 from clubops.contracts.knowhow import (
     CaptureRequest,
     CaptureResult,
@@ -40,21 +41,26 @@ from clubops.model.budget import Budget
 from clubops.model.client import ModelClient, ModelRequest
 from clubops.redaction import redact
 
-EXTRACT_VERSION = "learn-extract-v3"
+EXTRACT_VERSION = "learn-extract-v4"  # v4: also lists dated deadlines (F-316)
 MATCH_VERSION = "learn-match-v1"
-MAX_SOURCE_CHARS = 6000
+MAX_SOURCE_CHARS = 6000  # one piece of a source the model reads
+MAX_SOURCE_PIECES = 5  # a longer source is read in up to 5 pieces, one model call for all of them (F-308)
 
 # ---------------------------------------------------------------- plain-code checks
 
+# Phrases aimed at ClubOps itself. Ordinary OSA wording ("approve this form", "do not ask OSA", "act as the club's
+# representative") is not an attack and must not push a clean mail into Review (F-307).
 _INJECTION = re.compile(
     r"ignore (all |the |any )?(previous|above|prior|earlier) (instructions|rules|messages)"
-    r"|disregard (the|all|your|previous)"
-    r"|you are now|act as (an?|the) "
-    r"|system prompt"
-    r"|approve (this|it|all|everything)"
+    r"|disregard (the|all|your|previous|prior|earlier) (\w+ )?(instructions|rules|messages|prompt)"
+    r"|you are now (an? |the (president|admin|adviser|verifier|system)|in |free|my )"
+    r"|act as (an? |the )?(system|admin|administrator|assistant|ai|developer|verifier)\b"
+    r"|(your|reveal|show|print|ignore) system prompt|system prompt\s*:"
+    r"|approve (this|it|all|everything)( proposed| pending)?"
+    r" (and |facts?|rules?|proposals?|items?|automatically|without|immediately)"
     r"|mark (this|it|them) (as )?(verified|approved)"
     r"|forget (the|your|all) (rules|instructions)"
-    r"|do not (tell|ask|check)",
+    r"|do not (tell|ask|check with) (the )?(user|human|reviewer|verifier|cabinet)",
     re.IGNORECASE,
 )
 _YEAR_SPAN = re.compile(r"\b(20\d{2})\s*[-/–]\s*(?:20)?(\d{2})\b")
@@ -83,8 +89,9 @@ _ISO = re.compile(r"\b(20\d{2})-(\d{2})-(\d{2})\b")
 
 
 def source_date(text: str, quote: str, fallback: date) -> date:
-    """When the quoted line was written: the date on its line (WhatsApp is day/month/year), else the latest
-    date in the source, else ``fallback``."""
+    """When the quoted line was written: the date on its line (WhatsApp is day/month/year), else the nearest
+    date on a line above it, else ``fallback``. The latest date anywhere in the source is not used: it made
+    old facts look new (F-303)."""
 
     def dates(chunk: str) -> list[date]:
         out = []
@@ -102,22 +109,44 @@ def source_date(text: str, quote: str, fallback: date) -> date:
         return out
 
     q = _norm(quote)
-    for line in text.splitlines():
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
         if q[:40] and q[:40] in _norm(line):
-            found = dates(line)
-            if found:
-                return found[0]
-    found = dates(text)
-    return max(found) if found else fallback
+            for above in range(i, -1, -1):
+                found = dates(lines[above])
+                if found:
+                    return found[0]
+            return fallback
+    return fallback
 
 
 def term_end(day: date) -> date:
-    """Last day of the AUB term ``day`` falls in: fall to 31 Dec, spring to 31 May, summer to 31 Aug."""
-    if day.month >= 9:
+    """End of the term a fact written on ``day`` is about: summer (June to 14 August) to 31 Aug; from 15 August
+    it is about the coming fall (31 Dec), so a late-August note is not given an end date three days away; from
+    15 December to May it is spring (31 May, of the next year when written after 14 December) (F-303)."""
+    if (day.month, day.day) >= (12, 15):
+        return date(day.year + 1, 5, 31)
+    if (day.month, day.day) >= (8, 15):
         return date(day.year, 12, 31)
-    if day.month <= 5:
-        return date(day.year, 5, 31)
-    return date(day.year, 8, 31)
+    if day.month >= 6:
+        return date(day.year, 8, 31)
+    return date(day.year, 5, 31)
+
+
+def split_source(text: str) -> list[str]:
+    """A long source in pieces of at most ``MAX_SOURCE_CHARS``, cut at a line end when there is one, so a rule at the
+    end of a long mail is read too instead of being dropped without a word (F-308)."""
+    pieces: list[str] = []
+    rest = text
+    while rest and len(pieces) < MAX_SOURCE_PIECES:
+        if len(rest) <= MAX_SOURCE_CHARS:
+            pieces.append(rest)
+            break
+        cut = rest.rfind("\n", 0, MAX_SOURCE_CHARS)
+        cut = cut if cut > MAX_SOURCE_CHARS // 2 else MAX_SOURCE_CHARS
+        pieces.append(rest[:cut])
+        rest = rest[cut:].lstrip("\n")
+    return pieces or [""]
 
 
 def _norm(text: str) -> str:
@@ -125,7 +154,8 @@ def _norm(text: str) -> str:
 
 
 def _words(text: str) -> set[str]:
-    return {w for w in re.findall(r"[a-z0-9$]+", text.lower()) if len(w) > 2}
+    """Words of 3+ letters, and every number however short: "10 days" and "14 days" are different facts (F-300)."""
+    return {w for w in re.findall(r"[a-z0-9$]+", text.lower()) if len(w) > 2 or any(c.isdigit() for c in w)}
 
 
 def similarity(a: str, b: str) -> float:
@@ -238,8 +268,25 @@ class ExtractedFact(Contract):
         return {"kind": self.kind, **{k: v for k, v in raw.items() if k in wanted}}
 
 
+class ExtractedDeadline(Contract):
+    """A dated deadline in the source. Not know-how: it goes to the calendar, not to Knowledge (F-316)."""
+
+    title: str = Field(min_length=3, max_length=200, description="what must be done, in a few words")
+    date: date
+    quote: str = Field(min_length=3, description="copied word for word from the source")
+    source: int = Field(ge=0)
+    roles: list[str] = Field(default_factory=list, max_length=4, description="cabinet roles that must do it")
+
+
 class Extraction(Contract):
     facts: list[ExtractedFact] = Field(max_length=20)
+    deadlines: list[ExtractedDeadline] = Field(default_factory=list, max_length=10)
+
+
+class CaptureOutcome(CaptureResult):
+    """What a read found: proposals for Review, and deadlines for the calendar (only from clean trusted mail)."""
+
+    deadlines: list[DeadlineTask] = Field(default_factory=list)
 
 
 class Match(Contract):
@@ -279,7 +326,11 @@ are always "aub". Details by kind:
 - rule (only official AUB rules, e.g. from an OSA e-mail): {"triggers": ["..."], "requirements":
   [{"requirement_id": "a-slug", "kind": "form"|"approval"|"document"|"lead_time"|"restriction", "name": "...",
   "lead_time_days": 14}]}
-Answer JSON only: {"facts": [...]}  (an empty list is fine)."""
+Also list dated deadlines the source gives (a form due, an application closing, a date something must be
+done by), however temporary: {"title": "...", "date": "YYYY-MM-DD", "quote": "<word for word>", "source": 0,
+"roles": ["president"|"vice_president"|"treasurer"|"secretary"|...]}; "roles" are the cabinet roles the source
+says must act (leave it empty if it does not say). Only dates written in the source, never guessed.
+Answer JSON only: {"facts": [...], "deadlines": [...]}  (empty lists are fine)."""
 
 MATCH_SYSTEM = """You compare new facts with facts a club already approved. For each new fact answer one of:
 "create" (nothing similar), "merge" (says the same thing as an existing fact), "update" (a newer or more
@@ -393,13 +444,14 @@ class Learner:
         *,
         audience: int | None = None,
         unlisted_sender: bool = False,
-    ) -> CaptureResult:
+    ) -> CaptureOutcome:
         """Proposals for Review (not yet submitted). ``extra`` are candidates already built by plain code.
         ``unlisted_sender``: the e-mail's sender is not on the OSA list and a person chose to read it (D-136)."""
-        prepared = [self._prepare(src, today, unlisted_sender) for src in request.sources]
+        prepared = [part for src in request.sources for part in self._prepare(src, today, unlisted_sender)]
         candidates: list[Candidate] = list(extra or [])
         skipped = 0
         failed = 0
+        deadlines: list[DeadlineTask] = []
         texts = [p for p in prepared if p.text.strip()]
         if texts and self.client is not None:
             try:
@@ -420,6 +472,7 @@ class Learner:
                 # Nothing was learned here. That is not "off topic": the caller must retry it (F-168).
                 extraction = Extraction(facts=[])
                 failed = len(texts)
+            deadlines = self._deadlines(extraction.deadlines, prepared, unlisted_sender)
             for fact in extraction.facts:
                 candidate = self._candidate(fact, prepared, request, today, audience, unlisted_sender=unlisted_sender)
                 if candidate is None:
@@ -428,12 +481,46 @@ class Learner:
                     candidates.append(candidate)
         candidates = self._dedupe(candidates)
         proposals = self._match(candidates, request.club_id, budget)
-        return CaptureResult(
+        return CaptureOutcome(
             proposals=proposals,
             sources_seen=len(request.sources),
             sources_skipped=skipped,
             sources_failed=failed,
+            deadlines=deadlines,
         )
+
+    @staticmethod
+    def _deadlines(
+        found: list[ExtractedDeadline], prepared: list[Learner._Prepared], unlisted_sender: bool
+    ) -> list[DeadlineTask]:
+        """Deadlines that may reach the calendar without a click: only from an OSA e-mail that passed every check
+        (listed sender, no hidden instructions, not outdated), quoted word for word from that mail (F-316)."""
+        tasks: list[DeadlineTask] = []
+        for d in found:
+            if d.source >= len(prepared) or unlisted_sender:
+                continue
+            src = prepared[d.source]
+            if src.source.source.kind is not SourceKind.EMAIL or src.injection or src.outdated:
+                continue
+            if _norm(d.quote) not in _norm(src.text):
+                continue
+            roles = []
+            for name in d.roles:
+                try:
+                    role = Role(name)
+                except ValueError:
+                    continue
+                if role in CABINET_ROLES and role not in roles:
+                    roles.append(role)
+            tasks.append(
+                DeadlineTask(
+                    title=d.title,
+                    date=d.date,
+                    owner_roles=roles or [Role.PRESIDENT],
+                    source_ref=f"dl-{_hash(d.title.lower(), d.date.isoformat())}",
+                )
+            )
+        return tasks
 
     def learn(
         self,
@@ -444,12 +531,27 @@ class Learner:
         *,
         audience: int | None = None,
         unlisted_sender: bool = False,
-    ) -> CaptureResult:
-        """Capture, then put every proposal in Review."""
+    ) -> CaptureOutcome:
+        """Capture, then put every proposal in Review, except those a person already rejected (F-312); a person
+        teaching a fact on purpose (chat) may bring a rejected one back."""
         result = self.capture(request, today, budget, extra, audience=audience, unlisted_sender=unlisted_sender)
-        for proposal in result.proposals:
-            self.store.submit(proposal)
-        return result
+        on_purpose = any(src.source.kind is SourceKind.USER_INPUT for src in request.sources)
+        waiting = list(self.store.pending.values())
+        fresh = [p for p in result.proposals if not self._already_waiting(p, waiting)]
+        queued = [p for p in fresh if self.store.submit(p, override_rejection=on_purpose)]
+        return result.model_copy(update={"proposals": queued})
+
+    @staticmethod
+    def _already_waiting(proposal: KnowHowProposal, waiting: list[KnowHowProposal]) -> bool:
+        """The same fact worded a little differently is already a card in Review: reading the mail again must not
+        add a second card for it (F-313). The same id is handled by the queue itself."""
+        return any(
+            w.proposal_id != proposal.proposal_id
+            and w.op is proposal.op
+            and w.target_item == proposal.target_item
+            and similarity(w.candidate.statement, proposal.candidate.statement) >= 0.8
+            for w in waiting
+        )
 
     # ------------------------------------------------------------------ steps
 
@@ -461,15 +563,18 @@ class Learner:
         injection: list[str]
         outdated: str | None
 
-    def _prepare(self, source: Untrusted, today: date, unlisted_sender: bool = False) -> Learner._Prepared:
+    def _prepare(self, source: Untrusted, today: date, unlisted_sender: bool = False) -> list[Learner._Prepared]:
         # Verified OSA e-mails keep their links and office contacts: they are the know-how (F-241).
         is_email = source.source.kind is SourceKind.EMAIL
-        text = source.content[:MAX_SOURCE_CHARS]
-        if is_email:
-            text = _hide_forwarder(text)
-        red = redact(text, keep_office_contacts=is_email and not unlisted_sender)
-        kinds: list[RedactionKind] = sorted({_REDACTION_KINDS[k] for k in red.kinds if k in _REDACTION_KINDS})
-        return Learner._Prepared(source, red.text, kinds, injection_flags(red.text), outdated_note(red.text, today))
+        out = []
+        for piece in split_source(source.content):
+            text = _hide_forwarder(piece) if is_email else piece
+            red = redact(text, keep_office_contacts=is_email and not unlisted_sender)
+            kinds: list[RedactionKind] = sorted({_REDACTION_KINDS[k] for k in red.kinds if k in _REDACTION_KINDS})
+            out.append(
+                Learner._Prepared(source, red.text, kinds, injection_flags(red.text), outdated_note(red.text, today))
+            )
+        return out
 
     @staticmethod
     def _extract_prompt(prepared: list[Learner._Prepared]) -> str:
@@ -510,7 +615,7 @@ class Learner:
         try:
             item = KnowHowItem.model_validate(
                 {
-                    "item_id": f"kh-{_slug(fact.title)}-{_hash(fact.title, fact.statement)[:4]}",
+                    "item_id": f"kh-{_slug(fact.title)}-{_hash(fact.title, fact.statement)[:8]}",
                     "scope": "aub" if shared else "club",
                     "club_id": None if shared else request.club_id,
                     "title": fact.title,
@@ -559,7 +664,7 @@ class Learner:
     def _match(self, candidates: list[Candidate], club_id: str, budget: Budget | None) -> list[KnowHowProposal]:
         similar: dict[int, list[KnowHowItem]] = {}
         for i, c in enumerate(candidates):
-            hits = self.store.search(club_id, f"{c.item.title} {c.item.statement}", limit=6)
+            hits = self.store.search(club_id, f"{c.item.title} {c.item.statement}", limit=6, include_expired=True)
             if hits:
                 similar[i] = hits
         decided: dict[int, Match] = {}
@@ -672,7 +777,7 @@ def price_list(rows: list[list[object]], club_id: str, file_name: str, seen: dat
         )
         fact = KnowHowItem.model_validate(
             {
-                "item_id": f"kh-prices-{_slug(seller, 30)}-{_hash(seller, event)[:4]}",
+                "item_id": f"kh-prices-{_slug(seller, 30)}-{_hash(seller, event)[:8]}",
                 "scope": "club",
                 "club_id": club_id,
                 "title": f"Prices at {seller}"[:120],
