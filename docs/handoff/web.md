@@ -641,3 +641,13 @@ All root gates pass on the documentation update: 910 tests, 93.67% coverage,
 Ruff/format 181 files, mypy 89, schemas/tasks. Four updated documents have valid
 local links and the web guide passes formatting. C-29 remains doing for its
 unverified acceptance/report work; no live provider or deployment claim added.
+
+
+### C-29 report follow-through
+
+Updated the owned report draft as well as its source guides, including trusted-mail
+exceptions, guided handover, live chat wiring and the completed expiry merge.
+Recorded only the observed public 200 login / 401 unauthenticated API responses;
+SSH timed out, so the running image and any deployment change remain unverified.
+The SPA fallback is explicitly not an API-health check. No raw URL/account/key
+or real club record is copied into the report. Rechecked report links/formatting.

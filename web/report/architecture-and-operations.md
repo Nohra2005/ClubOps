@@ -1,6 +1,6 @@
 # Report sections: architecture, web app, deployment and monitoring
 
-Christophe's C-29 draft, updated 23 November 2026. Interface baseline: main `2bb9f5e`.
+Christophe's C-29 draft, updated 24 November 2026. Interface baseline: main `62d1787`.
 For Tatiana to review and incorporate into T-27. These sections describe implemented
 boundaries and local evidence. Final provider/evaluation results, hosted acceptance
 and team/user observations must be added from their actual records.
@@ -36,7 +36,11 @@ Calendar synchronization.
 
 Knowledge has a separate approval boundary. External descriptions, documents and
 interview answers are untrusted inputs. Learning proposes source-supported changes;
-a person's Review decision creates verified knowledge. Shared AUB rules and club
+a person's Review decision normally creates verified knowledge. The merged trusted
+OSA exception allows code to apply a clean new fact after source checks and the
+explicit paid read. Overrides/merges, contradictions and flagged mail still wait
+for review (D-151/#150), and applied changes retain Edit/Undo history. This does
+not establish a deployed background-reading schedule. Shared AUB rules and club
 know-how occupy separate scopes, with current validity filtering. Warning, disputed
 and shared cards require individual frontend review; their server authorization is
 independent of visibility in the browser. The current shared-review flow follows
@@ -66,9 +70,17 @@ adapter and tests a different boundary. Reproduction and acceptance gaps are in
 [CLUB_SETUP.md](../CLUB_SETUP.md).
 
 The answer-only setup contract retains an accepted stale-tab limit (F-151): a delayed
-answer can reach a later question. The UI asks for one tab. F-201 also records a
-rejected proposal reappearing after a partial queue failure and retry; it is never
-approved automatically. Neither limit is presented as fixed by the new browser test.
+answer can reach a later question. The UI asks for one tab. Rejected-card
+persistence was addressed in #142; the setup browser test does not establish
+recovery of every interrupted capture/queue failure path.
+
+Merged #123 adds a four-stop guided role introduction with browser-local,
+member/club/role-isolated progress and an expandable cited reference. It does not
+transfer membership or prove training. Ask is now wired to the source-gated core
+for the authenticated club (#149/D-200), with dated source labels and inactive
+facts filtered. Structured tutoring, term persistence and measured user benefit
+remain separate work. Expiry visibility and Review draft protection merged in
+#152; Knowledge expiry editing after approval still needs an API field.
 
 ## Deployment and authentication
 
@@ -86,8 +98,8 @@ Local container and persistence checks are implemented in the
 [Compose persistence checker](../scripts/check-compose-persistence.mjs) and recorded
 in [VERIFICATION.md](../VERIFICATION.md). They do not prove a public deployment,
 production OAuth origin, paid-service approval or backup restoration. The prepared
-Render configuration needs persistent storage; no hosting purchase or service is
-claimed here. In-process planning also means durable background-job recovery and
+Render configuration needs persistent storage; the configuration alone is not evidence of a hosting purchase
+or successful deployment. In-process planning also means durable background-job recovery and
 horizontal scaling are not supported claims. Finish active runs before restart.
 
 ## Cost reporting and observability
@@ -118,7 +130,9 @@ These require the documented Python/Node tools and installed Playwright browser.
 CI replays/scripted responses do not spend provider credit. Dated commands and
 outcomes belong in [VERIFICATION.md](../VERIFICATION.md).
 
-Independent teammate review and merge commits preserve the small change history.
+Merge commits preserve the small change history. Earlier PRs have independent
+review evidence; Chris relayed a temporary review waiver on 24 November. Do not
+claim that a waived PR had an approving review.
 Prepared tooling and synthetic tests support engineering claims within their stated
 scope. C-29 remains doing until Joey's fresh README-only setup and Tatiana's report
 handoff/review are recorded. Public deployment, real Google/provider tests, actual
@@ -148,3 +162,15 @@ repository activity for those weeks. Dates are owner-reported; the summaries do
 not establish attendance, oral decisions or original assignments. They should not
 be described as contemporaneous minutes or used to claim unverified outcomes.
 Other CI, testing and observability evidence retains its stated scope and limits.
+
+## 24 November hosted availability observation
+
+A read-only request to the previously supplied Azure origin returned HTTP 200
+for `/login`; unauthenticated `/api/me` returned 401. This proves the public page
+and session boundary responded at that observation, not a logged-in cabinet flow
+or the deployed build version. `/health` was not accepted as an API-health proof:
+the static router can serve the SPA for arbitrary non-API paths. SSH to the VM
+port 22 timed out, so no running-image inspection or deployment update is claimed.
+No private account, provider call, raw club data or credential was used in this
+public check. Google login, current-image deployment and recovery acceptance remain
+separate checks once administrative access is restored.
