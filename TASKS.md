@@ -772,6 +772,7 @@ Reference documents:
 - Blocked (2026-11-20): synthetic source/citation/unknown-answer tests pass. Tatiana must confirm current app wiring and record the private 42-question run for T-26. No private question set or matching model recordings exist in this checkout; no score is invented.
 - Verified (2026-11-22): inspected the current app route: POST /api/chat/ask still returns the explicit not-switched-on placeholder; the source-gated core is not wired into it. Tatiana owns the authenticated own-club API integration and private 42-question evaluation. Adding a model key alone will not complete J-15.
 - Progress (2026-11-24): wired the cabinet-only app endpoint to chat/ask.py with the signed-in club store; source labels show valid_to or No end date. Both expiry filters remain. Private 42-question evaluation and deployed acceptance remain pending.
+- Progress (2026-11-24, Tatiana): the private 42-question run is recorded in `results/chatbot-evaluation.md` (41 counted: 13 correct, 1 partly, 0 wrong, 0 invented, 11 of 11 correct "not sure", 16 missed because the club facts are not in the store). Deployed acceptance remains pending.
 
 ### J-16 Secret scanning in CI (bonus)
 - Owner: joey
