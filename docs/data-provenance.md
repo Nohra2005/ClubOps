@@ -1,6 +1,6 @@
 # Data provenance
 
-Updated 16 November 2026. Sources must be public, authorized or synthetic. A source's existence is not evidence that consent, a pilot or an evaluation has happened.
+Updated 24 November 2026 against merged source-policy decisions D-138/D-150/D-151/D-152. Sources must be public, authorized or synthetic. A source's existence is not evidence that consent, a pilot or an evaluation has happened.
 
 ## Source inventory
 
@@ -31,7 +31,7 @@ The redaction component hides phone numbers, AUB IDs, emails and links before mo
 - Real inputs, contact details, recordings, databases and exports stay in ignored/private runtime storage. No real data goes into tests, CI traces, image layers or committed example reports.
 - Browser demo storage contains synthetic records. Local Compose seeds `president@example.com` as a clearly synthetic test identity; it is not a university account or production access policy.
 - Build-context checks place synthetic canaries in excluded locations and inspect the actual BuildKit export. Provider secrets remain runtime configuration; an optional trusted-root bundle is mounted only during dependency installation.
-- Source-derived facts wait in Review. Only an authorized person's decision makes knowledge verified; flagged sources need individual frontend review.
+- Interview/chat/document facts wait in Review. Under the merged trusted-mail exception (D-138, narrowed by D-151), source checks and plain code may apply a clean new OSA fact after the explicit paid read; updates/merges, contradictions and flagged mail still wait for a person. This exception is not consent to ingest arbitrary material or proof of background fetching. Applied changes retain Edit/Undo history.
 - Retention and source deletion are operational responsibilities, not an implemented automatic purge. Do not claim that all raw sources have already been deleted, or that traces expire after a fixed interval, without an actual job and evidence. Private evaluation recordings may need to remain available for reproducibility under their authorization.
 - A volume is persistence, not backup/recovery evidence. Keep private SQLite backups outside git and verify restoration before a production recovery claim.
 
@@ -41,7 +41,7 @@ extraction. Treat debug output and recordings as potentially source-derived sens
 content; never attach them wholesale to CI, public issues or reports. Redaction is
 not a guarantee that all identifying context is gone. C-27 review sheets likewise
 contain expected/learned facts, questions and answers; keep actual human ratings and
-their companion files private under the evaluation's authorization.
+their companion files private under the evaluation's authorization. D-152/#151 adds the same private human-marking boundary for the 42-question chatbot test. Exporting a blank sheet does not establish that any person rated it or that the evaluation passed.
 
 ## Limits on conclusions
 

@@ -1,6 +1,6 @@
 # Knowledge base and working memory
 
-Updated 16 November 2026. The memory model separates proposed knowledge, verified knowledge and event/run working state. Public interfaces are in `src/clubops/contracts/`; availability is in `docs/api.md`, with the merged #87 setup integration explained in [CLUB_SETUP.md](../web/CLUB_SETUP.md).
+Updated 24 November 2026 against main `eae20c5` and the published API/design decisions. The memory model separates proposed knowledge, verified knowledge and event/run working state. Public interfaces are in `src/clubops/contracts/`; availability is in `docs/api.md`, with the merged #87 setup integration explained in [CLUB_SETUP.md](../web/CLUB_SETUP.md).
 
 ## Stores, scope and lifetime
 
@@ -21,11 +21,13 @@ No automatic raw-data, history, recording or trace purge is claimed. Retention/d
 
 ## Knowledge lifecycle
 
-A source is untrusted input. Learning extracts source-supported candidates and submits proposals. Existing knowledge can lead to a create, merge, update or contradiction proposal; a model cannot verify its own output. Human decisions create the verified view, while retired, superseded, expired and unapproved items stay out of current knowledge.
+A source is untrusted input. Learning extracts source-supported candidates. Interview answers, chats and uploaded documents submit proposals for a person to check. The trusted OSA mail exception is narrower: after the published paid-read action and intake/source checks, plain code may apply a clean new fact; a change to existing knowledge (update or merge), a contradiction or flagged mail waits in Review (D-138 narrowed by D-151, merged #150). The model does not grant authority. Applied facts retain history with Edit/Undo; retired, superseded, expired and unapproved items stay out of current retrieval. Background scheduling is not established by this API path.
 
 Under D-95, extraction must identify how long a fact holds and whether it is stated
-as fact/agreement or opinion/suggestion/question. One-time arrangements and personal
-views are dropped; this-term facts have an expiry. The model supplies these labels,
+as fact/agreement or opinion/suggestion/question. One-time arrangements are excluded from lasting Knowledge, and personal
+views are dropped; this-term facts have an expiry. Quoted, dated deadlines from
+clean trusted OSA mail have a separate calendar-task path (D-150, #146); they
+do not become permanent know-how. The model supplies these labels,
 so the filter is not proof that every surviving fact is correct. A cut-off/unreadable
 model response is a failed source, not an off-topic source; retry it rather than
 mark it learned (D-98/F-168).
@@ -38,7 +40,7 @@ the shared layer (D-91/F-163).
 
 Instruction warnings and old-document flags are visible in Review and excluded from bulk approval. They remain available for an individual source check. Official status cannot be acquired merely by uploading a document or typing an instruction into a chat.
 
-Handover entries retain every current approved source. Unsupported entries become gaps naming a question, who to ask and where to look; they do not become fabricated rules. The chatbot's production implementation is separate J-15 work and is still a placeholder on main at this update.
+Handover entries retain every current approved source. Unsupported entries become gaps naming a question, who to ask and where to look; they do not become fabricated rules. The cabinet chat route now uses J-15's source-gated core for the authenticated club (#149, D-200). Source labels include expiry or No end date, and inactive facts are filtered. This is merged API wiring, not measured provider answer quality, a cross-device tutor or verified deployed acceptance. The owner's API table still contains a historical placeholder note; #149/D-200 supersede that availability note.
 
 ## Examples and authority
 
@@ -57,5 +59,23 @@ hooks, real-provider measurements and deployed alerts remain separate work. See
 Production retention/backup recovery and evidence that handover improves users'
 results remain unverified. Read-only screen visits do not silently launch a model
 run or verify knowledge. The accepted answer-only setup stale-tab limit (F-151)
-and rejected-proposal reappearance after a partial queue failure (F-201) still apply;
-use one setup tab and inspect proposals before approving them.
+still applies; use one setup tab. Rejected-card persistence was addressed in
+#142; that does not prove all interrupted capture/queue failure paths recover.
+Inspect proposed changes before approving them.
+
+
+## Expiry and evaluation interfaces
+
+Review and Knowledge carry `valid_to` as an ISO date or null. Review decisions
+can set it or explicitly clear it with an empty string; absent preserves the
+suggestion (#135/#136). The published Knowledge Edit contract currently carries
+text and optional lead_time_days, so changing expiry after approval still needs
+an API extension. Restore is a separate president-only expired-club-fact action.
+Web follow-up #152 covers full-year/detail/comparison labels, source-check hints
+and unsaved metadata protection; it remains a candidate until merged.
+
+The learning quality sheet (C-27, D-87) and chatbot quality sheet (D-152, #151)
+are human-marked private artifacts. Their offline score commands count ratings;
+exact text matching is not evidence of semantic answer correctness. The chatbot
+runner prepares 42 private questions; the presence of the tool does not mean the
+private evaluation or its ratings are complete.
