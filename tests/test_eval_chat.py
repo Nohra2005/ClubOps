@@ -6,10 +6,13 @@ from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
 from scripts.eval_chat import main
 
 from clubops.contracts.knowhow import Answer, AskRequest
 from clubops.evaluation.chat import ChatCase, load_cases, score, table
+from clubops.evaluation.chat_sheet import ask_sheet, read_questions, read_sheet, score_sheet, unmarked
+from clubops.evaluation.chat_sheet import table as sheet_table
 
 
 def case(case_id: str, expected: str | None, sources: frozenset[str] = frozenset()) -> ChatCase:
@@ -60,13 +63,77 @@ def test_csv_loader_keeps_unknowns_and_supporting_ids(tmp_path: Path) -> None:
     assert cases[1].expected_answer is None
 
 
-def test_cli_scores_an_unknown_question_in_replay_mode(tmp_path: Path, monkeypatch, capsys) -> None:  # type: ignore[no-untyped-def]
-    path = tmp_path / "questions.csv"
-    path.write_text(
-        "id,question,expected_answer,supporting_ids\nQ1,Xylophone?,,\n",
-        encoding="utf-8",
-    )
+QUESTIONS = (
+    "q_id,question,expected,answer,source,ask_who,look_in\n"
+    "Q1,Who books the room?,known,Ask the events officer.,doc,,\n"
+    "Q2,What is the food ceiling?,not_sure,Not known.,,OSA,forms\n"
+    "Q3,Who has the key?,not_sure,Not known.,,Security,\n"
+    "Q4,How early do we file?,known,Two weeks.,doc,,\n"
+)
+
+
+def fake_answers() -> object:
+    replies = {
+        "Who books the room?": Answer(known=True, text="The events officer.", citations=["kh-room"], basis="verified"),
+        "What is the food ceiling?": Answer(known=False, text="Not sure.", basis="none", ask={"who": "OSA"}),
+        "Who has the key?": Answer(known=True, text="Security.", citations=["kh-key"], basis="verified"),
+        "How early do we file?": Answer(known=False, text="Not sure.", basis="none", ask={"who": "OSA"}),
+    }
+    return lambda text: (replies[text], Decimal("0.01"), ["Room rule"] if replies[text].known else [])
+
+
+def test_the_sheet_fills_what_code_can_decide_and_leaves_the_rest_to_a_person(tmp_path: Path) -> None:
+    """F-318: the exact-text match marked almost every answer wrong; a person marks, code counts."""
+    path = tmp_path / "q.csv"
+    path.write_text(QUESTIONS, encoding="utf-8-sig")  # the private file may start with a BOM
+    rows = ask_sheet(read_questions(path), fake_answers())  # type: ignore[arg-type]
+    by_id = {r["id"]: r for r in rows}
+    assert by_id["Q1"]["correct"] == "" and by_id["Q1"]["her_answer"] == "Ask the events officer."
+    assert by_id["Q2"]["correct"] == "yes"  # right "not sure"
+    assert by_id["Q3"]["correct"] == "no"  # invented answer
+    assert by_id["Q4"]["correct"] == "no"  # missed: it should have answered
+    assert unmarked(rows) == ["Q1"]
+    with pytest.raises(ValueError, match="Q1"):
+        score_sheet(rows)
+    by_id["Q1"].update(correct="partly", sources_ok="yes")
+    result = score_sheet(rows)
+    assert (result["answered_partly"], result["missed"], result["correct_not_sure"], result["invented"]) == (1, 1, 1, 1)
+    assert result["cost_usd"] == Decimal("0.04")
+    assert "| 4 | 0 | 1 | 0 | 1 | 1 | 1 | 1 of 1 | 0.0400 |" in sheet_table(result)
+
+
+def test_cli_asks_unknown_questions_then_scores_the_sheet(tmp_path: Path, monkeypatch, capsys) -> None:  # type: ignore[no-untyped-def]
+    path = tmp_path / "q.csv"
+    path.write_text("q_id,question,expected,answer\nQ1,Xylophone?,not_sure,Not known.\n", encoding="utf-8")
+    sheet = tmp_path / "out" / "sheet.csv"
     monkeypatch.setenv("CLUBOPS_MODEL_MODE", "replay")
-    monkeypatch.setattr("sys.argv", ["eval_chat.py", "--cases", str(path), "--as-of", "2026-10-31"])
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "eval_chat.py",
+            "ask",
+            "--cases",
+            str(path),
+            "--out",
+            str(sheet),
+            "--as-of",
+            "2026-11-24",
+            "--data-dir",
+            str(tmp_path / "d"),
+        ],
+    )
     main()
-    assert "| 1 | 0 | 0 | 1 | 0 | 0.0000 |" in capsys.readouterr().out
+    assert read_sheet(sheet)[0]["correct"] == "yes"
+    monkeypatch.setattr("sys.argv", ["eval_chat.py", "score", "--sheet", str(sheet)])
+    main()
+    assert "| 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 of 0 | 0.0000 |" in capsys.readouterr().out
+
+
+def test_the_sheet_is_refused_inside_the_repository(tmp_path: Path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    path = tmp_path / "q.csv"
+    path.write_text("q_id,question,expected,answer\nQ1,Xylophone?,not_sure,Not known.\n", encoding="utf-8")
+    monkeypatch.setattr(
+        "sys.argv", ["eval_chat.py", "ask", "--cases", str(path), "--out", "private-sheet.csv", "--as-of", "2026-11-24"]
+    )
+    with pytest.raises(SystemExit, match="outside the ClubOps folder"):
+        main()
