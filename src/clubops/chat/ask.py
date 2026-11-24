@@ -50,4 +50,23 @@ def ask(request: AskRequest, store: KnowHowStore, model: ModelClient, budget: Bu
     allowed = {item.item_id for item in candidates}
     if answer.known and (not set(answer.citations) <= allowed or answer.basis not in {"verified", "single_source"}):
         return _unknown(candidates)
-    return answer
+    return answer.model_copy(update={"text": _restore_contacts(answer, candidates)})
+
+
+def _restore_contacts(answer: Answer, candidates: list[KnowHowItem]) -> str:
+    """Put back a phone number, link or e-mail the model only saw as a placeholder (F-321).
+
+    The model never sees personal data (D-09), so it can only write "[PHONE]". The person asking is a cabinet member
+    who may read the fact itself, so the original is put back from the facts the answer cites. A placeholder that more
+    than one different original could fill stays as it is: no guessing which number is meant."""
+    originals: dict[str, set[str]] = {}
+    for fact in candidates:
+        if fact.item_id in answer.citations:
+            for text in (fact.title, fact.statement):
+                for placeholder, value in redact(text).found:
+                    originals.setdefault(placeholder, set()).add(value)
+    text = answer.text
+    for placeholder, values in originals.items():
+        if len(values) == 1:
+            text = text.replace(placeholder, next(iter(values)))
+    return text

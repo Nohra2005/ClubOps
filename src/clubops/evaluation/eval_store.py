@@ -25,11 +25,19 @@ def read_facts(path: Path) -> list[dict[str, str]]:
         ]
 
 
-def seed_facts(store: KnowHowStore, rows: list[dict[str, str]], club_id: str, now: datetime | None = None) -> int:
+def seed_facts(
+    store: KnowHowStore,
+    rows: list[dict[str, str]],
+    club_id: str,
+    now: datetime | None = None,
+    skip: frozenset[str] = frozenset(),
+) -> int:
     """Add each row as a verified fact. A row whose id already exists is skipped. Returns how many were added."""
     stamp = now or datetime.now(UTC)
     added = 0
     for row in rows:
+        if row["fact_id"].upper() in skip:  # a fact that answers a question whose right reply is "not sure"
+            continue
         item_id = f"kh-eval-{row['fact_id'].lower()}"
         if store.latest(item_id) is not None:
             continue

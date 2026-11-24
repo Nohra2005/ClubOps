@@ -209,3 +209,28 @@ def test_a_test_copy_gets_the_presidents_facts_and_the_real_store_is_untouched(t
     assert real.search(CLUB, "Is the pool free?") == []
     copy.close()
     real.close()
+
+
+def test_a_question_can_be_left_out_of_the_count_and_a_fact_left_out_of_the_copy(tmp_path: Path) -> None:
+    from clubops.evaluation.eval_store import read_facts, seed_facts
+    from clubops.knowhow.backends import open_club_store_backend
+    from clubops.knowhow.store import KnowHowStore
+    from tests.factories import CLUB
+
+    path = tmp_path / "q.csv"
+    path.write_text(QUESTIONS, encoding="utf-8")
+    rows = ask_sheet(read_questions(path), fake_answers())  # type: ignore[arg-type]
+    rows[0].update(correct="yes", sources_ok="yes")
+    result = score_sheet(rows, frozenset({"Q3"}))  # Q3 was the invented answer
+    assert result["questions"] == 3 and result["invented"] == 0
+    facts = tmp_path / "facts.csv"
+    facts.write_text(
+        "fact_id,scope,statement,source\n"
+        "F1,aub,The pool is free for all students.,S\n"
+        "F2,aub,Civil Defense is needed.,S\n",
+        encoding="utf-8",
+    )
+    copy = KnowHowStore(open_club_store_backend(tmp_path / "copy", CLUB))
+    assert seed_facts(copy, read_facts(facts), CLUB, skip=frozenset({"F2"})) == 1
+    assert copy.search(CLUB, "Civil Defense") == []
+    copy.close()

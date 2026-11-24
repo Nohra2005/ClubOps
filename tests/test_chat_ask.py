@@ -131,3 +131,22 @@ def test_the_answer_limit_leaves_room_for_a_long_fact_list() -> None:
     model = FakeModel(known([fact.item_id]))
     ask(question(), FakeStore([fact]), model)  # type: ignore[arg-type]
     assert model.max_tokens >= 1500
+
+
+def test_a_placeholder_is_filled_back_from_the_cited_fact_and_the_model_never_sees_the_number() -> None:
+    """F-321: the answer said "[PHONE]" because personal data is hidden from the model; the asker needs the number."""
+    fact = verified(item(statement="To book any room, cabinet members call +961 70 869 848."))
+    model = FakeModel(
+        Answer(known=True, text="Call [PHONE] to book a room.", citations=[fact.item_id], basis="verified")
+    )
+    answer = ask(question(text="Who do we call to book a room?"), FakeStore([fact]), model)  # type: ignore[arg-type]
+    assert answer.text == "Call +961 70 869 848 to book a room."
+    assert "869" not in model.user and "[PHONE]" in model.user
+
+
+def test_a_placeholder_that_two_numbers_could_fill_is_left_alone() -> None:
+    first = verified(item("kh-room-a", statement="Rooms: call +961 70 869 848."))
+    second = verified(item("kh-room-b", statement="Gym: call +961 71 123 456."))
+    model = FakeModel(Answer(known=True, text="Call [PHONE].", citations=["kh-room-a", "kh-room-b"], basis="verified"))
+    answer = ask(question(), FakeStore([first, second]), model)  # type: ignore[arg-type]
+    assert answer.text == "Call [PHONE]."

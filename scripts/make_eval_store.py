@@ -29,6 +29,7 @@ def main() -> None:
     parser.add_argument("--facts", required=True, type=Path)
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--club", default="running-club")
+    parser.add_argument("--skip", default="", help="fact ids to leave out, e.g. F32 (answers a not-sure question)")
     args = parser.parse_args()
     out = args.out.resolve()
     if PRIVATE.resolve() not in out.parents:
@@ -38,7 +39,8 @@ def main() -> None:
     shutil.copytree(args.source, out)
     store = KnowHowStore(open_club_store_backend(out, args.club))
     try:
-        added = seed_facts(store, read_facts(args.facts), args.club)
+        skip = frozenset(i.strip().upper() for i in args.skip.split(",") if i.strip())
+        added = seed_facts(store, read_facts(args.facts), args.club, skip=skip)
     finally:
         store.close()
     print(f"Copied {args.source.resolve()} to {out}\nFacts added to the copy: {added}")
