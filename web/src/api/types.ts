@@ -231,7 +231,7 @@ export interface ReviewCard {
   group: string;
   kind: string;
   op?: 'create' | 'merge' | 'update' | 'contradiction' | 'retire';
-  alternative?: { statement: string; source: Source };
+  alternative?: { statement: string; source: Source; valid_to?: string | null };
   event_id?: string;
   status: 'pending' | 'waiting_second_president' | 'approved' | 'rejected';
   opened_at?: string;
@@ -240,11 +240,19 @@ export interface ReviewCard {
   outdated?: boolean;
   unlisted?: boolean;
   shared?: boolean;
+  /** True on a Replace-old / Same-as card: the new version keeps the known fact's layer. */
+  shared_locked?: boolean;
+  /** End date (YYYY-MM-DD), or null when the fact never ends. Absent on cards from older servers. */
+  valid_to?: string | null;
+  /** Why ClubOps proposed this card, plain text. */
+  why?: string;
 }
 export interface ReviewDecision {
   decision: string;
   shared?: boolean;
   edited_text?: string;
+  /** YYYY-MM-DD sets the end date, '' clears it, absent keeps ClubOps' guess. */
+  valid_to?: string;
   reason?: string;
   opened_at: string;
   decided_at: string;
@@ -283,6 +291,8 @@ export interface KnowledgeItem {
   scope: 'club' | 'aub';
   sources: Source[];
   last_checked: string;
+  /** End date (YYYY-MM-DD), or null when the fact never ends. */
+  valid_to?: string | null;
   last_used?: string;
   status: 'current' | 'may_be_outdated' | 'retired';
   triggers?: string;
