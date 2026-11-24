@@ -53,10 +53,13 @@ function HttpInbox() {
     const cards = new Set(result.value.proposals).size;
     setCompleted((previous) => [...new Set([...previous, message.id])]);
     setUnconfirmed((previous) => previous.filter((entry) => entry.id !== message.id));
+    const added = new Set(result.value.applied ?? []).size;
     setFeedback(
-      cards
-        ? `Read result received. ${cards} Review card(s) proposed; none approved.`
-        : 'Read result received. No facts were proposed; no fact was approved.',
+      added
+        ? `Read result received. ${added} new fact(s) added to Knowledge. ${cards} change(s) to existing rules or odd cases wait in Review for your check.`
+        : cards
+          ? `Read result received. ${cards} Review card(s) proposed; none approved.`
+          : 'Read result received. No facts were proposed; no fact was approved.',
     );
     setReasons(result.value.skipped);
     setSelected(undefined);

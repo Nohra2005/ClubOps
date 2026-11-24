@@ -246,6 +246,7 @@ export function KnowledgeFact() {
   const [editing, setEditing] = useState(false);
   const [retiring, setRetiring] = useState(false);
   const [text, setText] = useState('');
+  const [lead, setLead] = useState('');
   const item = fact.value;
   if (fact.error && source?.quote)
     return (
@@ -333,6 +334,9 @@ export function KnowledgeFact() {
                       className="button"
                       onClick={() => {
                         setText(item.statement);
+                        setLead(
+                          item.lead_time_days === undefined ? '' : String(item.lead_time_days),
+                        );
                         setEditing(true);
                       }}
                     >
@@ -419,7 +423,13 @@ export function KnowledgeFact() {
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
-                  const result = await action.run(() => api.suggestEdit(id, text));
+                  const leadChanged =
+                    lead !== '' &&
+                    Number(lead) !== item.lead_time_days &&
+                    item.lead_time_days !== undefined;
+                  const result = await action.run(() =>
+                    api.suggestEdit(id, text, leadChanged ? Number(lead) : undefined),
+                  );
                   if (result.ok) {
                     notify(
                       'Fact updated. The old version stays in history, and you can undo the change.',
@@ -444,6 +454,21 @@ export function KnowledgeFact() {
                     maxLength={2000}
                   />
                 </label>
+                {item.lead_time_days !== undefined && (
+                  <label className="field">
+                    <span>Notice period (days)</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={365}
+                      value={lead}
+                      onChange={(e) => setLead(e.target.value)}
+                    />
+                    <span className="inline-note">
+                      The planner enforces this number. Changing the words alone does not change it.
+                    </span>
+                  </label>
+                )}
                 <ErrorNotice message={action.error} />
                 <div className="form-actions">
                   <button className="button primary" disabled={action.pending || !text.trim()}>

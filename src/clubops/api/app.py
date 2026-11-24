@@ -52,12 +52,14 @@ from clubops.api.store import ApiStore, PlannedEvent
 from clubops.calendar.items import event_items, impact_form_item
 from clubops.calendar.service import CalendarService, CalendarSettings, settings_from_env
 from clubops.capabilities.runner import CapabilityError
+from clubops.chat.ask import ask as ask_question
 from clubops.config import _read_dotenv, load_settings
 from clubops.contracts.agent import AgentRun, PlanEventRequest, RunStatus
 from clubops.contracts.common import Actor, ErrorCode, Role, SourceKind, SourceRef, Untrusted
 from clubops.contracts.event import Audience, EventSpec, EventStatus, Venue, VenueKind
 from clubops.contracts.handover import HandoverRequest
 from clubops.contracts.knowhow import (
+    AskRequest,
     CaptureRequest,
     CaptureResult,
     ItemStatus,
@@ -139,6 +141,10 @@ class RestoreBody(BaseModel):
 
 class PlanBody(BaseModel):
     description: str = Field(min_length=3, max_length=4000)
+
+
+class ChatBody(BaseModel):
+    text: str = Field(min_length=3, max_length=500)
 
 
 class AnswerBody(BaseModel):
@@ -876,20 +882,28 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             "used_in": [],
         }
 
-    # -------------------------------------------------- not built yet (501)
+    # ------------------------------------------------------------- chatbot (J-15)
 
     @app.post("/api/chat/ask")
-    def ask(member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
-        """Until the chatbot (T-17) exists: say so honestly, with who to ask (D-49). Cabinet only: the read-only
-        adviser must not start a question that will cost a model call once the chatbot is on (F-217)."""
-        return {
-            "known": False,
-            "text": "The chatbot isn't switched on yet, so I can't answer from the club's memory.",
-            "citations": [],
-            "basis": "none",
-            "ask": {"who": "the club president", "role": None},
-            "look_in": None,
-        }
+    def ask(body: ChatBody, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+        """A cabinet click asks only the signed-in club's current approved knowledge."""
+        with club(member.club_id) as (store, _, _, _):
+            answer = ask_question(
+                AskRequest(club_id=member.club_id, question=body.text, as_of=today()), store, model_client()
+            )
+            out = answer.model_dump(mode="json")
+            out["kind"] = "answer" if answer.known else "unknown"
+            sources = []
+            for item_id in answer.citations:
+                item = store.latest(item_id)
+                if item is not None:
+                    source = views.source(item)
+                    end = item.valid_to.isoformat() if item.valid_to else None
+                    source["valid_to"] = end
+                    source["label"] = f"{source['label'][:240]}; " + (f"Valid through {end}" if end else "No end date")
+                    sources.append(source)
+            out["citations"] = sources
+            return out
 
     # ------------------------------------------------------------- OSA inbox (T-47)
 
