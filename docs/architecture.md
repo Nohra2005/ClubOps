@@ -1,6 +1,6 @@
 # Architecture
 
-Updated 16 November 2026 against main `54d38c1`, published interfaces and merged integration PRs. Local integration and container checks are recorded in `web/VERIFICATION.md`; provider/evaluation evidence belongs in `results/` and `docs/evidence.md`. Public deployment remains pending. Report sections and their evidence limits are in [architecture-and-operations.md](../web/report/architecture-and-operations.md).
+Updated 24 November 2026 against main `eae20c5`, published interfaces and merged integration decisions. Local integration and container checks are recorded in `web/VERIFICATION.md`; provider/evaluation evidence belongs in `results/` and `docs/evidence.md`. Packaging/integration checks do not establish deployed acceptance; that is tracked separately under C-13/C-14/C-18. Report sections and their evidence limits are in [architecture-and-operations.md](../web/report/architecture-and-operations.md).
 
 ## Request and approval flow
 
@@ -12,6 +12,10 @@ flowchart TB
   api --> planner[Planner: model chooses the next tool]
   api --> learner[Learning: extract and propose]
   learner --> review[Pending proposals and source warnings]
+  api --> mail[Explicit OSA read and source checks]
+  mail --> fresh[Code applies clean new facts]
+  fresh --> memory
+  mail --> review
   review --> human[Person verifies or rejects]
   human --> memory[SQLite: shared AUB rules and isolated club knowledge]
   memory --> planner
@@ -24,7 +28,7 @@ flowchart TB
   records --> reports[Usage screen and report CLI]
 ```
 
-The planner can choose its own steps inside a user-started run. It cannot approve its own plan, verify knowledge or send a message. An edited event requires review of the new revision. New-club setup is registered in the application through merged [#87](https://github.com/Nohra2005/ClubOps/pull/87). Google calendar synchronization, the full chatbot and draft-generation wiring have separate owners/tasks. The [API table](api.md) remains the interface reference, but its setup 501 and always-complete notes predate #87; the setup status below supersedes those notes, without changing the contract.
+The planner can choose its own steps inside a user-started run. It cannot approve its own plan or send a message. Knowledge authorization has a separate trusted-mail exception described below; the model itself cannot confer approval. An edited event requires review of the new revision. New-club setup is registered in the application through merged [#87](https://github.com/Nohra2005/ClubOps/pull/87). Google Calendar and draft-generation integration retain separate owner tasks. Cabinet chat is wired to the authenticated club store in #149 (D-200); this is not a completed provider-quality or deployed acceptance claim. The [API table](api.md) remains the interface reference, but its setup 501 and always-complete notes predate #87; the setup status below supersedes those notes, without changing the contract.
 
 ## What makes decisions
 
@@ -32,8 +36,8 @@ The planner can choose its own steps inside a user-started run. It cannot approv
 |---|---|---|
 | Planner | Model chooses tools and asks questions; code checks valid transitions and enforces each explicit allowance of 8 steps / $0.05 | `AgentRun`, event contracts, API run endpoints, `tests/test_api.py` |
 | Rule check | Plain code evaluates explicit facts; a bounded model call handles description-dependent conditions. Missing/failed evidence stays uncertain | Rule/verdict contracts, `docs/plan.md`, `tests/test_rulebook.py` |
-| Learning | Model proposes from redacted input; code validates quoted support and candidate shape, drops one-time facts and personal opinions, and expires this-term facts. Expense spreadsheets have a deterministic price-list path | Capture/know-how contracts, D-95, `tests/test_learning.py` |
-| Memory approval | A person verifies, rejects or edits proposals. Warnings and outdated sources require individual frontend review rather than batch approval | Verify contracts, Review API, `web/e2e/contracts.spec.ts` |
+| Learning | Model proposes from redacted input; code validates quoted support and candidate shape, excludes one-time facts and personal opinions from lasting Knowledge, and expires this-term facts. Dated trusted-mail deadlines have a separate calendar-task path (D-150) Expense spreadsheets have a deterministic price-list path | Capture/know-how contracts, D-95, `tests/test_learning.py` |
+| Memory approval | People review interview/chat/document facts and mail overrides/flagged proposals. Only clean new trusted-mail facts can apply by code (D-138 narrowed by D-151); Edit/Undo retain history | Verify contracts, Review API, `web/e2e/contracts.spec.ts` |
 | Plan approval | Server checks the submitted revision before creating internal calendar items | Event/API contracts, `web/e2e/live-api.spec.ts` |
 | Handover | Existing plain-code assembly becomes a view retaining current sources and explicit gaps; no model call | Handover contracts, `tests/test_handover_view.py`, `tests/test_handover_endpoint.py` |
 | Club setup | Explicit president interview; durable question progress; skips/resume avoid extraction, extracted facts wait in Review | `POST /api/setup/next`, `web/CLUB_SETUP.md`, `web/e2e/setup-live.spec.ts` |
@@ -53,7 +57,10 @@ Draft text is for a person to inspect and copy/send. Handover sign-off and sever
 
 ## Knowledge scopes and approval
 
-Two stores: the shared AUB layer, stored once for every club, and each club's own know-how (D-05, D-23, D-91). Rule items carry a source authority, `official_document` above `office_email` above `stated_by_president`; a weaker source that disagrees with a stronger one becomes a contradiction for a person to resolve (D-11). Today nothing becomes know-how without a person: any verified cabinet member decides an ordinary club card (the permission table in `api.md`), while a shared (AUB-wide) decision needs a president and an explicit scope choice (D-104, D-124). Planned, not built: operator approval of AUB-wide cards that goes live when two presidents approve (D-115), and no-click auto-apply of clean OSA e-mail with Edit and Undo (D-138). For forwarded e-mails, AUB-wide or club-only comes from how many people the original went to, not from the model, unless the count is unknown (Bcc, undisclosed recipients, older messages): then the model's label decides. Rules stay AUB-scope by contract (D-126). Term-only rules carry an end date; after it a plain rule treats the fact as expired, so the planner ignores it, and the president can restore a club fact (D-115, D-124). The planner never invents a rule: when it does not know, it says so and names who to ask (D-49).
+Two stores: the shared AUB layer, stored once for every club, and each club's own know-how (D-05, D-23, D-91). Source authority distinguishes official documents, office email and president statements. Interview/chat/document facts wait in Review; ordinary club cards can be decided by cabinet members, and shared cards require a president (D-104/D-124). Trusted OSA mail has a code-mediated exception: clean new facts may apply after source checks and the explicit paid read. Overrides (update/merge), contradictions and flagged mail require review (D-151, #150), narrowing the earlier D-138 decision. Edit/Undo keep prior versions available.
+
+Forwarded-mail sharing follows sourced audience classification, with the documented unknown-recipient fallback; it does not authorize public disclosure. Rules remain AUB-scoped (D-126). Facts carry an end date or no end date. Expired facts are excluded from current retrieval/planning and remain history; a president can restore eligible expired club facts, while shared restoration is operator-only. The published Knowledge Edit endpoint still lacks an expiry field: Review date editing and Restore must not be described as a general post-approval expiry editor. Missing evidence stays unknown rather than becoming an invented rule.
+
 
 ## Planner details
 
@@ -61,7 +68,7 @@ The planner picks among six tools (D-63, D-64): update the event, search memory 
 
 ## OSA e-mail inbox (T-47, J-22, T-49)
 
-Presidents forward OSA e-mail to the ClubOps Gmail address (`clubops.agent+<club>@gmail.com`). A free fetch reads the inbox with a Gmail read-only OAuth client (D-122) and checks, in plain code, that the forwarder is on the club's cabinet list (or a sender the member proved by a code, D-113), that the original sender inside the forward is on the private OSA list (D-114), and that the e-mail was not already read (a read-once fingerprint, D-123). The text is cleaned (signature, quotes, links) and queued; nothing has reached a model. A person's explicit click starts the single paid read, whose proposals go to Review (D-41). Planned, not built (D-138): the read runs in the background and clean results apply without a click, while flagged mail and contradictions still go to Review. Because the Google app stays in Testing mode, the refresh token expires every seven days and is renewed by the operator before each demo or evaluation (D-122).
+Presidents forward OSA e-mail to the ClubOps Gmail address (`clubops.agent+<club>@gmail.com`). A free fetch reads the inbox with a Gmail read-only OAuth client (D-122) and checks, in plain code, that the forwarder is on the club's cabinet list (or a sender the member proved by a code, D-113), that the original sender inside the forward is on the private OSA list (D-114), and that the e-mail was not already read (a read-once fingerprint, D-123). The text is cleaned (signature, quotes, links) and queued; nothing has reached a model. A person's explicit click starts the single paid read in the published Inbox API. A clean new fact may be applied by code; existing-fact changes and flagged results wait in Review (D-151). Quoted, dated deadlines from clean trusted mail can become role-targeted internal calendar tasks without being stored as lasting knowledge (#146/D-150); queue safeguards and external Google delivery remain separate boundaries. Background/no-click reading was proposed in D-138, but the explicit API path does not prove a deployed schedule exists. Because the Google app stays in Testing mode, the refresh token expires every seven days and is renewed by the operator before each demo or evaluation (D-122).
 
 ## Calendar
 
@@ -69,7 +76,7 @@ ClubOps is the source of truth; approved plans are copied one way to Google Cale
 
 ## Evaluation
 
-There are no human graders for planning: it is scored by code against the president's labels (approvals caught, missed, false alarms, fields against the proposal really submitted, cost) (D-82). Learning quality is the exception: Tatiana rates the ten learning cases yes, partly or no by hand, and a second command counts the categories (C-27, D-87). Four systems answer the same questions with the same approval codes: a checklist, a plain model, a model with the rulebook, and ClubOps (D-75). A full start gives every system the whole description; a short start gives only the event and its date, and a simulated president answers questions only from that event's labelled fields (D-92). Generalization is tested on ASME as a real new club, on made-up events for event types the Running Club never ran, and on other presidents' real questions as a chatbot test (D-50, D-91). The handover test uses eight volunteers from other clubs (D-74). Test sets are frozen by file hash before any run (`eval/FROZEN.md`); every run can be tracked in MLflow (settings in, scores and cost out; off unless asked) (D-89).
+There are no human graders for planning: it is scored by code against the president's labels (approvals caught, missed, false alarms, fields against the proposal really submitted, cost) (D-82). Learning and chatbot answer quality use private human rating sheets. For learning, Tatiana rates the ten learning cases yes, partly or no by hand, and a second command counts the categories (C-27, D-87). The chatbot runner writes a private question/answer sheet and counts human ratings offline (D-152, #151); a prepared sheet is not a completed evaluation. Four systems answer the same questions with the same approval codes: a checklist, a plain model, a model with the rulebook, and ClubOps (D-75). A full start gives every system the whole description; a short start gives only the event and its date, and a simulated president answers questions only from that event's labelled fields (D-92). Generalization is tested on ASME as a real new club, on made-up events for event types the Running Club never ran, and on other presidents' real questions as a chatbot test (D-50, D-91). The handover test uses eight volunteers from other clubs (D-74). Test sets are frozen by file hash before any run (`eval/FROZEN.md`); every run can be tracked in MLflow (settings in, scores and cost out; off unless asked) (D-89).
 
 ## Hosting and authentication
 
