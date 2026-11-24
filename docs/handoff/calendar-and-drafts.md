@@ -479,6 +479,22 @@ TASKS.md remains authoritative. "No open PR" means no matching current open PR w
 
 **Validation:** Full make-check equivalents passed after combining the published #81 tooling: 773 passed, 1 skipped, 1 documented expected failure, 93.08% coverage; Ruff lint/format, mypy, schemas/tasks and diff checks passed.
 
+## 2026-11-23 - Joey: status after T-46 landed
+
+**Did:** Reviewed and merged #104, #119, #120, #121, #123 and #124, each with an independent approval on the current head and green CI. Marked J-23 and J-24 done (synthetic scope) and recorded what T-46 changes for J-01, J-03 and J-21.
+
+**State:** No open PRs. Remaining Joey work needs live access, not code: the Calendar OAuth refresh token on the host, a cabinet-approved test item (J-01), reminder-recipient acceptance (J-03), reader grant/revoke triggers from Tatiana (J-21), then the deployed run (J-09). No live Google call, deployment or email was made.
+
+**Next:** Tatiana wires cabinet add/remove to the reader ACL adapter; the user supplies the Calendar key and approves a live test.
+
+
+## 2026-11-24 - Joey: PR #125 main sync and CI correction (J-23/J-24 status)
+
+**Did:** Merged current main into docs/joey-t46-status without conflicts, preserving the original status/handoff changes. The failing CI job had passed lint and types; its two failures were duplicate log IDs D-140 and F-269/F-270. Main already corrected those rows (D-141, F-272/F-273), so the merge fixes them without another renumbering or runtime change. No new decision or failure mode is introduced.
+
+**Validation:** Eight focused log-number/task tests pass. Full make-check equivalents pass: Ruff lint/format, strict mypy (88 source files), generated schemas, task validation, 895 passed / 1 skipped, 93.41% coverage; diff check passes. GNU Make is unavailable. No dependencies installed and no live/provider/deployment action performed.
+
+**State / next:** Push the synced head and request Tatiana/Christophe review; current-head CI and an independent approving review remain required before any merge. The pre-existing uncommitted AGENTS.md no-stacking/current-head-approval edit is restored locally with main's newer ID-range guidance, and excluded from this PR. No history rewritten.
 ## 2026-11-24 - Joey: J-15 app wiring (feat/chat-live-sources)
 
 **Did:** Replaced the cabinet-only chat placeholder with chat/ask.py using the authenticated club's KnowHowStore and server date. HTTP source cards carry valid_to and visible Valid through / No end date labels, compatible with the existing web adapter. Both existing current-fact filters and the model prompt/recordings remain unchanged. Added API/core tests for source dates, club isolation, access/input/CSRF gates and inactive facts. User explicitly requested app.py integration. D-200 / F-400 record the choice and regression coverage.
