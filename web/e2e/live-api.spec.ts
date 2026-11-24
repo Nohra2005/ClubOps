@@ -39,7 +39,7 @@ test('plans through the real API, requires approval, and retains the approved re
   await page.goto('/settings');
   await expect(page.getByText('Planner steps', { exact: true })).toBeVisible();
   await expect(page.getByText('Cost per successful recorded plan', { exact: true })).toBeVisible();
-  await page.getByLabel('Your account', { exact: true }).click();
+  await page.locator('.user-menu > summary').click();
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await expect(page).toHaveURL(/\/login$/);
   expect((await context.request.get('/api/me')).status()).toBe(401);

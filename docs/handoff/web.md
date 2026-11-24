@@ -589,3 +589,21 @@ Tatiana temporarily waived independent review/approval to keep work moving;
 continue with PRs, merge commits and green checks under that session exception.
 This changes repository review timing only. App authorization and data approvals
 remain governed by the published contracts.
+
+
+## 2026-11-24 - Christophe (C-35 accessibility follow-up)
+
+**Did:** Fixed both findings recorded above: account summary uses its visible
+member/role content plus a screen-reader account prefix instead of an overriding
+label; avatar initials are decorative. Adviser access notice is a named region.
+The adviser expiry test now scans the entire page, without rule exclusions.
+F-502 records this correction; D-250/F-500/F-501 are the expiry IDs.
+
+**State:** Desktop/phone full-page adviser Axe and sign-out tests pass. Frontend
+quality/build checks and shared log/task validation are rerun before publishing.
+Previous full root gates passed 910 tests at 93.67% coverage; Python/contract
+code is unchanged. Five green checks on the prior head are historical, not proof
+of the final head. The post-approval Knowledge expiry API question remains open.
+
+**Next:** Current-head CI, then merge using the temporary review waiver Chris
+relayed in this session. Keep commit history. No main push or deployment change.

@@ -222,7 +222,7 @@ test('sign-out stays in the workspace on failure and redirects only after the se
     return calls === 1 ? route.fulfill({ status: 503 }) : route.fulfill({ status: 204 });
   });
   await page.goto('/events');
-  await page.getByLabel('Your account', { exact: true }).click();
+  await page.locator('.user-menu > summary').click();
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await expect(page.getByRole('status')).toContainText("ClubOps couldn't finish this.");
   await expect(page).toHaveURL(/\/events$/);
@@ -1128,8 +1128,6 @@ test('C-35 adviser can read expiry but cannot clear or approve it', async ({ pag
   await expect(page.getByLabel('End date', { exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'No end date', exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(0);
-  expect(
-    (await new AxeBuilder({ page }).include('#read-only-expiry').analyze()).violations,
-  ).toEqual([]);
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   expect(writes).toEqual([]);
 });
