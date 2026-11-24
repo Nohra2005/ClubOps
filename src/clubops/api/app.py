@@ -71,6 +71,7 @@ from clubops.contracts.knowhow import (
     VerifyDecision,
     VerifyRequest,
 )
+from clubops.gmail_connect import GmailConnectError, GmailService, GmailSettings, gmail_settings_from_env
 from clubops.inbox.capture import PendingInbox
 from clubops.inbox.guards import InboxLedger
 from clubops.inbox_intake import InboxNotes
@@ -95,6 +96,7 @@ class ApiConfig:
     google_client_id: str | None = None
     cookie_secure: bool = True
     calendar: CalendarSettings | None = None  # the host's private Calendar key and calendar ids (T-46)
+    gmail: GmailSettings | None = None  # the host's private Gmail settings and operators (T-47, D-156)
 
 
 def load_api_config(env: dict[str, str] | None = None, dotenv: Path = Path(".env")) -> ApiConfig:
@@ -112,6 +114,7 @@ def load_api_config(env: dict[str, str] | None = None, dotenv: Path = Path(".env
         google_client_id=values.get("CLUBOPS_GOOGLE_CLIENT_ID") or None,
         cookie_secure=values.get("CLUBOPS_COOKIE_SECURE", "1") != "0",
         calendar=settings_from_env(values),
+        gmail=gmail_settings_from_env(values),
     )
 
 
@@ -260,6 +263,12 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         transport=calendar_transport,
         session_secret=config.session_secret,
     )
+    gmail_service = GmailService(
+        config.data_dir,
+        config.gmail or GmailSettings(),
+        transport=calendar_transport,
+        session_secret=config.session_secret,
+    )
     starting: dict[str, str] = {}  # run_id -> club, between "plan" and the agent's first saved step
 
     def today() -> date:
@@ -306,6 +315,11 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
     def president(member: Member = Depends(signed_in)) -> Member:  # noqa: B008
         if member.role is not Role.PRESIDENT:
             raise HTTPException(403, "Only the president can change the cabinet list.")
+        return member
+
+    def operator(member: Member = Depends(signed_in)) -> Member:  # noqa: B008
+        if not gmail_service.is_operator(member.email):
+            raise HTTPException(403, "Only an operator of this ClubOps host can do this.")
         return member
 
     def start_session(response: Response, member: Member) -> dict[str, Any]:
@@ -985,6 +999,46 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             "date": lines.get("Date", "")[:40],
             "forwarded_by": lines.get("Forwarded by", "")[:200],
         }
+
+    @app.get("/api/inbox/gmail")
+    def gmail_state(member: Member = Depends(cabinet)) -> dict[str, object]:  # noqa: B008
+        """Cabinet only: ``{state, source, can_connect, can_manage}``; ``can_manage`` is true for an operator."""
+        return {**gmail_service.state(), "can_manage": gmail_service.is_operator(member.email)}
+
+    @app.post("/api/inbox/gmail/connect")
+    def gmail_connect(member: Member = Depends(operator)) -> dict[str, str]:  # noqa: B008
+        try:
+            return {"url": gmail_service.start_connect(member.member_id, clock())}
+        except GmailConnectError as err:
+            raise HTTPException(501, str(err)) from None
+
+    @app.get("/api/inbox/gmail/callback")
+    def gmail_callback(
+        state: str = "",
+        code: str = "",
+        error: str = "",
+        member: Member = Depends(operator),  # noqa: B008
+    ) -> RedirectResponse:
+        """Where Google sends the operator back; always ends on the Inbox screen with a short word."""
+        if error or not code or not state:
+            return RedirectResponse("/inbox?gmail=denied", status_code=303)
+        try:
+            gmail_service.finish_connect(member.member_id, state, code, clock())
+        except GmailConnectError:
+            return RedirectResponse("/inbox?gmail=failed", status_code=303)
+        return RedirectResponse("/inbox?gmail=connected", status_code=303)
+
+    @app.delete("/api/inbox/gmail/connect", status_code=204)
+    def gmail_disconnect(member: Member = Depends(operator)) -> None:  # noqa: B008
+        gmail_service.disconnect()
+
+    @app.post("/api/inbox/fetch")
+    def inbox_fetch(member: Member = Depends(cabinet)) -> dict[str, int]:  # noqa: B008
+        """Free (no model call): list the inbox and apply the free checks. Counts only, never mail text."""
+        try:
+            return gmail_service.fetch(clock())
+        except GmailConnectError as err:
+            raise HTTPException(409, str(err)) from None
 
     @app.get("/api/inbox")
     def inbox_list(member: Member = Depends(cabinet)) -> list[dict[str, str]]:  # noqa: B008
