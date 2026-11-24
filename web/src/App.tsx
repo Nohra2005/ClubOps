@@ -198,8 +198,9 @@ function ShellContent() {
             </details>
             <span className="topbar-divider" />
             <details className="popover user-menu">
-              <summary aria-label="Your account">
-                <span className="avatar">
+              <summary>
+                <span className="sr-only">Your account: </span>
+                <span className="avatar" aria-hidden="true">
                   {me.user.name
                     .split(' ')
                     .map((n) => n[0])
@@ -257,9 +258,9 @@ function ShellContent() {
           </div>
         )}
         {me.role === 'adviser' && (
-          <div className="read-only-strip">
+          <section className="read-only-strip" aria-label="Adviser access">
             Adviser view · browse your club's workspace with read-only access.
-          </div>
+          </section>
         )}
         <main
           id="main"

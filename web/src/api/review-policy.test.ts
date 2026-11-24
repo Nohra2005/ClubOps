@@ -21,6 +21,13 @@ describe('review scope and individual approval boundaries', () => {
       expect(canBatchApprove({ ...fact, ...update })).toBe(false);
   });
 
+  it('excludes dated facts with no end date from bulk decisions', () => {
+    expect(canBatchApprove({ ...fact, valid_to: null, statement: 'Due December 4.' })).toBe(false);
+    expect(canBatchApprove({ ...fact, valid_to: '2026-12-31', statement: 'Due December 4.' })).toBe(
+      true,
+    );
+  });
+
   it('requires a president for every shared card type, including disagreements and merges', () => {
     for (const type of ['fact', 'merge', 'disagreement', 'rule'] as const) {
       const shared = { ...fact, type, shared: true };

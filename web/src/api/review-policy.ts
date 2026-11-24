@@ -1,3 +1,4 @@
+import { needsEndDateCheck } from '../knowledge/FactValidity';
 import type { ReviewCard } from './types';
 
 /** Older demo/API cards used type=rule before the shared field existed. */
@@ -22,6 +23,7 @@ export function canBatchApprove(card: ReviewCard) {
     !card.warning &&
     !card.outdated &&
     !card.unlisted &&
+    !needsEndDateCheck(card.valid_to, card.statement) &&
     card.op !== 'retire'
   );
 }

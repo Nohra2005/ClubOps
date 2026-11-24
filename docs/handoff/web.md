@@ -549,3 +549,61 @@ its documented placeholder until J-15: this prepares questions, not verified
 model tutoring. No invented routes, changed backend contracts, automatic AI calls,
 new membership authority or deployed Azure acceptance claim. Coordinate T-33
 before evaluating this different experience. Existing Azure deployment is unchanged.
+
+
+## 2026-11-24 - Christophe (C-35 expiry follow-up to #128)
+
+**Did:** Audited already merged #147/#148: expiry editing exists on Review,
+but Knowledge detail and comparison-side expiry were missing, dates omitted years,
+and bulk approval ignored date/notice drafts. Added common validity labels and a
+source-check hint for dated/term text with explicit null expiry. Missing server
+metadata is visibly unavailable, never treated as permanent. Changed metadata
+and undated hinted facts stay out of bulk approval; read-only clear is disabled.
+D-250/F-500/F-501 checked against main and every open PR.
+
+**State:** Root gates pass: 910 tests, 93.67% coverage; Ruff/format 181 files,
+mypy 89 files, schema/task validation. Dependency lockfiles match the verified
+C-37 environment used for these checks; current source resolves from this worktree.
+Frontend quality/build, 145 units and 42 board-tool tests pass.
+70 desktop/phone HTTP contract/Restore cases plus two adviser expiry/card Axe
+cases pass. A full-page adviser Axe scan also found existing account-summary
+name and read-only-strip landmark issues; the new card scan is scoped to the card. These use synthetic intercepted API data,
+not a deployed API, university rule or live provider. C-35 remains doing for its
+broader unfinished integration/acceptance scope.
+
+**Next / owner question:** Tatiana: #128 also asks to edit expiry after approval.
+The published Knowledge edit contract in docs/api.md accepts text/lead_time_days
+only, so this PR does not invent valid_to support there. Please publish the field,
+clear-vs-absent semantics and permission/undo behavior; Chris can then wire that
+last input. Existing Review valid_to payload is unchanged. No backend-owned file,
+real club data, external model call, direct main push or deployment change.
+
+
+## 2026-11-24 - Christophe (C-35 current ID allocation)
+
+**Did:** Corrected this open PR to the newly allocated Christophe range in main
+AGENTS.md: D-250 and F-500/F-501. Earlier provisional IDs were not merged.
+
+**State / next:** Previous head has all five CI checks green. Chris reports
+Tatiana temporarily waived independent review/approval to keep work moving;
+continue with PRs, merge commits and green checks under that session exception.
+This changes repository review timing only. App authorization and data approvals
+remain governed by the published contracts.
+
+
+## 2026-11-24 - Christophe (C-35 accessibility follow-up)
+
+**Did:** Fixed both findings recorded above: account summary uses its visible
+member/role content plus a screen-reader account prefix instead of an overriding
+label; avatar initials are decorative. Adviser access notice is a named region.
+The adviser expiry test now scans the entire page, without rule exclusions.
+F-502 records this correction; D-250/F-500/F-501 are the expiry IDs.
+
+**State:** Desktop/phone full-page adviser Axe and sign-out tests pass. Frontend
+quality/build checks and shared log/task validation are rerun before publishing.
+Previous full root gates passed 910 tests at 93.67% coverage; Python/contract
+code is unchanged. Five green checks on the prior head are historical, not proof
+of the final head. The post-approval Knowledge expiry API question remains open.
+
+**Next:** Current-head CI, then merge using the temporary review waiver Chris
+relayed in this session. Keep commit history. No main push or deployment change.

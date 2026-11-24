@@ -1,3 +1,4 @@
+import FactValidity from '../knowledge/FactValidity';
 import { Linkified } from '../components/Linkified';
 import { useState } from 'react';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router';
@@ -99,9 +100,7 @@ function KnowledgeRow({ item }: { item: KnowledgeItem }) {
           </span>
         )}
         <span>Checked {formatDate(item.last_checked)}</span>
-        {item.valid_to !== undefined && (
-          <span>{item.valid_to ? `Ends ${formatDate(item.valid_to)}` : 'No end date'}</span>
-        )}
+        <FactValidity validTo={item.valid_to} text={item.statement} />
         {item.year && <small>{item.year}</small>}
       </div>
       <Link
@@ -282,6 +281,7 @@ export function KnowledgeFact() {
               action={<StatusBadge status={item.status} />}
             />
             <section className="panel fact-statement">
+              <FactValidity validTo={item.valid_to} text={item.statement} />
               <p>
                 <Linkified text={item.statement} />
               </p>
