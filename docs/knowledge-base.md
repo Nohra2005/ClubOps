@@ -63,7 +63,6 @@ still applies; use one setup tab. Rejected-card persistence was addressed in
 #142; that does not prove all interrupted capture/queue failure paths recover.
 Inspect proposed changes before approving them.
 
-
 ## Expiry and evaluation interfaces
 
 Review and Knowledge carry `valid_to` as an ISO date or null. Review decisions

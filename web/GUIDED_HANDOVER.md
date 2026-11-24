@@ -74,7 +74,6 @@ adviser access, storage failure, viewport fit and automated accessibility. Exist
 demo export/sign-off and actual-API reference tests also exercise the expandable
 guide. Scripted responses do not measure a real model's teaching quality.
 
-
 ## 24 November integration status
 
 Main merged J-15 chat API wiring in #149 (D-200): cabinet Ask now uses the

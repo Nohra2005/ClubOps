@@ -612,7 +612,8 @@ Reference documents:
 
 ### C-36 Patch the frontend development dependency audit
 - Owner: christophe
-- Status: review
+- Status: done
+- Verified (2026-11-24): #101 merged on 23 November as dae9b6a after review and green checks; the development dependency patch is complete. Earlier review entries below remain historical.
 - Progress (2026-11-23): merged #122 duplicate-F-249 correction from main; all 10 branch-local task/failure/log checks pass. Previous-head four non-Python CI checks passed; combined-head CI and re-approval pending.
 - Progress (2026-11-23): resolved current-main shared logs without losing either history; 733 Python tests/93.16%, 137 frontend units/12 tools, quality/build and both npm audits pass. Production dependency records unchanged; fresh-head CI and independent approval pending.
 - Progress (2026-11-22): synced reviewed session frontend and locked FastAPI/Ruff updates; full/production npm audits zero, 137 units and updated-main checks pass; existing remediation remains in review.
@@ -622,7 +623,8 @@ Reference documents:
 
 ### C-37 Guided cabinet handover
 - Owner: christophe
-- Status: review
+- Status: done
+- Verified (2026-11-24): #123 merged on 23 November after Joey approved head 8331027 and all five checks passed. This completes the scoped browser-local guided frontend; server term progress, transitions and measured tutoring remain future owner contracts.
 - Progress (2026-11-23): guided frontend, browser-local isolated progress, explicit Ask context and outgoing-note draft implemented; reference/export retained. D-140/F-269-F-271; web/GUIDED_HANDOVER.md describes pending owner contracts. Root gates and desktop/phone regressions pass; independent review and CI pending.
 - Needs: C-10, C-19
 - What: Replace the permanent handover navigation item with a contextual role introduction and cabinet transition entry. Provide a resumable, skippable walkthrough, approved reference knowledge and outgoing questions. Add explicit role-learning chat prompts using the published text API; do not infer membership changes or invent persistent backend onboarding routes.
