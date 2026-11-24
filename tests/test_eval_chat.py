@@ -185,3 +185,27 @@ def test_search_check_is_free_and_reports_questions_with_no_facts(tmp_path: Path
     main()
     out = capsys.readouterr().out
     assert "Q1 (not_sure): 0 facts found, 0 from the club" in out and "Questions with no facts found: 1 (Q1)" in out
+
+
+def test_a_test_copy_gets_the_presidents_facts_and_the_real_store_is_untouched(tmp_path: Path) -> None:
+    from clubops.evaluation.eval_store import read_facts, seed_facts
+    from clubops.knowhow.backends import open_club_store_backend
+    from clubops.knowhow.store import KnowHowStore
+    from tests.factories import CLUB
+
+    path = tmp_path / "facts.csv"
+    path.write_text(
+        "fact_id,scope,learned_from_event,statement,source\n"
+        'F1,club?,E1,"Weekly runs are covered by one proposal per semester.",Synthetic\n'
+        'F2,aub,,"The pool is free for all students.",Synthetic\n',
+        encoding="utf-8-sig",
+    )
+    real = KnowHowStore(open_club_store_backend(tmp_path / "real", CLUB))
+    copy = KnowHowStore(open_club_store_backend(tmp_path / "copy", CLUB))
+    assert seed_facts(copy, read_facts(path), CLUB) == 2
+    assert seed_facts(copy, read_facts(path), CLUB) == 0  # running it twice adds nothing
+    found = [i.statement for i in copy.search(CLUB, "Is the pool free?")]
+    assert any("pool is free" in s for s in found)
+    assert real.search(CLUB, "Is the pool free?") == []
+    copy.close()
+    real.close()
