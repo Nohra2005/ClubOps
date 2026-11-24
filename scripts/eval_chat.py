@@ -106,10 +106,12 @@ def run_score(args: argparse.Namespace) -> None:
             )
         return
     try:
-        result = score_sheet(rows)
+        result = score_sheet(rows, frozenset(i.strip().upper() for i in args.exclude.split(",") if i.strip()))
     except ValueError as problem:
         raise SystemExit(str(problem)) from problem
-    rendered = f"# Chatbot evaluation ({len(rows)} questions)\n\n{table(result)}\n"
+    left_out = ", ".join(sorted(i.strip().upper() for i in args.exclude.split(",") if i.strip()))
+    note = f"; left out of the count: {left_out}" if left_out else ""
+    rendered = f"# Chatbot evaluation ({result['questions']} questions{note})\n\n{table(result)}\n"
     if args.out is not None:
         _outside_repo(args.out).write_text(rendered, encoding="utf-8")
     print(rendered)
@@ -138,6 +140,7 @@ def main() -> None:
     second = steps.add_parser("score", help="count a marked sheet")
     second.add_argument("--sheet", required=True, type=Path)
     second.add_argument("--out", type=Path)
+    second.add_argument("--exclude", default="", help="question ids to leave out of the count, e.g. Q18")
     second.add_argument(
         "--counts", action="store_true", help="only count answered / not sure / errors (no marking needed)"
     )

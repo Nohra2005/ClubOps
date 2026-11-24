@@ -131,7 +131,10 @@ def unmarked(rows: list[dict[str, str]]) -> list[str]:
     ]
 
 
-def score_sheet(rows: list[dict[str, str]]) -> dict[str, Decimal | int]:
+def score_sheet(rows: list[dict[str, str]], exclude: frozenset[str] = frozenset()) -> dict[str, Decimal | int]:
+    """`exclude`: question ids left out of the count (say so in the report), e.g. a question whose answer was
+    put in the test copy by mistake."""
+    rows = [r for r in rows if r["id"].upper() not in exclude]
     todo = unmarked(rows)
     if todo:
         raise ValueError(f"mark these first (correct: yes/partly/no, sources_ok: yes/no): {', '.join(todo)}")

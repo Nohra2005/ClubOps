@@ -39,6 +39,7 @@ _PHONE_LB = re.compile(rf"(?<![\d+/:])(?:0?(?:3|7[016-9]|81)|0[1-9])(?:{_SEP}?\d
 class Redacted:
     text: str
     counts: Counter[Kind] = field(default_factory=Counter)
+    found: list[tuple[str, str]] = field(default_factory=list)  # (placeholder, original), in order of appearance
 
     @property
     def kinds(self) -> list[Kind]:
@@ -51,11 +52,14 @@ def redact(text: str, keep_office_contacts: bool = False) -> Redacted:
     """``keep_office_contacts``: leave links, e-mail addresses and phone numbers as written. Only for e-mails
     forwarded from verified OSA senders: office forms and office numbers are the know-how itself (F-241)."""
     counts: Counter[Kind] = Counter()
+    found: list[tuple[str, str]] = []
 
     def sub(pattern: re.Pattern[str], kind: Kind, replacement: str, value: str) -> str:
         def replace(match: re.Match[str]) -> str:
             counts[kind] += 1
-            return match.expand(replacement)
+            placeholder = match.expand(replacement)
+            found.append((placeholder, match.group(0)))
+            return placeholder
 
         return pattern.sub(replace, value)
 
@@ -67,4 +71,4 @@ def redact(text: str, keep_office_contacts: bool = False) -> Redacted:
     if not keep_office_contacts:
         out = sub(_PHONE_INTL, "phone", "[PHONE]", out)
         out = sub(_PHONE_LB, "phone", "[PHONE]", out)
-    return Redacted(text=out, counts=counts)
+    return Redacted(text=out, counts=counts, found=found)
