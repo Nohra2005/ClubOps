@@ -63,11 +63,12 @@ _NEEDS_A_PERSON = ("may be outdated", "sender is not on the OSA list")
 
 
 def auto_applicable(proposal: KnowHowProposal) -> bool:
-    """Only a plain addition or newer version, with nothing odd about its source, applies without a person (D-138).
+    """Only a plain new fact, with nothing odd about its source, applies without a person (D-138, D-151).
 
-    A contradiction, a retirement, hidden instructions, an unlisted sender or an outdated source all wait for one."""
+    A change to a fact the club already has (update or merge), a contradiction, a retirement, hidden
+    instructions, an unlisted sender or an outdated source all wait for the person who read the mail."""
     return (
-        proposal.op in (ProposalOp.CREATE, ProposalOp.UPDATE, ProposalOp.MERGE)
+        proposal.op is ProposalOp.CREATE
         and not proposal.injection_flags
         and not proposal.conflicts_with
         and not any(note in proposal.rationale for note in _NEEDS_A_PERSON)
