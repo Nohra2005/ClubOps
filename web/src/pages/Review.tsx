@@ -54,6 +54,7 @@ function ReviewItem({
   const [text, setText] = useState(card.statement);
   const [reason, setReason] = useState('');
   const [shared, setShared] = useState(isShared(card));
+  const [end, setEnd] = useState(card.valid_to ?? '');
   const file = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -64,6 +65,8 @@ function ReviewItem({
     return () => observer.disconnect();
   }, []);
   const scopeChoice = ['fact', 'merge', 'disagreement', 'rule'].includes(card.type);
+  const showEnd = scopeChoice && card.valid_to !== undefined;
+  const endChanged = showEnd && end !== (card.valid_to ?? '');
   async function decide(decision: string) {
     const payload: ReviewDecision = {
       decision,
@@ -71,7 +74,8 @@ function ReviewItem({
       decided_at: new Date().toISOString(),
       ...(dialog === 'edit' ? { edited_text: text } : {}),
       ...(reason.trim() ? { reason } : {}),
-      ...(scopeChoice && isPresident ? { shared } : {}),
+      ...(scopeChoice && isPresident && !card.shared_locked ? { shared } : {}),
+      ...(endChanged ? { valid_to: end } : {}),
     };
     const result = await action.run(() => api.decide(card.id, payload));
     if (result.ok) {
@@ -179,6 +183,32 @@ function ReviewItem({
           clubs.
         </p>
       )}
+      {card.why && <p className="inline-note">Why: {card.why}</p>}
+      {showEnd && (
+        <label className="field">
+          <span>End date</span>
+          <span>
+            <input
+              type="date"
+              value={end}
+              disabled={action.pending || !canDecide}
+              onChange={(event) => setEnd(event.target.value)}
+              aria-label="End date"
+            />{' '}
+            {end ? (
+              <button type="button" className="button small" onClick={() => setEnd('')}>
+                No end date
+              </button>
+            ) : (
+              'No end date: this stays in Knowledge until someone retires it.'
+            )}
+          </span>
+          <span className="inline-note">
+            After this date ClubOps stops using the fact. The choice is saved when you confirm a
+            decision.
+          </span>
+        </label>
+      )}
       {scopeChoice && canDecide && isPresident && (
         <label className="field">
           <span>Knowledge sharing</span>
@@ -187,7 +217,7 @@ function ReviewItem({
               type="checkbox"
               role="switch"
               checked={shared}
-              disabled={action.pending}
+              disabled={action.pending || card.shared_locked}
               onChange={(event) => {
                 setShared(event.target.checked);
                 scopeChanged(card.id, event.target.checked !== isShared(card));
@@ -197,9 +227,11 @@ function ReviewItem({
             Share with all AUB clubs
           </span>
           <span className="inline-note">
-            {shared
-              ? 'Use for sourced knowledge that applies to every club.'
-              : 'Keep this knowledge in your club.'}{' '}
+            {card.shared_locked
+              ? 'A new version stays where the known fact is, so this cannot be changed here.'
+              : shared
+                ? 'Use for sourced knowledge that applies to every club.'
+                : 'Keep this knowledge in your club.'}{' '}
             The choice is saved only when you confirm a decision. Existing shared knowledge stays
             shared.
           </span>

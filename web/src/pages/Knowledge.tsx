@@ -99,6 +99,9 @@ function KnowledgeRow({ item }: { item: KnowledgeItem }) {
           </span>
         )}
         <span>Checked {formatDate(item.last_checked)}</span>
+        {item.valid_to !== undefined && (
+          <span>{item.valid_to ? `Ends ${formatDate(item.valid_to)}` : 'No end date'}</span>
+        )}
         {item.year && <small>{item.year}</small>}
       </div>
       <Link
