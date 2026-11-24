@@ -159,3 +159,17 @@ def test_a_failed_question_is_recorded_and_the_run_goes_on(tmp_path: Path) -> No
     rows[0].update(correct="yes", sources_ok="yes")
     result = score_sheet(rows)
     assert result["errors"] == 1 and result["correct_not_sure"] == 1 and result["invented"] == 0
+
+
+def test_counts_need_no_marking(tmp_path: Path, monkeypatch, capsys) -> None:  # type: ignore[no-untyped-def]
+    path = tmp_path / "q.csv"
+    path.write_text(QUESTIONS, encoding="utf-8")
+    sheet = tmp_path / "sheet.csv"
+    from clubops.evaluation.chat_sheet import write_sheet
+
+    write_sheet(sheet, ask_sheet(read_questions(path), fake_answers()))  # type: ignore[arg-type]
+    monkeypatch.setattr("sys.argv", ["eval_chat.py", "score", "--sheet", str(sheet), "--counts"])
+    main()
+    out = capsys.readouterr().out
+    assert "expected known: 2 questions; answered 1, said not sure 1, errors 0" in out
+    assert "expected not_sure: 2 questions; answered 1, said not sure 1, errors 0" in out
