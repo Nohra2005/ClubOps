@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
 
+from clubops.capabilities.runner import CapabilityError
 from clubops.contracts.knowhow import Answer
 
 COLUMNS = [
@@ -60,7 +61,11 @@ def ask_sheet(
     """One row per question. `answer` returns the chatbot's Answer, its cost, and the titles of what it cited."""
     rows = []
     for q in questions:
-        reply, cost, titles = answer(q.question)
+        try:
+            reply, cost, titles = answer(q.question)
+        except CapabilityError as problem:  # one failed question must not lose the rest of the paid run (F-320)
+            rows.append(_failed(q, problem.message))
+            continue
         correct, sources_ok = "", ""
         if q.expected == NOT_SURE:
             correct, sources_ok = ("no", "n/a") if reply.known else ("yes", "n/a")
@@ -81,6 +86,21 @@ def ask_sheet(
             }
         )
     return rows
+
+
+def _failed(q: Question, message: str) -> dict[str, str]:
+    return {
+        "id": q.q_id,
+        "question": q.question,
+        "her_answer": q.answer,
+        "expected": q.expected,
+        "clubops_answer": f"ERROR: {message}",
+        "clubops_known": "error",
+        "clubops_sources": "",
+        "cost_usd": "0",
+        "correct": "n/a",
+        "sources_ok": "n/a",
+    }
 
 
 def write_sheet(path: Path, rows: list[dict[str, str]]) -> None:
@@ -126,6 +146,7 @@ def score_sheet(rows: list[dict[str, str]]) -> dict[str, Decimal | int]:
         "invented": sum(r["expected"] == NOT_SURE and r["clubops_known"] == "yes" for r in rows),
         "sources_ok": sum(r["sources_ok"] == "yes" for r in marked),
         "answered": len(marked),
+        "errors": sum(r["clubops_known"] == "error" for r in rows),
         "cost_usd": sum((Decimal(r["cost_usd"] or "0") for r in rows), Decimal("0")),
     }
 
@@ -135,10 +156,10 @@ def table(result: dict[str, Decimal | int]) -> str:
     return "\n".join(
         [
             "| Questions | Correct | Partly | Wrong | Missed (said not sure) | Correct not sure | Invented | "
-            "Sources OK | Cost (USD) |",
-            "|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+            "Sources OK | Errors | Cost (USD) |",
+            "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
             f"| {r['questions']} | {r['answered_correct']} | {r['answered_partly']} | {r['answered_wrong']} | "
             f"{r['missed']} | {r['correct_not_sure']} | {r['invented']} | {r['sources_ok']} of {r['answered']} | "
-            f"{Decimal(r['cost_usd']):.4f} |",
+            f"{r['errors']} | {Decimal(r['cost_usd']):.4f} |",
         ]
     )

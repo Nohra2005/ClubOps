@@ -29,11 +29,13 @@ class FakeModel:
         self.called = False
         self.user = ""
         self.budget: Budget | None = None
+        self.max_tokens = 0
 
     def complete(self, request: object, output: object, budget: Budget) -> tuple[Answer, Usage]:
         self.called = True
         self.user = request.user  # type: ignore[attr-defined]
         self.budget = budget
+        self.max_tokens = request.max_tokens  # type: ignore[attr-defined]
         budget.check()
         budget.charge(Usage())
         return self.answer, Usage()
@@ -121,3 +123,11 @@ def test_future_fact_never_reaches_model() -> None:
     model = FakeModel(known([fact.item_id]))
     assert not ask(question(), FakeStore([fact]), model).known  # type: ignore[arg-type]
     assert not model.called
+
+
+def test_the_answer_limit_leaves_room_for_a_long_fact_list() -> None:
+    """F-319: 600 tokens cut a real answer off mid-JSON and the cabinet member got an error."""
+    fact = verified(item())
+    model = FakeModel(known([fact.item_id]))
+    ask(question(), FakeStore([fact]), model)  # type: ignore[arg-type]
+    assert model.max_tokens >= 1500
