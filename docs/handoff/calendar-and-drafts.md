@@ -490,3 +490,13 @@ TASKS.md remains authoritative. "No open PR" means no matching current open PR w
 **Other PR:** #125 already contains current origin/main and all five checks pass; Nohra2005 and chrs-005 are requested reviewers. No further sync was needed.
 
 **Final validation:** Full pytest/coverage suite passed (one skipped), 93.42% coverage. Ruff lint/format, strict mypy, schema drift, task validation and diff checks pass. GNU Make is unavailable; its component checks were run directly.
+
+## 2026-11-24 - Joey: deployed app and model configuration (J-15)
+
+**Did:** Recorded the user-confirmed deployed app URL: https://clubops-aub-chris.swedencentral.cloudapp.azure.com/. The app uses Claude Haiku 5.5 through OpenRouter. Checked only the non-secret local `.env` settings: `CLUBOPS_BASE_URL=https://openrouter.ai/api/v1` and `CLUBOPS_MODEL=anthropic/claude-haiku-5.5`. Credentials remain private and are not copied here.
+
+**State:** Documentation update for PR #149. The URL and provider are confirmed by the user; local configuration matches. This does not verify the host environment, the deployed commit, or live chatbot acceptance.
+
+**Next:** Confirm the host runs the merged J-15 change with the intended model settings, then complete deployed acceptance and Tatiana's private 42-question evaluation.
+
+**Validation:** Non-secret configuration values checked; `git diff --check` passed. No live/model call or deployment performed; runtime tests were not repeated for this documentation-only addition.
