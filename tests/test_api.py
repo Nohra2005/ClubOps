@@ -308,7 +308,12 @@ def test_usage_adds_up_the_agent_runs(client: TestClient, scripts: Scripts) -> N
     assert usage["trace_metrics_available"] is False
 
 
-def test_parts_not_built_yet_say_so(client: TestClient) -> None:
+def test_chat_unknown_says_who_to_ask(data_dir: Path, scripts: Scripts) -> None:
+    from clubops.contracts.knowhow import Answer, AskWho
+    from tests.test_chat_ask import FakeModel
+
+    model = FakeModel(Answer(known=False, text="Not sure", basis="none", ask=AskWho(who="Club president")))
+    client = make_client(data_dir, scripts, model_client=lambda: model)
     sign_in(client)
     assert client.get("/api/handover/president").status_code == 200
     answer = client.post("/api/chat/ask", json={"text": "Who books Hostler?"}, headers=HEADERS).json()
@@ -346,3 +351,75 @@ def test_setup_skips_without_calling_the_model(client: TestClient) -> None:
 def test_setup_is_for_the_president_only(client: TestClient) -> None:
     sign_in(client, "te02@mail.aub.edu")  # a cabinet member who is not the president
     assert client.post("/api/setup/next", json={}, headers=HEADERS).status_code in (401, 403)
+
+
+@pytest.mark.parametrize("end", [None, "2026-12-31"])
+def test_chat_answers_with_dated_sources(data_dir: Path, scripts: Scripts, end: str | None) -> None:
+    from datetime import date
+
+    from clubops.knowhow.backends import open_club_store_backend
+    from tests.factories import verified
+    from tests.test_chat_ask import FakeModel, known
+
+    fact = verified(item(valid_to=date.fromisoformat(end) if end else None))
+    store = KnowHowStore(open_club_store_backend(data_dir, "running-club"))
+    store.backend.append(fact)
+    store.close()
+    model = FakeModel(known([fact.item_id]))
+    with make_client(data_dir, scripts, model_client=lambda: model) as c:
+        sign_in(c)
+        response = c.post("/api/chat/ask", json={"text": "Green Field", "club_id": "asme"}, headers=HEADERS)
+        assert response.status_code == 200
+        answer = response.json()
+        assert answer["kind"] == "answer" and answer["known"]
+        source = answer["citations"][0]
+        assert source["item_id"] == fact.item_id
+        assert source["valid_to"] == end
+        assert (f"Valid through {end}" if end else "No end date") in source["label"]
+        assert model.called
+
+        model.called = False
+        sign_in(c, "op04@mail.aub.edu")
+        answer = c.post("/api/chat/ask", json={"text": "Green Field"}, headers=HEADERS).json()
+        assert not answer["known"] and answer["ask"]["who"]
+        import json
+
+        assert fact.item_id not in [f["id"] for f in json.loads(model.user)["facts"]]
+
+
+def test_chat_access_and_invalid_input_never_call_model(data_dir: Path, scripts: Scripts) -> None:
+    def forbidden_model() -> None:
+        pytest.fail("Unauthorized or invalid chat must not construct a model")
+
+    with make_client(data_dir, scripts, model_client=forbidden_model) as c:
+        assert c.post("/api/chat/ask", json={"text": "Green Field"}, headers=HEADERS).status_code == 401
+        sign_in(c, "ta03@aub.edu.lb")
+        assert c.post("/api/chat/ask", json={"text": "Green Field"}, headers=HEADERS).status_code == 403
+        sign_in(c)
+        for body in ({}, {"text": "x"}, {"text": "x" * 501}):
+            assert c.post("/api/chat/ask", json=body, headers=HEADERS).status_code == 422
+        assert c.post("/api/chat/ask", json={"text": "Green Field"}).status_code == 403
+
+
+@pytest.mark.parametrize("change", [{"valid_to": "2026-09-30"}, {"valid_from": "2027-01-01"}, {"status": "retired"}])
+def test_chat_excludes_inactive_store_facts(data_dir: Path, scripts: Scripts, change: dict[str, str]) -> None:
+    import json
+    from datetime import date
+
+    from clubops.contracts.knowhow import ItemStatus
+    from clubops.knowhow.backends import open_club_store_backend
+    from tests.factories import verified
+    from tests.test_chat_ask import FakeModel, known
+
+    changes = {k: ItemStatus(v) if k == "status" else date.fromisoformat(v) for k, v in change.items()}
+    fact = verified(item()).model_copy(update=changes)
+    store = KnowHowStore(open_club_store_backend(data_dir, "running-club"))
+    store.backend.append(fact)
+    store.close()
+    model = FakeModel(known([fact.item_id]))
+    with make_client(data_dir, scripts, model_client=lambda: model) as c:
+        sign_in(c)
+        answer = c.post("/api/chat/ask", json={"text": "Green Field"}, headers=HEADERS).json()
+        assert not answer["known"]
+        if model.called:
+            assert fact.item_id not in [f["id"] for f in json.loads(model.user)["facts"]]

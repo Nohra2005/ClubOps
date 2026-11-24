@@ -6,9 +6,11 @@ import json
 from datetime import date
 from decimal import Decimal
 
+import pytest
+
 from clubops.capabilities.runner import Usage
 from clubops.chat.ask import ask
-from clubops.contracts.knowhow import Answer, AskRequest, KnowHowItem
+from clubops.contracts.knowhow import Answer, AskRequest, ItemStatus, KnowHowItem
 from clubops.model.budget import Budget
 from tests.factories import TODAY, item, verified
 
@@ -102,3 +104,20 @@ def test_model_uncertainty_is_preserved() -> None:
     answer = ask(question(), FakeStore([fact]), FakeModel(uncertain))  # type: ignore[arg-type]
     assert not answer.known
     assert answer.ask == uncertain.ask
+
+
+@pytest.mark.parametrize(
+    "status", [ItemStatus.RETIRED, ItemStatus.SUPERSEDED, ItemStatus.DISPUTED, ItemStatus.PROPOSED]
+)
+def test_inactive_facts_never_reach_model(status: str) -> None:
+    fact = verified(item()).model_copy(update={"status": status})
+    model = FakeModel(known([fact.item_id]))
+    assert not ask(question(), FakeStore([fact]), model).known  # type: ignore[arg-type]
+    assert not model.called
+
+
+def test_future_fact_never_reaches_model() -> None:
+    fact = verified(item()).model_copy(update={"valid_from": date(2027, 1, 1)})
+    model = FakeModel(known([fact.item_id]))
+    assert not ask(question(), FakeStore([fact]), model).known  # type: ignore[arg-type]
+    assert not model.called
