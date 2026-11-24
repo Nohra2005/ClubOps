@@ -56,9 +56,9 @@ queue to the club's shared calendar. Set these private values on the host; never
   from the Gmail key and from sign-in. In Testing mode Google cancels it every 7 days.
 
 `GET /api/calendar/sync` returns `{connected, waiting, problem}` for the signed-in club; `POST /api/calendar/sync`
-retries now. Attendees come only from the private cabinet directory (`cabinet_addresses`). Not built yet: the
-in-app connect/disconnect and callback with encrypted token storage, cabinet add/remove reader grants, and the
-deadline-from-mail trigger (`enqueue_deadlines`).
+retries now. Attendees come only from the private cabinet directory (`cabinet_addresses`). Deadlines from clean OSA
+mail are queued by `enqueue_mail_deadlines` (D-150). The in-app connect, disconnect, encrypted key and cabinet reader
+access are described below.
 
 ### Calendar and Review integration (Tatiana / Christophe)
 
@@ -162,3 +162,20 @@ Joey's 20 November README startup attempt stopped at the prerequisite check:
 Starting the installed Docker Desktop app made its engine pipe available, but the
 version API then returned HTTP 500. No fresh Compose startup, browser login or
 hosted persistence outcome is claimed.
+
+### In-app connect, encrypted key and reader access (T-46, D-155)
+
+The president presses Connect on the Calendar screen (`POST /api/calendar/connect`, then Google, then
+`GET /api/calendar/callback`). Set these private host values once; never commit them:
+
+- `CLUBOPS_CALENDAR_CLIENT_ID`, `CLUBOPS_CALENDAR_CLIENT_SECRET`: the Google OAuth client (type Web application).
+- `CLUBOPS_CALENDAR_REDIRECT_URI`: exactly `https://<the deployed site>/api/calendar/callback`, also added under
+  "Authorized redirect URIs" for that client in Google Cloud.
+- `CLUBOPS_GOOGLE_CALENDAR_IDS_JSON`: club slug to calendar id, as before.
+- `CLUBOPS_CALENDAR_TOKEN_KEY` (optional): a Fernet key. Without it the key is derived from `CLUBOPS_SESSION_SECRET`;
+  changing that secret then means each club connects again.
+
+The refresh key is stored encrypted in `calendar-auth.db` (private host data). Each club drains with its own key, else
+the host key. Google cancels keys of an app in Testing mode after 7 days: the status then says `reconnect`.
+Adding a cabinet member queues a read-only rule on the club calendar; removing one queues its removal. A rule that is
+not reader (set by hand) is never changed. Nothing here sends an event or an e-mail of its own.

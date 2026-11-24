@@ -134,16 +134,20 @@ class SyncQueue:
                 ),
             )
 
-    def pending(self) -> list[CalendarItem]:
+    def pending(self, club_id: str | None = None) -> list[CalendarItem]:
         with closing(sqlite3.connect(self.path)) as db, db:
-            rows = db.execute("SELECT item_json FROM pending_calendar ORDER BY club_id, item_id").fetchall()
+            rows = db.execute(
+                "SELECT item_json FROM pending_calendar WHERE (? IS NULL OR club_id = ?) ORDER BY club_id, item_id",
+                (club_id, club_id),
+            ).fetchall()
         return [CalendarItem.model_validate_json(row[0]) for row in rows]
 
     def drain(
-        self, sync: CalendarSync, roles_for_club: Callable[[str], Mapping[Role, str]]
+        self, sync: CalendarSync, roles_for_club: Callable[[str], Mapping[Role, str]], club_id: str | None = None
     ) -> list[tuple[CalendarItem, SyncResult]]:
+        """Send what waits, for one club when ``club_id`` is given (each club has its own Google key, T-46)."""
         synced: list[tuple[CalendarItem, SyncResult]] = []
-        for item in self.pending():
+        for item in self.pending(club_id):
             try:
                 result = sync.sync(
                     item,

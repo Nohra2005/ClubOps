@@ -27,7 +27,7 @@ from typing import Any, Literal
 import httpx
 import openpyxl
 from fastapi import BackgroundTasks, Body, Depends, FastAPI, HTTPException, Request, Response, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
 
 from clubops.agent.planner import ModelDecider, Planner, RunState
@@ -50,7 +50,7 @@ from clubops.api.setup import SetupService
 from clubops.api.setup import router as setup_router
 from clubops.api.store import ApiStore, PlannedEvent
 from clubops.calendar.items import event_items, impact_form_item
-from clubops.calendar.service import CalendarService, CalendarSettings, settings_from_env
+from clubops.calendar.service import CalendarService, CalendarSettings, ConnectError, settings_from_env
 from clubops.capabilities.runner import CapabilityError
 from clubops.chat.ask import ask as ask_question
 from clubops.config import _read_dotenv, load_settings
@@ -255,7 +255,10 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
     members = MemberStore(config.data_dir)
     setup_service = SetupService(config.data_dir)
     calendar_service = CalendarService(
-        config.data_dir, config.calendar or CalendarSettings({}), transport=calendar_transport
+        config.data_dir,
+        config.calendar or CalendarSettings({}),
+        transport=calendar_transport,
+        session_secret=config.session_secret,
     )
     starting: dict[str, str] = {}  # run_id -> club, between "plan" and the agent's first saved step
 
@@ -568,6 +571,51 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         calendar_service.drain()
         return calendar_service.status(member.club_id)
 
+    @app.get("/api/calendar/connection")
+    def calendar_connection(member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+        """Cabinet only, own club: ``{state, source, can_connect, access_changes_waiting}`` (T-46, D-155)."""
+        return calendar_service.connection(member.club_id)
+
+    @app.post("/api/calendar/connect")
+    def calendar_connect(member: Member = Depends(president)) -> dict[str, str]:  # noqa: B008
+        """President only: the Google address to open. Nothing is stored until Google sends the president back."""
+        try:
+            return {"url": calendar_service.start_connect(member.club_id, member.member_id, clock())}
+        except ConnectError as err:
+            raise HTTPException(501, str(err)) from None
+
+    @app.get("/api/calendar/callback")
+    def calendar_callback(
+        background: BackgroundTasks,
+        state: str = "",
+        code: str = "",
+        error: str = "",
+        member: Member = Depends(president),  # noqa: B008
+    ) -> RedirectResponse:
+        """Where Google sends the president back. Only the president who pressed Connect, in the same browser
+        session and within ten minutes, can finish it. Always ends on the Calendar screen with a short word."""
+        if error or not code or not state:
+            return RedirectResponse("/calendar?google=denied", status_code=303)
+        try:
+            calendar_service.finish_connect(member.club_id, member.member_id, state, code, clock())
+        except ConnectError:
+            return RedirectResponse("/calendar?google=failed", status_code=303)
+        background.add_task(calendar_service.drain, member.club_id)  # send what was waiting for a key
+        return RedirectResponse("/calendar?google=connected", status_code=303)
+
+    @app.delete("/api/calendar/connect", status_code=204)
+    def calendar_disconnect(member: Member = Depends(president)) -> None:  # noqa: B008
+        calendar_service.disconnect(member.club_id)
+
+    @app.post("/api/calendar/share-cabinet")
+    def calendar_share_cabinet(background: BackgroundTasks, member: Member = Depends(president)) -> dict[str, int]:  # noqa: B008
+        """President only: ask Google to give today's cabinet read-only access to the club calendar."""
+        cabinet_now = [m for m in members.of_club(member.club_id) if m.is_cabinet]
+        for person in cabinet_now:
+            calendar_service.share_with(member.club_id, person.email, grant=True)
+        background.add_task(calendar_service.drain, member.club_id)
+        return {"queued": len(cabinet_now)}
+
     @app.get("/api/calendar")
     def calendar(month: str, member: Member = Depends(signed_in)) -> dict[str, Any]:  # noqa: B008
         if not re.fullmatch(r"\d{4}-\d{2}", month):
@@ -708,20 +756,36 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         return [m.view() for m in members.of_club(member.club_id)]
 
     @app.post("/api/cabinet", status_code=201)
-    def add_member(body: MemberBody, member: Member = Depends(president)) -> dict[str, str]:  # noqa: B008
+    def add_member(
+        body: MemberBody,
+        background: BackgroundTasks,
+        member: Member = Depends(president),  # noqa: B008
+    ) -> dict[str, str]:
         if members.by_email(body.email) is not None:
             raise HTTPException(409, "This e-mail is already on a cabinet list.")
         try:
-            return members.add(member.club_id, body.name, body.email, body.role).view()
+            added = members.add(member.club_id, body.name, body.email, body.role)
         except ValueError as err:
             raise HTTPException(422, str(err)) from None
+        if added.is_cabinet:  # read-only access to the club calendar; sent after the reply, retried on failure
+            calendar_service.share_with(member.club_id, added.email, grant=True)
+            background.add_task(calendar_service.drain, member.club_id)
+        return added.view()
 
     @app.delete("/api/cabinet", status_code=204)
-    def remove_member(body: RemoveBody = Body(...), member: Member = Depends(president)) -> None:  # noqa: B008
+    def remove_member(
+        background: BackgroundTasks,
+        body: RemoveBody = Body(...),  # noqa: B008
+        member: Member = Depends(president),  # noqa: B008
+    ) -> None:
         if body.member_id == member.member_id:
             raise HTTPException(422, "You can't remove yourself; hand over the presidency first.")
+        leaving = next((m for m in members.of_club(member.club_id) if m.member_id == body.member_id), None)
         if not members.remove(member.club_id, body.member_id):
             raise HTTPException(404, "No such member in your club.")
+        if leaving is not None and leaving.is_cabinet:  # take back only the reader access ClubOps gave
+            calendar_service.share_with(member.club_id, leaving.email, grant=False)
+            background.add_task(calendar_service.drain, member.club_id)
 
     @app.get("/api/handover/{role}")
     def handover(role: Role, member: Member = Depends(signed_in)) -> dict[str, Any]:  # noqa: B008

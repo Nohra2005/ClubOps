@@ -115,3 +115,13 @@ No entries yet — `capture`'s contract (`CaptureRequest`/`CaptureResult` in `sr
 **Next:** T-09 seed the Running Club know-how through these inputs; Joey's J-10 calls `Learner.learn` for e-mails; J-15 chatbot answers from what is approved.
 
 **Open questions / blockers:** the API key, to measure extraction quality on real material.
+
+## 2026-11-24 — Tatiana Nohra, with Claude (feat/t46-calendar-connect)
+
+**Did:** T-46 second slice (D-155): `calendar/connect.py` (encrypted key vault, one-use connect proof, reader-access retry list), `CalendarService` connect/disconnect/per-club drain/reader grants, routes `GET /api/calendar/connection`, `POST` and `DELETE /api/calendar/connect`, `GET /api/calendar/callback`, `POST /api/calendar/share-cabinet`; cabinet add/remove queue read-only access. `SyncQueue.pending` and `drain` take an optional club. `cryptography` added to dependencies (it was already in the lock file). Tests `tests/test_calendar_connect.py`; rows F-322 to F-326.
+
+**State:** Passes with a fake Google. Not tried against real Google.
+
+**Next:** Set the Google client values on the host and add the redirect address in Google Cloud; Christophe adds Connect, Disconnect and a status line to the Calendar screen; then one live connect and one cabinet add/remove with a test address.
+
+**Open questions / blockers:** Google cancels keys of apps in Testing mode every 7 days; publish the app or accept reconnecting weekly.
