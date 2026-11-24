@@ -26,6 +26,7 @@ from clubops.evaluation.chat_sheet import ask_sheet, read_questions, read_sheet,
 from clubops.knowhow.backends import open_club_store_backend
 from clubops.knowhow.store import KnowHowStore
 from clubops.model.client import ModelClient
+from clubops.redaction import redact
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -69,6 +70,29 @@ def run_ask(args: argparse.Namespace) -> None:
     print(f"Now mark {to_mark} rows: fill `correct` (yes/partly/no) and `sources_ok` (yes/no).")
 
 
+def run_search(args: argparse.Namespace) -> None:
+    """Free: what the chatbot's search finds for each question, before any model call."""
+    values = {**_read_dotenv(Path(".env")), **os.environ}
+    data_dir = Path(args.data_dir or values.get("CLUBOPS_DATA_DIR") or "data/app")
+    store = KnowHowStore(open_club_store_backend(data_dir, args.club))
+    try:
+        print(f"Data folder: {data_dir.resolve()}")
+        print(f"Approved facts for {args.club}: {len(store.current(args.club, args.as_of))}.")
+        empty = []
+        for q in read_questions(args.cases):
+            found = [i for i in store.search(args.club, redact(q.question).text) if i.is_current(args.as_of)]
+            club_facts = sum(i.club_id is not None for i in found)
+            line = f"{q.q_id} ({q.expected}): {len(found)} facts found, {club_facts} from the club"
+            if args.titles:
+                line += " | " + "; ".join(i.title for i in found[:3])
+            print(line)
+            if not found:
+                empty.append(q.q_id)
+        print(f"Questions with no facts found: {len(empty)}" + (f" ({', '.join(empty)})" if empty else ""))
+    finally:
+        store.close()
+
+
 def run_score(args: argparse.Namespace) -> None:
     rows = read_sheet(args.sheet)
     if args.counts:  # free, before any marking: how many answered, said not sure, or failed
@@ -104,6 +128,13 @@ def main() -> None:
     )
     first.add_argument("--limit", type=int, default=0, help="only the first N questions (a cheap trial)")
     first.set_defaults(run=run_ask)
+    look = steps.add_parser("search", help="free: how many facts the search finds for each question")
+    look.add_argument("--cases", required=True, type=Path)
+    look.add_argument("--as-of", type=date.fromisoformat, required=True)
+    look.add_argument("--club", default="running-club")
+    look.add_argument("--data-dir")
+    look.add_argument("--titles", action="store_true", help="also print the first 3 fact titles (private)")
+    look.set_defaults(run=run_search)
     second = steps.add_parser("score", help="count a marked sheet")
     second.add_argument("--sheet", required=True, type=Path)
     second.add_argument("--out", type=Path)

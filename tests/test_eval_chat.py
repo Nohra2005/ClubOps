@@ -173,3 +173,15 @@ def test_counts_need_no_marking(tmp_path: Path, monkeypatch, capsys) -> None:  #
     out = capsys.readouterr().out
     assert "expected known: 2 questions; answered 1, said not sure 1, errors 0" in out
     assert "expected not_sure: 2 questions; answered 1, said not sure 1, errors 0" in out
+
+
+def test_search_check_is_free_and_reports_questions_with_no_facts(tmp_path: Path, monkeypatch, capsys) -> None:  # type: ignore[no-untyped-def]
+    path = tmp_path / "q.csv"
+    path.write_text("q_id,question,expected,answer\nQ1,Xylophone?,not_sure,Not known.\n", encoding="utf-8")
+    monkeypatch.setattr(
+        "sys.argv",
+        ["eval_chat.py", "search", "--cases", str(path), "--as-of", "2026-11-24", "--data-dir", str(tmp_path / "d")],
+    )
+    main()
+    out = capsys.readouterr().out
+    assert "Q1 (not_sure): 0 facts found, 0 from the club" in out and "Questions with no facts found: 1 (Q1)" in out
