@@ -27,6 +27,8 @@ from typing import Any, Literal
 import httpx
 import openpyxl
 from fastapi import BackgroundTasks, Body, Depends, FastAPI, HTTPException, Request, Response, UploadFile
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
 
@@ -291,6 +293,20 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
     @app.exception_handler(CapabilityError)
     def _capability_error(_: Request, err: CapabilityError) -> JSONResponse:
         return JSONResponse({"detail": err.message}, status_code=_HTTP.get(err.code, 500))
+
+    @app.exception_handler(RequestValidationError)
+    async def _validation_error(request: Request, err: RequestValidationError) -> Response:
+        """Say plainly when a text is too long, so the page can show it (F-332); other problems stay as they were."""
+        for found in err.errors():
+            if found.get("type") == "string_too_long":
+                limit = (found.get("ctx") or {}).get("max_length")
+                used = len(str(found.get("input") or ""))
+                message = (
+                    f"That text is too long: the limit is {limit} characters and it has {used}. "
+                    "Send it in smaller parts."
+                )
+                return JSONResponse({"detail": message}, status_code=422)
+        return await request_validation_exception_handler(request, err)
 
     @app.middleware("http")
     async def _csrf(request: Request, call_next: Callable[[Request], Any]) -> Response:
