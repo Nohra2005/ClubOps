@@ -73,7 +73,6 @@ export default function NewEvent() {
         <ArrowLeft size={14} /> All events
       </Link>
       <PageHeading
-        eyebrow="FROM AN IDEA TO A GOOD DAY"
         title={
           run?.question?.kind === 'details'
             ? "Let's check the details."

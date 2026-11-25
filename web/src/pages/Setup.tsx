@@ -40,7 +40,6 @@ export default function Setup() {
   return (
     <div className="setup-page">
       <PageHeading
-        eyebrow="YOUR CLUB, WITH A HEAD START"
         title={
           !step
             ? `Welcome, ${me.club.name}.`

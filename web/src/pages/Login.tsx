@@ -24,7 +24,6 @@ export default function Login() {
           <span>clubops.</span>
         </Link>
         <div>
-          <span className="eyebrow">A BETTER WAY TO RUN YOUR CLUB</span>
           <h1>
             Great events.
             <br />A lasting legacy.
@@ -34,7 +33,6 @@ export default function Login() {
         <small>Made for the cabinet. Built for the next one.</small>
       </div>
       <div className="login-form">
-        <span className="eyebrow">WELCOME TO CLUBOPS</span>
         <h2>Your club starts here.</h2>
         <p>Sign in to your cabinet workspace.</p>
         {apiMode === 'http' ? (

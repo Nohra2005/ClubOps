@@ -42,7 +42,6 @@ export default function Settings() {
   return (
     <>
       <PageHeading
-        eyebrow="A WORKSPACE THAT WORKS FOR YOUR CLUB"
         title="Settings"
         description="Your cabinet, connections, source documents, and a clear view of AI spend."
       />
