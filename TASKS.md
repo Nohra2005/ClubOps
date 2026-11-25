@@ -630,6 +630,13 @@ Reference documents:
 - What: Replace the permanent handover navigation item with a contextual role introduction and cabinet transition entry. Provide a resumable, skippable walkthrough, approved reference knowledge and outgoing questions. Add explicit role-learning chat prompts using the published text API; do not infer membership changes or invent persistent backend onboarding routes.
 - Done when: desktop/phone and permission/isolation/no-automatic-call regressions pass; guided frontend and reference guide are independently reviewed. Server-stored invitations/progress and structured chatbot context require separately agreed owner contracts.
 
+### C-38 Simplify the web interface
+- Owner: christophe
+- Status: doing
+- Needs: C-02, C-03, C-12
+- What: Apply Chris's 25 November design direction: remove marketing eyebrows, redundant subtitles and slogans, decorative cards/icons and excessive rounded containers. Use a compact working interface while retaining source, cost, approval, error and role information where actions need it.
+- Done when: desktop/phone workflow and accessibility checks pass, screenshots are reviewed and the scoped UI changes are delivered in small commits. OAuth host/connect work remains C-18/C-35.
+
 ## Joey: calendar, reminders, drafts
 
 ### J-01 Read the calendar contract and set up Google
