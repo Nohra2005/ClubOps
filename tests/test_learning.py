@@ -614,3 +614,14 @@ def test_item_ids_have_eight_hash_characters_and_still_fit(store: KnowHowStore, 
     long_title = {**LESSON, "title": "Cafe B " + "needs ten days notice " * 4}
     [p] = capture(store, tmp_path, Provider({"facts": [long_title]}), BLK).proposals
     assert re.fullmatch(r"kh-[a-z0-9-]+-[0-9a-f]{8}", p.candidate.item_id) and len(p.candidate.item_id) <= 63
+
+
+def test_a_text_over_the_limit_gets_a_plain_message_with_the_numbers(app_client: tuple[TestClient, Provider]) -> None:
+    """F-332: the page said "ClubOps couldn't finish this" for a 1,200 character message."""
+    c, _ = app_client
+    reply = c.post("/api/chat/teach", json={"text": "x" * 1200}, headers=HEADERS)
+    assert reply.status_code == 422
+    assert reply.json()["detail"] == (
+        "That text is too long: the limit is 1000 characters and it has 1200. Send it in smaller parts."
+    )
+    assert c.post("/api/chat/teach", json={}, headers=HEADERS).status_code == 422  # other problems stay as they were

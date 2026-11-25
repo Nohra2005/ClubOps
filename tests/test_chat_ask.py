@@ -8,8 +8,9 @@ from decimal import Decimal
 
 import pytest
 
-from clubops.capabilities.runner import Usage
+from clubops.capabilities.runner import CapabilityError, Usage
 from clubops.chat.ask import ask
+from clubops.contracts.common import ErrorCode
 from clubops.contracts.knowhow import Answer, AskRequest, ItemStatus, KnowHowItem
 from clubops.model.budget import Budget
 from tests.factories import TODAY, item, verified
@@ -150,3 +151,25 @@ def test_a_placeholder_that_two_numbers_could_fill_is_left_alone() -> None:
     model = FakeModel(Answer(known=True, text="Call [PHONE].", citations=["kh-room-a", "kh-room-b"], basis="verified"))
     answer = ask(question(), FakeStore([first, second]), model)  # type: ignore[arg-type]
     assert answer.text == "Call [PHONE]."
+
+
+class BrokenModel:
+    def __init__(self, code: ErrorCode) -> None:
+        self.code = code
+
+    def complete(self, request: object, output: object, budget: Budget) -> tuple[Answer, Usage]:
+        raise CapabilityError(self.code, "model answer did not match Answer: an unknown answer has no citations")
+
+
+def test_a_badly_formed_model_reply_becomes_a_safe_ask_again_not_an_error() -> None:
+    """F-331: one real question (Q34) came back as an error because the model broke the Answer rules."""
+    fact = verified(item())
+    answer = ask(question(), FakeStore([fact]), BrokenModel(ErrorCode.MALFORMED_MODEL_OUTPUT))  # type: ignore[arg-type]
+    assert not answer.known and answer.citations == [] and answer.basis == "none"
+    assert "ask again" in answer.text and answer.ask is not None
+
+
+def test_other_model_failures_are_still_errors() -> None:
+    fact = verified(item())
+    with pytest.raises(CapabilityError):
+        ask(question(), FakeStore([fact]), BrokenModel(ErrorCode.UPSTREAM_ERROR))  # type: ignore[arg-type]

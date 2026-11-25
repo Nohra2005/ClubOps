@@ -5,18 +5,25 @@ from __future__ import annotations
 import json
 from decimal import Decimal
 
+from clubops.capabilities.runner import CapabilityError
+from clubops.contracts.common import ErrorCode
 from clubops.contracts.knowhow import Answer, AskRequest, AskWho, KnowHowItem
 from clubops.knowhow.store import KnowHowStore
 from clubops.model.budget import Budget
 from clubops.model.client import ModelClient, ModelRequest
 from clubops.redaction import redact
 
+_NO_ANSWER = "I don't have a verified answer. Please check with the responsible person or office."
+_BAD_REPLY = (
+    "I couldn't produce a checked answer this time. Please ask again, or check with the responsible person or office."
+)
 
-def _unknown(items: list[KnowHowItem]) -> Answer:
+
+def _unknown(items: list[KnowHowItem], text: str = _NO_ANSWER) -> Answer:
     rule = any(item.kind.value == "rule" for item in items)
     return Answer(
         known=False,
-        text="I don't have a verified answer. Please check with the responsible person or office.",
+        text=text,
         citations=[],
         basis="none",
         ask=AskWho(who="OSA" if rule else "Club president"),
@@ -46,7 +53,13 @@ def ask(request: AskRequest, store: KnowHowStore, model: ModelClient, budget: Bu
         user=json.dumps({"question": safe_question, "facts": facts}, ensure_ascii=False),
         max_tokens=1500,  # 600 cut real answers off mid-JSON on a long fact list (F-319)
     )
-    answer, _usage = model.complete(prompt, Answer, budget or Budget(max_usd=Decimal("0.05"), max_steps=1))
+    try:
+        answer, _usage = model.complete(prompt, Answer, budget or Budget(max_usd=Decimal("0.05"), max_steps=1))
+    except CapabilityError as err:
+        if err.code is not ErrorCode.MALFORMED_MODEL_OUTPUT:
+            raise
+        # A reply that breaks the Answer contract is never shown; the member gets a safe "ask again" (F-331).
+        return _unknown(candidates, _BAD_REPLY)
     allowed = {item.item_id for item in candidates}
     if answer.known and (not set(answer.citations) <= allowed or answer.basis not in {"verified", "single_source"}):
         return _unknown(candidates)

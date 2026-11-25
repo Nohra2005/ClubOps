@@ -135,3 +135,13 @@ No entries yet — `capture`'s contract (`CaptureRequest`/`CaptureResult` in `sr
 **Next:** Host settings (`CLUBOPS_OPERATOR_EMAILS`, `CLUBOPS_GMAIL_REDIRECT_URI`, `CLUBOPS_OSA_SENDERS`, `CLUBOPS_INBOX_SENDERS`, optional `CLUBOPS_GMAIL_ADDRESS`); add the redirect address to the "ClubOps inbox" client in Google Cloud; Christophe adds Connect and Fetch to the Inbox screen; one live connect and one fetch.
 
 **Open questions / blockers:** Testing mode still cancels the key every 7 days; renewing is now one click by the inbox owner.
+
+## 2026-11-25 — Tatiana Nohra, with Claude (fix/chat-malformed-and-long-text)
+
+**Did:** After the second chatbot run (30 of 40 right, one error: Q34), a badly formed model reply to a chat question now returns a safe "ask again" answer instead of an error (F-331), and a text over its limit gets a plain 422 message with the limit and the length (F-332). D-157. The Q32 link placeholder is left as it is (several links on one site look the same to the model).
+
+**State:** `make check` result in the PR. No contract changed.
+
+**Next:** Pull main, run the chatbot test once more, report both runs.
+
+**Open questions / blockers:** None.
