@@ -281,7 +281,7 @@ function NotFound() {
   return (
     <>
       <PageHeading
-        title="This page took a wrong turn."
+        title="Page not found"
         description="It may have moved, or the link may be incomplete."
       />
       <Link to="/events" className="button primary">

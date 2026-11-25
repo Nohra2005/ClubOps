@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Copy, Mail, PenLine, RefreshCw, WandSparkles } from 'lucide-react';
+import { Copy, Mail, PenLine, RefreshCw } from 'lucide-react';
 import { useApp } from '../AppContext';
 import { draftLabels, type Draft, type DraftType } from '../api/types';
 import { useAction } from '../hooks';
@@ -107,7 +107,7 @@ export function DraftCard({
           </p>
           {canEdit && (
             <button className="button small" disabled={action.pending} onClick={() => generate()}>
-              <WandSparkles size={13} />
+              <PenLine size={13} />
               {action.pending ? 'Writing…' : 'Write draft'}
             </button>
           )}
