@@ -3,7 +3,6 @@ import { Link } from 'react-router';
 import { ArrowUpRight, CalendarDays, Check, Flag, MapPin, Plus } from 'lucide-react';
 import { useApp } from '../AppContext';
 import type { EventSummary } from '../api/types';
-import { DEMO_TODAY } from '../api/fixtures';
 import { PageHeading, EmptyState, FilterTabs, Resource, StatusBadge } from '../components/ui';
 import { useResource } from '../hooks';
 import { formatDate, formatTime } from '../lib';
@@ -16,12 +15,6 @@ function EventCard({ event }: { event: EventSummary }) {
       to={`/events/${encodeURIComponent(event.event_id)}`}
       className={`event-card${event.status === 'closed' ? ' event-past' : ''}`}
     >
-      <div className="event-card-top">
-        <span className="event-category">
-          <Flag size={12} /> {event.event_type === 'weekly_run' ? 'CLUB RUN' : 'CLUB EVENT'}
-        </span>
-        <StatusBadge status={event.status} />
-      </div>
       <div className="event-card-main">
         <div className="event-date">
           <span>{month}</span>
@@ -38,6 +31,7 @@ function EventCard({ event }: { event: EventSummary }) {
             {formatDate(event.start)} · {formatTime(event.start)}
           </p>
         </div>
+        <StatusBadge status={event.status} />
       </div>
       <div className="event-card-bottom">
         <div className="task-progress">
@@ -134,7 +128,6 @@ export default function Events() {
             })),
           ]}
         />
-        <span className="list-date">{formatDate(DEMO_TODAY, true)}</span>
       </div>
       <Resource loading={events.loading} error={events.error} retry={events.reload}>
         {list.length === 0 ? (
