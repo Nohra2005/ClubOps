@@ -16,6 +16,15 @@ Labelled by Tatiana Nohra (president). Held-out split: random, seed 503; held-ou
 
 No leakage: when ClubOps plans a test event, it only knows facts tagged with earlier events (`learned_from_event`) and the AUB documents.
 
+### Amendment to Freeze 1 (2026-11-25)
+
+Tatiana removed one fact and its question because she cannot confirm that "the AUB pool is free for all AUB students" holds for events: fact F30 in `facts-learned.csv` and question Q14 in `chatbot-questions.csv`. No other ID was renumbered, and Q14 was not a held-out item. The first live run (13 of 41 counted, results/chatbot-evaluation.md) was made before this change and still includes Q14; it stays as the reported baseline.
+
+| File | Items after | Old SHA-256 | New SHA-256 |
+|---|---|---|---|
+| `chatbot-questions.csv` | 41 questions | `9a18c8777e0150ecba4ac4e33d78b477eec3d5bd34f879f86bbf052f5624a47e` | `bc880d81240cb677fabd0d36574df81a5baed554cf0e7492715243168ac33473` |
+| `facts-learned.csv` | 34 facts (F30 removed) | `64f461674683c4a676433b1ecf801164dde3e1befbcb91b2797205faa89a2a49` | `f96060bcbd673841c00b0e60b23af8b43d21c60be722763529de15819c4a9c7f` |
+
 ## Freeze 2: other clubs and made-up events (2026-11-04)
 
 All items are held out: none were used while building ClubOps. Frozen before the generalization run (D-50).
