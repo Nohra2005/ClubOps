@@ -319,6 +319,7 @@ Reference documents:
 - Needs: none
 - What: The change is in `web/` (Christophe's folder), so it goes through a PR he reviews. Fix the four main findings of the Impeccable-style UI audit of 25 Nov: no text under 12 px, 44 px touch targets on touch screens, decorative labels above headings removed, a darker keyboard focus ring.
 - Done when: `npm run check` passes in `web/`, and Christophe has looked at the screens on desktop and phone (the browser tests were not run in this session).
+- Progress (2026-11-25): #164 merged. Follow-up: the sidebar footer line "Built for the next cabinet" wrapped at 12 px with wide spacing; now sentence case, no letter spacing.
 
 ## Christophe: frontend
 

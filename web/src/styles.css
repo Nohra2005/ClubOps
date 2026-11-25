@@ -264,7 +264,7 @@ p {
 }
 .sidebar-footer .tiny-label {
   font-size: 12px;
-  letter-spacing: 1px;
+  letter-spacing: 0;
 }
 .sidebar-footer p {
   font:

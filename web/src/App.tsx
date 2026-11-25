@@ -126,7 +126,7 @@ function ShellContent() {
             ))}
         </nav>
         <div className="sidebar-footer">
-          <span className="tiny-label">BUILT FOR THE NEXT CABINET</span>
+          <span className="tiny-label">Built for the next cabinet</span>
           <p>
             Good plans.
             <br />
