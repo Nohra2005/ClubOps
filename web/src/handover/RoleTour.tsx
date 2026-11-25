@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
-import { ArrowRight, GraduationCap } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useApp } from '../AppContext';
 import { roleLabels } from '../api/types';
 import { steps } from './progress';
@@ -28,15 +28,10 @@ export function RoleTour() {
       return null;
     return (
       <section className="role-welcome" aria-label="Start your role">
-        <GraduationCap size={24} aria-hidden="true" />
         <div>
           <strong>
             {progress.status === 'paused' ? 'Your introduction is waiting' : 'New to your role?'}
           </strong>
-          <p>
-            A short introduction for the {roleLabels[me.role].toLowerCase()}. Your club’s knowledge
-            is already here.
-          </p>
         </div>
         <Link className="button" to="/handover">
           {progress.status === 'paused' ? 'Resume introduction' : 'Start here'}{' '}
@@ -50,9 +45,8 @@ export function RoleTour() {
   }
   return (
     <aside className="role-tour" aria-label="Role walkthrough">
-      <span className="eyebrow">
-        YOUR {roleLabels[me.role].toUpperCase()} INTRODUCTION · {progress.step + 1} OF{' '}
-        {steps.length}
+      <span className="tour-position">
+        {roleLabels[me.role]} introduction · {progress.step + 1} OF {steps.length}
       </span>
       <h2>{step.title}</h2>
       <p>{step.text}</p>

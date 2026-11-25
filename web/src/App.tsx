@@ -104,7 +104,6 @@ function ShellContent() {
             clubops<span className="brand-dot">.</span>
           </span>
         </Link>
-        <div className="workspace-label">YOUR WORKSPACE</div>
         <nav aria-label="Main navigation">
           {navigation
             .filter((n) => n.to !== '/settings' || isPresident)

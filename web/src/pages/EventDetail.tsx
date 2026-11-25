@@ -415,7 +415,7 @@ export default function EventDetail() {
           <>
             <PageHeading
               title={data.title}
-              description={`${formatDate(data.start, true)} · ${formatTime(data.start)}–${formatTime(data.end)} · ${data.venue}`}
+              description={`Revision ${data.revision} ? ${formatDate(data.start, true)} · ${formatTime(data.start)}–${formatTime(data.end)} · ${data.venue}`}
               action={
                 <div className="event-heading-actions">
                   <StatusBadge status={data.status} />

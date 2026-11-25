@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { ArrowUp, CheckCheck, FileText, Plus } from 'lucide-react';
+import { ArrowUp, CheckCheck, FileText, MessageCircle, Plus } from 'lucide-react';
 import { useApp } from '../AppContext';
 import { storage } from '../api';
 import { roleLabels, type ChatMessage, type ChatReply } from '../api/types';

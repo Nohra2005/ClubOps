@@ -277,6 +277,9 @@ export function KnowledgeFact() {
               action={<StatusBadge status={item.status} />}
             />
             <section className="panel fact-statement">
+              <p className="inline-note">
+                {item.scope === 'aub' ? 'AUB-wide' : 'Club-only'} ? {item.kind}
+              </p>
               <FactValidity validTo={item.valid_to} text={item.statement} />
               <p>
                 <Linkified text={item.statement} />
