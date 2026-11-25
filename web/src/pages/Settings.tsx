@@ -41,11 +41,7 @@ export default function Settings() {
   const cost = usage.value;
   return (
     <>
-      <PageHeading
-        eyebrow="A WORKSPACE THAT WORKS FOR YOUR CLUB"
-        title="Settings"
-        description="Your cabinet, connections, source documents, and a clear view of AI spend."
-      />
+      <PageHeading title="Settings" />
       {!isPresident && (
         <div className="notice warning">
           Ask your president to change members, documents or connections.

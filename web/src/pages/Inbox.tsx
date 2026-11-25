@@ -325,11 +325,7 @@ export default function Inbox() {
   const { api, canEdit, me } = useApp();
   return (
     <>
-      <PageHeading
-        eyebrow="FETCH FOR FREE, READ BY CHOICE"
-        title="Inbox"
-        description="Authorized OSA forwards wait here until your cabinet chooses what to read."
-      />
+      <PageHeading title="Inbox" />
       {api.mode === 'demo' ? (
         <DemoInbox />
       ) : canEdit ? (

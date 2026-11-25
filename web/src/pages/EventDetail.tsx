@@ -414,7 +414,6 @@ export default function EventDetail() {
         {data && (
           <>
             <PageHeading
-              eyebrow={`EVENT WORKSPACE · REVISION ${data.revision}`}
               title={data.title}
               description={`${formatDate(data.start, true)} · ${formatTime(data.start)}–${formatTime(data.end)} · ${data.venue}`}
               action={

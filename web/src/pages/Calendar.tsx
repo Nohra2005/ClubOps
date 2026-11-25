@@ -49,9 +49,7 @@ export default function Calendar() {
   return (
     <>
       <PageHeading
-        eyebrow="THE NEXT DEADLINE, IN SIGHT"
         title="Calendar"
-        description="Approved events, tasks, and the dates your club shouldn't miss."
         action={
           data.value?.connected ? (
             <span className="calendar-sync">
