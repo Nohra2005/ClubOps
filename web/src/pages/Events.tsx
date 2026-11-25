@@ -90,7 +90,6 @@ export default function Events() {
   return (
     <>
       <PageHeading
-        eyebrow="YOUR CLUB, IN MOTION"
         title="Events"
         description="From the first idea to the last lesson. Keep every event moving."
         action={

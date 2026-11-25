@@ -154,7 +154,6 @@ export default function Chat() {
   return (
     <>
       <PageHeading
-        eyebrow="THE KNOW-HOW STAYS HERE"
         title="Chat"
         description="Ask your club's memory. Share what the next cabinet should know."
         action={
@@ -209,7 +208,6 @@ export default function Chat() {
               <div className="chat-welcome-icon">
                 <MessageCircle size={27} />
               </div>
-              <span className="eyebrow">A LITTLE HELP FROM YOUR CLUB'S HISTORY</span>
               <h2>What would you like to know?</h2>
               <p>
                 Answers come from approved facts, with sources.

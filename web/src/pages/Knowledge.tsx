@@ -129,7 +129,6 @@ export default function Knowledge() {
   return (
     <>
       <PageHeading
-        eyebrow="YOUR CLUB'S COLLECTIVE MEMORY"
         title="Knowledge"
         description="Approved facts, trusted sources, and the lessons that outlast a cabinet."
         action={

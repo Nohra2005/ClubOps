@@ -38,7 +38,6 @@ export default function Handover() {
       <RoleIntroduction />
       {guide.value?.role === me.role && guide.value.sections[0]?.entries[0] && (
         <section className="panel role-first-fact" aria-label="A first thing to know">
-          <span className="eyebrow">FROM YOUR CLUB?S APPROVED KNOWLEDGE</span>
           <h2>A first thing to know</h2>
           <p>{guide.value.sections[0].entries[0].text}</p>
           {(
@@ -58,7 +57,6 @@ export default function Handover() {
         <summary>Reference guide, sources and outgoing questions</summary>
         <header className="page-heading">
           <div>
-            <span className="eyebrow">THE SOURCED REFERENCE</span>
             <h2>Handover</h2>
             <p>Keep the sources and open questions behind this role.</p>
           </div>
@@ -126,7 +124,6 @@ export default function Handover() {
                 </div>
                 <aside>
                   <section className="panel guide-gaps">
-                    <span className="eyebrow">LEAVE THE RIGHT QUESTIONS</span>
                     <h2>Questions for the outgoing cabinet</h2>
                     <p>These are gaps to ask the outgoing cabinet about.</p>
                     {guide.value.gaps.map((gap) => (

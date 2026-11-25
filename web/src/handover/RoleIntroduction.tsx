@@ -13,7 +13,6 @@ export default function RoleIntroduction() {
   const resumable = ['active', 'paused'].includes(progress.status);
   return (
     <section className="role-introduction" aria-labelledby="role-start-title">
-      <span className="eyebrow">A NEW CABINET. THE CLUB’S MEMORY STAYS.</span>
       <h1 id="role-start-title">Start your role</h1>
       <p className="role-intro-lead">
         You don’t have to read everything before you begin. Find your next step, explore your club’s

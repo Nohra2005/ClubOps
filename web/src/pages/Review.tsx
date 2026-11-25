@@ -532,7 +532,6 @@ export default function Review() {
   return (
     <>
       <PageHeading
-        eyebrow="A PERSON CHECKS IT FIRST"
         title="Review"
         description="New knowledge, changed rules, and plans waiting for your cabinet's judgment."
         action={
