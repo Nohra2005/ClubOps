@@ -313,6 +313,14 @@ Reference documents:
 - What: The model's AUB-wide or club-only label cannot be trusted for who sees a card. At fetch time count the distinct addresses on the original To and Cc lines (store the number only). 10 or more makes AUB-wide cards, fewer makes club-only; a rule stays AUB-scope by contract. Unknown counts (Bcc, undisclosed, older notes) fall back to the model's label. The Review card says how many people the e-mail went to. No model cost, no contract change.
 - Done when: tests for the count, the threshold, both overrides, the fallback and an old notes database; F-227 has its row. PR #103 reviewed and merged; then one free fetch refreshes the waiting e-mails so they use the count (the fetch fills in only the number, for the same mail).
 
+### T-50 UI audit fixes: readable text, touch targets, no decorative labels (D-158)
+- Owner: tatiana
+- Status: review
+- Needs: none
+- What: The change is in `web/` (Christophe's folder), so it goes through a PR he reviews. Fix the four main findings of the Impeccable-style UI audit of 25 Nov: no text under 12 px, 44 px touch targets on touch screens, decorative labels above headings removed, a darker keyboard focus ring.
+- Done when: `npm run check` passes in `web/`, and Christophe has looked at the screens on desktop and phone (the browser tests were not run in this session).
+- Progress (2026-11-25): #164 merged. Follow-up: the sidebar footer line "Built for the next cabinet" wrapped at 12 px with wide spacing; now sentence case, no letter spacing.
+
 ## Christophe: frontend
 
 ### C-01 Read the UI spec and pick the stack

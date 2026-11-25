@@ -26,7 +26,7 @@ export default function Login() {
       </div>
       <div className="login-form">
         <h1>Sign in</h1>
-        <p>Use the Google account on your club?s cabinet list.</p>
+        <p>Use the Google account on your club's cabinet list.</p>
         {apiMode === 'http' ? (
           import.meta.env.VITE_DEV_LOGIN === '1' ? (
             <DevSignIn />

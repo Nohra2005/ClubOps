@@ -607,3 +607,14 @@ of the final head. The post-approval Knowledge expiry API question remains open.
 
 **Next:** Current-head CI, then merge using the temporary review waiver Chris
 relayed in this session. Keep commit history. No main push or deployment change.
+
+## 2026-11-25 — Tatiana, with Claude (ui/impeccable-audit-fixes)
+
+**Did:** T-50 (D-158): text floor of 12 px in `styles.css`, 44 px touch targets under `pointer: coarse`, the decorative eyebrow labels removed from pages (kept where they carry data: 404, event revision, knowledge scope, source excerpt, role tour step), focus ring colour darker. Audit file: Tatiana has it (`ui-audit-2026-11-25.md`).
+
+**State:** `npm run check` passes in `web/` (lint, format, 145 unit tests, types, build). The browser tests and a look at the pages were not run: no browser was available in the session. Christophe's review should include opening each screen on desktop and at 375 px, mainly the sidebar footer, mobile nav and the demo strip, where the old text was 8 to 9 px and may now wrap or crowd.
+
+**Next:** Christophe opens the screens and runs `npm run test:e2e`; fix any layout that wraps badly. After the freeze: map the 378 hard-coded colours to the variables, replace the side-stripe borders.
+
+**Open questions / blockers:** Contrast of the darker focus ring and the final look are unchecked by eye.
+
