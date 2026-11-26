@@ -646,7 +646,8 @@ Reference documents:
 
 ### C-38 Simplify the web interface
 - Owner: christophe
-- Status: review
+- Status: done
+- Verified (2026-11-26): #166 merged as e884039 with the scoped UI cleanup and T-50 accessibility fixes. Local desktop/phone checks and inspected captures are recorded below; the last hosted candidate includes this merge. Real signed-in/provider acceptance remains C-18/C-35 work.
 - Progress (2026-11-25): simplified working layout and copy, merged T-50 accessibility fixes, inspected desktop/phone captures; 949 Python tests/93.76%, 145 frontend units, 42 board tools, 50 demo and 64 HTTP/role cases pass. Review/CI pending; no deployment claim.
 - Needs: C-02, C-03, C-12
 - What: Apply Chris's 25 November design direction: remove marketing eyebrows, redundant subtitles and slogans, decorative cards/icons and excessive rounded containers. Use a compact working interface while retaining source, cost, approval, error and role information where actions need it.

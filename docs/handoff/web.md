@@ -779,3 +779,7 @@ prototype until Tatiana supplies #169's atomic term/cabinet/session contract.
 Signed-in phone/provider acceptance, backup restoration, production telemetry and
 final held-out thresholds remain unverified. Preserve commits and independent
 review under current AGENTS; historical waivers do not prove reviews happened.
+
+**Task reconciliation:** C-38 now reads done after verifying #166's actual merge
+e884039. Its scoped UI checks/captures were already recorded; this correction
+does not claim a missing independent review or signed-in provider acceptance.
