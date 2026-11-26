@@ -651,3 +651,97 @@ Recorded only the observed public 200 login / 401 unauthenticated API responses;
 SSH timed out, so the running image and any deployment change remain unverified.
 The SPA fallback is explicitly not an API-health check. No raw URL/account/key
 or real club record is copied into the report. Rechecked report links/formatting.
+
+## 2026-11-25 — Tatiana, with Claude (ui/impeccable-audit-fixes)
+
+**Did:** T-50 (D-158): text floor of 12 px in `styles.css`, 44 px touch targets under `pointer: coarse`, the decorative eyebrow labels removed from pages (kept where they carry data: 404, event revision, knowledge scope, source excerpt, role tour step), focus ring colour darker. Audit file: Tatiana has it (`ui-audit-2026-11-25.md`).
+
+**State:** `npm run check` passes in `web/` (lint, format, 145 unit tests, types, build). The browser tests and a look at the pages were not run: no browser was available in the session. Christophe's review should include opening each screen on desktop and at 375 px, mainly the sidebar footer, mobile nav and the demo strip, where the old text was 8 to 9 px and may now wrap or crowd.
+
+**Next:** Christophe opens the screens and runs `npm run test:e2e`; fix any layout that wraps badly. After the freeze: map the 378 hard-coded colours to the variables, replace the side-stripe borders.
+
+**Open questions / blockers:** Contrast of the darker focus ring and the final look are unchecked by eye.
+
+
+
+## 2026-11-25 - Christophe (C-38 UI cleanup; C-18/C-35 host prerequisite)
+
+**Did:** Applied Chris's design direction in small commits: removed the workspace
+marketing hero/fake preview, page eyebrows and repeated subtitles, sidebar/footer
+slogans and static season badge; simplified login and role-tour entry. Events use
+flat working rows, with neutral surfaces and fewer tinted/rounded icon containers.
+Preserved event revision and Knowledge scope/kind as ordinary contextual metadata.
+Merged parallel T-50 #164/#165, keeping its text floor, focus ring and touch targets.
+D-251/F-503 describe the boundary. One chat regression now uses the shorter heading.
+
+**State:** Browser/workflow/accessibility and root gates run on the merged tree
+before publication; synthetic desktop/phone captures are inspected separately.
+Temporary local server/config/artifacts are not part of the PR. C-38 does not
+change transport, model, source authority or app approval rules.
+
+**Host task:** #160/#161 are merged and their docs/api.md fields are available.
+Direct SSH still times out; DNS and a separate TCP check confirm the target but
+not access. Chris is checking the Azure SSH rule. Credential files validate as
+web clients without printing their values; they remain untouched until securely
+applied to the existing host environment. No secret copied to Git/logs, host edit,
+container recreation, login repair, OAuth callback or download deletion is claimed.
+C-35 connection buttons remain after that explicitly requested host-first step.
+
+**Next:** Finish current-head UI checks and publish for review. Resume host access,
+preserve its existing Gmail refresh token, configure clients and check the private
+president membership/build-client consistency, then implement the connection UI.
+
+
+### C-38 verification
+
+Merged 2784fb0; locked own .venv with all extras passes 949 tests, 93.76%
+coverage, Ruff/format 187 files, mypy 92, schemas/tasks. Web checks pass 145
+units/42 board tools plus lint/format/types/build. Stable final-layout runs pass
+50 desktop/phone demo/workflow/Axe cases and 64 HTTP contract/role-learning cases.
+Inspected synthetic desktop/phone Events, sign-in, Review, Knowledge and Chat
+captures; these are local artifacts, not deployed or real-provider acceptance.
+One final draft icon/404 copy polish is checked by web quality gates. Earlier
+interrupted/HMR runs are not reported as successful checks. C-38 is review.
+
+
+## 2026-11-26 - Christophe (C-35 urgent Google connection controls)
+
+**Did:** Per Chris's urgent request, built the #160/#161 frontend separately
+from blocked SSH. Calendar and Settings use the connection status and president
+Connect/Disconnect. Inbox uses operator status/Connect/Disconnect and cabinet
+free Fetch, counts-only feedback, fresh lists and a scoped plain 409. Callback
+messages do not establish a connection; Google auth URLs are narrowly validated.
+No connection/fetch controls for advisers; opening pages makes no mutation.
+Disconnect requires explicit confirmation. D-252/F-504/F-505.
+
+**State:** Ten new synthetic desktop/phone HTTP cases pass, including Google
+navigation interception, all states, role controls, callbacks, cancel/confirm,
+fetch/error privacy and Axe. Web quality/build initially passes with the adapter
+units. Further regression/root gates and final-head CI are run before completion.
+No real Google consent, email read, provider call or private data is used in tests.
+
+**Host / acceptance:** SSH still times out. No environment lines applied,
+container recreated/restarted, downloaded file deleted, member lookup/repaired,
+or build/server Google client ID comparison is claimed. Public login responds
+200 and unauthenticated /api/me 401; /api/openapi.json returned 500 on the observed
+host. None of these prove sign-in, president role or deployed commit/#163.
+The last image this assistant deployed was 5c66db9; the current image is unknown.
+
+**Next:** Publish the button PR now; finish all current-tree checks. Restore
+administrative access, preserve host env/refresh token, apply supplied credentials,
+recreate the intended container and verify its image/version plus actual phone
+Google login/president /me. The returned fetch `refreshed` field is not displayed:
+docs/api.md does not specify its type/meaning; queued/skipped/not_for_a_club counts
+are displayed without guessing it. Tatiana can clarify that nonblocking detail.
+
+
+### C-35 regression follow-up
+
+Root gates pass: 949 tests, 93.76% coverage; Ruff/format 187 files, mypy 92,
+schemas/tasks. Web checks pass 151 units and 42 board-tool tests. Broad HTTP
+run passes 116 cases; the two stale denial assertions were corrected from two
+to three independent unavailable resources (Gmail status is new) and both rerun
+cases pass. Strict metadata, role-tour and rehearsal fixtures now explicitly
+serve the new published GET states; unknown mutations remain rejected. Final
+combined CI is required. The current PR is #167; initial failed CI was the stale
+fixture expectations, not evidence of host configuration or Google acceptance.

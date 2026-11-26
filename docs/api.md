@@ -50,6 +50,11 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Calendar | `GET /api/calendar?month=2026-11` | live; `connected` is false until Joey's Google sync is wired |
 | Calendar | `GET /api/calendar/sync` | live, cabinet only, own club: `{connected, waiting, problem}`. `waiting` = approved items not yet in Google; `problem` is a short plain sentence or null. Never returns the calendar id, key or an address. |
 | Calendar | `POST /api/calendar/sync` | live, cabinet only: retry now, same reply as above. It sends only what an approved plan queued; it cannot create anything. |
+| Calendar | `GET /api/calendar/connection` | live, cabinet only, own club: `{state, source, can_connect, access_changes_waiting}`. `state` is `not_set_up` (the host has no Google app or no calendar for this club), `not_connected`, `connected` or `reconnect`; `source` is `app`, `host` or null. Never returns a key, calendar id or address. |
+| Calendar | `POST /api/calendar/connect` | president only: `{url}`, the Google address to open (501 when not set up). Nothing is stored yet. |
+| Calendar | `GET /api/calendar/callback?code=&state=` | president only, the page Google sends the president back to; answers with a redirect to `/calendar?google=connected`, `denied` or `failed`. |
+| Calendar | `DELETE /api/calendar/connect` | president only (204): forgets the key and asks Google to cancel it; queued items stay queued. |
+| Calendar | `POST /api/calendar/share-cabinet` | president only: `{queued}`; gives the current cabinet read-only access. Adding or removing a cabinet member does this by itself. |
 | Knowledge | `GET /api/knowledge?tab=&q=` | live (tabs rules, tips, contacts, sponsors; `documents` empty) |
 | Knowledge | `GET /api/knowledge/{item_id}` | live |
 | Handover | `GET /api/handover/{role}` | live (C-19): current approved knowledge, all citations and explicit gaps; deterministic, no model call |
@@ -57,6 +62,11 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Settings | `POST /api/documents` (multipart `file`) | live: .txt, .md, .csv, .eml, .xlsx up to 2 MB, .pdf up to 10 MB (text only: pictures are not read and the answer says how many were skipped; a PDF with no text is refused; long text is cut in code into pieces of about 5,500 characters, 12 pieces at most); past expense forms become a price list without AI; returns a `documents` knowledge item saying how many facts went to Review |
 | Settings | `GET /api/usage` | live (monthly planning cost; `calls_label` identifies planner steps; optional `run_metrics`, `trace_metrics`, `trace_metrics_available`, `metrics_note` explain C-20 outcomes and recorded coverage) |
 | Setup | `POST /api/setup/next` | 501 until C-21 |
+| Inbox | `GET /api/inbox/gmail` | live, cabinet only: `{state, source, can_connect, can_manage}`. `state` is `not_set_up`, `not_connected`, `connected` or `reconnect`; `can_manage` is true for an operator. Never returns a key, address or mail. |
+| Inbox | `POST /api/inbox/gmail/connect` | operator only: `{url}`, the Google address to open (501 when not set up). |
+| Inbox | `GET /api/inbox/gmail/callback?code=&state=` | operator only, the page Google sends the operator back to; redirects to `/inbox?gmail=connected`, `denied` or `failed`. |
+| Inbox | `DELETE /api/inbox/gmail/connect` | operator only (204): forgets the key and asks Google to cancel it. |
+| Inbox | `POST /api/inbox/fetch` | live, cabinet only, free (no model call): `{queued, skipped, not_for_a_club, refreshed}` counts only; 409 with a plain sentence when the key is missing or ended or the OSA sender list is empty. |
 | Inbox | `GET /api/inbox` | live (cabinet only, own club): `[{id, subject, date, forwarded_by}]` for forwarded e-mails waiting to be read; metadata only, no model call |
 | Inbox | `POST /api/inbox/{id}/capture` | live (cabinet only, CSRF): one paid model read; `{proposals: [review ids], applied: [proposal ids], skipped}`: clean facts from this trusted e-mail are applied at once (`applied`, D-138); only odd ones wait in Review (`proposals`); 404 if the id is not waiting for your club; 409 if the e-mail did not pass J-22's checks or is already being read (or was read for another club); 502 if the read failed (the e-mail stays waiting, retry); budget errors as usual. The read is claimed in J-22's ledger before the model and marked read only after Review has the proposals |
 | Inbox | `GET /api/inbox/skipped` | live (cabinet only, own club): `[{id, subject, reason, why}]` for forwarded e-mails the free checks refused, e.g. `why`: "ClubOps only reads e-mails forwarded from OSA staff". Never read by a model |

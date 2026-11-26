@@ -1,3 +1,4 @@
+import GoogleConnectionPanel from '../components/GoogleConnectionPanel';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import {
@@ -49,11 +50,10 @@ export default function Calendar() {
   return (
     <>
       <PageHeading
-        eyebrow="THE NEXT DEADLINE, IN SIGHT"
         title="Calendar"
-        description="Approved events, tasks, and the dates your club shouldn't miss."
         action={
-          data.value?.connected ? (
+          api.mode === 'demo' &&
+          (data.value?.connected ? (
             <span className="calendar-sync">
               <Check size={13} />
               {api.mode === 'demo' ? 'Demo sync ready' : 'Calendar connected'}
@@ -64,9 +64,10 @@ export default function Calendar() {
             </Link>
           ) : (
             <span className="calendar-sync not-connected">Google is not connected</span>
-          )
+          ))
         }
       />
+      <GoogleConnectionPanel service="calendar" />
       <div className="calendar-toolbar">
         <div className="month-switch">
           <button className="icon-button" aria-label="Previous month" onClick={() => move(-1)}>

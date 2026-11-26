@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
-import { ArrowLeft, ArrowRight, Check, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { useApp } from '../AppContext';
 import type { AgentRun, EventFields } from '../api/types';
 import { storage } from '../api';
@@ -73,18 +73,12 @@ export default function NewEvent() {
         <ArrowLeft size={14} /> All events
       </Link>
       <PageHeading
-        eyebrow="FROM AN IDEA TO A GOOD DAY"
         title={
           run?.question?.kind === 'details'
             ? "Let's check the details."
             : runId
               ? 'A plan is taking shape.'
               : 'What are you planning?'
-        }
-        description={
-          runId
-            ? 'Your cabinet stays in control. Nothing is sent or approved here.'
-            : 'Tell us the idea in your own words. We’ll help you work out the rest.'
         }
       />
       <ol className="flow-steps" aria-label="Planning progress">
@@ -100,10 +94,6 @@ export default function NewEvent() {
       </ol>
       {!runId ? (
         <section className="panel describe-panel">
-          <div className="describe-icon">
-            <Sparkles size={22} />
-          </div>
-          <h2>Start with the idea.</h2>
           <p>
             A date, a place, a rough head count. Share what you know; ClubOps will ask about the
             rest.

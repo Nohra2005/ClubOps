@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { ArrowUp, CheckCheck, FileText, MessageCircle, Plus, Sparkles } from 'lucide-react';
+import { ArrowUp, CheckCheck, FileText, MessageCircle, Plus } from 'lucide-react';
 import { useApp } from '../AppContext';
 import { storage } from '../api';
 import { roleLabels, type ChatMessage, type ChatReply } from '../api/types';
@@ -154,9 +154,7 @@ export default function Chat() {
   return (
     <>
       <PageHeading
-        eyebrow="THE KNOW-HOW STAYS HERE"
         title="Chat"
-        description="Ask your club's memory. Share what the next cabinet should know."
         action={
           canEdit && (
             <button
@@ -206,16 +204,7 @@ export default function Chat() {
         <div className="chat-messages" aria-live="polite" aria-relevant="additions">
           {messages.length === 0 ? (
             <div className="chat-welcome">
-              <div className="chat-welcome-icon">
-                <MessageCircle size={27} />
-              </div>
-              <span className="eyebrow">A LITTLE HELP FROM YOUR CLUB'S HISTORY</span>
-              <h2>What would you like to know?</h2>
-              <p>
-                Answers come from approved facts, with sources.
-                <br />
-                If we don't know, we'll help you find who to ask.
-              </p>
+              <h2>Ask a question</h2>
               {canEdit && (
                 <div className="suggestions">
                   {suggestions.map((question) => (
@@ -271,7 +260,7 @@ export default function Chat() {
                     <MessageCircle size={12} /> Ask
                   </button>
                   <button aria-pressed={mode === 'teach'} onClick={() => setMode('teach')}>
-                    <Sparkles size={12} /> Teach the club
+                    <FileText size={12} /> Teach the club
                   </button>
                 </div>
                 <button className="text-button" onClick={() => setPaste(true)}>

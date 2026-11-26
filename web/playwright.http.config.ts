@@ -6,6 +6,7 @@ export default defineConfig({
   testIgnore: [],
   testMatch: [
     'contracts.spec.ts',
+    'google-connections.spec.ts',
     'role-learning.spec.ts',
     'demo-rehearsal.spec.ts',
     'session-http.spec.ts',

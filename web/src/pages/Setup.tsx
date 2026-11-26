@@ -40,7 +40,6 @@ export default function Setup() {
   return (
     <div className="setup-page">
       <PageHeading
-        eyebrow="YOUR CLUB, WITH A HEAD START"
         title={
           !step
             ? `Welcome, ${me.club.name}.`
@@ -48,7 +47,6 @@ export default function Setup() {
               ? 'A good beginning.'
               : 'Make this workspace yours.'
         }
-        description="Start with shared rules. Add your club's own people, places and lessons."
       />
       {!step?.done && (
         <p className="inline-note">

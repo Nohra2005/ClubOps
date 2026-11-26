@@ -23,20 +23,10 @@ export default function Login() {
           </div>
           <span>clubops.</span>
         </Link>
-        <div>
-          <span className="eyebrow">A BETTER WAY TO RUN YOUR CLUB</span>
-          <h1>
-            Great events.
-            <br />A lasting legacy.
-          </h1>
-          <p>Keep your plans, your people, and everything you've learned together.</p>
-        </div>
-        <small>Made for the cabinet. Built for the next one.</small>
       </div>
       <div className="login-form">
-        <span className="eyebrow">WELCOME TO CLUBOPS</span>
-        <h2>Your club starts here.</h2>
-        <p>Sign in to your cabinet workspace.</p>
+        <h1>Sign in</h1>
+        <p>Use the Google account on your club's cabinet list.</p>
         {apiMode === 'http' ? (
           import.meta.env.VITE_DEV_LOGIN === '1' ? (
             <DevSignIn />

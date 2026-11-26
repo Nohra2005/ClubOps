@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { ArrowRight, ArrowUpRight, CalendarDays, Check, Flag, MapPin, Plus } from 'lucide-react';
+import { ArrowUpRight, CalendarDays, Check, Flag, MapPin, Plus } from 'lucide-react';
 import { useApp } from '../AppContext';
 import type { EventSummary } from '../api/types';
-import { DEMO_TODAY } from '../api/fixtures';
 import { PageHeading, EmptyState, FilterTabs, Resource, StatusBadge } from '../components/ui';
 import { useResource } from '../hooks';
 import { formatDate, formatTime } from '../lib';
@@ -16,12 +15,6 @@ function EventCard({ event }: { event: EventSummary }) {
       to={`/events/${encodeURIComponent(event.event_id)}`}
       className={`event-card${event.status === 'closed' ? ' event-past' : ''}`}
     >
-      <div className="event-card-top">
-        <span className="event-category">
-          <Flag size={12} /> {event.event_type === 'weekly_run' ? 'CLUB RUN' : 'CLUB EVENT'}
-        </span>
-        <StatusBadge status={event.status} />
-      </div>
       <div className="event-card-main">
         <div className="event-date">
           <span>{month}</span>
@@ -38,6 +31,7 @@ function EventCard({ event }: { event: EventSummary }) {
             {formatDate(event.start)} · {formatTime(event.start)}
           </p>
         </div>
+        <StatusBadge status={event.status} />
       </div>
       <div className="event-card-bottom">
         <div className="task-progress">
@@ -71,28 +65,23 @@ export default function Events() {
     {
       value: 'upcoming',
       label: 'Upcoming',
-      note: 'A few good things to look forward to.',
       events: list.filter((e) => !['done', 'closed', 'cancelled'].includes(e.status)),
     },
     {
       value: 'followup',
       label: 'Needs after-event form',
-      note: 'Keep the lessons before they slip away.',
       events: list.filter((e) => e.status === 'done'),
     },
     {
       value: 'past',
       label: 'Past',
-      note: 'Done, documented, and ready for the next team.',
       events: list.filter((e) => ['closed', 'cancelled'].includes(e.status)),
     },
   ];
   return (
     <>
       <PageHeading
-        eyebrow="YOUR CLUB, IN MOTION"
         title="Events"
-        description="From the first idea to the last lesson. Keep every event moving."
         action={
           canEdit && (
             <Link to="/events/new" className="button primary">
@@ -101,66 +90,6 @@ export default function Events() {
           )
         }
       />
-      {!events.error && (
-        <div className="event-hero">
-          <div>
-            <div className="hero-kicker">
-              <span /> A LITTLE LESS ADMIN. A LOT MORE CLUB.
-            </div>
-            <h2>
-              Good events start
-              <br />
-              with a clear plan.
-            </h2>
-            <p>
-              Bring the idea. ClubOps helps you find the details,
-              <br className="desktop-break" /> the deadlines, and the lessons worth keeping.
-            </p>
-            {canEdit ? (
-              <Link to="/events/new" className="button hero-button">
-                Let's plan something <ArrowRight size={15} />
-              </Link>
-            ) : (
-              <Link to="/handover" className="button hero-button">
-                Explore your club's guide <ArrowRight size={15} />
-              </Link>
-            )}
-            <span className="hero-footnote">
-              <Check size={12} /> Drafted by ClubOps. Approved by your cabinet.
-            </span>
-          </div>
-          <div className="hero-plan" aria-hidden="true">
-            <div className="hero-plan-label">
-              <span className="mini-symbol">c.</span> THE NEXT GOOD THING
-            </div>
-            <div className="hero-plan-title">
-              An idea. A plan.
-              <br />A day to remember.
-            </div>
-            <div className="hero-plan-row">
-              <span className="hero-check">
-                <Check size={11} />
-              </span>{' '}
-              The right approvals<span className="mini-pill">Checked</span>
-            </div>
-            <div className="hero-plan-row">
-              <span className="hero-check">
-                <Check size={11} />
-              </span>{' '}
-              A deadline for every task
-            </div>
-            <div className="hero-plan-row">
-              <span className="hero-check">
-                <Check size={11} />
-              </span>{' '}
-              Your club's know-how
-            </div>
-            <div className="hero-plan-footer">
-              THE FINAL SAY IS ALWAYS YOURS <ArrowUpRight size={16} />
-            </div>
-          </div>
-        </div>
-      )}
       <div className="events-overview">
         <div>
           <span className="overview-icon">
@@ -199,13 +128,12 @@ export default function Events() {
             })),
           ]}
         />
-        <span className="list-date">{formatDate(DEMO_TODAY, true)}</span>
       </div>
       <Resource loading={events.loading} error={events.error} retry={events.reload}>
         {list.length === 0 ? (
           <EmptyState
             title="No events yet."
-            description="Your next club memory starts with an idea."
+            description="Create an event to start planning."
             action={
               canEdit && (
                 <Link to="/events/new" className="button primary">
@@ -224,7 +152,6 @@ export default function Events() {
                     {group.label}
                     <span>{group.events.length}</span>
                   </h2>
-                  <p>{group.note}</p>
                 </div>
                 {group.events.length ? (
                   <div className="event-grid">

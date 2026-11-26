@@ -129,9 +129,7 @@ export default function Knowledge() {
   return (
     <>
       <PageHeading
-        eyebrow="YOUR CLUB'S COLLECTIVE MEMORY"
         title="Knowledge"
-        description="Approved facts, trusted sources, and the lessons that outlast a cabinet."
         action={
           isPresident && (
             <Link to="/settings#documents" className="button">
@@ -254,7 +252,6 @@ export function KnowledgeFact() {
           <ArrowLeft size={14} /> Knowledge
         </Link>
         <PageHeading
-          eyebrow="SOURCE EXCERPT"
           title={source.label}
           description="This is the supporting excerpt attached to the value you opened."
         />
@@ -275,12 +272,14 @@ export function KnowledgeFact() {
         {item && (
           <>
             <PageHeading
-              eyebrow={`${item.scope === 'aub' ? 'SHARED AUB KNOWLEDGE' : 'YOUR CLUB’S KNOWLEDGE'} · ${item.kind.toUpperCase()}`}
               title={item.title}
               description={`Last checked ${formatDate(item.last_checked, true)}`}
               action={<StatusBadge status={item.status} />}
             />
             <section className="panel fact-statement">
+              <p className="inline-note">
+                {item.scope === 'aub' ? 'AUB-wide' : 'Club-only'} ? {item.kind}
+              </p>
               <FactValidity validTo={item.valid_to} text={item.statement} />
               <p>
                 <Linkified text={item.statement} />

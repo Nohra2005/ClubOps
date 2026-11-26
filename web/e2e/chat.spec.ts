@@ -20,7 +20,7 @@ test('chat shows sources, admits uncertainty and queues teaching for review', as
   await expect(page.getByText('New fact sent for review', { exact: true })).toBeVisible();
   await page.getByLabel('Club', { exact: true }).selectOption('asme');
   await page.goto('/chat');
-  await expect(page.getByRole('heading', { name: 'What would you like to know?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Ask a question' })).toBeVisible();
   await expect(
     page.getByText('Synthetic lesson: carry spare water cups.', { exact: true }),
   ).toHaveCount(0);

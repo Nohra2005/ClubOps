@@ -47,6 +47,16 @@ async function fixture(page: Page, role: Role = 'president', member = 'm-role-te
       unexpected.push(path);
       return route.fulfill({ status: 501, json: { detail: 'Unpublished' } });
     }
+    if (path === '/api/calendar/connection' || path === '/api/inbox/gmail')
+      return route.fulfill({
+        json: {
+          state: 'not_set_up',
+          source: null,
+          can_connect: false,
+          can_manage: false,
+          access_changes_waiting: 0,
+        },
+      });
     if (path === '/api/calendar') return route.fulfill({ json: { items: [], connected: false } });
     if (path.startsWith('/api/handover/'))
       return route.fulfill({

@@ -8,8 +8,9 @@ from decimal import Decimal
 
 import pytest
 
-from clubops.capabilities.runner import Usage
+from clubops.capabilities.runner import CapabilityError, Usage
 from clubops.chat.ask import ask
+from clubops.contracts.common import ErrorCode
 from clubops.contracts.knowhow import Answer, AskRequest, ItemStatus, KnowHowItem
 from clubops.model.budget import Budget
 from tests.factories import TODAY, item, verified
@@ -29,11 +30,13 @@ class FakeModel:
         self.called = False
         self.user = ""
         self.budget: Budget | None = None
+        self.max_tokens = 0
 
     def complete(self, request: object, output: object, budget: Budget) -> tuple[Answer, Usage]:
         self.called = True
         self.user = request.user  # type: ignore[attr-defined]
         self.budget = budget
+        self.max_tokens = request.max_tokens  # type: ignore[attr-defined]
         budget.check()
         budget.charge(Usage())
         return self.answer, Usage()
@@ -121,3 +124,52 @@ def test_future_fact_never_reaches_model() -> None:
     model = FakeModel(known([fact.item_id]))
     assert not ask(question(), FakeStore([fact]), model).known  # type: ignore[arg-type]
     assert not model.called
+
+
+def test_the_answer_limit_leaves_room_for_a_long_fact_list() -> None:
+    """F-319: 600 tokens cut a real answer off mid-JSON and the cabinet member got an error."""
+    fact = verified(item())
+    model = FakeModel(known([fact.item_id]))
+    ask(question(), FakeStore([fact]), model)  # type: ignore[arg-type]
+    assert model.max_tokens >= 1500
+
+
+def test_a_placeholder_is_filled_back_from_the_cited_fact_and_the_model_never_sees_the_number() -> None:
+    """F-321: the answer said "[PHONE]" because personal data is hidden from the model; the asker needs the number."""
+    fact = verified(item(statement="To book any room, cabinet members call +961 70 869 848."))
+    model = FakeModel(
+        Answer(known=True, text="Call [PHONE] to book a room.", citations=[fact.item_id], basis="verified")
+    )
+    answer = ask(question(text="Who do we call to book a room?"), FakeStore([fact]), model)  # type: ignore[arg-type]
+    assert answer.text == "Call +961 70 869 848 to book a room."
+    assert "869" not in model.user and "[PHONE]" in model.user
+
+
+def test_a_placeholder_that_two_numbers_could_fill_is_left_alone() -> None:
+    first = verified(item("kh-room-a", statement="Rooms: call +961 70 869 848."))
+    second = verified(item("kh-room-b", statement="Gym: call +961 71 123 456."))
+    model = FakeModel(Answer(known=True, text="Call [PHONE].", citations=["kh-room-a", "kh-room-b"], basis="verified"))
+    answer = ask(question(), FakeStore([first, second]), model)  # type: ignore[arg-type]
+    assert answer.text == "Call [PHONE]."
+
+
+class BrokenModel:
+    def __init__(self, code: ErrorCode) -> None:
+        self.code = code
+
+    def complete(self, request: object, output: object, budget: Budget) -> tuple[Answer, Usage]:
+        raise CapabilityError(self.code, "model answer did not match Answer: an unknown answer has no citations")
+
+
+def test_a_badly_formed_model_reply_becomes_a_safe_ask_again_not_an_error() -> None:
+    """F-331: one real question (Q34) came back as an error because the model broke the Answer rules."""
+    fact = verified(item())
+    answer = ask(question(), FakeStore([fact]), BrokenModel(ErrorCode.MALFORMED_MODEL_OUTPUT))  # type: ignore[arg-type]
+    assert not answer.known and answer.citations == [] and answer.basis == "none"
+    assert "ask again" in answer.text and answer.ask is not None
+
+
+def test_other_model_failures_are_still_errors() -> None:
+    fact = verified(item())
+    with pytest.raises(CapabilityError):
+        ask(question(), FakeStore([fact]), BrokenModel(ErrorCode.UPSTREAM_ERROR))  # type: ignore[arg-type]

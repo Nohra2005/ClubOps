@@ -282,11 +282,12 @@ Reference documents:
 
 ### T-46 Connect Google Calendar on the backend
 - Owner: tatiana
-- Status: todo
+- Status: review
 - Needs: T-22
 - What: Keep Google sign-in separate from Calendar authorization. Add president-only connect/disconnect and OAuth callback endpoints with state validation, server-side encrypted refresh-token storage and refresh/reconnect handling. Use the private club calendar ID, `calendar.events` and `calendar.acls` scopes. After an approved plan is saved, drain Joey's sync queue to Google and report pending/error/connected status. On cabinet add/remove, use Joey's J-21 reader ACL adapter with retryable failures; never grant writer or owner access. Agree the endpoint response fields with Christophe before changing the UI contract.
 - Done when: synthetic API tests prove unauthorized users cannot connect, unapproved plans never sync, retries do not duplicate events, and cabinet add/remove grants/revokes only reader access; a cabinet-approved local Google test completes after J-01's private calendar ID is supplied.
 - Progress (2026-11-23): first slice built (D-141): approving a plan queues its items and sends them to the club's shared Google calendar through Joey's queue, using the Calendar key in private host settings (`CLUBOPS_CALENDAR_*`); `GET`/`POST /api/calendar/sync` show status and retry. Not yet built: the in-app connect/disconnect and OAuth callback with encrypted token storage, the cabinet add/remove reader grants (J-21), and the deadline-from-mail trigger. Joey can run J-09 live acceptance once the host has the Calendar key.
+- Progress (2026-11-24): second slice (D-155): president-only connect, callback and disconnect with a one-use proof, encrypted key, per-club drain, reconnect state, read-only access on cabinet add/remove with retry, `GET /api/calendar/connection`, `POST /api/calendar/share-cabinet`. Tests use a fake Google. Left: the Calendar screen buttons (Christophe, C-xx, fields in `docs/api.md`) and a live check on the deployed app with the real Google client.
 
 ### T-47 OSA e-mail reaches Review: API and accounts (D-113, D-114)
 - Owner: tatiana
@@ -294,6 +295,7 @@ Reference documents:
 - Needs: J-10, T-39
 - What: The parts that need the API owner or her accounts. Gmail read access for `clubops.agent` (`gmail.readonly`, refresh token only in `.env`). The private OSA sender list (operator data, never the repo). Routes in `app.py`: add/verify an extra sending address, `GET /api/inbox` (cabinet only, own club), `POST /api/inbox/{id}/capture` (one paid model call, triggered by a click). Prompt caching for the fixed capture instructions. Inbox checks are J-22; screens are C-35.
 - Done when: a real forwarded OSA e-mail becomes Review cards for its club through the routes, with synthetic route tests and failure-matrix rows.
+- Progress (2026-11-24): the inbox is connected and fetched inside the app (D-156): operator-only connect/disconnect, encrypted key, `GET /api/inbox/gmail`, `POST /api/inbox/fetch` (free, counts only). Left: Connect and Fetch buttons on the Inbox screen (Christophe), host settings, a live check on the deployed app.
 
 ### T-48 Expiry archive and AUB-wide cards (D-115)
 - Owner: tatiana
@@ -310,6 +312,14 @@ Reference documents:
 - Needs: T-47
 - What: The model's AUB-wide or club-only label cannot be trusted for who sees a card. At fetch time count the distinct addresses on the original To and Cc lines (store the number only). 10 or more makes AUB-wide cards, fewer makes club-only; a rule stays AUB-scope by contract. Unknown counts (Bcc, undisclosed, older notes) fall back to the model's label. The Review card says how many people the e-mail went to. No model cost, no contract change.
 - Done when: tests for the count, the threshold, both overrides, the fallback and an old notes database; F-227 has its row. PR #103 reviewed and merged; then one free fetch refreshes the waiting e-mails so they use the count (the fetch fills in only the number, for the same mail).
+
+### T-50 UI audit fixes: readable text, touch targets, no decorative labels (D-158)
+- Owner: tatiana
+- Status: review
+- Needs: none
+- What: The change is in `web/` (Christophe's folder), so it goes through a PR he reviews. Fix the four main findings of the Impeccable-style UI audit of 25 Nov: no text under 12 px, 44 px touch targets on touch screens, decorative labels above headings removed, a darker keyboard focus ring.
+- Done when: `npm run check` passes in `web/`, and Christophe has looked at the screens on desktop and phone (the browser tests were not run in this session).
+- Progress (2026-11-25): #164 merged. Follow-up: the sidebar footer line "Built for the next cabinet" wrapped at 12 px with wide spacing; now sentence case, no letter spacing.
 
 ## Christophe: frontend
 
@@ -603,6 +613,7 @@ Reference documents:
 ### C-35 Inbox, forwarding and card screens (D-113 to D-116)
 - Owner: christophe
 - Status: doing
+- Progress (2026-11-26): urgent Calendar/Gmail connect and free-fetch UI against merged #160/#161. Publish separately from blocked Azure SSH work; no recreated-container, deployed login or running-version claim.
 - Progress (2026-11-24): audit merged #147/#148 against #128; finish expiry visibility, dated-text hints and approval draft protection. Knowledge expiry editing after approval awaits the API owner extending the published edit contract.
 - Progress (2026-11-19): implemented the exact Inbox and Restore responses published in #95 ce1d514 and #96 8dccd0e: confirmed single-message paid reads, refresh gating after an unconfirmed result, archive filtering and president-only expired club-fact Restore. Local checks pass: 108 units/12 tools/build, 82 synthetic HTTP cases, 4 actual API regressions, root 693 tests/93.06%. These candidate routes remain unmerged; forwarding proof/settings and Review expiry/calendar payloads plus deployed acceptance remain open. Ready for independent review before the 23 November meet-up.
 - Progress (2026-11-18): J-22 guards and Gmail fetching are merged. Building a read-only HTTP Inbox against #95's documented candidate list/skipped routes with synthetic response tests while T-47 remains doing. Paid reads, forwarding proof/settings and Restore writes stay unavailable until their remaining response contracts and acceptance are supplied. Sync main 166f27e; preview boundary F-216 is now F-232 to avoid #95's new row.
@@ -630,6 +641,14 @@ Reference documents:
 - Needs: C-10, C-19
 - What: Replace the permanent handover navigation item with a contextual role introduction and cabinet transition entry. Provide a resumable, skippable walkthrough, approved reference knowledge and outgoing questions. Add explicit role-learning chat prompts using the published text API; do not infer membership changes or invent persistent backend onboarding routes.
 - Done when: desktop/phone and permission/isolation/no-automatic-call regressions pass; guided frontend and reference guide are independently reviewed. Server-stored invitations/progress and structured chatbot context require separately agreed owner contracts.
+
+### C-38 Simplify the web interface
+- Owner: christophe
+- Status: review
+- Progress (2026-11-25): simplified working layout and copy, merged T-50 accessibility fixes, inspected desktop/phone captures; 949 Python tests/93.76%, 145 frontend units, 42 board tools, 50 demo and 64 HTTP/role cases pass. Review/CI pending; no deployment claim.
+- Needs: C-02, C-03, C-12
+- What: Apply Chris's 25 November design direction: remove marketing eyebrows, redundant subtitles and slogans, decorative cards/icons and excessive rounded containers. Use a compact working interface while retaining source, cost, approval, error and role information where actions need it.
+- Done when: desktop/phone workflow and accessibility checks pass, screenshots are reviewed and the scoped UI changes are delivered in small commits. OAuth host/connect work remains C-18/C-35.
 
 ## Joey: calendar, reminders, drafts
 
@@ -775,6 +794,7 @@ Reference documents:
 - Blocked (2026-11-20): synthetic source/citation/unknown-answer tests pass. Tatiana must confirm current app wiring and record the private 42-question run for T-26. No private question set or matching model recordings exist in this checkout; no score is invented.
 - Verified (2026-11-22): inspected the current app route: POST /api/chat/ask still returns the explicit not-switched-on placeholder; the source-gated core is not wired into it. Tatiana owns the authenticated own-club API integration and private 42-question evaluation. Adding a model key alone will not complete J-15.
 - Progress (2026-11-24): wired the cabinet-only app endpoint to chat/ask.py with the signed-in club store; source labels show valid_to or No end date. Both expiry filters remain. Private 42-question evaluation and deployed acceptance remain pending.
+- Progress (2026-11-24, Tatiana): the private 42-question run is recorded in `results/chatbot-evaluation.md` (41 counted: 13 correct, 1 partly, 0 wrong, 0 invented, 11 of 11 correct "not sure", 16 missed because the club facts are not in the store). Deployed acceptance remains pending.
 
 ### J-16 Secret scanning in CI (bonus)
 - Owner: joey

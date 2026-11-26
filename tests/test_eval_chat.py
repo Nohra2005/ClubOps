@@ -9,6 +9,8 @@ from pathlib import Path
 import pytest
 from scripts.eval_chat import main
 
+from clubops.capabilities.runner import CapabilityError
+from clubops.contracts.common import ErrorCode
 from clubops.contracts.knowhow import Answer, AskRequest
 from clubops.evaluation.chat import ChatCase, load_cases, score, table
 from clubops.evaluation.chat_sheet import ask_sheet, read_questions, read_sheet, score_sheet, unmarked
@@ -99,7 +101,7 @@ def test_the_sheet_fills_what_code_can_decide_and_leaves_the_rest_to_a_person(tm
     result = score_sheet(rows)
     assert (result["answered_partly"], result["missed"], result["correct_not_sure"], result["invented"]) == (1, 1, 1, 1)
     assert result["cost_usd"] == Decimal("0.04")
-    assert "| 4 | 0 | 1 | 0 | 1 | 1 | 1 | 1 of 1 | 0.0400 |" in sheet_table(result)
+    assert "| 4 | 0 | 1 | 0 | 1 | 1 | 1 | 1 of 1 | 0 | 0.0400 |" in sheet_table(result)
 
 
 def test_cli_asks_unknown_questions_then_scores_the_sheet(tmp_path: Path, monkeypatch, capsys) -> None:  # type: ignore[no-untyped-def]
@@ -126,7 +128,7 @@ def test_cli_asks_unknown_questions_then_scores_the_sheet(tmp_path: Path, monkey
     assert read_sheet(sheet)[0]["correct"] == "yes"
     monkeypatch.setattr("sys.argv", ["eval_chat.py", "score", "--sheet", str(sheet)])
     main()
-    assert "| 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 of 0 | 0.0000 |" in capsys.readouterr().out
+    assert "| 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 of 0 | 0 | 0.0000 |" in capsys.readouterr().out
 
 
 def test_the_sheet_is_refused_inside_the_repository(tmp_path: Path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
@@ -137,3 +139,98 @@ def test_the_sheet_is_refused_inside_the_repository(tmp_path: Path, monkeypatch)
     )
     with pytest.raises(SystemExit, match="outside the ClubOps folder"):
         main()
+
+
+def test_a_failed_question_is_recorded_and_the_run_goes_on(tmp_path: Path) -> None:
+    """F-320: one cut-off answer stopped the whole paid run and lost every answer already bought."""
+    path = tmp_path / "q.csv"
+    path.write_text(QUESTIONS, encoding="utf-8")
+    good = fake_answers()
+
+    def flaky(text: str) -> object:
+        if text == "Who has the key?":
+            raise CapabilityError(ErrorCode.INVALID_INPUT, "the model's answer was cut off")
+        return good(text)  # type: ignore[operator]
+
+    rows = ask_sheet(read_questions(path), flaky)  # type: ignore[arg-type]
+    failed = next(r for r in rows if r["id"] == "Q3")
+    assert len(rows) == 4 and failed["clubops_known"] == "error" and failed["clubops_answer"].startswith("ERROR:")
+    assert unmarked(rows) == ["Q1"]  # an error needs no marking and is not counted as a right "not sure"
+    rows[0].update(correct="yes", sources_ok="yes")
+    result = score_sheet(rows)
+    assert result["errors"] == 1 and result["correct_not_sure"] == 1 and result["invented"] == 0
+
+
+def test_counts_need_no_marking(tmp_path: Path, monkeypatch, capsys) -> None:  # type: ignore[no-untyped-def]
+    path = tmp_path / "q.csv"
+    path.write_text(QUESTIONS, encoding="utf-8")
+    sheet = tmp_path / "sheet.csv"
+    from clubops.evaluation.chat_sheet import write_sheet
+
+    write_sheet(sheet, ask_sheet(read_questions(path), fake_answers()))  # type: ignore[arg-type]
+    monkeypatch.setattr("sys.argv", ["eval_chat.py", "score", "--sheet", str(sheet), "--counts"])
+    main()
+    out = capsys.readouterr().out
+    assert "expected known: 2 questions; answered 1, said not sure 1, errors 0" in out
+    assert "expected not_sure: 2 questions; answered 1, said not sure 1, errors 0" in out
+
+
+def test_search_check_is_free_and_reports_questions_with_no_facts(tmp_path: Path, monkeypatch, capsys) -> None:  # type: ignore[no-untyped-def]
+    path = tmp_path / "q.csv"
+    path.write_text("q_id,question,expected,answer\nQ1,Xylophone?,not_sure,Not known.\n", encoding="utf-8")
+    monkeypatch.setattr(
+        "sys.argv",
+        ["eval_chat.py", "search", "--cases", str(path), "--as-of", "2026-11-24", "--data-dir", str(tmp_path / "d")],
+    )
+    main()
+    out = capsys.readouterr().out
+    assert "Q1 (not_sure): 0 facts found, 0 from the club" in out and "Questions with no facts found: 1 (Q1)" in out
+
+
+def test_a_test_copy_gets_the_presidents_facts_and_the_real_store_is_untouched(tmp_path: Path) -> None:
+    from clubops.evaluation.eval_store import read_facts, seed_facts
+    from clubops.knowhow.backends import open_club_store_backend
+    from clubops.knowhow.store import KnowHowStore
+    from tests.factories import CLUB
+
+    path = tmp_path / "facts.csv"
+    path.write_text(
+        "fact_id,scope,learned_from_event,statement,source\n"
+        'F1,club?,E1,"Weekly runs are covered by one proposal per semester.",Synthetic\n'
+        'F2,aub,,"The pool is free for all students.",Synthetic\n',
+        encoding="utf-8-sig",
+    )
+    real = KnowHowStore(open_club_store_backend(tmp_path / "real", CLUB))
+    copy = KnowHowStore(open_club_store_backend(tmp_path / "copy", CLUB))
+    assert seed_facts(copy, read_facts(path), CLUB) == 2
+    assert seed_facts(copy, read_facts(path), CLUB) == 0  # running it twice adds nothing
+    found = [i.statement for i in copy.search(CLUB, "Is the pool free?")]
+    assert any("pool is free" in s for s in found)
+    assert real.search(CLUB, "Is the pool free?") == []
+    copy.close()
+    real.close()
+
+
+def test_a_question_can_be_left_out_of_the_count_and_a_fact_left_out_of_the_copy(tmp_path: Path) -> None:
+    from clubops.evaluation.eval_store import read_facts, seed_facts
+    from clubops.knowhow.backends import open_club_store_backend
+    from clubops.knowhow.store import KnowHowStore
+    from tests.factories import CLUB
+
+    path = tmp_path / "q.csv"
+    path.write_text(QUESTIONS, encoding="utf-8")
+    rows = ask_sheet(read_questions(path), fake_answers())  # type: ignore[arg-type]
+    rows[0].update(correct="yes", sources_ok="yes")
+    result = score_sheet(rows, frozenset({"Q3"}))  # Q3 was the invented answer
+    assert result["questions"] == 3 and result["invented"] == 0
+    facts = tmp_path / "facts.csv"
+    facts.write_text(
+        "fact_id,scope,statement,source\n"
+        "F1,aub,The pool is free for all students.,S\n"
+        "F2,aub,Civil Defense is needed.,S\n",
+        encoding="utf-8",
+    )
+    copy = KnowHowStore(open_club_store_backend(tmp_path / "copy", CLUB))
+    assert seed_facts(copy, read_facts(facts), CLUB, skip=frozenset({"F2"})) == 1
+    assert copy.search(CLUB, "Civil Defense") == []
+    copy.close()
