@@ -1,3 +1,4 @@
+import type { TurnoverAction, TurnoverState } from '../turnover/model';
 import {
   readGoogleConnection,
   readGoogleAuthorization,
@@ -58,6 +59,14 @@ export class ApiClient {
         new ApiError('This action is not available yet. Your changes are still on this page.', 501),
       );
     return this.post<T>(`/__ui/${action}`, body);
+  }
+  turnover(): Promise<TurnoverState> {
+    if (this.mode !== 'demo')
+      return Promise.reject(new ApiError('Term activation is not available yet.', 501));
+    return this.request<TurnoverState>('/__ui/turnover');
+  }
+  changeTurnover(action: TurnoverAction): Promise<TurnoverState> {
+    return this.extension<TurnoverState>('turnover', action);
   }
   async me() {
     const value = await this.request<unknown>('/me');

@@ -1,3 +1,5 @@
+import type { TurnoverState } from '../turnover/model';
+
 /** Frontend view models from the UI spec. These do not change the Python contracts. */
 export type Role =
   | 'president'
@@ -69,6 +71,13 @@ export interface Me {
   club: Club;
   counts: { overdue_events: number; review: number; reminders: number };
   demo?: boolean;
+  demo_term?: {
+    id: string;
+    label: string;
+    start_date: string;
+    end_date: string;
+    acknowledged: boolean;
+  };
 }
 export interface Source {
   item_id: string;
@@ -351,6 +360,7 @@ export interface SetupStep {
   rules_count: number;
 }
 export interface Workspace {
+  turnover?: TurnoverState;
   events: EventDetail[];
   review: ReviewCard[];
   knowledge: KnowledgeItem[];

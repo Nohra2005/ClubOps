@@ -1,3 +1,4 @@
+import { applyTurnover, initialTurnover, type TurnoverAction, localDate } from '../turnover/model';
 import { ApiError, type RequestOptions, type Transport } from './client';
 import { isShared } from './review-policy';
 import {
@@ -187,7 +188,26 @@ export function createMockTransport(
       throw new ApiError("ClubOps couldn't finish this. Nothing was saved or sent.", 503);
     let result: unknown;
 
-    if (path === '/me') {
+    if (path === '/__ui/turnover') {
+      const actor = data.members.find((member) => member.role === session.role);
+      if (!actor) throw new ApiError('This demo role has no cabinet member.', 403);
+      if (method === 'GET') {
+        mutateAllowed(true);
+        result = data.turnover ?? initialTurnover();
+      } else {
+        const next = applyTurnover(
+          data.turnover ?? initialTurnover(),
+          data.members,
+          actor,
+          body as unknown as TurnoverAction,
+          localDate(),
+          JSON.stringify([data.events, data.review, data.knowledge, data.members]),
+        );
+        data.turnover = next.state;
+        data.members = next.members;
+        result = next.state;
+      }
+    } else if (path === '/me') {
       const user = data.members.find((m) => m.role === session.role) ?? {
         member_id: `m-demo-${session.role}`,
         name: 'Taylor Quinn',
@@ -209,6 +229,18 @@ export function createMockTransport(
             .flatMap((e) => e.tasks)
             .filter((t) => t.state === 'overdue' || t.state === 'due_today').length,
         },
+        ...(data.turnover?.active &&
+        data.turnover.active.members.some((member) => member.member_id === user.member_id)
+          ? {
+              demo_term: {
+                id: data.turnover.active.id,
+                label: data.turnover.active.label,
+                start_date: data.turnover.active.start_date,
+                end_date: data.turnover.active.end_date,
+                acknowledged: data.turnover.active.acknowledged.includes(user.member_id),
+              },
+            }
+          : {}),
         demo: true,
       } satisfies Me;
     } else if (path === '/events' && method === 'GET') {
