@@ -106,6 +106,7 @@ Before marking C-30 complete:
    ```markdown
    How to assess this project: [rubric, evidence and reproduction](web/GRADING_GUIDE.md).
    ```
+
 2. Owners attach missing results and acceptance records, preserving the conditions
    and denominators. Keep unsupported claims as gaps rather than projected scores.
 3. Run a genuinely fresh review against the submitted revision, using the original

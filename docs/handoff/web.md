@@ -745,3 +745,37 @@ cases pass. Strict metadata, role-tour and rehearsal fixtures now explicitly
 serve the new published GET states; unknown mutations remain rejected. Final
 combined CI is required. The current PR is #167; initial failed CI was the stale
 fixture expectations, not evidence of host configuration or Google acceptance.
+
+
+## 2026-11-26 - Christophe (C-29/C-30 evidence reconciliation)
+
+**Did:** Synced #153 with main 4722838, preserving both shared handoff histories.
+Updated owned architecture/provenance/memory docs, web README and report draft for
+merged Calendar/Gmail APIs and controls, the published chatbot result and the last
+verified Azure candidate 6749fb0. Removed #153's obsolete role-guide addendum so
+the separate #170 turnover redesign owns that document. No backend implementation
+or contract was read or changed; no deployment, membership or credential change.
+
+**Grading:** Prepared web/GRADING_GUIDE.md against the original brief's pages 5-6:
+seven suggested weights, existing evidence, free reproduction commands and gaps.
+The engineering bonus rewards demonstrated practice/impact; the brief does not
+require a fixed number of meetings. C-31 still needs its own team evidence review.
+C-30 is doing against existing interfaces, not complete: T-27/C-22/C-29 acceptance
+and an actual fresh independent review remain open. No new runtime design/failure
+was introduced, so no new D/F identifier was needed.
+
+**Verified:** Required root gates pass on the synced source: Ruff/format 187 files,
+mypy 92, schema/task validation, 949 tests and 93.76% coverage. The reused locked
+environment's uv.lock matches. All 104 local targets/anchors in seven edited guides
+resolve; four web Markdown files pass Prettier. The guide's free replay export
+produces two synthetic cases, zero errors and seven expected columns with both
+ratings blank. No private data or paid provider call. PR-head CI is separate.
+
+**Next / owners:** Tatiana: review/incorporate the linked report sections into T-27
+and link the guide from the root README; reconcile docs/evidence.md and
+docs/rubric-map.md, which are outside Christophe's folders. Joey: retry the actual
+README-only setup when Docker works. C-39 #170 is green but remains a synthetic
+prototype until Tatiana supplies #169's atomic term/cabinet/session contract.
+Signed-in phone/provider acceptance, backup restoration, production telemetry and
+final held-out thresholds remain unverified. Preserve commits and independent
+review under current AGENTS; historical waivers do not prove reviews happened.
