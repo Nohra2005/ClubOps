@@ -179,7 +179,7 @@ test('F-510: known added issues keep their content and assignments and map curre
   const { project, plan } = fixture();
   configure(project);
   for (const number of [128, 129, 169]) {
-    const item = structuredClone(project.items.at(-1));
+    const item = JSON.parse(JSON.stringify(project.items.at(-1)));
     item.id = 'issue-item-' + number;
     Object.assign(item.content, {
       id: 'issue-' + number,
@@ -189,7 +189,7 @@ test('F-510: known added issues keep their content and assignments and map curre
     });
     project.items.push(item);
   }
-  const before = structuredClone(project);
+  const before = JSON.parse(JSON.stringify(project));
   const rows = planNative(project, plan, dates, {});
   assert.deepEqual(
     rows
