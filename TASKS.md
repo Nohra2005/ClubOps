@@ -454,6 +454,7 @@ Reference documents:
 ### C-18 Deploy the backend (was T-25)
 - Owner: christophe
 - Status: doing
+- Progress (2026-11-26 redeploy): at Chris's explicit request, deployed tested PR #168 head 6749fb0 (PR still open) for the two punctuation fixes. All five head CI checks passed. Created seven private SQLite backups and verified every resolved runtime environment value survived container replacement. Public bundle contains the corrected labels; HTTPS login remains 200 and protected status endpoints require sign-in. Live Google/provider acceptance remains with the account owner.
 - Progress (2026-11-26): Azure app replaced with merged main 4722838 (#167, including #163), after four private SQLite backups. Existing host environment patched and container recreated; requested president membership added privately. Login client matches the built frontend. HTTPS login is 200, protected API routes 401 without a session, and served assets include the connection controls. Real phone sign-in, Google consent and cabinet event-planning acceptance remain; do not mark done from these administrative checks.
 - Needs: none
 - What: Put the backend (`uvicorn clubops.api.app:build --factory`) on the same free host as the frontend (Render, D-47), with a persistent disk for `CLUBOPS_DATA_DIR` and the secrets from `.env.example` in the host's settings, never in the repo. Load the rulebook and add the president (`scripts/load_rulebook.py`, `scripts/add_member.py`). Deployment files (`render.yaml`, `Dockerfile`) are yours; ask Tatiana before changing Python code.

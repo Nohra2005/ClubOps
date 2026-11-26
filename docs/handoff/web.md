@@ -765,3 +765,26 @@ project, whereas the observed host uses production.env, compose.yaml and the nam
 clubops-prod project. The prior deployment used protected parameters for secrets,
 not plaintext credentials in script text. Google-console callback verification
 and account-owner live connection acceptance remain as recorded above.
+
+## 2026-11-26 - Christophe (C-18/C-35 requested redeploy)
+
+**Did:** Chris explicitly requested redeployment while #168 remained open.
+After all five checks passed on head 6749fb0, deployed that exact SHA without
+merging or pushing main. Created seven private SQLite backups, built the
+production image and replaced only the app container. Every existing resolved
+runtime environment setting was verified against the new container; no OAuth
+setting, membership, secret or stored connection was changed by this release.
+
+**State:** Actual running image is clubops:6749fb0, revision
+6749fb00ea8efeabeabb682f0786a0b4ef85ea51, healthy. Fresh Azure inspection confirms
+OAuth keys present, matching frontend/server sign-in IDs, dev login disabled and
+secure cookies enabled. Public HTTPS login returns 200; unauthenticated /api/me,
+Calendar connection and Gmail status return 401. Served JS contains the corrected
+host separator and Fetch ellipsis, with the old Working? string absent. Managed
+inspection requests were given a fresh source marker to force new execution.
+The temporary Azure session is closed. This commit adds deployment records only.
+
+**Next:** Tatiana tests her own Calendar/Gmail connections on the live site and
+reviews/merges #168. Do not treat the deployed PR head as already merged into main,
+or these public/host checks as real Google consent, mail fetch or event acceptance.
+No external provider operation was triggered by the redeploy checks.
