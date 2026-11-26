@@ -569,6 +569,7 @@ Reference documents:
 ### C-31 GitHub Projects board and weekly sprints (bonus)
 - Owner: christophe
 - Status: doing
+- Progress (2026-11-26): read-only refresh stopped safely on newly added issue cards #128/#129/#169. Extend the explicit primary-owner map (Christophe/Tatiana/Tatiana), retaining existing assignments and rejecting unknown or foreign cards. Refresh only pinned merged-main task statuses; do not publish unmerged completion claims. D-255/F-510.
 - Live native verification (2026-11-23): one bulk invocation reconciled 93 TASKS cards plus 3 issues, native Status/Assignees/four Monday Iteration weeks and current priority/size estimates; 542 native mutations, zero remaining changes. Existing custom fields, views and content preserved. Receipt: web/board/evidence/native-fields-2026-11-23.json. Weekly topics are linked commit history; meeting dates are owner-reported.
 - Scope restored (2026-11-23, Christophe, D-137): restore C-31 and supersede D-133. Christophe reports four Monday meetings on 2, 9, 16 and 23 November. Reconcile native Status, Assignees and Iteration plus current backlog planning fields in one bulk run. Commit-history summaries are retrospective repository context, not verified minutes or inferred attendance/decisions.
 - Scope decision (2026-11-22, Christophe, D-133): do not pursue the weekly-review/sprint engineering bonus or collect three meeting records. Keep the existing board as an ordinary task tracker; no weekly-review bonus completion is claimed. This supersedes the older requirements and blockers recorded below.

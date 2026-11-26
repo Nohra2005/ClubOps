@@ -174,6 +174,52 @@ test('status configuration retains every existing option ID; iterations preserve
   configure(project);
   assert.equal(configurationChanges(project, dates).length, 0);
 });
+
+test('F-510: known added issues keep their content and assignments and map current state; unknown cards still refuse', () => {
+  const { project, plan } = fixture();
+  configure(project);
+  for (const number of [128, 129, 169]) {
+    const item = structuredClone(project.items.at(-1));
+    item.id = 'issue-item-' + number;
+    Object.assign(item.content, {
+      id: 'issue-' + number,
+      number,
+      state: number === 128 ? 'CLOSED' : 'OPEN',
+      assignees: { nodes: [{ id: 'user-joey' }] },
+    });
+    project.items.push(item);
+  }
+  const before = structuredClone(project);
+  const rows = planNative(project, plan, dates, {});
+  assert.deepEqual(
+    rows
+      .filter((row) => [128, 129, 169].includes(row.issue))
+      .map((row) => [row.issue, row.owner, row.status]),
+    [
+      [128, 'christophe', 'Done'],
+      [129, 'tatiana', 'In progress'],
+      [169, 'tatiana', 'In progress'],
+    ],
+  );
+  const ops = nativeOperations(project, rows);
+  const additions = ops.filter((op) => op.name === 'addAssigneesToAssignable');
+  assert.equal(
+    additions.find((op) => op.input.assignableId === 'issue-169').input.assigneeIds[0],
+    'user-tatiana',
+  );
+  assert.equal(
+    ops.some((op) => /remove|delete/i.test(op.name)),
+    false,
+  );
+  assert.deepEqual(project, before);
+  project.items.at(-1).content.number = 999;
+  assert.throws(() => planNative(project, plan, dates, {}), /Unexpected manual/);
+  project.items.at(-1).content.number = 128;
+  assert.throws(() => planNative(project, plan, dates, {}), /Unexpected manual/);
+  project.items.at(-1).content.number = 169;
+  project.items.at(-1).content.repository.nameWithOwner = 'other/repo';
+  assert.throws(() => planNative(project, plan, dates, {}), /Unexpected manual/);
+});
 test('overlapping or duplicate native iterations refuse before writes', () => {
   const { project } = fixture();
   const f = project.fields.nodes.find((x) => x.name === 'Iteration');
