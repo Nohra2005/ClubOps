@@ -37,19 +37,22 @@ function Connection({ service, onFetched }: { service: GoogleService; onFetched?
   const name = service === 'calendar' ? 'Google Calendar' : 'Gmail inbox';
   const callback = search.get(service === 'calendar' ? 'google' : 'gmail');
   async function connect() {
+    setReceipt('');
     const result = await action.run(() => api.connectGoogle(service));
     if (result.ok && alive.current) window.location.assign(result.value);
   }
   async function disconnect() {
+    setReceipt('');
     const result = await action.run(() => api.disconnectGoogle(service));
     if (!alive.current) return;
     if (result.ok) {
       setDisconnecting(false);
-      setReceipt('Disconnect request completed. Checking status.');
+      setReceipt('Disconnect request completed.');
     }
     connection.reload();
   }
   async function fetchMail() {
+    setReceipt('');
     const result = await action.run(() => api.fetchInbox());
     if (!alive.current) return;
     connection.reload();
@@ -152,7 +155,7 @@ function Connection({ service, onFetched }: { service: GoogleService; onFetched?
       >
         <p>
           {service === 'calendar'
-            ? 'Queued calendar items stay queued. Google access will be cancelled.'
+            ? 'Queued items stay queued. ClubOps will request cancellation of Google access.'
             : 'This disconnects the shared inbox used by the clubs. It does not delete email.'}
         </p>
         <ErrorNotice message={action.error} />

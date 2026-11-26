@@ -150,14 +150,16 @@ export default function Settings() {
               </div>
             </Resource>
           </section>
-          <section className="panel" id="calendar">
-            <div className="panel-header">
-              <div>
-                <h2>Google Calendar</h2>
-                <p>Approved plans become calendar items. ClubOps is the source of truth.</p>
+          <section className={api.mode === 'demo' ? 'panel' : undefined} id="calendar">
+            {api.mode === 'demo' && (
+              <div className="panel-header">
+                <div>
+                  <h2>Google Calendar</h2>
+                  <p>Approved plans become calendar items. ClubOps is the source of truth.</p>
+                </div>
+                <span className="google-calendar-icon">G</span>
               </div>
-              <span className="google-calendar-icon">G</span>
-            </div>
+            )}
             {api.mode === 'http' ? (
               <GoogleConnectionPanel service="calendar" />
             ) : (
