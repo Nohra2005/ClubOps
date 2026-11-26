@@ -131,9 +131,7 @@ export default function PrepareTerm({
           Save and review
         </button>
       </div>
-      <p className="inline-note">
-        The current cabinet stays active until activation. Invitations are not sent by this demo.
-      </p>
+      <p className="inline-note">The current cabinet stays active until activation.</p>
     </form>
   );
 }

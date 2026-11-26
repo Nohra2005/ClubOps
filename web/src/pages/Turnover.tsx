@@ -75,8 +75,8 @@ function DemoTurnover() {
     }
   }
   return (
-    <>
-      <p className="inline-note">This demo updates sample data in this browser.</p>
+    <div className="turnover-flow">
+      <p className="inline-note">Demo: saves in this browser; no invitations are sent.</p>
       <Resource loading={state.loading} error={state.error} retry={state.reload}>
         {value && (
           <>
@@ -133,10 +133,7 @@ function DemoTurnover() {
                       .join(', ') || 'None'}
                     .
                   </p>
-                  <p className="inline-note">
-                    Current advisers stay on the cabinet. No invitation or Google access change is
-                    sent by this demo.
-                  </p>
+                  <p className="inline-note">Current advisers stay on the cabinet.</p>
                   <div className="form-actions">
                     <button
                       className="button"
@@ -287,7 +284,7 @@ function DemoTurnover() {
           </button>
         </div>
       </Modal>
-    </>
+    </div>
   );
 }
 
