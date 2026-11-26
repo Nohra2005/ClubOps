@@ -1,18 +1,16 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { ArrowRight, Check, Download, Printer } from 'lucide-react';
+import { ArrowRight, Download, Printer } from 'lucide-react';
 import { useApp } from '../AppContext';
 import { roleLabels, roles, type Role } from '../api/types';
-import { ErrorNotice, Modal, NotSure, PageHeading, Resource, SourceChip } from '../components/ui';
-import { useAction, useResource } from '../hooks';
-import { downloadText, formatDate } from '../lib';
+import { NotSure, PageHeading, Resource, SourceChip } from '../components/ui';
+import { useResource } from '../hooks';
+import { downloadText } from '../lib';
 
 export default function Handover() {
-  const { api, me, isPresident, notify } = useApp();
+  const { api, me } = useApp();
   const [role, setRole] = useState<Role>(me.role === 'adviser' ? 'president' : me.role);
   const guide = useResource(() => api.handover(role), [api, role]);
-  const action = useAction();
-  const [confirm, setConfirm] = useState(false);
   const exportGuide = () => {
     if (!guide.value) return;
     const text = [
@@ -116,67 +114,10 @@ export default function Handover() {
                   </section>
                 </aside>
               </div>
-              {guide.value.signed_off_at ? (
-                <div className="signed-guide">
-                  <Check size={18} />
-                  <div>
-                    <strong>Signed off by {guide.value.signed_off_by}</strong>
-                    <p>
-                      {formatDate(guide.value.signed_off_at, true)} · This version is confirmed by
-                      the outgoing cabinet.
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                isPresident &&
-                api.mode === 'demo' && (
-                  <div className="handover-signoff">
-                    <div>
-                      <strong>Ready to pass it on?</strong>
-                      <p>Check the guide and its open questions before signing off this version.</p>
-                    </div>
-                    <button className="button primary" onClick={() => setConfirm(true)}>
-                      Sign off handover
-                    </button>
-                  </div>
-                )
-              )}
             </>
           )}
         </Resource>
-        {isPresident && api.mode === 'http' && (
-          <p className="inline-note">
-            Handover sign-off is not available here yet. You can still read and download the sourced
-            guide.
-          </p>
-        )}
       </section>
-      <Modal open={confirm} title="Sign off this handover?" onClose={() => setConfirm(false)}>
-        <p>
-          You are confirming the current {roleLabels[role].toLowerCase()} guide, including its
-          sources and open gaps. Changed knowledge will need a fresh sign-off.
-        </p>
-        <ErrorNotice message={action.error} />
-        <div className="form-actions">
-          <button
-            className="button primary"
-            disabled={action.pending}
-            onClick={async () => {
-              const result = await action.run(() => api.signOff(role));
-              if (result.ok) {
-                setConfirm(false);
-                guide.reload();
-                notify('This handover version is signed off.');
-              }
-            }}
-          >
-            {action.pending ? 'Signing…' : 'Confirm sign-off'}
-          </button>
-          <button className="button" onClick={() => setConfirm(false)}>
-            Cancel
-          </button>
-        </div>
-      </Modal>
     </>
   );
 }
