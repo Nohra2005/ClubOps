@@ -92,21 +92,36 @@ test('turnover replaces the cabinet once, preserves history and introduces each 
   await page.getByRole('link', { name: 'Open workspace', exact: true }).click();
   const arrival = page.getByRole('region', { name: 'Your new cabinet term' });
   await expect(arrival).toContainText('Example next term');
-  await expect(arrival).toContainText('president');
+  await expect(arrival).toContainText(/president/i);
   await expect(page.locator('.event-card').first()).toBeVisible();
+  await expect(
+    arrival
+      .getByRole('region', { name: 'Inherited work' })
+      .getByRole('link', { name: 'Sunset campus run', exact: true }),
+  ).toBeVisible();
+  await expect(
+    arrival
+      .getByRole('region', { name: 'Approved role references' })
+      .locator('.source-chip')
+      .first(),
+  ).toBeVisible();
+  expect(
+    (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
+      .violations,
+  ).toEqual([]);
   await page.screenshot({
     path: `../../c39-visual/arrival-${testInfo.project.name}.png`,
     fullPage: true,
   });
-  await arrival.getByRole('button', { name: 'Start this term', exact: true }).click();
+  await arrival.getByRole('button', { name: 'Continue to workspace', exact: true }).click();
   await expect(arrival).toHaveCount(0);
   await page.reload();
   await expect(arrival).toHaveCount(0);
   await page.locator('.user-menu > summary').click();
   await page.getByLabel('Preview role').selectOption('treasurer');
   await expect(arrival).toBeVisible();
-  await expect(arrival).toContainText('treasurer');
-  await arrival.getByRole('button', { name: 'Start this term', exact: true }).click();
+  await expect(arrival).toContainText(/treasurer/i);
+  await arrival.getByRole('button', { name: 'Continue to workspace', exact: true }).click();
   await expect(arrival).toHaveCount(0);
   if (!(await page.getByLabel('Preview role').isVisible()))
     await page.locator('.user-menu > summary').click();
@@ -116,6 +131,9 @@ test('turnover replaces the cabinet once, preserves history and introduces each 
   await expect(
     page.locator('.cabinet-row').getByText('Jordan Example', { exact: true }),
   ).toBeVisible();
+  await page.goto('/knowledge');
+  await page.getByRole('link', { name: 'Role references', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Role reference', exact: true })).toBeVisible();
   await page.goto('/chat');
   await expect(page.getByText(/Help me learn my/)).toHaveCount(0);
   await expect(page.getByText('See the context included with my question')).toHaveCount(0);
@@ -180,4 +198,42 @@ test('denied browser persistence leaves the sample turnover usable in this tab',
   await expect(page.locator('.toast[role="status"]')).toContainText(
     'Changes stay in this tab only',
   );
+});
+
+test('F-509: failed handover reads cannot claim empty work or acknowledge the incoming officer', async ({
+  page,
+}) => {
+  await prepare(page);
+  await ready(page);
+  await confirm(page);
+  await expect(
+    page.getByRole('heading', { name: 'Active term: Example next term', exact: true }),
+  ).toBeVisible();
+  await page.goto('/events?scenario=offline');
+  const arrival = page.getByRole('region', { name: 'Your new cabinet term' });
+  await expect(arrival.getByRole('alert')).toHaveCount(2);
+  await expect(
+    arrival.getByText('No active events to carry forward.', { exact: true }),
+  ).toHaveCount(0);
+  await expect(arrival.getByText('No approved role references yet.', { exact: true })).toHaveCount(
+    0,
+  );
+  await arrival.getByRole('button', { name: 'Continue to workspace' }).click();
+  await expect(arrival.getByRole('alert')).toHaveCount(3);
+  const state = await page.evaluate(
+    () => JSON.parse(localStorage.getItem('clubops.demo.workspace.v1.running-club')!).turnover,
+  );
+  expect(state.active.acknowledged).toEqual([]);
+  await page.goto('/events');
+  await expect(
+    arrival
+      .getByRole('region', { name: 'Approved role references' })
+      .locator('.source-chip')
+      .first(),
+  ).toBeVisible();
+  await arrival.getByRole('link', { name: 'Demo role template', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Demo role template', exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('blockquote')).toContainText('Synthetic role checklist');
 });
