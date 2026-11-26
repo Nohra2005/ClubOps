@@ -12,6 +12,16 @@ test('HTTP C-35 only lists documented metadata and keeps unpublished writes unav
     const path = new URL(route.request().url()).pathname;
     if (!path.startsWith('/api/')) return route.fallback();
     if (path === '/api/me') return route.fallback();
+    if (path === '/api/inbox/gmail' || path === '/api/calendar/connection')
+      return route.fulfill({
+        json: {
+          state: 'not_set_up',
+          source: null,
+          can_connect: false,
+          can_manage: false,
+          access_changes_waiting: 0,
+        },
+      });
     if (path === '/api/inbox' || path === '/api/inbox/skipped') {
       expect(route.request().method()).toBe('GET');
       return route.fulfill({ json: [] });
@@ -36,6 +46,16 @@ test('HTTP C-35 only lists documented metadata and keeps unpublished writes unav
 });
 
 test.beforeEach(async ({ page }) => {
+  await page.route('**/api/calendar/connection', (route) =>
+    route.fulfill({
+      json: { state: 'not_set_up', source: null, can_connect: false, access_changes_waiting: 0 },
+    }),
+  );
+  await page.route('**/api/inbox/gmail', (route) =>
+    route.fulfill({
+      json: { state: 'not_set_up', source: null, can_connect: false, can_manage: false },
+    }),
+  );
   const workspace = createWorkspace('running-club');
   await page.route('**/api/me', (route) =>
     route.fulfill({
@@ -818,6 +838,10 @@ test('HTTP inbox renders metadata and skip reasons without bodies, automatic wri
   await page.route('**/api/inbox**', (route) => {
     const path = new URL(route.request().url()).pathname;
     calls.push(`${route.request().method()} ${path}`);
+    if (path === '/api/inbox/gmail')
+      return route.fulfill({
+        json: { state: 'not_set_up', source: null, can_connect: false, can_manage: false },
+      });
     return route.fulfill({
       json:
         path === '/api/inbox'
@@ -853,9 +877,11 @@ test('HTTP inbox renders metadata and skip reasons without bodies, automatic wri
     page.getByRole('button', { name: 'Read this · costs money', exact: true }),
   ).toBeVisible();
   await expect(page.getByRole('button', { name: 'Confirm paid read', exact: true })).toHaveCount(0);
-  expect(calls.every((call) => ['GET /api/inbox', 'GET /api/inbox/skipped'].includes(call))).toBe(
-    true,
-  );
+  expect(
+    calls.every((call) =>
+      ['GET /api/inbox', 'GET /api/inbox/skipped', 'GET /api/inbox/gmail'].includes(call),
+    ),
+  ).toBe(true);
   expect(
     await page.evaluate(() =>
       JSON.stringify([Object.entries(localStorage), Object.entries(sessionStorage)]),
@@ -941,7 +967,7 @@ test('HTTP inbox makes unavailable candidate routes visible without demo fallbac
     route.fulfill({ status: 501, json: { detail: 'Not installed' } }),
   );
   await page.goto('/inbox');
-  await expect(page.getByRole('alert')).toHaveCount(2);
+  await expect(page.getByRole('alert')).toHaveCount(3);
   await expect(page.getByRole('alert').first()).toContainText('not connected to the server yet');
   await expect(page.getByText('No waiting email.', { exact: true })).toHaveCount(0);
   await expect(page.getByText('No skipped email.', { exact: true })).toHaveCount(0);
