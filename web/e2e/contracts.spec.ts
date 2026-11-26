@@ -954,7 +954,7 @@ test('HTTP inbox rejects an ambiguous response and shows server denial without f
       : route.fulfill({ status: 403, json: { detail: 'PRIVATE_ERROR_CANARY' } }),
   );
   await page.goto('/inbox');
-  await expect(page.getByRole('alert')).toHaveCount(2);
+  await expect(page.getByRole('alert')).toHaveCount(3);
   await expect(page.getByRole('main')).not.toContainText('PRIVATE_');
   await expect(page.getByText('No waiting email.', { exact: true })).toHaveCount(0);
   await expect(page.getByText('No skipped email.', { exact: true })).toHaveCount(0);

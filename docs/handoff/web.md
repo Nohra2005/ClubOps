@@ -689,3 +689,15 @@ recreate the intended container and verify its image/version plus actual phone
 Google login/president /me. The returned fetch `refreshed` field is not displayed:
 docs/api.md does not specify its type/meaning; queued/skipped/not_for_a_club counts
 are displayed without guessing it. Tatiana can clarify that nonblocking detail.
+
+
+### C-35 regression follow-up
+
+Root gates pass: 949 tests, 93.76% coverage; Ruff/format 187 files, mypy 92,
+schemas/tasks. Web checks pass 151 units and 42 board-tool tests. Broad HTTP
+run passes 116 cases; the two stale denial assertions were corrected from two
+to three independent unavailable resources (Gmail status is new) and both rerun
+cases pass. Strict metadata, role-tour and rehearsal fixtures now explicitly
+serve the new published GET states; unknown mutations remain rejected. Final
+combined CI is required. The current PR is #167; initial failed CI was the stale
+fixture expectations, not evidence of host configuration or Google acceptance.
