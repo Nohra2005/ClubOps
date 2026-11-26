@@ -650,7 +650,7 @@ Reference documents:
 ### C-39 Cabinet turnover by term
 - Owner: christophe
 - Status: doing
-- Progress (2026-11-26): demo lifecycle and president Settings entry implemented; recurring tours, raw question prefixes and reference sign-off removed. Persistent real activation is waiting on Tatiana?s contract request #169; HTTP cannot infer term authority from local state. Validation and UI review in progress.
+- Progress (2026-11-26): demo lifecycle and president Settings entry implemented; recurring tours, raw question prefixes and reference sign-off removed. Persistent real activation is waiting on Tatiana?s contract request #169; HTTP cannot infer term authority from local state. Verified 949 Python tests, 158 web units/42 board tools, 58 demo, 116 HTTP and 8 real local API cases; desktop/phone captures reviewed. Frontend ready for review; C-39 stays doing until the persistent live transition is integrated.
 - Needs: C-19, C-37
 - What: Replace recurring role-tour and raw chat-prompt controls with president-led term preparation, cabinet review and explicit one-time activation. Preserve work and sourced knowledge; introduce incoming officers once per active term. Build the complete synthetic demo lifecycle and remove obsolete entry points in HTTP mode. Ask Tatiana for a persistent, atomic server transition contract before enabling real activation or changing authorization.
 - Done when: lifecycle, stale/double activation, isolation, role and no-automatic-call tests pass; desktop/phone flows are reviewed; production integration gaps are explicit and the backend owner has a concrete contract request.

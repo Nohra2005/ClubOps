@@ -701,3 +701,35 @@ cases pass. Strict metadata, role-tour and rehearsal fixtures now explicitly
 serve the new published GET states; unknown mutations remain rejected. Final
 combined CI is required. The current PR is #167; initial failed CI was the stale
 fixture expectations, not evidence of host configuration or Google acceptance.
+
+## 2026-11-26 - Christophe (C-39 term-based cabinet turnover)
+
+**Did:** Replaced the recurring role tour, account-menu entry, raw Ask prefix
+and guide sign-off with a president Settings turnover flow: draft dates/officers,
+review inherited work and vacancies, confirm activation, archive the former
+cabinet and persist the sample active term. Draft edits and changed work invalidate
+review; stale/double activation fails before save. Incoming officers acknowledge
+once per identity/term; legacy learning preferences no longer affect chat. Sourced
+role references and exports remain. Changes are split into focused commits.
+Reused #168's two punctuation fixes so this branch does not regress them.
+
+**State:** Root gates pass: 949 tests, 93.76% coverage; Ruff/format 187 files,
+mypy 92, schemas/tasks. Frontend quality/build passes: 158 units and 42 board
+checks. Final broad browser runs pass 58 demo/workflow/Axe, 116 HTTP contract
+cases and 8 real local API/cookie/SQLite cases with a scripted model. Reviewed
+synthetic prepare/review/arrival captures on desktop/phone. Local test config
+allows only this worktree plus shared dependency files and separates artifacts;
+no missing-font workaround or weakened test assertions. Early harness failures
+were fixed (an overbroad request matcher, parallel artifact collision and an
+ambiguous label locator); they are not reported as product failures or passes.
+D-253/F-506-F-508; old F-269-F-271 now reference the replacement safeguards.
+
+**Next / owner boundary:** Tatiana's contract request is #169, detailed in
+web/CABINET_TURNOVER.md. The current API cannot atomically switch term, cabinet
+and sessions or provide server-confirmed term context to the chatbot. HTTP shows
+activation unavailable and sends no invented route or sequential membership
+writes. The complete lifecycle is synthetic and browser-persistent only; it is
+not live identity transfer, server durability, invitations, Google access changes
+or proven model tutoring. No backend-owned implementation or contract was read
+or changed. C-39 remains doing for that integration; frontend PR is reviewable.
+This work does not deploy to Azure or replace frozen T-33 outcome claims.
