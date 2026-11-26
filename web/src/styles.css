@@ -4174,6 +4174,28 @@ h1 {
 .term-arrival {
   margin-bottom: 24px;
 }
+.incoming-brief-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 20px 0;
+}
+.incoming-brief-grid > section {
+  min-width: 0;
+}
+.incoming-reference {
+  margin: 16px 0;
+  overflow-wrap: anywhere;
+}
+.incoming-brief-grid .turnover-work li {
+  flex-direction: column;
+  gap: 6px;
+}
+@media (max-width: 900px) {
+  .incoming-brief-grid {
+    grid-template-columns: 1fr;
+  }
+}
 .active-term-label {
   display: block;
   color: var(--muted);

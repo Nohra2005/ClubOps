@@ -42,7 +42,6 @@ import Login from './pages/Login';
 import { storage } from './api';
 import { PageHeading } from './components/ui';
 import Turnover from './pages/Turnover';
-import TermArrival from './turnover/TermArrival';
 
 const navigation = [
   { to: '/chat', label: 'Chat', icon: MessageCircle },
@@ -247,7 +246,6 @@ function Shell() {
           className="page"
           key={`${api.mode}:${me.club.id}:${me.user.member_id}:${me.role}`}
         >
-          {location.pathname === '/events' && <TermArrival />}
           <Outlet />
         </main>
       </div>
