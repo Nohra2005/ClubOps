@@ -1,6 +1,6 @@
 # Knowledge base and working memory
 
-Updated 24 November 2026 against main `eae20c5` and the published API/design decisions. The memory model separates proposed knowledge, verified knowledge and event/run working state. Public interfaces are in `src/clubops/contracts/`; availability is in `docs/api.md`, with the merged #87 setup integration explained in [CLUB_SETUP.md](../web/CLUB_SETUP.md).
+Updated 26 November 2026 against main `4722838` and the published API/design decisions. The memory model separates proposed knowledge, verified knowledge and event/run working state. Public interfaces are in `src/clubops/contracts/`; availability is in `docs/api.md`, with the merged #87 setup integration explained in [CLUB_SETUP.md](../web/CLUB_SETUP.md).
 
 ## Stores, scope and lifetime
 
@@ -50,6 +50,21 @@ Know-how kinds include procedures, lessons, relationships, gotchas, decisions, i
 
 Production Google identity is matched to the cabinet list, with an HttpOnly session cookie. Session club/role authorizes reads and decisions. Provider keys remain server-side. Local Compose has a separate explicit development target and volume-backed random signing secret; the default production image rejects local-login builds and insecure development cookie settings.
 
+Signing in does not also connect Google Calendar or the shared Gmail inbox.
+The merged #160/#161 APIs and #167 controls expose separate connection states:
+presidents manage their club calendar, operators manage the Gmail connection and
+cabinet members can Fetch without starting the paid model read. Browser callback
+messages are notices; the status GET is the source for connection state. Encrypted
+refresh credentials stay in private server storage (D-155/D-156), outside knowledge
+and metadata reports. Neither Google connection changes a member's ClubOps role.
+
+Cabinet turnover must eventually update server term, membership and session context
+atomically. Open [#170](https://github.com/Nohra2005/ClubOps/pull/170) demonstrates
+the proposed once-per-term flow and incoming brief with synthetic local state;
+it is not in this main baseline. The server contract remains with Tatiana in
+[#169](https://github.com/Nohra2005/ClubOps/issues/169). Browser acknowledgements
+cannot activate a production cabinet or change what the live chatbot remembers.
+
 ## Known limits
 
 Missing model-token/latency/retry records appear as unavailable, not zero. The optional
@@ -75,6 +90,10 @@ and unsaved metadata protection; it merged as 62d1787 after all five checks pass
 
 The learning quality sheet (C-27, D-87) and chatbot quality sheet (D-152, #151)
 are human-marked private artifacts. Their offline score commands count ratings;
-exact text matching is not evidence of semantic answer correctness. The chatbot
-runner prepares 42 private questions; the presence of the tool does not mean the
-private evaluation or its ratings are complete.
+exact text matching is not evidence of semantic answer correctness. The published
+[chatbot evaluation](../results/chatbot-evaluation.md) reports 41 scored questions
+from the 42-question set, excluding Q18, with one president marking one model run.
+It used a separate evaluation store enriched with president-stated facts, not the
+live club store. Its 13 correct, one partly correct and 16 missed answerable
+questions show both useful answers and limited coverage under those conditions;
+they do not establish universal correctness or an evaluated turnover tutor.

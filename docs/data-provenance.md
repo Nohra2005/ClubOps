@@ -1,6 +1,6 @@
 # Data provenance
 
-Updated 24 November 2026 against merged source-policy decisions D-138/D-150/D-151/D-152. Sources must be public, authorized or synthetic. A source's existence is not evidence that consent, a pilot or an evaluation has happened.
+Updated 26 November 2026 against main `4722838` and source/credential decisions D-138/D-150/D-151/D-152/D-155/D-156. Sources must be public, authorized or synthetic. A source's existence is not evidence that consent, a pilot or an evaluation has happened.
 
 ## Source inventory
 
@@ -34,6 +34,23 @@ The redaction component hides phone numbers, AUB IDs, emails and links before mo
 - Interview/chat/document facts wait in Review. Under the merged trusted-mail exception (D-138, narrowed by D-151), source checks and plain code may apply a clean new OSA fact after the explicit paid read; updates/merges, contradictions and flagged mail still wait for a person. This exception is not consent to ingest arbitrary material or proof of background fetching. Applied changes retain Edit/Undo history.
 - Retention and source deletion are operational responsibilities, not an implemented automatic purge. Do not claim that all raw sources have already been deleted, or that traces expire after a fixed interval, without an actual job and evidence. Private evaluation recordings may need to remain available for reproducibility under their authorization.
 - A volume is persistence, not backup/recovery evidence. Keep private SQLite backups outside git and verify restoration before a production recovery claim.
+
+Google sign-in, Calendar and Gmail use separate credential purposes. The public
+sign-in client ID may be compiled into the frontend and must match the server;
+Calendar/Gmail client secrets, refresh credentials and the session secret remain
+private server settings. The published connection status contains no credential,
+mailbox address or calendar ID. D-155/D-156 specify encrypted app refresh storage
+and role-checked OAuth callbacks. Connecting Gmail authorizes the read-only scope;
+fetching still checks cabinet/OSA provenance and does not itself start a model read.
+Calendar connection does not by itself authorize sharing with every cabinet member.
+
+The 26 November [host receipt](https://github.com/Nohra2005/ClubOps/pull/168#issuecomment-7189560351)
+records configuration updates without exposing values, container recreation and
+private SQLite backups. Existing host settings were retained. Those backups have
+not been restored in an acceptance test. Downloaded OAuth JSON files were deleted
+after configuration verification; this does not prove erasure from external
+messages, downloads history, cloud audit logs or backups. Do not copy credentials
+or raw host command output into this repository.
 
 The learner's debugging log is private runtime data, separate from the metadata-only
 report sink. D-99 enables it by default in the data directory for diagnosing failed

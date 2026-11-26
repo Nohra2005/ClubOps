@@ -550,6 +550,7 @@ Reference documents:
 ### C-29 Keep the docs true (was T-31)
 - Owner: christophe
 - Status: doing
+- Progress (2026-11-26): synced #153 with main 4722838, retaining both shared handoff histories. Refresh owned docs/report against merged Google connection APIs/controls, the published chatbot result and last verified hosted image 6749fb0. Keep open #170 turnover distinct from live server authority; fresh README-only success and report incorporation remain open.
 - Progress (2026-11-24): reconcile owned architecture/provenance/memory documentation with merged trusted-mail exceptions, override review, dated chat sources and human-marked chatbot evaluation. Keep backend API documentation ownership and live acceptance limits explicit.
 - Progress (2026-11-23): synced sourced audience policy, retained actual setup documentation and restored weekly-practice reporting per Christophe. Four Monday dates are owner-reported; linked repository summaries are not asserted meeting decisions. Web checks (137 units/12 tools), actual setup/API 8/8 and updated-main root gates pass; existing real acceptance gaps remain open.
 - Progress (2026-11-22): synced reviewed session frontend and locked FastAPI/Ruff updates; report now cites merged session validation against main 60d7027; 137 units and eight actual local API/setup cases pass with the updated FastAPI. Fresh README-only success, report incorporation and deployed acceptance remain open.
