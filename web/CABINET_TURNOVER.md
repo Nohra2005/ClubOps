@@ -10,7 +10,9 @@ again. Activation is a single transition, protected against stale or duplicate
 submissions. Previous terms remain history.
 
 Incoming officers receive one short introduction tied to their new term and
-identity, with links to their inherited work and sourced role reference. Their
+identity. The brief displays open events and sourced entries from the existing
+role reference, sharing the Events page read and making no model call. The full
+reference stays accessible through Knowledge after the brief is dismissed. Their
 acknowledgment is not proof of training or agreement with every fact. Daily chat
 has no recurring beginner switch, raw prompt preview or invisible question prefix.
 Existing approved knowledge and its validity dates survive turnover. Tasks keep

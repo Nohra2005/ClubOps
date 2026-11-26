@@ -733,3 +733,29 @@ not live identity transfer, server durability, invitations, Google access change
 or proven model tutoring. No backend-owned implementation or contract was read
 or changed. C-39 remains doing for that integration; frontend PR is reviewable.
 This work does not deploy to Azure or replace frozen T-33 outcome claims.
+
+## 2026-11-26 - Christophe (C-39 sourced incoming brief)
+
+**Did:** Replaced the generic new-term greeting with inherited open events,
+unfinished-task counts and up to two sourced entries from the session role's
+existing handover view. Events shares its read result with the brief; opening it
+makes no model call. Moved it below the Events heading, renamed acknowledgment to
+Continue to workspace and retained full references under Knowledge after dismissal.
+Independent read errors cannot claim empty work/reference data; failed acknowledgment
+keeps the introduction visible. Fixed literal question-mark punctuation in owned
+metadata/docs. The optional C-39 demo appendix is separate from the five-minute
+recording and labels the current browser-only boundary. D-254/F-509.
+
+**State:** Root gates pass: 949 tests, 93.76% coverage, Ruff/format 187 files,
+mypy 92, schemas/tasks. Frontend quality/build passes 158 units and 42 board tools.
+Fourteen targeted demo/reference/Knowledge cases plus six HTTP boundary cases pass
+on desktop/phone, including source excerpt links, per-officer acknowledgment,
+read failure versus empty data, failed acknowledgment and full-page Axe scans.
+New desktop/phone incoming-brief captures were inspected with fonts available.
+The prior #170 head had all five CI checks green; the new head needs fresh CI.
+Earlier broad 58/116/8 runs remain historical, not claimed as rerun this session.
+
+**Next:** Independent review of #170 and Tatiana's term/membership/session contract
+in #169. That issue has no owner reply yet. Real activation stays unavailable;
+no live account, host environment, deployment, external provider or model was
+changed in this session. C-39 remains doing for persistent live integration.
