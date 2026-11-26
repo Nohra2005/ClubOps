@@ -1,3 +1,4 @@
+import GoogleConnectionPanel from '../components/GoogleConnectionPanel';
 import { useRef, useState } from 'react';
 import { Link } from 'react-router';
 import {
@@ -149,34 +150,40 @@ export default function Settings() {
               </div>
             </Resource>
           </section>
-          <section className="panel" id="calendar">
-            <div className="panel-header">
-              <div>
-                <h2>Google Calendar</h2>
-                <p>Approved plans become calendar items. ClubOps is the source of truth.</p>
-              </div>
-              <span className="google-calendar-icon">G</span>
-            </div>
-            <Resource loading={calendar.loading} error={calendar.error} retry={calendar.reload}>
-              <div className="connection-row">
+          <section className={api.mode === 'demo' ? 'panel' : undefined} id="calendar">
+            {api.mode === 'demo' && (
+              <div className="panel-header">
                 <div>
-                  <StatusBadge status={calendar.value?.connected ? 'current' : 'draft'} />
-                  <p>
-                    {calendar.value?.connected
-                      ? api.mode === 'demo'
-                        ? 'Demo connection enabled. No Google account is connected.'
-                        : 'Your club calendar is connected.'
-                      : 'Connect the shared club calendar to deliver reminders.'}
-                  </p>
+                  <h2>Google Calendar</h2>
+                  <p>Approved plans become calendar items. ClubOps is the source of truth.</p>
                 </div>
-                <a className="text-button" href="#forwarding">
-                  Check connection setup →
-                </a>
+                <span className="google-calendar-icon">G</span>
               </div>
-              <Link className="text-button" to="/calendar">
-                View club calendar <ArrowUpRight size={12} />
-              </Link>
-            </Resource>
+            )}
+            {api.mode === 'http' ? (
+              <GoogleConnectionPanel service="calendar" />
+            ) : (
+              <Resource loading={calendar.loading} error={calendar.error} retry={calendar.reload}>
+                <div className="connection-row">
+                  <div>
+                    <StatusBadge status={calendar.value?.connected ? 'current' : 'draft'} />
+                    <p>
+                      {calendar.value?.connected
+                        ? api.mode === 'demo'
+                          ? 'Demo connection enabled. No Google account is connected.'
+                          : 'Your club calendar is connected.'
+                        : 'Connect the shared club calendar to deliver reminders.'}
+                    </p>
+                  </div>
+                  <a className="text-button" href="#forwarding">
+                    Check connection setup →
+                  </a>
+                </div>
+                <Link className="text-button" to="/calendar">
+                  View club calendar <ArrowUpRight size={12} />
+                </Link>
+              </Resource>
+            )}
           </section>
           <ForwardingPanel />
           <section className="panel" id="inbox">

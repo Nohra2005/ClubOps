@@ -1,3 +1,9 @@
+import {
+  readGoogleConnection,
+  readGoogleAuthorization,
+  readInboxFetch,
+  type GoogleService,
+} from './google-connections';
 import type {
   AgentRun,
   CalendarData,
@@ -31,7 +37,7 @@ export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
   signal?: AbortSignal;
-  publicErrorDetail?: 'restore';
+  publicErrorDetail?: 'restore' | 'inbox-fetch';
 }
 export type Transport = (path: string, options?: RequestOptions) => Promise<unknown>;
 
@@ -75,6 +81,38 @@ export class ApiClient {
   }
   events() {
     return this.request<EventSummary[]>('/events');
+  }
+  async googleConnection(service: GoogleService) {
+    return readGoogleConnection(
+      await this.request<unknown>(service === 'calendar' ? '/calendar/connection' : '/inbox/gmail'),
+      service,
+    );
+  }
+  async connectGoogle(service: GoogleService) {
+    return readGoogleAuthorization(
+      await this.post<unknown>(
+        service === 'calendar' ? '/calendar/connect' : '/inbox/gmail/connect',
+      ),
+    );
+  }
+  async disconnectGoogle(service: GoogleService) {
+    const value = await this.request<unknown>(
+      service === 'calendar' ? '/calendar/connect' : '/inbox/gmail/connect',
+      { method: 'DELETE' },
+    );
+    if (value !== undefined)
+      throw new ApiError(
+        'Disconnect result was not confirmed. Refresh status before trying again.',
+        502,
+      );
+  }
+  async fetchInbox() {
+    return readInboxFetch(
+      await this.request<unknown>('/inbox/fetch', {
+        method: 'POST',
+        publicErrorDetail: 'inbox-fetch',
+      }),
+    );
   }
   async inbox() {
     if (this.mode !== 'http')
@@ -304,8 +342,11 @@ export function httpTransport(base = '/api'): Transport {
       if (!response.ok) {
         let explanation: string | undefined;
         if (
-          options.publicErrorDetail === 'restore' &&
-          [403, 404, 409, 422].includes(response.status) &&
+          ((options.publicErrorDetail === 'restore' &&
+            [403, 404, 409, 422].includes(response.status)) ||
+            (options.publicErrorDetail === 'inbox-fetch' &&
+              path === '/inbox/fetch' &&
+              response.status === 409)) &&
           response.headers.get('content-type')?.includes('application/json')
         ) {
           try {

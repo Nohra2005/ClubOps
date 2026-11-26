@@ -261,6 +261,14 @@ export class RehearsalScenario {
       if (name === `/runs/${RUN_ID}`) return ok(this.run(false));
       if (name === `/runs/${LIMIT_ID}`) return ok(this.run(true));
       if (name === '/cabinet') return ok([this.me().user]);
+      if (name === '/calendar/connection' || name === '/inbox/gmail')
+        return ok({
+          state: 'not_set_up',
+          source: null,
+          can_connect: false,
+          can_manage: false,
+          access_changes_waiting: 0,
+        });
       if (name === '/calendar') return ok({ items: [], connected: false });
       if (name === '/knowledge') return ok(this.uploaded ? [this.document()] : []);
       if (name === '/review')

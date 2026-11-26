@@ -1,3 +1,4 @@
+import GoogleConnectionPanel from '../components/GoogleConnectionPanel';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useApp } from '../AppContext';
@@ -68,6 +69,13 @@ function HttpInbox() {
   }
   return (
     <>
+      <GoogleConnectionPanel
+        service="gmail"
+        onFetched={() => {
+          waiting.reload();
+          skipped.reload();
+        }}
+      />
       <p className="notice">
         Listing and refreshing metadata are free. An AI read starts only after a separate
         confirmation and may cost money. Forwarding changes are not connected here yet.

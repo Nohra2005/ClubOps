@@ -4,6 +4,7 @@ export default defineConfig({
   testDir: './e2e',
   testIgnore: [
     'contracts.spec.ts',
+    'google-connections.spec.ts',
     'role-learning.spec.ts',
     'session-http.spec.ts',
     'inbox-actions.spec.ts',

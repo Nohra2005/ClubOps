@@ -658,3 +658,46 @@ Inspected synthetic desktop/phone Events, sign-in, Review, Knowledge and Chat
 captures; these are local artifacts, not deployed or real-provider acceptance.
 One final draft icon/404 copy polish is checked by web quality gates. Earlier
 interrupted/HMR runs are not reported as successful checks. C-38 is review.
+
+
+## 2026-11-26 - Christophe (C-35 urgent Google connection controls)
+
+**Did:** Per Chris's urgent request, built the #160/#161 frontend separately
+from blocked SSH. Calendar and Settings use the connection status and president
+Connect/Disconnect. Inbox uses operator status/Connect/Disconnect and cabinet
+free Fetch, counts-only feedback, fresh lists and a scoped plain 409. Callback
+messages do not establish a connection; Google auth URLs are narrowly validated.
+No connection/fetch controls for advisers; opening pages makes no mutation.
+Disconnect requires explicit confirmation. D-252/F-504/F-505.
+
+**State:** Ten new synthetic desktop/phone HTTP cases pass, including Google
+navigation interception, all states, role controls, callbacks, cancel/confirm,
+fetch/error privacy and Axe. Web quality/build initially passes with the adapter
+units. Further regression/root gates and final-head CI are run before completion.
+No real Google consent, email read, provider call or private data is used in tests.
+
+**Host / acceptance:** SSH still times out. No environment lines applied,
+container recreated/restarted, downloaded file deleted, member lookup/repaired,
+or build/server Google client ID comparison is claimed. Public login responds
+200 and unauthenticated /api/me 401; /api/openapi.json returned 500 on the observed
+host. None of these prove sign-in, president role or deployed commit/#163.
+The last image this assistant deployed was 5c66db9; the current image is unknown.
+
+**Next:** Publish the button PR now; finish all current-tree checks. Restore
+administrative access, preserve host env/refresh token, apply supplied credentials,
+recreate the intended container and verify its image/version plus actual phone
+Google login/president /me. The returned fetch `refreshed` field is not displayed:
+docs/api.md does not specify its type/meaning; queued/skipped/not_for_a_club counts
+are displayed without guessing it. Tatiana can clarify that nonblocking detail.
+
+
+### C-35 regression follow-up
+
+Root gates pass: 949 tests, 93.76% coverage; Ruff/format 187 files, mypy 92,
+schemas/tasks. Web checks pass 151 units and 42 board-tool tests. Broad HTTP
+run passes 116 cases; the two stale denial assertions were corrected from two
+to three independent unavailable resources (Gmail status is new) and both rerun
+cases pass. Strict metadata, role-tour and rehearsal fixtures now explicitly
+serve the new published GET states; unknown mutations remain rejected. Final
+combined CI is required. The current PR is #167; initial failed CI was the stale
+fixture expectations, not evidence of host configuration or Google acceptance.
