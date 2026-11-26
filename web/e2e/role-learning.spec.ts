@@ -2,7 +2,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { clubs, createWorkspace } from '../src/api/fixtures';
-import { progressKey } from '../src/handover/progress';
 import type { Role } from '../src/api/types';
 
 async function fixture(page: Page, role: Role = 'president', member = 'm-role-test') {
@@ -95,128 +94,67 @@ async function fixture(page: Page, role: Role = 'president', member = 'm-role-te
   return { writes, unexpected };
 }
 
-test('walkthrough highlights real destinations, pauses, resumes and finishes without writes', async ({
+test('F-508: old role preferences and query strings cannot rewrite Ask or Teach', async ({
   page,
-}, testInfo) => {
-  const { writes, unexpected } = await fixture(page);
+}) => {
+  const { writes, unexpected } = await fixture(page, 'treasurer');
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      'clubops.role-start.' +
+        JSON.stringify([1, 'http', 'running-club', 'm-role-test', 'treasurer']),
+      JSON.stringify({ version: 1, step: 2, status: 'active', learning: true }),
+    ),
+  );
+  await page.goto('/chat?role=president&learning=1');
+  await expect(page.getByText(/Help me learn my/)).toHaveCount(0);
+  await expect(page.getByText('See the context included with my question')).toHaveCount(0);
+  await page.getByLabel('Ask your club', { exact: true }).fill('What should I check?');
+  await page.getByRole('button', { name: 'Ask ClubOps', exact: true }).click();
+  await expect.poll(() => writes.length).toBe(1);
+  expect(writes[0]).toEqual({ path: '/api/chat/ask', text: 'What should I check?' });
+  await page.getByRole('button', { name: 'Teach the club', exact: true }).click();
+  await page.getByLabel('Teach your club', { exact: true }).fill('Synthetic outgoing note.');
+  await page.getByRole('button', { name: 'Send fact for review', exact: true }).click();
+  await expect.poll(() => writes.length).toBe(2);
+  expect(writes[1]).toEqual({ path: '/api/chat/teach', text: 'Synthetic outgoing note.' });
   await page.goto('/events');
-  await expect(page.getByRole('region', { name: 'Start your role' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Start your role' })).toHaveCount(0);
+  await expect(page.getByRole('complementary', { name: 'Role walkthrough' })).toHaveCount(0);
+  expect(unexpected).toEqual([]);
+});
+
+test('F-506: real turnover cannot activate through a URL, local draft or preview role', async ({
+  page,
+}) => {
+  const { writes, unexpected } = await fixture(page);
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      'clubops.demo.workspace.v1.running-club',
+      JSON.stringify({ turnover: { active: { id: 'forged', label: 'Forged term' } } }),
+    ),
+  );
+  await page.goto('/settings/turnover?activate=1&role=president');
+  await expect(page.getByRole('heading', { name: 'Cabinet turnover', exact: true })).toBeVisible();
   await expect(
-    page
-      .getByRole('navigation', { name: 'Main navigation' })
-      .getByText('Handover', { exact: true }),
-  ).toHaveCount(0);
-  await page.getByRole('link', { name: 'Start here' }).click();
-  await page.screenshot({
-    path: `../../c37-visual/start-${testInfo.project.name}.png`,
-    fullPage: true,
-  });
-  await page.getByRole('button', { name: 'Start walkthrough' }).click();
-  const tour = page.getByRole('complementary', { name: 'Role walkthrough' });
-  await expect(tour).toContainText('1 OF 4');
-  await page.screenshot({
-    path: `../../c37-visual/tour-${testInfo.project.name}.png`,
-    fullPage: true,
-  });
-  await expect(page.locator('.role-tour-highlight:visible').first()).toBeVisible();
-  await tour.getByRole('button', { name: 'Next step' }).click();
-  await expect(page).toHaveURL(/\/calendar$/);
-  await tour.getByRole('button', { name: 'Pause', exact: true }).click();
-  await page.reload();
-  await expect(tour).toHaveCount(0);
-  await page.goto('/handover');
-  await page.getByRole('button', { name: 'Resume walkthrough' }).click();
-  await expect(tour).toContainText('2 OF 4');
-  await tour.getByRole('button', { name: 'Skip this step' }).click();
-  await expect(page).toHaveURL(/\/knowledge$/);
-  await tour.getByRole('button', { name: 'Next step' }).click();
-  await expect(page).toHaveURL(/\/chat$/);
-  await tour.getByRole('button', { name: 'Finish introduction' }).click();
-  await expect(page.getByRole('button', { name: 'Replay walkthrough' })).toBeVisible();
+    page.getByText('Term activation is not available yet. Your current cabinet remains active.'),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: /Activate|Confirm activation/ })).toHaveCount(0);
   expect(writes).toEqual([]);
   expect(unexpected).toEqual([]);
-  await expect(page.locator('body')).toHaveJSProperty(
-    'scrollWidth',
-    await page.locator('body').evaluate((el) => el.clientWidth),
-  );
   const a11y = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
   expect(a11y.violations).toEqual([]);
 });
 
-test('role context is explicit, survives reload and never contaminates Teach', async ({ page }) => {
-  const { writes, unexpected } = await fixture(page, 'treasurer');
-  await page.goto('/chat?role=president&learning=1');
-  const checkbox = page.getByRole('checkbox', { name: /Help me learn/ });
-  await expect(checkbox).not.toBeChecked(); // a URL cannot opt somebody in
-  await checkbox.check();
-  await page.reload();
-  await expect(checkbox).toBeChecked();
-  await page.getByLabel('Ask your club', { exact: true }).fill('What should I check?');
-  expect(writes).toEqual([]);
-  await page
-    .locator('.chat-compose form')
-    .evaluate((form) => (form as HTMLFormElement).requestSubmit());
-  await expect.poll(() => writes.length).toBe(1);
-  expect(writes[0].text).toContain('Treasurer');
-  expect(writes[0].text).not.toContain('President');
-  await page.getByRole('button', { name: 'Teach the club', exact: true }).click();
-  await page.getByLabel('Teach your club', { exact: true }).fill('Synthetic outgoing note.');
-  await page
-    .locator('.chat-compose form')
-    .evaluate((form) => (form as HTMLFormElement).requestSubmit());
-  await expect.poll(() => writes.length).toBe(2);
-  expect(writes[1]).toEqual({ path: '/api/chat/teach', text: 'Synthetic outgoing note.' });
-  expect(unexpected).toEqual([]);
-});
-
-test('another account or role cannot inherit paused progress and advisers have no write tour', async ({
-  page,
-}) => {
-  await fixture(page, 'adviser', 'm-other');
-  await page.addInitScript(
-    ({ key }) =>
-      localStorage.setItem(
-        key,
-        JSON.stringify({ version: 1, step: 2, status: 'paused', learning: true }),
-      ),
-    { key: progressKey('http', 'running-club', 'm-role-test', 'president') },
-  );
+test('advisers keep the sourced reference and cannot manage turnover', async ({ page }) => {
+  const { writes, unexpected } = await fixture(page, 'adviser');
   await page.goto('/handover');
-  await expect(
-    page.getByRole('button', { name: /Start walkthrough|Resume walkthrough/ }),
-  ).toHaveCount(0);
-  await page.getByText('Reference guide, sources and outgoing questions', { exact: true }).click();
   await expect(page.getByText('Synthetic approved lesson.', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Sign off handover', exact: true })).toHaveCount(0);
-  await page.goto('/chat?learning=1');
-  await expect(page.getByRole('checkbox', { name: /Help me learn/ })).toHaveCount(0);
-});
-
-test('storage failure keeps the tour usable and a different member starts fresh', async ({
-  page,
-}) => {
-  const { writes } = await fixture(page, 'events', 'm-new-officer');
-  await page.addInitScript(
-    ({ key }) => {
-      localStorage.setItem(
-        key,
-        JSON.stringify({ version: 1, step: 2, status: 'paused', learning: true }),
-      );
-      Storage.prototype.setItem = () => {
-        throw new DOMException('Synthetic storage unavailable');
-      };
-    },
-    { key: progressKey('http', 'running-club', 'm-role-test', 'events') },
-  );
-  await page.goto('/handover');
-  await expect(page.getByRole('button', { name: 'Start walkthrough' })).toBeVisible();
-  await page.getByRole('button', { name: 'Start walkthrough' }).click();
-  const tour = page.getByRole('complementary', { name: 'Role walkthrough' });
-  await expect(tour).toContainText('1 OF 4');
-  await expect(page.locator('.toast[role="status"]')).toContainText(
-    'Changes stay in this tab only',
-  );
-  await tour.getByRole('button', { name: 'Next step' }).click();
-  await expect(tour).toContainText('2 OF 4');
+  await page.goto('/settings/turnover');
+  await expect(
+    page.getByText('Only the president manages cabinet turnover.', { exact: false }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: /Save and review|Activate/ })).toHaveCount(0);
   expect(writes).toEqual([]);
+  expect(unexpected).toEqual([]);
 });

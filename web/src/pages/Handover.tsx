@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { ArrowRight, Check, Download, GraduationCap, Printer } from 'lucide-react';
+import { ArrowRight, Check, Download, Printer } from 'lucide-react';
 import { useApp } from '../AppContext';
 import { roleLabels, roles, type Role } from '../api/types';
-import { ErrorNotice, Modal, NotSure, Resource, SourceChip } from '../components/ui';
+import { ErrorNotice, Modal, NotSure, PageHeading, Resource, SourceChip } from '../components/ui';
 import { useAction, useResource } from '../hooks';
 import { downloadText, formatDate } from '../lib';
-import RoleIntroduction from '../handover/RoleIntroduction';
 
 export default function Handover() {
   const { api, me, isPresident, notify } = useApp();
@@ -35,30 +34,11 @@ export default function Handover() {
   };
   return (
     <>
-      <RoleIntroduction />
-      {guide.value?.role === me.role && guide.value.sections[0]?.entries[0] && (
-        <section className="panel role-first-fact" aria-label="A first thing to know">
-          <h2>A first thing to know</h2>
-          <p>{guide.value.sections[0].entries[0].text}</p>
-          {(
-            guide.value.sections[0].entries[0].sources ?? [
-              guide.value.sections[0].entries[0].source,
-            ]
-          ).map((source) => (
-            <SourceChip key={source.item_id} source={source} />
-          ))}
-          <p className="inline-note">
-            Open the reference below for the rest of this role's sources and unanswered questions.
-          </p>
-        </section>
-      )}
-
-      <details className="handover-reference">
-        <summary>Reference guide, sources and outgoing questions</summary>
+      <PageHeading title="Role reference" />
+      <section className="handover-reference" aria-label="Role reference sources">
         <header className="page-heading">
           <div>
-            <h2>Handover</h2>
-            <p>Keep the sources and open questions behind this role.</p>
+            <h2>Approved knowledge</h2>
           </div>
           <div className="compact-actions">
             <button className="button" onClick={exportGuide} disabled={!guide.value}>
@@ -69,18 +49,7 @@ export default function Handover() {
             </button>
           </div>
         </header>
-        <div className="handover-banner">
-          <span className="handover-banner-icon">
-            <GraduationCap size={32} />
-          </span>
-          <div>
-            <h2>
-              A cabinet changes.
-              <br />
-              The know-how shouldn't.
-            </h2>
-            <p>This guide is assembled from approved knowledge. No AI call, no extra cost.</p>
-          </div>
+        <div className="turnover-reference-role">
           <label className="field">
             <span>Guide for</span>
             <select value={role} onChange={(e) => setRole(e.target.value as Role)}>
@@ -181,7 +150,7 @@ export default function Handover() {
             guide.
           </p>
         )}
-      </details>
+      </section>
       <Modal open={confirm} title="Sign off this handover?" onClose={() => setConfirm(false)}>
         <p>
           You are confirming the current {roleLabels[role].toLowerCase()} guide, including its
