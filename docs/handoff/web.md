@@ -701,3 +701,34 @@ cases pass. Strict metadata, role-tour and rehearsal fixtures now explicitly
 serve the new published GET states; unknown mutations remain rejected. Final
 combined CI is required. The current PR is #167; initial failed CI was the stale
 fixture expectations, not evidence of host configuration or Google acceptance.
+
+
+## 2026-11-26 - Christophe (C-31 current backlog maintenance)
+
+**Found / changed:** Read-only preview stopped before mutation because legitimate
+issues #128/#129/#169 had been added beyond the original three manual handoffs.
+Registered those explicit primary owners, retaining original handoffs and refusing
+unknown/duplicate/foreign cards. Existing issue assignees are added to, not removed;
+card content and underlying state stay unchanged. #128's shared API/web ownership
+is not transferred by its primary board assignment. D-255/F-510.
+
+**Verified:** All root gates pass: Ruff/format 187 files, mypy 92, schemas/tasks,
+949 tests, 93.76% coverage. Matching locked dependencies reused. Full web checks
+pass: lint/format, 151 units, 43 board-tool tests, rehearsal types and build.
+The regression covers new closed/open issue mapping, preservation and refusal of
+unknown/duplicate/foreign issues. No app/UI/provider behavior changes.
+
+**Live run:** One explicit bulk invocation pinned to merged main 4722838 verified
+98 task cards and six issue cards: five tasks created, 118 mirror updates,
+59 native updates, zero remaining native changes. #128 Done/Christophe;
+#129 and #169 In progress/Tatiana. Existing content, assignments, views and
+iteration identities preserved. Reviewed metadata receipt is
+web/board/evidence/native-fields-2026-11-26.json; raw inventory stays ignored.
+
+**Next:** Independent PR review and merge commit; C-31 remains doing for team
+review. Board deliberately excludes unmerged #153 task corrections and #170's
+turnover task. After those merge, reconcile again from the new exact main.
+The four Monday dates remain owner-reported, not inferred meeting decisions.
+Tatiana: #169 needs the atomic turnover API contract; report/grading handoff is
+in #153 (all five checks green). No claim of completed final evaluation, live
+provider acceptance, production telemetry or backup restoration.

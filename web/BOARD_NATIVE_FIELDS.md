@@ -76,3 +76,14 @@ invocation, 93 task cards plus 3 issue cards, native assignees/status/iterations
 planning values verified; 542 native mutations and zero remaining native changes.
 The source is the pinned merged TASKS revision, not unmerged completion claims.
 All three issue handoffs are In progress: #43 and #84 Christophe, #83 Tatiana.
+
+## Verified 26 November refresh
+
+[Read-back receipt](board/evidence/native-fields-2026-11-26.json): one bulk run
+pinned to merged main `4722838`; 98 task cards plus six issues. Five task cards
+were added, 118 mirror updates and 59 native updates applied, and read-back found
+zero remaining native changes. Existing manual content, assignees, views and
+iteration identities were retained. #128 is Done/Christophe; #129 and #169 are
+In progress/Tatiana. This receipt is metadata only; raw card bodies/IDs stay in
+ignored output. Unmerged #153 task corrections and #170 turnover status are not
+presented as merged work. Team review of the weekly evidence remains separate.
