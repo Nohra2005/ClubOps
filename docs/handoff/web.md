@@ -741,3 +741,27 @@ source path. Documentation formatting and git diff whitespace checks pass.
 This follow-up changes task/handoff records and the deployment runbook only;
 #167's five green CI checks cover the deployed implementation. No new contract,
 design decision or failure mode is introduced here.
+
+## 2026-11-26 - Christophe (C-35 connection-label follow-up)
+
+**Did:** Checked the reported two literal question marks and changed them to
+an em dash in the host-configured status and an ellipsis in the Fetch loading
+label. Used Unicode escapes to preserve the characters across shell encodings.
+These two lines are a separate commit on deployment follow-up PR #168.
+
+**State:** Frontend check passes (151 units, 42 board-tool cases, lint, format,
+types and production build). All ten existing synthetic desktop/phone Google
+connection cases pass; shared dependency junction caused local Vite font warnings,
+so these results establish workflow/accessibility checks, not final font rendering.
+Root gates passed earlier on this branch (949 tests, 93.76%); no Python changes.
+Public HTTPS login is still 200; protected status endpoints require sign-in and
+the deployed bundle contains the connection controls. Chris reports the account
+owner said access worked; separate Calendar/Gmail consent outcomes are unspecified.
+
+**Next:** Review/merge #168, then include the two-label polish in the next host
+release; this session did not redeploy or change working host settings. The supplied
+host script was inspected, not executed: it assumes .env and a default Compose
+project, whereas the observed host uses production.env, compose.yaml and the named
+clubops-prod project. The prior deployment used protected parameters for secrets,
+not plaintext credentials in script text. Google-console callback verification
+and account-owner live connection acceptance remain as recorded above.
