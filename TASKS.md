@@ -563,7 +563,8 @@ Reference documents:
 
 ### C-30 Make the repo easy to grade (was T-34)
 - Owner: christophe
-- Status: todo
+- Status: doing
+- Progress (2026-11-26): prepare owned web/GRADING_GUIDE.md against the course PDF's seven suggested rubric weights, with actual files, free reproduction commands and explicit missing acceptance/results. README/evidence/rubric edits remain with their owner; final evidence and a genuinely fresh review are still pending dependencies. No grade or independent-review completion is claimed.
 - Needs: T-27, C-22, C-29
 - What: The grader is likely an AI agent reading the repo. Add a "How to grade this project" section at the top of the README: each rubric item → the file that proves it → the command that reproduces it (see `docs/plan.md`). Then have a fresh AI session, with no context, grade the repo against the rubric and fix every gap it finds.
 - Done when: a fresh-session review finds no rubric item without evidence.
