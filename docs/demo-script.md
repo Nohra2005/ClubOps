@@ -1,9 +1,11 @@
 # ClubOps: five-minute demo (C-28)
 
-Owner: Christophe. Prepared 10 November 2026. **Final acceptance is pending:**
-the team has no verified public deployment here, and the real backend/model/role
-demonstrations and team rehearsal must be completed before submission. The local
-recording below is a silent, synthetic **UI rehearsal**, not that final recording.
+Owner: Christophe. Prepared 10 November; updated 26 November 2026.
+Azure deployment was last verified at revision `6749fb0` (deployment receipt in
+PR #168). **Final demo acceptance is still pending:** actual backend/model/role
+demonstrations and the timed team rehearsal must be completed before submission.
+The local recording below is a silent, synthetic **UI rehearsal**, not that final
+recording. Cabinet turnover in PR #170 is a separate prototype, described below.
 
 ## Choose the right run
 
@@ -166,3 +168,26 @@ revision, observed outcome of all edge cases, a timed team rehearsal and the fin
 narrated backup file/checksum in the evidence ledger. Deployment is C-14/C-18;
 backend behavior and account setup require the owners. Keep failed takes and
 partial footage labelled; only a passing manifest validates a synthetic take.
+
+## Optional cabinet-turnover demonstration (outside the five-minute recording)
+
+Use the local synthetic workspace and sample identities only. This is the C-39
+prototype; live term activation is awaiting the API contract in issue #169.
+
+1. In president Settings, open **Cabinet turnover**. Enter a sample term whose
+   dates include today and incoming officers using `example.com` addresses.
+   **Save and review**: show the current cabinet remains active while the draft
+   lists inherited events, vacancies and outstanding review work.
+2. Mark the draft ready, open **Activate demo term**, then cancel once to show
+   the confirmation boundary. Reopen, type the term name and confirm. Show the
+   active term and the previous cabinet record. Dates alone never activate it.
+3. Open the workspace. The incoming brief shows actual sample events with
+   unfinished-task counts and sourced role references. Open a source to inspect
+   its excerpt. No model question or fact approval is triggered by reading it.
+4. Click **Continue to workspace**, reload and show the brief stays dismissed
+   for that officer/term. Preview another incoming role to show its separate
+   acknowledgment. Knowledge still exposes **Role references** after dismissal.
+
+Describe this as a browser-persistent prototype. It does not establish live
+membership/session transfer, another person's acceptance, server durability or
+chatbot tutoring quality. Do not activate a real club's next cabinet for a demo.
