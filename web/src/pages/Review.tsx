@@ -122,9 +122,7 @@ function ReviewItem({
           <Icon size={18} />
         </span>
         <div>
-          <span className="tiny-label">
-            {card.type === 'rule' ? 'AUB-WIDE RULE' : card.kind.toUpperCase()}
-          </span>
+          <span className="tiny-label">{card.type === 'rule' ? 'Shared rule' : card.kind}</span>
           <h3>{card.title}</h3>
           {isShared(card) && <span className="tiny-label">Shared with all AUB clubs</span>}
         </div>
@@ -533,7 +531,6 @@ export default function Review() {
     <>
       <PageHeading
         title="Review"
-        description="New knowledge, changed rules, and plans waiting for your cabinet's judgment."
         action={
           <span className="review-total">
             <CheckCheck size={16} />
@@ -541,16 +538,6 @@ export default function Review() {
           </span>
         }
       />
-      <div className="review-intro">
-        <ShieldCheck size={20} />
-        <div>
-          <strong>Your club's memory has a front door.</strong>
-          <p>
-            Check the source. Make the call. Nothing here becomes a fact until a cabinet member
-            approves it. A president reviews knowledge shared with all AUB clubs.
-          </p>
-        </div>
-      </div>
       <CardLifecyclePreview />
       <FilterTabs
         value={filter}

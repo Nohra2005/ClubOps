@@ -104,7 +104,6 @@ function ShellContent() {
             clubops<span className="brand-dot">.</span>
           </span>
         </Link>
-        <div className="workspace-label">YOUR WORKSPACE</div>
         <nav aria-label="Main navigation">
           {navigation
             .filter((n) => n.to !== '/settings' || isPresident)
@@ -125,24 +124,12 @@ function ShellContent() {
               </NavLink>
             ))}
         </nav>
-        <div className="sidebar-footer">
-          <span className="tiny-label">Built for the next cabinet</span>
-          <p>
-            Good plans.
-            <br />
-            Knowledge that stays.
-          </p>
-          <div>
-            <span className="live-dot" /> Fall cabinet · 2026/27
-          </div>
-        </div>
       </aside>
       <div className="app-body">
         <header className="topbar">
           <div className="club-selector">
             <span className="club-monogram">{me.club.initials}</span>
             <div>
-              <span className="tiny-label">CLUB WORKSPACE</span>
               {api.mode === 'demo' ? (
                 <label>
                   <span className="sr-only">Club</span>
@@ -270,14 +257,6 @@ function ShellContent() {
           <RoleTour />
           <Outlet />
         </main>
-        <footer className="page-footer">
-          <span>
-            ClubOps <span>·</span> More club. Less admin.
-          </span>
-          <span>
-            Made for your cabinet <span className="footer-dot" />
-          </span>
-        </footer>
       </div>
       <nav className="mobile-nav" aria-label="Mobile navigation">
         {navigation
@@ -302,8 +281,7 @@ function NotFound() {
   return (
     <>
       <PageHeading
-        eyebrow="404"
-        title="This page took a wrong turn."
+        title="Page not found"
         description="It may have moved, or the link may be incomplete."
       />
       <Link to="/events" className="button primary">

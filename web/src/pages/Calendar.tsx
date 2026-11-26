@@ -50,7 +50,6 @@ export default function Calendar() {
     <>
       <PageHeading
         title="Calendar"
-        description="Approved events, tasks, and the dates your club shouldn't miss."
         action={
           data.value?.connected ? (
             <span className="calendar-sync">

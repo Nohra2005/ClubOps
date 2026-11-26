@@ -14,10 +14,6 @@ export default function RoleIntroduction() {
   return (
     <section className="role-introduction" aria-labelledby="role-start-title">
       <h1 id="role-start-title">Start your role</h1>
-      <p className="role-intro-lead">
-        You don’t have to read everything before you begin. Find your next step, explore your club’s
-        sources, and ask for help as you go.
-      </p>
       <div className="role-intro-grid">
         <section className="panel">
           <GraduationCap size={28} aria-hidden="true" />

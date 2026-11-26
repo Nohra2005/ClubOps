@@ -47,7 +47,6 @@ export default function Setup() {
               ? 'A good beginning.'
               : 'Make this workspace yours.'
         }
-        description="Start with shared rules. Add your club's own people, places and lessons."
       />
       {!step?.done && (
         <p className="inline-note">
