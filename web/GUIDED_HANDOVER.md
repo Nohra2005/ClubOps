@@ -73,12 +73,3 @@ navigation targets, no automatic writes, session-role context, unchanged Teach,
 adviser access, storage failure, viewport fit and automated accessibility. Existing
 demo export/sign-off and actual-API reference tests also exercise the expandable
 guide. Scripted responses do not measure a real model's teaching quality.
-
-## 24 November integration status
-
-Main merged J-15 chat API wiring in #149 (D-200): cabinet Ask now uses the
-source-gated core for the authenticated club and returns dated source labels.
-The earlier placeholder limitation in the C-37 handoff is historical. The role
-prefix still uses the existing text API; no structured teaching contract,
-server-stored term progress or measured tutor behavior is implied by this merge.
-T-33's evaluation still needs to measure this redesigned walkthrough separately.
