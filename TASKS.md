@@ -647,6 +647,13 @@ Reference documents:
 - What: Apply Chris's 25 November design direction: remove marketing eyebrows, redundant subtitles and slogans, decorative cards/icons and excessive rounded containers. Use a compact working interface while retaining source, cost, approval, error and role information where actions need it.
 - Done when: desktop/phone workflow and accessibility checks pass, screenshots are reviewed and the scoped UI changes are delivered in small commits. OAuth host/connect work remains C-18/C-35.
 
+### C-39 Cabinet turnover by term
+- Owner: christophe
+- Status: doing
+- Needs: C-19, C-37
+- What: Replace recurring role-tour and raw chat-prompt controls with president-led term preparation, cabinet review and explicit one-time activation. Preserve work and sourced knowledge; introduce incoming officers once per active term. Build the complete synthetic demo lifecycle and remove obsolete entry points in HTTP mode. Ask Tatiana for a persistent, atomic server transition contract before enabling real activation or changing authorization.
+- Done when: lifecycle, stale/double activation, isolation, role and no-automatic-call tests pass; desktop/phone flows are reviewed; production integration gaps are explicit and the backend owner has a concrete contract request.
+
 ## Joey: calendar, reminders, drafts
 
 ### J-01 Read the calendar contract and set up Google
