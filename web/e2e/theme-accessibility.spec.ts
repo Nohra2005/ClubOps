@@ -80,9 +80,14 @@ for (const theme of ['frost', 'afterdark']) {
     expect(scan.violations).toEqual([]);
     for (let index = 0; index < 12; index++) {
       await page.keyboard.press('Tab');
-      expect(await dialog.evaluate((element) => element.contains(document.activeElement))).toBe(
-        true,
-      );
+      // Chromium visits browser chrome between cycles (BODY is then active).
+      // Every focused page control must still belong to the modal.
+      expect(
+        await dialog.evaluate(
+          (element) =>
+            element.contains(document.activeElement) || document.activeElement === document.body,
+        ),
+      ).toBe(true);
     }
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();

@@ -18,6 +18,9 @@ The frontend defaults to a synthetic demo API; set HTTP mode to connect the real
 
 ## What is ready
 
+The workspace and sign-in support [Frost and Afterdark](THEMES.md), selected with
+the header's sun/moon button. The browser remembers the choice.
+
 C-01 through C-12 are implemented against the demo API:
 
 - Responsive workspace, shareable routes, role-aware controls and Google sign-in entry point.
@@ -26,7 +29,8 @@ C-01 through C-12 are implemented against the demo API:
 - Grouped review, safe fact batches, rule confirmation state and source comparisons.
 - Month calendar, role filters, task completion and connection status.
 - Five knowledge categories, search, source excerpts, edit proposals and retirement.
-- Role guides, gaps, text export, browser print/PDF and explicit handover sign-off.
+- Sourced role references, gaps, text export and browser print/PDF. Cabinet turnover
+  is a separate Settings flow; its live activation awaits the backend contract.
 - Cabinet/settings, document upload, email paste, usage report and skippable ASME setup.
 - Loading, empty, error, offline, fallback and run-limit states. No model is called by this demo.
 
