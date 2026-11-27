@@ -552,6 +552,9 @@ Reference documents:
 ### C-29 Keep the docs true (was T-31)
 - Owner: christophe
 - Status: doing
+- Progress (2026-11-27): synced with main b3ce74e after #168, preserving both handoff histories; root gates pass (949 tests, 93.76%) and web quality/build passes (151 units and 42 board-tool tests). Fresh PR-head CI and independent review remain required.
+- Progress (2026-11-26): synced #153 with main 4722838, retaining both shared handoff histories. Refresh owned docs/report against merged Google connection APIs/controls, the published chatbot result and last verified hosted image 6749fb0. Keep open #170 turnover distinct from live server authority; fresh README-only success and report incorporation remain open.
+- Progress (2026-11-24): reconcile owned architecture/provenance/memory documentation with merged trusted-mail exceptions, override review, dated chat sources and human-marked chatbot evaluation. Keep backend API documentation ownership and live acceptance limits explicit.
 - Progress (2026-11-23): synced sourced audience policy, retained actual setup documentation and restored weekly-practice reporting per Christophe. Four Monday dates are owner-reported; linked repository summaries are not asserted meeting decisions. Web checks (137 units/12 tools), actual setup/API 8/8 and updated-main root gates pass; existing real acceptance gaps remain open.
 - Progress (2026-11-22): synced reviewed session frontend and locked FastAPI/Ruff updates; report now cites merged session validation against main 60d7027; 137 units and eight actual local API/setup cases pass with the updated FastAPI. Fresh README-only success, report incorporation and deployed acceptance remain open.
 - Progress (2026-11-20): synced #99 with merged main 0ac0b5b; report/setup evidence uses D-132/F-237 after the new #103 ID collision. Joey recorded a README-only attempt that stopped at the unavailable Docker Linux engine; web/report/setup-attempt-2026-11-20.md preserves the source and exact prerequisite blocker. Fresh complete-app startup/login acceptance remains open.
@@ -563,7 +566,8 @@ Reference documents:
 
 ### C-30 Make the repo easy to grade (was T-34)
 - Owner: christophe
-- Status: todo
+- Status: doing
+- Progress (2026-11-26): prepare owned web/GRADING_GUIDE.md against the course PDF's seven suggested rubric weights, with actual files, free reproduction commands and explicit missing acceptance/results. README/evidence/rubric edits remain with their owner; final evidence and a genuinely fresh review are still pending dependencies. No grade or independent-review completion is claimed.
 - Needs: T-27, C-22, C-29
 - What: The grader is likely an AI agent reading the repo. Add a "How to grade this project" section at the top of the README: each rubric item → the file that proves it → the command that reproduces it (see `docs/plan.md`). Then have a fresh AI session, with no context, grade the repo against the rubric and fix every gap it finds.
 - Done when: a fresh-session review finds no rubric item without evidence.
@@ -628,7 +632,8 @@ Reference documents:
 
 ### C-36 Patch the frontend development dependency audit
 - Owner: christophe
-- Status: review
+- Status: done
+- Verified (2026-11-24): #101 merged on 23 November as dae9b6a after review and green checks; the development dependency patch is complete. Earlier review entries below remain historical.
 - Progress (2026-11-23): merged #122 duplicate-F-249 correction from main; all 10 branch-local task/failure/log checks pass. Previous-head four non-Python CI checks passed; combined-head CI and re-approval pending.
 - Progress (2026-11-23): resolved current-main shared logs without losing either history; 733 Python tests/93.16%, 137 frontend units/12 tools, quality/build and both npm audits pass. Production dependency records unchanged; fresh-head CI and independent approval pending.
 - Progress (2026-11-22): synced reviewed session frontend and locked FastAPI/Ruff updates; full/production npm audits zero, 137 units and updated-main checks pass; existing remediation remains in review.
@@ -638,7 +643,8 @@ Reference documents:
 
 ### C-37 Guided cabinet handover
 - Owner: christophe
-- Status: review
+- Status: done
+- Verified (2026-11-24): #123 merged on 23 November after Joey approved head 8331027 and all five checks passed. This completes the scoped browser-local guided frontend; server term progress, transitions and measured tutoring remain future owner contracts.
 - Progress (2026-11-23): guided frontend, browser-local isolated progress, explicit Ask context and outgoing-note draft implemented; reference/export retained. D-140/F-269-F-271; web/GUIDED_HANDOVER.md describes pending owner contracts. Root gates and desktop/phone regressions pass; independent review and CI pending.
 - Needs: C-10, C-19
 - What: Replace the permanent handover navigation item with a contextual role introduction and cabinet transition entry. Provide a resumable, skippable walkthrough, approved reference knowledge and outgoing questions. Add explicit role-learning chat prompts using the published text API; do not infer membership changes or invent persistent backend onboarding routes.
@@ -646,7 +652,8 @@ Reference documents:
 
 ### C-38 Simplify the web interface
 - Owner: christophe
-- Status: review
+- Status: done
+- Verified (2026-11-26): #166 merged as e884039 with the scoped UI cleanup and T-50 accessibility fixes. Local desktop/phone checks and inspected captures are recorded below; the last hosted candidate includes this merge. Real signed-in/provider acceptance remains C-18/C-35 work.
 - Progress (2026-11-25): simplified working layout and copy, merged T-50 accessibility fixes, inspected desktop/phone captures; 949 Python tests/93.76%, 145 frontend units, 42 board tools, 50 demo and 64 HTTP/role cases pass. Review/CI pending; no deployment claim.
 - Needs: C-02, C-03, C-12
 - What: Apply Chris's 25 November design direction: remove marketing eyebrows, redundant subtitles and slogans, decorative cards/icons and excessive rounded containers. Use a compact working interface while retaining source, cost, approval, error and role information where actions need it.

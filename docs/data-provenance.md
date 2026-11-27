@@ -1,6 +1,6 @@
 # Data provenance
 
-Updated 16 November 2026. Sources must be public, authorized or synthetic. A source's existence is not evidence that consent, a pilot or an evaluation has happened.
+Updated 26 November 2026 against main `4722838` and source/credential decisions D-138/D-150/D-151/D-152/D-155/D-156. Sources must be public, authorized or synthetic. A source's existence is not evidence that consent, a pilot or an evaluation has happened.
 
 ## Source inventory
 
@@ -31,9 +31,26 @@ The redaction component hides phone numbers, AUB IDs, emails and links before mo
 - Real inputs, contact details, recordings, databases and exports stay in ignored/private runtime storage. No real data goes into tests, CI traces, image layers or committed example reports.
 - Browser demo storage contains synthetic records. Local Compose seeds `president@example.com` as a clearly synthetic test identity; it is not a university account or production access policy.
 - Build-context checks place synthetic canaries in excluded locations and inspect the actual BuildKit export. Provider secrets remain runtime configuration; an optional trusted-root bundle is mounted only during dependency installation.
-- Source-derived facts wait in Review. Only an authorized person's decision makes knowledge verified; flagged sources need individual frontend review.
+- Interview/chat/document facts wait in Review. Under the merged trusted-mail exception (D-138, narrowed by D-151), source checks and plain code may apply a clean new OSA fact after the explicit paid read; updates/merges, contradictions and flagged mail still wait for a person. This exception is not consent to ingest arbitrary material or proof of background fetching. Applied changes retain Edit/Undo history.
 - Retention and source deletion are operational responsibilities, not an implemented automatic purge. Do not claim that all raw sources have already been deleted, or that traces expire after a fixed interval, without an actual job and evidence. Private evaluation recordings may need to remain available for reproducibility under their authorization.
 - A volume is persistence, not backup/recovery evidence. Keep private SQLite backups outside git and verify restoration before a production recovery claim.
+
+Google sign-in, Calendar and Gmail use separate credential purposes. The public
+sign-in client ID may be compiled into the frontend and must match the server;
+Calendar/Gmail client secrets, refresh credentials and the session secret remain
+private server settings. The published connection status contains no credential,
+mailbox address or calendar ID. D-155/D-156 specify encrypted app refresh storage
+and role-checked OAuth callbacks. Connecting Gmail authorizes the read-only scope;
+fetching still checks cabinet/OSA provenance and does not itself start a model read.
+Calendar connection does not by itself authorize sharing with every cabinet member.
+
+The 26 November [host receipt](https://github.com/Nohra2005/ClubOps/pull/168#issuecomment-7189560351)
+records configuration updates without exposing values, container recreation and
+private SQLite backups. Existing host settings were retained. Those backups have
+not been restored in an acceptance test. Downloaded OAuth JSON files were deleted
+after configuration verification; this does not prove erasure from external
+messages, downloads history, cloud audit logs or backups. Do not copy credentials
+or raw host command output into this repository.
 
 The learner's debugging log is private runtime data, separate from the metadata-only
 report sink. D-99 enables it by default in the data directory for diagnosing failed
@@ -41,7 +58,7 @@ extraction. Treat debug output and recordings as potentially source-derived sens
 content; never attach them wholesale to CI, public issues or reports. Redaction is
 not a guarantee that all identifying context is gone. C-27 review sheets likewise
 contain expected/learned facts, questions and answers; keep actual human ratings and
-their companion files private under the evaluation's authorization.
+their companion files private under the evaluation's authorization. D-152/#151 adds the same private human-marking boundary for the 42-question chatbot test. Exporting a blank sheet does not establish that any person rated it or that the evaluation passed.
 
 ## Limits on conclusions
 

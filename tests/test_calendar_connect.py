@@ -67,8 +67,10 @@ class FakeGoogle:
                 return httpx.Response(200, json={"access_token": "short-lived"})
             if self.down:
                 return httpx.Response(503, json={})
-            if "/calendarList/" in path:
-                return httpx.Response(200, json={"accessRole": self.role})
+            if "/calendarList/" in path:  # the two scopes we ask for do not allow this call (F-300)
+                return httpx.Response(403, json={"error": {"status": "PERMISSION_DENIED"}})
+            if path.endswith("/acl") and request.method == "GET":  # a calendar's rules: owner only
+                return httpx.Response(200, json={"items": []}) if self.role == "owner" else httpx.Response(403)
             if "/acl" in path:
                 return self.handle_acl(request)
             self.writes.append(path)

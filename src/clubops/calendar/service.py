@@ -34,7 +34,7 @@ RENEW_HINT = (
 )
 RECONNECT_HINT = "Google Calendar access ended. The president needs to connect Google Calendar again."
 WRONG_ACCOUNT = "That Google account does not own this club's calendar. Sign in with the account that owns it."
-CALENDAR_URL = "https://www.googleapis.com/calendar/v3/users/me/calendarList/"
+CALENDAR_URL = "https://www.googleapis.com/calendar/v3/calendars/"  # + id + /acl: allowed by calendar.acls, owner only
 
 
 class CalendarKeyError(RuntimeError):
@@ -236,12 +236,15 @@ class CalendarService:
                 if not scopes_ok(str(body.get("scope", ""))):
                     raise ConnectError("Both calendar permissions are needed. Press Connect again and allow both.")
                 role = client.get(
-                    CALENDAR_URL + quote(self.settings.calendar_ids[club_id], safe=""),
+                    CALENDAR_URL + quote(self.settings.calendar_ids[club_id], safe="") + "/acl",
+                    params={"maxResults": 1},
                     headers={"Authorization": f"Bearer {access}"},
                 )
         except (OSError, httpx.HTTPError, ValueError):
             raise ConnectError("Google could not be reached. Try again in a minute.") from None
-        if role.status_code != 200 or role.json().get("accessRole") != "owner":
+        if role.status_code >= 500:
+            raise ConnectError("Google could not be reached. Try again in a minute.")
+        if role.status_code != 200:  # Google lists a calendar's sharing rules to its owner only
             raise ConnectError(WRONG_ACCOUNT)  # only the owner can share the calendar with the cabinet
         self.vault.save(club_id, refresh, member_id, now)
         self.problems.pop(club_id, None)
