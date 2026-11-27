@@ -948,3 +948,21 @@ to main; that operational step is separate from syncing a PR branch. Calendar
 Connect remains under C-18/C-35 diagnosis: saved 26 November host comparisons
 match the supplied ID/redirect, but current Google-console values and the
 callback's exact failure stage are not yet established. Owner handoff is #83.
+
+## 2026-11-27 - Christophe (C-39 current-main sync)
+
+**Did:** Merged main 8828847 including #172's Calendar owner check and #153's
+grading/docs update. Retained all 65 complete handoff sections, choosing the
+longer existing section where one parent contained the other's full text.
+The #169 live turnover boundary remains unchanged.
+
+**Verified:** Full web quality/build passes: 158 units, 42 board-tool tests,
+lint/format and rehearsal types. Schema/task checks pass here. The Python source,
+tests, scripts, schemas and lockfile match the C-40 tree whose required root gates
+pass (949 tests, 93.74% coverage; Ruff/format 187 files; mypy 92). Fresh CI is
+required on this synced head; prior workflow/browser receipts are historical.
+
+**Next:** Independent review of #170. C-40 is a separately reviewable visual layer
+stacked on this branch. Neither branch claims real turnover activation, provider
+consent or an Azure redeployment. Current-main deployment needs renewed Azure
+authorization; Tatiana must retry Calendar Connect after #172 is deployed.
