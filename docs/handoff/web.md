@@ -608,6 +608,28 @@ of the final head. The post-approval Knowledge expiry API question remains open.
 **Next:** Current-head CI, then merge using the temporary review waiver Chris
 relayed in this session. Keep commit history. No main push or deployment change.
 
+
+### C-29 final reconciliation
+
+#152 merged as 62d1787 with all five current-head checks green under Chris's
+reported temporary review waiver. Synced that main, retaining every C-35/C-29
+handoff entry. C-36/#101 and C-37/#123 now read done based on actual merges and
+existing independent reviews; their historical progress notes remain intact.
+All root gates pass on the documentation update: 910 tests, 93.67% coverage,
+Ruff/format 181 files, mypy 89, schemas/tasks. Four updated documents have valid
+local links and the web guide passes formatting. C-29 remains doing for its
+unverified acceptance/report work; no live provider or deployment claim added.
+
+
+### C-29 report follow-through
+
+Updated the owned report draft as well as its source guides, including trusted-mail
+exceptions, guided handover, live chat wiring and the completed expiry merge.
+Recorded only the observed public 200 login / 401 unauthenticated API responses;
+SSH timed out, so the running image and any deployment change remain unverified.
+The SPA fallback is explicitly not an API-health check. No raw URL/account/key
+or real club record is copied into the report. Rechecked report links/formatting.
+
 ## 2026-11-25 — Tatiana, with Claude (ui/impeccable-audit-fixes)
 
 **Did:** T-50 (D-158): text floor of 12 px in `styles.css`, 44 px touch targets under `pointer: coarse`, the decorative eyebrow labels removed from pages (kept where they carry data: 404, event revision, knowledge scope, source excerpt, role tour step), focus ring colour darker. Audit file: Tatiana has it (`ui-audit-2026-11-25.md`).
@@ -759,3 +781,170 @@ Earlier broad 58/116/8 runs remain historical, not claimed as rerun this session
 in #169. That issue has no owner reply yet. Real activation stays unavailable;
 no live account, host environment, deployment, external provider or model was
 changed in this session. C-39 remains doing for persistent live integration.
+
+## 2026-11-24 - Christophe (C-29 current integration documentation)
+
+**Did:** Reconciled owned architecture, data provenance and memory guides with
+main eae20c5's published decisions: trusted clean new mail facts can apply, while
+overrides/merges and flagged facts need Review (D-151); dated mail deadlines have
+a separate calendar path (D-150); chat wiring and dated sources are merged
+(D-200/#149); chatbot ratings use a private human-marked sheet (D-152/#151).
+Updated the guided-handover integration status without claiming persistent tutoring.
+
+**State:** Documentation only; no backend implementation read or changed, no
+new runtime policy or contract. Checked statements against owner decisions/API,
+kept the paid-read/scheduling distinction and missing Knowledge expiry-edit field
+explicit. C-29 stays doing for report incorporation and fresh/deployed acceptance.
+Local links, web guide formatting and shared task/log checks run before publication;
+full root gates use the same locked dependencies as the verified main source.
+
+**Next:** Publish a separate C-29 PR, preserve small commits, merge after green
+checks under Chris's temporary review waiver. Tatiana owns the stale chat/setup
+availability notes in docs/api.md and the expiry-edit API extension. No completed
+private evaluation, hosting recovery, provider quality or user benefit is inferred.
+
+
+## 2026-11-26 - Christophe (C-18/C-35 Azure host verification)
+
+**Did:** #167 merged at main 4722838. Patched only the requested OAuth,
+operator and sender keys in the existing host environment file, preserving
+unrelated settings. No legacy Gmail refresh token existed. Recreated the actual
+Compose app, backed up four SQLite databases privately, built the production
+image from that fixed merged SHA and replaced the app image. The requested
+president membership was missing; added with the provided CLI and verified.
+Deleted both supplied OAuth JSON downloads after effective runtime verification.
+The Azure inspection session is closed; credentials were passed as protected
+parameters and never printed or committed. Added the Azure update runbook.
+
+**State:** Running image clubops:4722838 has full revision label
+4722838c3d2f371cfcbd6076cd689fc013821fe8 and is healthy. This includes #163.
+Runtime settings match Compose; server sign-in ID matches built JS/build ID;
+dev login is disabled and secure cookies enabled. Public login returns 200;
+unauthenticated /api/me, Calendar connection and Gmail status return 401.
+Served assets contain all three connection/fetch calls. All five #167 checks
+passed. Documentation formatting passes; root checks are recorded below.
+
+**Next:** Account owner tests real Google sign-in on a phone and confirms their
+club/president role, then explicitly connects Calendar and operator Gmail.
+Confirm the exact deployed Gmail callback in Google's console: it was absent
+from the supplied download, while Calendar's callback was present. Downloads
+can be stale; no Google-console change is inferred. Administrative membership,
+public smoke tests and synthetic phone tests do not prove real sign-in, consent,
+mailbox fetch or event-planning acceptance. C-18/C-35 remain doing for those gates.
+No live mail/model call, calendar write, data restore or disaster-recovery success
+is claimed. Host metadata and follow-up are posted on merged #167.
+
+### C-18 verification
+
+Root make-check equivalent gates pass on this merged source: 949 tests,
+93.76% coverage, Ruff/format 187 files, mypy 92 files, schemas and task validation.
+Used the verified locked environment with matching uv.lock and this worktree's
+source path. Documentation formatting and git diff whitespace checks pass.
+This follow-up changes task/handoff records and the deployment runbook only;
+#167's five green CI checks cover the deployed implementation. No new contract,
+design decision or failure mode is introduced here.
+
+## 2026-11-26 - Christophe (C-35 connection-label follow-up)
+
+**Did:** Checked the reported two literal question marks and changed them to
+an em dash in the host-configured status and an ellipsis in the Fetch loading
+label. Used Unicode escapes to preserve the characters across shell encodings.
+These two lines are a separate commit on deployment follow-up PR #168.
+
+**State:** Frontend check passes (151 units, 42 board-tool cases, lint, format,
+types and production build). All ten existing synthetic desktop/phone Google
+connection cases pass; shared dependency junction caused local Vite font warnings,
+so these results establish workflow/accessibility checks, not final font rendering.
+Root gates passed earlier on this branch (949 tests, 93.76%); no Python changes.
+Public HTTPS login is still 200; protected status endpoints require sign-in and
+the deployed bundle contains the connection controls. Chris reports the account
+owner said access worked; separate Calendar/Gmail consent outcomes are unspecified.
+
+**Next:** Review/merge #168, then include the two-label polish in the next host
+release; this session did not redeploy or change working host settings. The supplied
+host script was inspected, not executed: it assumes .env and a default Compose
+project, whereas the observed host uses production.env, compose.yaml and the named
+clubops-prod project. The prior deployment used protected parameters for secrets,
+not plaintext credentials in script text. Google-console callback verification
+and account-owner live connection acceptance remain as recorded above.
+
+## 2026-11-26 - Christophe (C-18/C-35 requested redeploy)
+
+**Did:** Chris explicitly requested redeployment while #168 remained open.
+After all five checks passed on head 6749fb0, deployed that exact SHA without
+merging or pushing main. Created seven private SQLite backups, built the
+production image and replaced only the app container. Every existing resolved
+runtime environment setting was verified against the new container; no OAuth
+setting, membership, secret or stored connection was changed by this release.
+
+**State:** Actual running image is clubops:6749fb0, revision
+6749fb00ea8efeabeabb682f0786a0b4ef85ea51, healthy. Fresh Azure inspection confirms
+OAuth keys present, matching frontend/server sign-in IDs, dev login disabled and
+secure cookies enabled. Public HTTPS login returns 200; unauthenticated /api/me,
+Calendar connection and Gmail status return 401. Served JS contains the corrected
+host separator and Fetch ellipsis, with the old Working? string absent. Managed
+inspection requests were given a fresh source marker to force new execution.
+The temporary Azure session is closed. This commit adds deployment records only.
+
+**Next:** Tatiana tests her own Calendar/Gmail connections on the live site and
+reviews/merges #168. Do not treat the deployed PR head as already merged into main,
+or these public/host checks as real Google consent, mail fetch or event acceptance.
+No external provider operation was triggered by the redeploy checks.
+
+## 2026-11-26 - Christophe (C-29/C-30 evidence reconciliation)
+
+**Did:** Synced #153 with main 4722838, preserving both shared handoff histories.
+Updated owned architecture/provenance/memory docs, web README and report draft for
+merged Calendar/Gmail APIs and controls, the published chatbot result and the last
+verified Azure candidate 6749fb0. Removed #153's obsolete role-guide addendum so
+the separate #170 turnover redesign owns that document. No backend implementation
+or contract was read or changed; no deployment, membership or credential change.
+
+**Grading:** Prepared web/GRADING_GUIDE.md against the original brief's pages 5-6:
+seven suggested weights, existing evidence, free reproduction commands and gaps.
+The engineering bonus rewards demonstrated practice/impact; the brief does not
+require a fixed number of meetings. C-31 still needs its own team evidence review.
+C-30 is doing against existing interfaces, not complete: T-27/C-22/C-29 acceptance
+and an actual fresh independent review remain open. No new runtime design/failure
+was introduced, so no new D/F identifier was needed.
+
+**Verified:** Required root gates pass on the synced source: Ruff/format 187 files,
+mypy 92, schema/task validation, 949 tests and 93.76% coverage. The reused locked
+environment's uv.lock matches. All 104 local targets/anchors in seven edited guides
+resolve; four web Markdown files pass Prettier. The guide's free replay export
+produces two synthetic cases, zero errors and seven expected columns with both
+ratings blank. No private data or paid provider call. PR-head CI is separate.
+
+**Next / owners:** Tatiana: review/incorporate the linked report sections into T-27
+and link the guide from the root README; reconcile docs/evidence.md and
+docs/rubric-map.md, which are outside Christophe's folders. Joey: retry the actual
+README-only setup when Docker works. C-39 #170 is green but remains a synthetic
+prototype until Tatiana supplies #169's atomic term/cabinet/session contract.
+Signed-in phone/provider acceptance, backup restoration, production telemetry and
+final held-out thresholds remain unverified. Preserve commits and independent
+review under current AGENTS; historical waivers do not prove reviews happened.
+
+**Task reconciliation:** C-38 now reads done after verifying #166's actual merge
+e884039. Its scoped UI checks/captures were already recorded; this correction
+does not claim a missing independent review or signed-in provider acceptance.
+
+## 2026-11-27 - Christophe (C-29/C-30 sync after #168)
+
+**Did:** Merged main b3ce74e after #168. Resolved the handoff conflict by
+retaining every complete branch section and every main deployment/verification
+section; checked that no section heading from either side was lost. Existing
+task statuses and dated receipts are retained. No backend contract, host setting
+or live provider operation changed as part of this merge.
+
+**Verified:** Required root gates pass: Ruff/format 187 files, mypy 92, schemas
+and task validation; 949 Python tests, 93.76% coverage. Full web quality/build
+checks pass (151 units and 42 board-tool tests), lint/format, rehearsal types
+and production build. Matching locked dependencies used. Current-head GitHub CI
+will run after this sync is pushed; prior green checks are historical.
+
+**Next:** Independent owner review and merge commit after all fresh checks pass.
+Chris requests a verified current-main redeploy whenever this assistant merges
+to main; that operational step is separate from syncing a PR branch. Calendar
+Connect remains under C-18/C-35 diagnosis: saved 26 November host comparisons
+match the supplied ID/redirect, but current Google-console values and the
+callback's exact failure stage are not yet established. Owner handoff is #83.

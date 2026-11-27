@@ -1,5 +1,27 @@
 # Engineering bonus: evidence and remaining work
 
+## Current scope update: 26 November 2026 (C-29/C-30)
+
+This update supersedes availability claims in the dated history below. Main
+`4722838` includes setup wiring, expiry/review guards, the UI cleanup and Calendar/Gmail
+connection controls (#160/#161/#167). The last inspected Azure candidate `6749fb0`
+and its limits are recorded in the [report draft](report/architecture-and-operations.md#hosted-verification-24-to-26-november)
+and [host receipt](https://github.com/Nohra2005/ClubOps/pull/168#issuecomment-7189560351).
+Real consent/fetch/calendar-write acceptance and backup restoration remain open.
+
+The [grading guide](GRADING_GUIDE.md) maps the seven suggested rubric weights to
+existing files and reproducible checks. The requirements' page 5 rewards the
+demonstrated capability and impact of professional practices; it gives examples,
+not a required tool list or fixed number of weekly meetings. Our C-31 team task
+still needs team review of the board evidence. Four Monday dates are owner-reported;
+commit summaries do not establish attendance or oral decisions. The native board
+receipt is [native-fields-2026-11-23.json](board/evidence/native-fields-2026-11-23.json).
+
+Current PR-head checks and individual review records, not old green runs or a
+temporary waiver, establish delivery evidence. The OTLP/Jaeger proof remains
+synthetic; producer hooks, deployed alerts and final held-out evaluation gates
+remain open. No bonus score is predicted.
+
 ## Current scope update: 16 November 2026 (C-29)
 
 The tables and runs below are dated history. Setup's service (#55) and application

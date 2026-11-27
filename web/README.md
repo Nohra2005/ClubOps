@@ -14,7 +14,7 @@ npm run dev
 
 Open the local URL printed by Vite. `npm run build` type-checks and builds a static application in `web/dist/`. A production host must rewrite application routes such as `/events/ev-example` to `index.html`, while routing `/api/*` to the backend.
 
-The frontend defaults to a synthetic demo API. T-22 part 1 is available; set HTTP mode to connect it. Google sign-in now uses the published credential/session exchange. A real OAuth client ID and deployed verification are still pending; demo role switching does not authenticate anyone.
+The frontend defaults to a synthetic demo API; set HTTP mode to connect the real service. Google sign-in uses the published credential/session exchange. The last verified deployed candidate and remaining signed-in/provider acceptance are recorded in the [report](report/architecture-and-operations.md#hosted-verification-24-to-26-november); demo role switching does not authenticate anyone. The [grading guide](GRADING_GUIDE.md) maps the course rubric to evidence and commands.
 
 ## What is ready
 
@@ -57,7 +57,7 @@ Copy `.env.example` to `.env.local`. Set `VITE_API_MODE=http`; `VITE_API_BASE` d
 
 See [API_NOTES.md](API_NOTES.md) for current integration coverage and remaining server features. Actions without an agreed endpoint work only in the demo and return an unavailable-action error in HTTP mode. Production chat history must be supplied by the backend; it does not use the demo cache.
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for the verified local Docker/Caddy image, Compose setup, persistent Render configuration and Google setup. From the root, `docker compose up --build` serves the real API at `http://127.0.0.1:8080/login` with an explicit synthetic local sign-in. Data and the generated local signing key survive container replacement. No public service or paid resource has been created. Hosting needs an account-owner decision. `npm run preview` is a local build check, not the production server.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the local Docker/Caddy image, Compose setup, optional Render configuration and Google setup. From the root, `docker compose up --build` serves the real API at `http://127.0.0.1:8080/login` with an explicit synthetic local sign-in. Data and the generated local signing key survive container replacement. The actual hosted service is on Azure; dated inspection evidence is in the report linked above. `npm run preview` is a local build check, not the production server.
 
 PR #44 adds real frontend and container gates in `.github/workflows/web.yml` and `container.yml`; see [ENGINEERING_EVIDENCE.md](ENGINEERING_EVIDENCE.md) for run links and remaining bonus tasks. The shared Python workflow is unchanged. Frontend/browser failure artifacts contain synthetic test activity only.
 
