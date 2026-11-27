@@ -862,6 +862,20 @@ Connect remains under C-18/C-35 diagnosis: saved 26 November host comparisons
 match the supplied ID/redirect, but current Google-console values and the
 callback's exact failure stage are not yet established. Owner handoff is #83.
 
+## 2026-11-27 - Christophe (C-31 follow-up sync after #172/#153)
+
+**Did:** Merged main 8828847 after the Calendar owner-check fix and #153's
+grading/docs merge. Kept every complete handoff section from both parents,
+including the longer C-29 reconciliation entry. A local failed resolver was
+corrected before publication; the final merge contains no conflict markers.
+
+**Verified:** All required root gates pass: Ruff/format 187 files, mypy 92,
+schema/task validation, 949 tests and 93.74% coverage. Full web checks pass:
+151 units, 43 board-tool tests, lint/format, rehearsal types and production build.
+Fresh GitHub CI is required on the follow-up head. No board mutation, provider
+action or host deployment occurred in this merge. The Calendar fix is now in
+main; deployment is queued pending renewed Azure authorization.
+
 ## 2026-11-24 - Christophe (C-29 current integration documentation)
 
 **Did:** Reconciled owned architecture, data provenance and memory guides with
