@@ -93,7 +93,7 @@ function Connection({ service, onFetched }: { service: GoogleService; onFetched?
           <>
             <p>
               <strong>{states[status.state]}</strong>
-              {status.source === 'host' ? ' ? configured on the host' : ''}
+              {status.source === 'host' ? ' \u2014 configured on the host' : ''}
             </p>
             {service === 'calendar' && Number(status.access_changes_waiting) > 0 && (
               <p>{status.access_changes_waiting} cabinet access change(s) waiting.</p>
@@ -132,7 +132,7 @@ function Connection({ service, onFetched }: { service: GoogleService; onFetched?
                   disabled={action.pending || status.state !== 'connected'}
                   onClick={fetchMail}
                 >
-                  {action.pending ? 'Working?' : 'Fetch email'}
+                  {action.pending ? 'Working\u2026' : 'Fetch email'}
                 </button>
               )}
             </div>

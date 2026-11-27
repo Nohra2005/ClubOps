@@ -64,6 +64,46 @@ See [Render Docker builds](https://render.com/docs/docker) for public build argu
 and [disk behavior](https://render.com/docs/disks). Only the public Google ID is consumed
 as a Docker build argument; provider keys stay in runtime configuration.
 
+## Azure VM updates
+
+The current host uses an existing Compose project, an explicit environment file
+and a persistent bind mount. Inspect those on the host before updating; the
+repository's local Compose configuration is not a replacement for them.
+
+1. Resolve the existing Compose configuration privately. Use its actual project
+   name and file for every command; otherwise Compose may select a different
+   container or create a second project. Never paste resolved secrets into logs.
+2. Back up each SQLite database with SQLite's backup API into a private directory.
+   Keep the previous image and copies of the existing Compose/environment files.
+   A successful backup does not establish that disaster recovery was tested.
+3. Patch only the requested keys in the host's existing environment file. Preserve
+   unrelated settings and any `CLUBOPS_GMAIL_REFRESH_TOKEN` exactly. Keep secrets
+   out of Git, Docker build arguments, shell history and command output.
+4. Build the production target from a fixed, merged Git SHA. Label the image with
+   `org.opencontainers.image.revision`. Pass only the existing public sign-in
+   client ID as `VITE_GOOGLE_CLIENT_ID`; Calendar and Gmail clients are separate
+   runtime settings. Replace only the app's image reference in the existing Compose
+   file, then run `docker compose -p <project> -f <host-compose> up -d --force-recreate app`.
+5. Verify the actual container's image/revision, effective configuration, health
+   and that the built sign-in ID matches the server's ID. Check HTTPS `/login`
+   and unauthenticated `/api/me` (expected 401). Confirm the requested membership
+   privately; use `scripts/add_member.py` only if it is missing. Restore the prior
+   Compose/environment file and recreate the prior app if replacement fails.
+6. Test real sign-in on a phone with the account owner. Confirm their club/role,
+   Calendar connection and operator Gmail connection. Google must allow the exact
+   HTTPS callback URLs `/api/calendar/callback` and `/api/inbox/gmail/callback` on
+   their respective OAuth clients. A downloaded client file can be stale; confirm
+   changes in Google's console. The sign-in client separately needs the site's
+   authorized JavaScript origin. Do not treat a database row, public health check
+   or synthetic phone viewport test as proof of real Google sign-in.
+
+When SSH is inaccessible, an already-authorized Azure administrator can use Managed
+Run Command over HTTPS. Send credentials through protected parameters, not command
+text, and return only booleans/counts or version metadata. See Microsoft's
+[Managed Run Command guide](https://learn.microsoft.com/en-us/azure/virtual-machines/linux/run-command-managed).
+Delete supplied credential downloads only after the effective host settings have
+been verified. Do not remove the host's environment file or private data.
+
 ## Local packaging checks
 
 For the complete local app, run `docker compose up --build` from the repo root and open
