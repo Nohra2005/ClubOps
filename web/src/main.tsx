@@ -5,11 +5,14 @@ import '@fontsource-variable/manrope';
 import './styles.css';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { ThemeProvider } from './theme/ThemeProvider';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
+    <ThemeProvider>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </ThemeProvider>
   </StrictMode>,
 );

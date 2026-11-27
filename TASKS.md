@@ -656,6 +656,14 @@ Reference documents:
 - What: Replace recurring role-tour and raw chat-prompt controls with president-led term preparation, cabinet review and explicit one-time activation. Preserve work and sourced knowledge; introduce incoming officers once per active term. Build the complete synthetic demo lifecycle and remove obsolete entry points in HTTP mode. Ask Tatiana for a persistent, atomic server transition contract before enabling real activation or changing authorization.
 - Done when: lifecycle, stale/double activation, isolation, role and no-automatic-call tests pass; desktop/phone flows are reviewed; production integration gaps are explicit and the backend owner has a concrete contract request.
 
+### C-40 Revamp the ClubOps visual design
+- Owner: christophe
+- Status: doing
+- Direction approved (2026-11-26): Chris selected Frost and Afterdark glassmorphism with an appearance switch and stronger contrast/color after reviewing eight standalone concepts. Implement the approved direction in small commits; Calendar host diagnosis remains C-18/C-35.
+- Needs: C-02, C-03, C-12
+- What: Apply the approved Frost/Afterdark glass design across the shared shell, Events, Chat, Review, Knowledge, Calendar, Inbox, Settings, setup and sign-in. Provide a persistent theme switch, vivid accents and readable layered surfaces; preserve source/expiry/approval/cost/role context. Build on C-39's frontend; real turnover activation remains blocked on #169's owner contract.
+- Done when: a coherent desktop/phone interface is visually inspected, workflow/accessibility and required checks pass, and small commits are published for independent review. No backend contract or automatic model-call behavior changes.
+
 ## Joey: calendar, reminders, drafts
 
 ### J-01 Read the calendar contract and set up Google
