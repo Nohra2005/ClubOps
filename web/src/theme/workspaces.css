@@ -14,8 +14,11 @@
 }
 .event-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 15px;
+}
+.event-grid:has(> a:only-child) {
+  grid-template-columns: minmax(0, 1fr);
 }
 .event-card {
   display: block;
@@ -89,6 +92,9 @@
 }
 .task-progress {
   color: var(--muted);
+}
+.progress-track > span {
+  background: var(--green);
 }
 .events-overview {
   padding: 0 0 24px;
@@ -175,6 +181,11 @@
   background: var(--control);
   color: var(--green);
 }
+@media (max-width: 1100px) {
+  .event-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 @media (max-width: 650px) {
   .event-card {
     padding: 20px;
@@ -203,13 +214,35 @@
     flex-wrap: wrap;
   }
   .events-overview {
-    gap: 14px 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .events-overview > div,
+  .events-overview > a {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0;
+    gap: 5px;
+    line-height: 1.4;
+  }
+  .events-overview > a > svg {
+    display: none;
   }
   .events-overview strong {
     font-size: 25px;
   }
   .panel {
     padding: 21px;
+  }
+  .events-list-toolbar .filter-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 3px 0 10px;
+  }
+  .events-list-toolbar .filter-tabs > button {
+    flex-shrink: 0;
   }
 }
 @media print {
