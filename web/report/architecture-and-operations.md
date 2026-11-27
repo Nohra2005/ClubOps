@@ -120,7 +120,7 @@ horizontal scaling are not supported claims. Finish active runs before restart.
 
 The actual host is an Azure VM. The last inspected candidate was `clubops:6749fb0`,
 full revision `6749fb00ea8efeabeabb682f0786a0b4ef85ea51`, on 26 November. It includes
-main `4722838` and the label fixes from open #168. See the dated host receipt below;
+main `4722838` and the label fixes from #168 (merged on 27 November). See the dated host receipt below;
 this version observation is distinct from main's merge state and final acceptance.
 
 ## Cost reporting and observability

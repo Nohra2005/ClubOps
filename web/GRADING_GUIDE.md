@@ -115,7 +115,7 @@ Before marking C-30 complete:
    them. This guide is not that review, and cannot certify its own completeness.
 
 The last verified hosted candidate is `6749fb0`, distinct from merged main
-`4722838`. Open #168 contains its label fixes and receipt. Open #170's cabinet
+`4722838`. PR #168, merged on 27 November, contains its label fixes and receipt. Open #170's cabinet
 turnover remains a synthetic prototype pending the server contract in #169; it is
 not a live deployment or an evaluated handover benefit. Recheck PR/deployment state
 before the final presentation.
