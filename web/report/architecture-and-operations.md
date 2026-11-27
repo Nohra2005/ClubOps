@@ -1,9 +1,9 @@
 # Report sections: architecture, web app, deployment and monitoring
 
-Christophe's C-29 draft, updated 23 November 2026. Interface baseline: main `2bb9f5e`.
+Christophe's C-29 draft, updated 26 November 2026. Interface baseline: main `4722838`.
 For Tatiana to review and incorporate into T-27. These sections describe implemented
-boundaries and local evidence. Final provider/evaluation results, hosted acceptance
-and team/user observations must be added from their actual records.
+boundaries, local evidence and dated host verification. Final evaluation, signed-in
+provider acceptance and team/user observations must be added from their actual records.
 
 ## Architecture and human approval
 
@@ -36,7 +36,11 @@ Calendar synchronization.
 
 Knowledge has a separate approval boundary. External descriptions, documents and
 interview answers are untrusted inputs. Learning proposes source-supported changes;
-a person's Review decision creates verified knowledge. Shared AUB rules and club
+a person's Review decision normally creates verified knowledge. The merged trusted
+OSA exception allows code to apply a clean new fact after source checks and the
+explicit paid read. Overrides/merges, contradictions and flagged mail still wait
+for review (D-151/#150), and applied changes retain Edit/Undo history. This does
+not establish a deployed background-reading schedule. Shared AUB rules and club
 know-how occupy separate scopes, with current validity filtering. Warning, disputed
 and shared cards require individual frontend review; their server authorization is
 independent of visibility in the browser. The current shared-review flow follows
@@ -66,9 +70,33 @@ adapter and tests a different boundary. Reproduction and acceptance gaps are in
 [CLUB_SETUP.md](../CLUB_SETUP.md).
 
 The answer-only setup contract retains an accepted stale-tab limit (F-151): a delayed
-answer can reach a later question. The UI asks for one tab. F-201 also records a
-rejected proposal reappearing after a partial queue failure and retry; it is never
-approved automatically. Neither limit is presented as fixed by the new browser test.
+answer can reach a later question. The UI asks for one tab. Rejected-card
+persistence was addressed in #142; the setup browser test does not establish
+recovery of every interrupted capture/queue failure path.
+
+Merged #123 adds a four-stop guided role introduction with browser-local,
+member/club/role-isolated progress and an expandable cited reference. It does not
+transfer membership or prove training. Ask is now wired to the source-gated core
+for the authenticated club (#149/D-200, fixes in #163), with dated source labels and inactive
+facts filtered. Structured tutoring, term persistence and measured user benefit
+remain separate work. Expiry visibility and Review draft protection merged in
+#152; Knowledge expiry editing after approval still needs an API field.
+
+Open [#170](https://github.com/Nohra2005/ClubOps/pull/170) replaces that recurring
+introduction with a cabinet turnover process and a once-per-term incoming brief.
+Its synthetic local prototype requires explicit activation and retains history;
+it cannot change production membership, sessions or chatbot context. The server
+contract is pending in [#169](https://github.com/Nohra2005/ClubOps/issues/169).
+This redesign must not be presented as merged, live or an evaluated training result.
+
+Calendar/Gmail connection APIs merged in #160/#161 (D-155/D-156); the controls
+merged in #167. Calendar and Settings show the server's connection state and
+president Connect/Disconnect. Inbox separates operator Connect/Disconnect from
+cabinet Fetch. Fetch returns counts without a model call; paid reading remains
+a separate action. Callback notices prompt a fresh state read, Google addresses
+are validated and disconnect requires confirmation. Synthetic desktop/phone
+[HTTP cases](../e2e/google-connections.spec.ts) cover states, roles, callbacks,
+errors and accessibility; they do not complete real Google consent or delivery.
 
 ## Deployment and authentication
 
@@ -86,9 +114,14 @@ Local container and persistence checks are implemented in the
 [Compose persistence checker](../scripts/check-compose-persistence.mjs) and recorded
 in [VERIFICATION.md](../VERIFICATION.md). They do not prove a public deployment,
 production OAuth origin, paid-service approval or backup restoration. The prepared
-Render configuration needs persistent storage; no hosting purchase or service is
-claimed here. In-process planning also means durable background-job recovery and
+Render configuration needs persistent storage; the configuration alone is not evidence of a hosting purchase
+or successful deployment. In-process planning also means durable background-job recovery and
 horizontal scaling are not supported claims. Finish active runs before restart.
+
+The actual host is an Azure VM. The last inspected candidate was `clubops:6749fb0`,
+full revision `6749fb00ea8efeabeabb682f0786a0b4ef85ea51`, on 26 November. It includes
+main `4722838` and the label fixes from #168 (merged on 27 November). See the dated host receipt below;
+this version observation is distinct from main's merge state and final acceptance.
 
 ## Cost reporting and observability
 
@@ -118,13 +151,24 @@ These require the documented Python/Node tools and installed Playwright browser.
 CI replays/scripted responses do not spend provider credit. Dated commands and
 outcomes belong in [VERIFICATION.md](../VERIFICATION.md).
 
-Independent teammate review and merge commits preserve the small change history.
+Merge commits preserve the small change history. Check each PR's review timeline
+before claiming independent review. Current AGENTS requires a different person's
+review; a temporary waiver does not create historical approval evidence.
 Prepared tooling and synthetic tests support engineering claims within their stated
 scope. C-29 remains doing until Joey's fresh README-only setup and Tatiana's report
-handoff/review are recorded. Public deployment, real Google/provider tests, actual
-club acceptance, final frozen evaluation thresholds require their own evidence; none are inferred from a passing test or board
+handoff/review are recorded. Real Google/provider tests, actual
+club acceptance and final frozen evaluation thresholds require their own evidence; none are inferred from a passing test or board
 iteration date. The owner-maintained report evidence index must link these files
 before publication.
+
+The published [24 November chatbot result](../../results/chatbot-evaluation.md)
+is available evidence, separate from the final planning evaluation. Of 41 scored
+questions it records 13 correct answers, one partly correct, 16 missed answerable
+questions and 11 correct unknowns, at $0.0131 reported cost. Q18 was excluded for
+a documented label/store conflict. One president marked one model run on a
+separate store enriched with president-stated facts; these counts are not live-store
+coverage or evidence that the system never invents. The [model trial](../../results/model-trial.md)
+reports a small practice-set selection, not held-out final superiority.
 
 ## README-only teammate setup evidence
 
@@ -148,3 +192,24 @@ repository activity for those weeks. Dates are owner-reported; the summaries do
 not establish attendance, oral decisions or original assignments. They should not
 be described as contemporaneous minutes or used to claim unverified outcomes.
 Other CI, testing and observability evidence retains its stated scope and limits.
+
+## Hosted verification: 24 to 26 November
+
+The 24 November public check established `/login` 200 and unauthenticated `/api/me`
+401, while SSH timed out and the image could not be inspected. That administrative
+blocker was later bypassed with authenticated Azure Run Command over HTTPS.
+
+The [26 November deployment receipt](https://github.com/Nohra2005/ClubOps/pull/168#issuecomment-7189560351)
+records container recreation and a healthy candidate `6749fb0`. Seven private
+SQLite backups preceded replacement; restoration was not tested. Host configuration
+was updated in place, preserving unrelated settings. The built Google sign-in
+client ID matched the server; development login was off and secure cookies were on.
+The served JavaScript included the Calendar/Gmail controls and corrected labels.
+
+Public `/login` returned 200. Unauthenticated `/api/me`, Calendar connection status
+and Gmail status returned 401. A SPA response at `/health` is not API-health proof.
+These observations establish the inspected build and unauthenticated boundary,
+not successful phone login, the signed-in president view, Google consent, mailbox
+fetch, external calendar writes or recovery. Those flows still need actual
+acceptance records. No secrets, private databases or account values belong in the
+public receipt or this report.
