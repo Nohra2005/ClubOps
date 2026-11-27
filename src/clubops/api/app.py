@@ -13,6 +13,7 @@ Conventions (agreed for C-13):
 from __future__ import annotations
 
 import io
+import logging
 import os
 import re
 import uuid
@@ -628,7 +629,8 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             return RedirectResponse("/calendar?google=denied", status_code=303)
         try:
             calendar_service.finish_connect(member.club_id, member.member_id, state, code, clock())
-        except ConnectError:
+        except ConnectError as err:
+            logging.getLogger(__name__).warning("calendar connect failed: %s", err)  # fixed text, never a code or key
             return RedirectResponse("/calendar?google=failed", status_code=303)
         background.add_task(calendar_service.drain, member.club_id)  # send what was waiting for a key
         return RedirectResponse("/calendar?google=connected", status_code=303)
