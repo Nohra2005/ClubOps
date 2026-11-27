@@ -966,3 +966,40 @@ required on this synced head; prior workflow/browser receipts are historical.
 stacked on this branch. Neither branch claims real turnover activation, provider
 consent or an Azure redeployment. Current-main deployment needs renewed Azure
 authorization; Tatiana must retry Calendar Connect after #172 is deployed.
+
+## 2026-11-27 - Christophe (C-40 Frost and Afterdark)
+
+**Did:** Implemented the two glass appearances Chris approved after eight isolated
+previews. Added a persistent sun/moon control in the workspace and sign-in, a
+pre-render bounded preference, semantic colors across existing screens, frosted
+navigation, readable form/source/dialog surfaces and stronger phone layouts.
+Theme state is independent of API/session/term state. Preserved source excerpts,
+expiry, disagreement, explicit approvals, costs and role restrictions. D-256,
+F-511/F-512; integration and verification guide: web/THEMES.md. Work is split into
+small commits and stacked on #170 so the turnover flow is not duplicated.
+
+**Verified:** Required root gates pass: Ruff/format 187 files, mypy 92,
+schemas/tasks, 949 tests and 93.74% coverage. Full frontend quality/build passes:
+158 units, 42 board-tool tests, lint/format and rehearsal types. Sixty existing
+demo/workflow cases pass. Eighteen new theme cases pass across the final rerun
+and one explicitly repeated network-interrupted desktop scan; both themes scan
+13 screens on desktop/phone, plus source printing and modal keyboard/reading.
+HTTP contract/provider workflows pass all 116 cases; actual local API/cookie/
+synthetic SQLite workflows pass eight cases with a scripted model. Reviewed
+desktop/phone screenshots in both themes; no page errors in the capture run.
+
+**Harness corrections:** Earlier runs were interrupted by Windows network
+suspension/change; traces record ERR_NETWORK_IO_SUSPENDED/ERR_NETWORK_CHANGED.
+Corrected the new focus assertion to allow Chromium visiting browser chrome
+between native-dialog cycles, and the temporary HTTP port to the recorder's
+existing allowlist. Assertions and recorder safeguards are retained. Temporary
+configs/artifacts remain ignored; final-head GitHub CI is separate.
+
+**Next:** Independent review and merge into #170 first under the stacked-PR rule.
+The design is not deployed. #172's Calendar fix and #153 are in main; #171 is
+synced and green. Current-main deployment is queued pending Chris's renewed
+Azure sign-in, then Tatiana must perform the real Calendar Connect retry. No
+Google consent, live mail/calendar action, paid model call or account change was
+performed here. Tatiana owns docs/evidence.md and docs/rubric-map.md references;
+this visual work does not alter frozen evaluation outcomes or real turnover's
+missing #169 backend contract.
