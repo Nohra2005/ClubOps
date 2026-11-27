@@ -701,3 +701,90 @@ cases pass. Strict metadata, role-tour and rehearsal fixtures now explicitly
 serve the new published GET states; unknown mutations remain rejected. Final
 combined CI is required. The current PR is #167; initial failed CI was the stale
 fixture expectations, not evidence of host configuration or Google acceptance.
+
+## 2026-11-26 - Christophe (C-18/C-35 Azure host verification)
+
+**Did:** #167 merged at main 4722838. Patched only the requested OAuth,
+operator and sender keys in the existing host environment file, preserving
+unrelated settings. No legacy Gmail refresh token existed. Recreated the actual
+Compose app, backed up four SQLite databases privately, built the production
+image from that fixed merged SHA and replaced the app image. The requested
+president membership was missing; added with the provided CLI and verified.
+Deleted both supplied OAuth JSON downloads after effective runtime verification.
+The Azure inspection session is closed; credentials were passed as protected
+parameters and never printed or committed. Added the Azure update runbook.
+
+**State:** Running image clubops:4722838 has full revision label
+4722838c3d2f371cfcbd6076cd689fc013821fe8 and is healthy. This includes #163.
+Runtime settings match Compose; server sign-in ID matches built JS/build ID;
+dev login is disabled and secure cookies enabled. Public login returns 200;
+unauthenticated /api/me, Calendar connection and Gmail status return 401.
+Served assets contain all three connection/fetch calls. All five #167 checks
+passed. Documentation formatting passes; root checks are recorded below.
+
+**Next:** Account owner tests real Google sign-in on a phone and confirms their
+club/president role, then explicitly connects Calendar and operator Gmail.
+Confirm the exact deployed Gmail callback in Google's console: it was absent
+from the supplied download, while Calendar's callback was present. Downloads
+can be stale; no Google-console change is inferred. Administrative membership,
+public smoke tests and synthetic phone tests do not prove real sign-in, consent,
+mailbox fetch or event-planning acceptance. C-18/C-35 remain doing for those gates.
+No live mail/model call, calendar write, data restore or disaster-recovery success
+is claimed. Host metadata and follow-up are posted on merged #167.
+
+### C-18 verification
+
+Root make-check equivalent gates pass on this merged source: 949 tests,
+93.76% coverage, Ruff/format 187 files, mypy 92 files, schemas and task validation.
+Used the verified locked environment with matching uv.lock and this worktree's
+source path. Documentation formatting and git diff whitespace checks pass.
+This follow-up changes task/handoff records and the deployment runbook only;
+#167's five green CI checks cover the deployed implementation. No new contract,
+design decision or failure mode is introduced here.
+
+## 2026-11-26 - Christophe (C-35 connection-label follow-up)
+
+**Did:** Checked the reported two literal question marks and changed them to
+an em dash in the host-configured status and an ellipsis in the Fetch loading
+label. Used Unicode escapes to preserve the characters across shell encodings.
+These two lines are a separate commit on deployment follow-up PR #168.
+
+**State:** Frontend check passes (151 units, 42 board-tool cases, lint, format,
+types and production build). All ten existing synthetic desktop/phone Google
+connection cases pass; shared dependency junction caused local Vite font warnings,
+so these results establish workflow/accessibility checks, not final font rendering.
+Root gates passed earlier on this branch (949 tests, 93.76%); no Python changes.
+Public HTTPS login is still 200; protected status endpoints require sign-in and
+the deployed bundle contains the connection controls. Chris reports the account
+owner said access worked; separate Calendar/Gmail consent outcomes are unspecified.
+
+**Next:** Review/merge #168, then include the two-label polish in the next host
+release; this session did not redeploy or change working host settings. The supplied
+host script was inspected, not executed: it assumes .env and a default Compose
+project, whereas the observed host uses production.env, compose.yaml and the named
+clubops-prod project. The prior deployment used protected parameters for secrets,
+not plaintext credentials in script text. Google-console callback verification
+and account-owner live connection acceptance remain as recorded above.
+
+## 2026-11-26 - Christophe (C-18/C-35 requested redeploy)
+
+**Did:** Chris explicitly requested redeployment while #168 remained open.
+After all five checks passed on head 6749fb0, deployed that exact SHA without
+merging or pushing main. Created seven private SQLite backups, built the
+production image and replaced only the app container. Every existing resolved
+runtime environment setting was verified against the new container; no OAuth
+setting, membership, secret or stored connection was changed by this release.
+
+**State:** Actual running image is clubops:6749fb0, revision
+6749fb00ea8efeabeabb682f0786a0b4ef85ea51, healthy. Fresh Azure inspection confirms
+OAuth keys present, matching frontend/server sign-in IDs, dev login disabled and
+secure cookies enabled. Public HTTPS login returns 200; unauthenticated /api/me,
+Calendar connection and Gmail status return 401. Served JS contains the corrected
+host separator and Fetch ellipsis, with the old Working? string absent. Managed
+inspection requests were given a fresh source marker to force new execution.
+The temporary Azure session is closed. This commit adds deployment records only.
+
+**Next:** Tatiana tests her own Calendar/Gmail connections on the live site and
+reviews/merges #168. Do not treat the deployed PR head as already merged into main,
+or these public/host checks as real Google consent, mail fetch or event acceptance.
+No external provider operation was triggered by the redeploy checks.
