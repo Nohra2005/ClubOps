@@ -1090,3 +1090,16 @@ Google consent, live mail/calendar action, paid model call or account change was
 performed here. Tatiana owns docs/evidence.md and docs/rubric-map.md references;
 this visual work does not alter frozen evaluation outcomes or real turnover's
 missing #169 backend contract.
+## 2026-11-28 - Christophe (C-39/C-40 publication preparation)
+
+**Did:** At Chris's request, synced the turnover branch with current main c782aea
+and retained both sets of design/failure additions and complete handoff entries.
+The Frost/Afterdark PR is stacked on this updated base. The old recurring role
+control is absent in that source; normal chat is unchanged. Live activation is
+still unavailable pending #169. Chris confirmed Calendar Connected after today's
+separate main deployment; this sync does not replace that working configuration.
+
+**Next:** Fresh combined checks and independent review under AGENTS rule 10 before
+merging #173 into #170, then #170 into main with merge commits. The two PRs
+currently have no independent review. Redeploy the merged main and verify the
+served bundle and old-control removal; do not claim the UI is already live.
