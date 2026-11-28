@@ -36,8 +36,10 @@ from pydantic import BaseModel, Field
 from clubops.agent.planner import ModelDecider, Planner, RunState
 from clubops.agent.rules_judge import RuleJudge
 from clubops.agent.runs import RunStore
+from clubops.api import roles as perms
 from clubops.api import views
 from clubops.api.handover import guide_view
+from clubops.api.roles import ClubRequests, ClubRoles, Feature, RoleError
 from clubops.api.security import (
     CSRF_HEADER,
     CSRF_VALUE,
@@ -46,6 +48,7 @@ from clubops.api.security import (
     Member,
     MemberStore,
     google_email,
+    legacy_key,
     read_session,
     sign_session,
 )
@@ -211,7 +214,30 @@ class EditBody(BaseModel):
 class MemberBody(BaseModel):
     name: str = Field(min_length=2, max_length=120)
     email: str = Field(max_length=200)
-    role: Role
+    # J-25: the club role to hold. ``role`` (the old enum field) still works: communications -> social_media.
+    role_key: str | None = Field(default=None, max_length=40)
+    role: Role | None = None
+
+
+class RoleBody(BaseModel):
+    name: str = Field(min_length=2, max_length=40)
+    features: list[Feature] = Field(default_factory=list)
+    task_label: Role = Role.EVENTS
+
+
+class RolePatch(BaseModel):
+    name: str | None = Field(default=None, min_length=2, max_length=40)
+    features: list[Feature] | None = None
+    task_label: Role | None = None
+
+
+class ClubRequestBody(BaseModel):
+    """Ask for a new club. ``credential`` is Google's ID token; ``email`` is accepted only with dev sign-in."""
+
+    name: str = Field(min_length=2, max_length=120)
+    club_name: str = Field(min_length=2, max_length=80)
+    credential: str | None = Field(default=None, min_length=10, max_length=5000)
+    email: str | None = Field(default=None, max_length=200)
 
 
 class RemoveBody(BaseModel):
@@ -259,6 +285,9 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
 ) -> FastAPI:
     app = FastAPI(title="ClubOps API", docs_url="/api/docs", openapi_url="/api/openapi.json")
     members = MemberStore(config.data_dir)
+    roles = ClubRoles(config.data_dir, members)
+    roles.migrate()  # J-25: additive and idempotent; every club with members gets its roles
+    club_requests = ClubRequests(config.data_dir, members, roles)
     setup_service = SetupService(config.data_dir)
     calendar_service = CalendarService(
         config.data_dir,
@@ -329,6 +358,29 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             raise HTTPException(403, "Only cabinet members can do this.")
         return member
 
+    def requires(feature: str) -> Callable[..., Member]:
+        """A signed-in member whose club role grants ``feature`` (J-25). The adviser never passes."""
+        if feature not in perms.FEATURES:
+            raise ValueError(f"unknown feature {feature}")
+
+        def check(member: Member = Depends(signed_in)) -> Member:  # noqa: B008
+            if feature not in roles.features_for(member):
+                raise HTTPException(403, "Your role can't do this. Ask your president.")
+            return member
+
+        check.__name__ = f"requires_{feature}"  # the route-coverage test reads this
+        return check
+
+    def calendar_reader(member: Member = Depends(signed_in)) -> Member:  # noqa: B008
+        if member.role is not Role.PRESIDENT and perms.CALENDAR_ACCESS not in roles.features_for(member):
+            raise HTTPException(403, "Your role can't do this. Ask your president.")
+        return member
+
+    def inbox_reader(member: Member = Depends(signed_in)) -> Member:  # noqa: B008
+        if perms.INBOX not in roles.features_for(member) and not gmail_service.is_operator(member.email):
+            raise HTTPException(403, "Your role can't do this. Ask your president.")
+        return member
+
     def president(member: Member = Depends(signed_in)) -> Member:  # noqa: B008
         if member.role is not Role.PRESIDENT:
             raise HTTPException(403, "Only the president can change the cabinet list.")
@@ -338,6 +390,16 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         if not gmail_service.is_operator(member.email):
             raise HTTPException(403, "Only an operator of this ClubOps host can do this.")
         return member
+
+    plan_events = requires(perms.PLAN_EVENTS)
+    approve_plans = requires(perms.APPROVE_PLANS)
+    tasks_feature = requires(perms.TASKS)
+    drafts = requires(perms.DRAFTS)
+    chat = requires(perms.CHAT)
+    upload_feature = requires(perms.UPLOAD)
+    review_approve = requires(perms.REVIEW_APPROVE)
+    knowledge_edit = requires(perms.KNOWLEDGE_EDIT)
+    inbox_feature = requires(perms.INBOX)
 
     def start_session(response: Response, member: Member) -> dict[str, Any]:
         response.set_cookie(
@@ -350,11 +412,15 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         )
         return me(member)
 
-    @app.post("/api/auth/google")
-    def google_sign_in(body: GoogleBody, response: Response) -> dict[str, Any]:
+    def verified_email(credential: str) -> str | None:
+        """The e-mail Google vouches for in this ID token, or None (D-56)."""
         if not config.google_client_id:
             raise HTTPException(501, "Google sign-in is not set up yet.")
-        email = google_email(body.credential, config.google_client_id, google_transport)
+        return google_email(credential, config.google_client_id, google_transport)
+
+    @app.post("/api/auth/google")
+    def google_sign_in(body: GoogleBody, response: Response) -> dict[str, Any]:
+        email = verified_email(body.credential)
         member = members.by_email(email) if email else None
         if member is None:
             raise HTTPException(403, "This account is not on a club's cabinet list. Ask your president to add you.")
@@ -394,9 +460,13 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             pending = len(store.pending)
         soon = sum(t["state"] in ("due_today", "overdue") for t in tasks)
         name = member.club_id.replace("-", " ").title()
+        features = roles.features_for(member)
         return {
             "user": member.view(),
             "role": member.role.value,
+            "role_key": member.role_key,
+            "role_name": roles.name_of(member),
+            "features": [f for f in perms.FEATURES if f in features],
             "club": {
                 "id": member.club_id,
                 "name": name,
@@ -469,7 +539,11 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             )
 
     @app.post("/api/events/plan", status_code=202)
-    def plan_event(body: PlanBody, background: BackgroundTasks, member: Member = Depends(cabinet)) -> dict[str, str]:  # noqa: B008
+    def plan_event(
+        body: PlanBody,
+        background: BackgroundTasks,
+        member: Member = Depends(plan_events),  # noqa: B008
+    ) -> dict[str, str]:
         """Starts the agent after answering; the UI polls GET /api/runs/{run_id}."""
         run_id = f"run-{uuid.uuid4().hex[:12]}"
         starting[run_id] = member.club_id
@@ -477,7 +551,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         return {"run_id": run_id}
 
     @app.post("/api/events/{event_id}/rebuild", status_code=202)
-    def rebuild(event_id: str, background: BackgroundTasks, member: Member = Depends(cabinet)) -> dict[str, str]:  # noqa: B008
+    def rebuild(event_id: str, background: BackgroundTasks, member: Member = Depends(plan_events)) -> dict[str, str]:  # noqa: B008
         with club(member.club_id) as (_, _, _, api):
             event = api.event(event_id)
         if event is None:
@@ -529,15 +603,15 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         return new.run.model_dump(mode="json")
 
     @app.post("/api/runs/{run_id}/answer")
-    def answer_run(run_id: str, body: AnswerBody, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    def answer_run(run_id: str, body: AnswerBody, member: Member = Depends(plan_events)) -> dict[str, Any]:  # noqa: B008
         return continue_run(member, run_id, lambda p, s: p.answer(s, body.text))
 
     @app.post("/api/runs/{run_id}/continue")
-    def keep_going(run_id: str, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    def keep_going(run_id: str, member: Member = Depends(plan_events)) -> dict[str, Any]:  # noqa: B008
         return continue_run(member, run_id, lambda p, s: p.keep_going(s))
 
     @app.patch("/api/events/{event_id}")
-    def edit_event(event_id: str, body: FieldsBody, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    def edit_event(event_id: str, body: FieldsBody, member: Member = Depends(plan_events)) -> dict[str, Any]:  # noqa: B008
         with club(member.club_id) as (_, _, _, api):
             event = api.event(event_id)
             if event is None:
@@ -555,7 +629,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         event_id: str,
         body: ApproveBody,
         background: BackgroundTasks,
-        member: Member = Depends(cabinet),  # noqa: B008
+        member: Member = Depends(approve_plans),  # noqa: B008
     ) -> dict[str, Any]:
         with club(member.club_id) as (_, directory, _, api):
             event = api.event(event_id)
@@ -580,7 +654,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         return event_detail(member.club_id, event_id)
 
     @app.patch("/api/tasks/{task_id:path}")
-    def change_task(task_id: str, body: TaskBody, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    def change_task(task_id: str, body: TaskBody, member: Member = Depends(tasks_feature)) -> dict[str, Any]:  # noqa: B008
         event_id = task_id.split("/", 1)[0]
         detail = event_detail(member.club_id, event_id)
         if not any(t["task_id"] == task_id for t in detail["tasks"]):
@@ -597,13 +671,13 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         return calendar_service.status(member.club_id)
 
     @app.post("/api/calendar/sync")
-    def calendar_sync_now(member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    def calendar_sync_now(member: Member = Depends(approve_plans)) -> dict[str, Any]:  # noqa: B008
         """Retry now. Sends only what an approved plan queued; it never creates anything."""
         calendar_service.drain()
         return calendar_service.status(member.club_id)
 
     @app.get("/api/calendar/connection")
-    def calendar_connection(member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    def calendar_connection(member: Member = Depends(calendar_reader)) -> dict[str, Any]:  # noqa: B008
         """Cabinet only, own club: ``{state, source, can_connect, access_changes_waiting}`` (T-46, D-155)."""
         return calendar_service.connection(member.club_id)
 
@@ -641,8 +715,8 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
 
     @app.post("/api/calendar/share-cabinet")
     def calendar_share_cabinet(background: BackgroundTasks, member: Member = Depends(president)) -> dict[str, int]:  # noqa: B008
-        """President only: ask Google to give today's cabinet read-only access to the club calendar."""
-        cabinet_now = [m for m in members.of_club(member.club_id) if m.is_cabinet]
+        """President only: give read-only access to the club calendar to everyone whose role has calendar access."""
+        cabinet_now = [m for m in members.of_club(member.club_id) if perms.CALENDAR_ACCESS in roles.features_for(m)]
         for person in cabinet_now:
             calendar_service.share_with(member.club_id, person.email, grant=True)
         background.add_task(calendar_service.drain, member.club_id)
@@ -694,15 +768,15 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             return views.knowledge(item, store.history(item.item_id), today())
 
     @app.post("/api/knowledge/{item_id}/edit")
-    def edit_fact(item_id: str, body: EditBody, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    def edit_fact(item_id: str, body: EditBody, member: Member = Depends(knowledge_edit)) -> dict[str, Any]:  # noqa: B008
         return _revise(member, item_id, statement=body.text.strip(), lead_time_days=body.lead_time_days)
 
     @app.post("/api/knowledge/{item_id}/retire")
-    def retire_fact(item_id: str, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    def retire_fact(item_id: str, member: Member = Depends(knowledge_edit)) -> dict[str, Any]:  # noqa: B008
         return _revise(member, item_id, retire=True)
 
     @app.post("/api/knowledge/{item_id}/undo")
-    def undo_fact(item_id: str, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    def undo_fact(item_id: str, member: Member = Depends(knowledge_edit)) -> dict[str, Any]:  # noqa: B008
         """Go back to the version before the last change, for example after an automatic update (D-138)."""
         return _revise(member, item_id, undo=True)
 
@@ -726,7 +800,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         return [c for c in cards if wanted is None or c["type"] in wanted]
 
     @app.post("/api/review/{proposal_id}")
-    def decide(proposal_id: str, body: DecisionBody, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    def decide(proposal_id: str, body: DecisionBody, member: Member = Depends(review_approve)) -> dict[str, Any]:  # noqa: B008
         with club(member.club_id) as (store, _, _, _):
             proposal = store.pending.get(proposal_id)
             if proposal is None:
@@ -785,7 +859,10 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
 
     @app.get("/api/cabinet")
     def cabinet_list(member: Member = Depends(signed_in)) -> list[dict[str, str]]:  # noqa: B008
-        return [m.view() for m in members.of_club(member.club_id)]
+        return [{**m.view(), "role_name": roles.name_of(m)} for m in members.of_club(member.club_id)]
+
+    def role_error(err: RoleError) -> HTTPException:
+        return HTTPException(err.status, err.message)
 
     @app.post("/api/cabinet", status_code=201)
     def add_member(
@@ -793,16 +870,30 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         background: BackgroundTasks,
         member: Member = Depends(president),  # noqa: B008
     ) -> dict[str, str]:
+        key = body.role_key or (legacy_key(body.role) if body.role is not None else None)
+        if key is None:
+            raise HTTPException(422, "Choose a role for the new member.")
+        if key == Role.MEMBER.value:
+            raise HTTPException(422, "only cabinet members and the adviser have accounts")
         if members.by_email(body.email) is not None:
             raise HTTPException(409, "This e-mail is already on a cabinet list.")
-        try:
-            added = members.add(member.club_id, body.name, body.email, body.role)
-        except ValueError as err:
-            raise HTTPException(422, str(err)) from None
-        if added.is_cabinet:  # read-only access to the club calendar; sent after the reply, retried on failure
+        with roles.lock:  # the role can't be deleted between checking it and adding the member (F-407)
+            if key == perms.ADVISER_KEY:
+                label, reader = Role.ADVISER, False
+            else:
+                try:
+                    held = roles.resolve(member.club_id, key)
+                except RoleError as err:
+                    raise role_error(err) from None
+                label, reader = held.task_label, perms.CALENDAR_ACCESS in held.features
+            try:
+                added = members.add(member.club_id, body.name, body.email, label, key)
+            except ValueError as err:
+                raise HTTPException(422, str(err)) from None
+        if reader:  # read-only access to the club calendar; sent after the reply, retried on failure
             calendar_service.share_with(member.club_id, added.email, grant=True)
             background.add_task(calendar_service.drain, member.club_id)
-        return added.view()
+        return {**added.view(), "role_name": roles.name_of(added)}
 
     @app.delete("/api/cabinet", status_code=204)
     def remove_member(
@@ -813,11 +904,102 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         if body.member_id == member.member_id:
             raise HTTPException(422, "You can't remove yourself; hand over the presidency first.")
         leaving = next((m for m in members.of_club(member.club_id) if m.member_id == body.member_id), None)
+        reader = leaving is not None and perms.CALENDAR_ACCESS in roles.features_for(leaving)
         if not members.remove(member.club_id, body.member_id):
             raise HTTPException(404, "No such member in your club.")
-        if leaving is not None and leaving.is_cabinet:  # take back only the reader access ClubOps gave
+        if leaving is not None and reader:  # take back only the reader access ClubOps gave
             calendar_service.share_with(member.club_id, leaving.email, grant=False)
             background.add_task(calendar_service.drain, member.club_id)
+
+    # --------------------------------------------------------- roles (J-25)
+
+    @app.get("/api/roles")
+    def list_roles(member: Member = Depends(signed_in)) -> dict[str, Any]:  # noqa: B008
+        """The club's roles with their features and how many people hold each; any signed-in member reads it."""
+        held = members.of_club(member.club_id)
+        return {
+            "roles": [r.view(sum(m.role_key == r.key for m in held)) for r in roles.of_club(member.club_id)],
+            "features": list(perms.FEATURES),
+            "task_labels": sorted(label.value for label in perms.TASK_LABELS),
+        }
+
+    @app.post("/api/roles", status_code=201)
+    def create_role(body: RoleBody, member: Member = Depends(president)) -> dict[str, Any]:  # noqa: B008
+        try:
+            return roles.create(member.club_id, body.name, body.features, body.task_label).view()
+        except RoleError as err:
+            raise role_error(err) from None
+
+    @app.patch("/api/roles/{key}")
+    def edit_role(
+        key: str,
+        body: RolePatch,
+        background: BackgroundTasks,
+        member: Member = Depends(president),  # noqa: B008
+    ) -> dict[str, Any]:
+        """Base roles answer 403. Turning calendar access on or off queues the reader change for every holder,
+        through the same queue adding and removing a member uses (J-21)."""
+        try:
+            before, after = roles.update(
+                member.club_id, key, name=body.name, features=body.features, task_label=body.task_label
+            )
+        except RoleError as err:
+            raise role_error(err) from None
+        holders = members.holding(member.club_id, key)
+        if after.task_label is not before.task_label:
+            members.relabel(member.club_id, key, after.task_label)
+        grant = perms.CALENDAR_ACCESS in after.features
+        if grant != (perms.CALENDAR_ACCESS in before.features) and holders:
+            for person in holders:
+                calendar_service.share_with(member.club_id, person.email, grant=grant)
+            background.add_task(calendar_service.drain, member.club_id)
+        return after.view(len(holders))
+
+    @app.delete("/api/roles/{key}", status_code=204)
+    def delete_role(key: str, member: Member = Depends(president)) -> None:  # noqa: B008
+        try:
+            roles.delete(member.club_id, key)
+        except RoleError as err:
+            raise role_error(err) from None
+
+    # -------------------------------------------------- club sign-up (J-25)
+
+    @app.post("/api/clubs/requests", status_code=201)
+    def request_club(body: ClubRequestBody) -> dict[str, Any]:
+        """Ask for a new club. The e-mail comes from a verified Google token (or the dev sign-in when it is on).
+        No session is started and no club data is shown: an operator must approve first."""
+        email: str | None = None
+        if body.credential:
+            email = verified_email(body.credential)
+        elif config.dev_login and body.email:
+            email = body.email.strip().lower()
+        if not email:
+            raise HTTPException(403, "Sign in with Google to ask for a club.")
+        try:
+            return club_requests.create(email, body.name, body.club_name, clock()).view()
+        except RoleError as err:
+            raise role_error(err) from None
+
+    @app.get("/api/clubs/requests")
+    def club_request_list(member: Member = Depends(operator)) -> list[dict[str, Any]]:  # noqa: B008
+        """Operator only: requests waiting for a decision, oldest first."""
+        return [r.view() for r in club_requests.pending()]
+
+    @app.post("/api/clubs/requests/{request_id}/approve")
+    def approve_club(request_id: str, member: Member = Depends(operator)) -> dict[str, Any]:  # noqa: B008
+        """Operator only: create the club with its five base roles and the requester as its president."""
+        try:
+            decided, first_president = club_requests.approve(request_id, member, clock())
+        except RoleError as err:
+            raise role_error(err) from None
+        return {**decided.view(), "president": first_president.view()}
+
+    @app.post("/api/clubs/requests/{request_id}/reject")
+    def reject_club(request_id: str, member: Member = Depends(operator)) -> dict[str, Any]:  # noqa: B008
+        try:
+            return club_requests.reject(request_id, member, clock()).view()
+        except RoleError as err:
+            raise role_error(err) from None
 
     @app.get("/api/handover/{role}")
     def handover(role: Role, member: Member = Depends(signed_in)) -> dict[str, Any]:  # noqa: B008
@@ -866,7 +1048,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         )
 
     @app.post("/api/chat/teach")
-    def teach(body: AnswerBody, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    def teach(body: AnswerBody, member: Member = Depends(chat)) -> dict[str, Any]:  # noqa: B008
         ids = learn(
             member, [untrusted(body.text, SourceKind.USER_INPUT, f"chat/{member.member_id}/{clock():%Y%m%d%H%M%S}")]
         )
@@ -881,7 +1063,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         answers: dict[str, str]
 
     @app.post("/api/events/{event_id}/after-event")
-    def after_event(event_id: str, body: AfterEventBody, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    def after_event(event_id: str, body: AfterEventBody, member: Member = Depends(upload_feature)) -> dict[str, Any]:  # noqa: B008
         with club(member.club_id) as (_, directory, _, api):
             event = api.event(event_id)
             if event is None:
@@ -904,7 +1086,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         return {"draft": draft, "review_count": len(ids)}
 
     @app.post("/api/documents")
-    async def upload(file: UploadFile, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    async def upload(file: UploadFile, member: Member = Depends(upload_feature)) -> dict[str, Any]:  # noqa: B008
         name = (file.filename or "document")[:120]
         kind = name.lower().rsplit(".", 1)[-1]
         limit = MAX_PDF_UPLOAD if kind == "pdf" else MAX_UPLOAD
@@ -981,7 +1163,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
     # ------------------------------------------------------------- chatbot (J-15)
 
     @app.post("/api/chat/ask")
-    def ask(body: ChatBody, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
+    def ask(body: ChatBody, member: Member = Depends(chat)) -> dict[str, Any]:  # noqa: B008
         """A cabinet click asks only the signed-in club's current approved knowledge."""
         with club(member.club_id) as (store, _, _, _):
             answer = ask_question(
@@ -1019,7 +1201,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         }
 
     @app.get("/api/inbox/gmail")
-    def gmail_state(member: Member = Depends(cabinet)) -> dict[str, object]:  # noqa: B008
+    def gmail_state(member: Member = Depends(inbox_reader)) -> dict[str, object]:  # noqa: B008
         """Cabinet only: ``{state, source, can_connect, can_manage}``; ``can_manage`` is true for an operator."""
         return {**gmail_service.state(), "can_manage": gmail_service.is_operator(member.email)}
 
@@ -1051,7 +1233,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         gmail_service.disconnect()
 
     @app.post("/api/inbox/fetch")
-    def inbox_fetch(member: Member = Depends(cabinet)) -> dict[str, int]:  # noqa: B008
+    def inbox_fetch(member: Member = Depends(inbox_feature)) -> dict[str, int]:  # noqa: B008
         """Free (no model call): list the inbox and apply the free checks. Counts only, never mail text."""
         try:
             return gmail_service.fetch(clock())
@@ -1059,17 +1241,17 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             raise HTTPException(409, str(err)) from None
 
     @app.get("/api/inbox")
-    def inbox_list(member: Member = Depends(cabinet)) -> list[dict[str, str]]:  # noqa: B008
+    def inbox_list(member: Member = Depends(inbox_feature)) -> list[dict[str, str]]:  # noqa: B008
         """Forwarded e-mails waiting for this club. Free: nothing has been read by a model yet."""
         return [_summary(mid, req) for mid, req in inbox.pending(member.club_id)]
 
     @app.get("/api/inbox/skipped")
-    def inbox_skipped(member: Member = Depends(cabinet)) -> list[dict[str, str]]:  # noqa: B008
+    def inbox_skipped(member: Member = Depends(inbox_feature)) -> list[dict[str, str]]:  # noqa: B008
         """Forwarded e-mails the free checks refused, with the reason in plain words. Never read."""
         return inbox_notes.skipped(member.club_id)
 
     @app.post("/api/inbox/{message_id}/allow")
-    def inbox_allow(message_id: str, member: Member = Depends(cabinet)) -> dict[str, bool]:  # noqa: B008
+    def inbox_allow(message_id: str, member: Member = Depends(inbox_feature)) -> dict[str, bool]:  # noqa: B008
         """Release an e-mail that was skipped only because its original sender is not on the OSA list. It joins
         the waiting list; nothing is read until someone confirms the paid read, and its cards say the sender is
         unlisted (D-136)."""
@@ -1085,7 +1267,7 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
     def inbox_capture(
         message_id: str,
         background: BackgroundTasks,
-        member: Member = Depends(cabinet),  # noqa: B008
+        member: Member = Depends(inbox_feature),  # noqa: B008
     ) -> dict[str, Any]:
         """One paid model read, started by a person. Proposals go to Review; the e-mail leaves the queue
         only when the read worked, so a failed read can be retried (F-214). Nothing is approved here (D-41)."""
@@ -1179,14 +1361,14 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
         )
     )
 
-    def not_yet(task: str) -> Callable[..., Any]:
-        def handler(member: Member = Depends(signed_in)) -> None:  # noqa: B008
+    def not_yet(task: str, allowed: Callable[..., Member]) -> Callable[..., Any]:
+        def handler(member: Member = Depends(allowed)) -> None:  # noqa: B008
             raise HTTPException(501, f"This part of ClubOps isn't built yet ({task}).")
 
         return handler
 
-    for method, path, task in (("POST", "/api/events/{event_id}/drafts/{draft_type}", "J-07"),):
-        app.add_api_route(path, not_yet(task), methods=[method])
+    for method, path, task, allowed in (("POST", "/api/events/{event_id}/drafts/{draft_type}", "J-07", drafts),):
+        app.add_api_route(path, not_yet(task, allowed), methods=[method])
 
     return app
 

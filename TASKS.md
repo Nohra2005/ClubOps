@@ -930,3 +930,10 @@ Reference documents:
 
 - Readiness (2026-11-22): checked local configuration without exposing values; live provider/sign-in/Calendar/Gmail setup is missing. Prepared ignored private cabinet review and Gmail/Calendar acceptance worksheets with no results claimed. Confirmed the chatbot route is still a placeholder and requested the API owner handoff. No configuration, paid call, live mailbox access or Google write was performed.
 - Done (2026-11-23): this pass merged #104, #119, #120, #121, #123 and #124 after independent current-head approval and green CI; no open PRs remain. No email was sent.
+
+### J-25 Club roles and permissions
+- Owner: joey
+- Status: review
+- Needs: none
+- What: Per-club roles in the API layer (D-201): five fixed base roles and president-made custom roles, each a set of feature grants with a task label from the frozen `Role` enum; every mutating route checks a feature, president or operator; `/api/me` lists features; `/api/roles` CRUD; a custom role's calendar switch queues reader grant/revoke; new clubs come from a Google-verified request an operator approves; an additive start-up migration keeps every existing member working.
+- Done when: the backend PR is merged after Tatiana's review; the Settings and sign-up screens follow in a separate PR reviewed by Christophe.
