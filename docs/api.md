@@ -18,7 +18,7 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Errors | HTTP status + `{"detail": "<plain sentence>"}`: 401 not signed in, 403 not allowed (or missing header), 404 not found (also another club's data), 409 changed since loaded, 422 bad input, 501 not built yet. |
 | CSRF | **Every** POST, PATCH and DELETE needs `X-Requested-With: ClubOps`, including bodiless POSTs (`rebuild`, `continue`) and file uploads. The frontend now sends it in all these cases; the browser sets multipart boundaries. |
 | Sign-in | Google (D-56), any Google account: AUB accounts are Microsoft, and Microsoft sign-in would need AUB IT's approval, so the president puts each member's Google e-mail on the cabinet list (D-68). The browser gets Google's ID token (Google Identity Services, client id from `CLUBOPS_GOOGLE_CLIENT_ID`) and posts it to `POST /api/auth/google {credential}`. The server checks it with Google and matches the e-mail to the cabinet list. Session = HttpOnly, SameSite=Lax cookie, 7 days. `POST /api/auth/logout` ends it. `POST /api/auth/dev {email}` exists only when `CLUBOPS_DEV_LOGIN=1`. |
-| Who may do what | Any signed-in member of the club can read. Cabinet roles can plan, answer, edit, approve and decide reviews. The adviser reads only. Only the president changes the cabinet list. Ordinary members have no account. |
+| Who may do what | J-25 (D-201): any signed-in member, the adviser included, reads events, calendar, knowledge, review list, handover and usage. Changing anything needs a **feature** of the member's club role (see "Roles and features" below), else 403. The adviser has no features. Managing members and roles, connecting/disconnecting/sharing the calendar and restoring expired knowledge are president only. Ordinary members have no account. |
 | Club | Always from the session, never from the URL. Another club's ids return 404. |
 | Ids in paths | `task_id` contains a slash (`ev-x/osa-proposal`); both `%2F` and a raw slash work. |
 | Starting a plan | `POST /api/events/plan` answers 202 `{run_id}` at once and the agent runs in the background. Poll `GET /api/runs/{run_id}`; before the first step it shows `status: running` with no steps. |
@@ -75,6 +75,38 @@ uv run python scripts/add_member.py running-club "Your Name" you@mail.aub.edu pr
 | Knowledge | `POST /api/knowledge/{id}/edit {text, lead_time_days?}`, `POST /api/knowledge/{id}/retire`, `POST /api/knowledge/{id}/undo` | live (cabinet only, CSRF). `lead_time_days` (rules only) changes the longest notice period, the number the planner enforces; the words alone do not (F-309). Each applies at once as a new version, the old one stays in history (D-138); undo goes back to the version before the last change. A shared fact needs a president unless code added it from trusted mail. Returns the fact; 404 if the club cannot see it; 409 when undo has no earlier version |
 
 The demo-only actions in `client.ts` (`/__ui/*`) stay demo-only for now.
+
+## Roles and features (J-25, D-201)
+
+Every club has five base roles, created automatically and not editable: `president`, `vice_president`, `treasurer`, `secretary`, `social_media` (task label `communications`). The president can add custom roles. The frozen `Role` enum is still each member's task label (`role` in responses); `role_key` is the club role.
+
+| Feature | Routes | president | vice_president | treasurer | secretary | social_media |
+|---|---|---|---|---|---|---|
+| `plan_events` | plan, rebuild, runs answer/continue, PATCH event | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `approve_plans` | approve-plan, POST /api/calendar/sync | ✓ | ✓ | – | – | – |
+| `tasks` | PATCH /api/tasks/{id} | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `drafts` | POST drafts | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `chat` | chat/ask, chat/teach | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `upload` | documents, after-event | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `review_approve` | POST /api/review/{id} | ✓ | ✓ | – | – | – |
+| `knowledge_edit` | knowledge edit/retire/undo | ✓ | ✓ | – | – | – |
+| `inbox` | GET /api/inbox, /skipped, fetch, allow, capture; GET /api/inbox/gmail (also operators) | ✓ | ✓ | – | ✓ | – |
+| `calendar_access` | reader access to the shared Google calendar; GET /api/calendar/connection (also president) | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+`GET /api/calendar/sync` stays any cabinet member. Members from before J-25 keep working: `communications` became `social_media`; `events` and `sponsorship` holders got a custom role of that name with treasurer-level grants (calendar access on).
+
+| Method and path | Who | Notes |
+|---|---|---|
+| `GET /api/me` | signed in | adds `role_key`, `role_name`, `features` (in the order above) |
+| `GET /api/roles` | signed in | `{roles: [{key, name, task_label, features, base, editable, holders}], features, task_labels}` |
+| `POST /api/roles {name, features?, task_label?}` | president | 201; key is a slug of the name; 409 same name; 422 unknown feature or task label `president`/`member`/`adviser` |
+| `PATCH /api/roles/{key} {name?, features?, task_label?}` | president | 403 base role, 404 another club's; switching `calendar_access` queues grant/revoke for every holder; a new task label moves the holders' label |
+| `DELETE /api/roles/{key}` | president | 204; 409 while someone holds it |
+| `POST /api/cabinet {name, email, role_key}` | president | old `role` field still accepted; `role_key: "adviser"` adds the read-only adviser; calendar reader access only when the role has `calendar_access` |
+| `POST /api/clubs/requests {name, club_name, credential}` | anyone with a verified Google ID token (`email` instead only with `CLUBOPS_DEV_LOGIN=1`) | 201 `{id, email, name, club_name, club_id, created_at, status: "pending"}`; no session; 409 already pending or already a member; 403 without a verified token |
+| `GET /api/clubs/requests` | operator | pending requests, oldest first |
+| `POST /api/clubs/requests/{id}/approve` | operator | creates the club (unique slug), its base roles and the requester as president; 409 if already decided |
+| `POST /api/clubs/requests/{id}/reject` | operator | records the rejection |
 
 ## Usage reporting (C-20)
 

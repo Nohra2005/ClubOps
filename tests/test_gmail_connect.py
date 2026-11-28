@@ -141,11 +141,17 @@ def test_only_an_operator_connects_and_only_the_cabinet_fetches(client: TestClie
     assert client.get("/api/inbox/gmail").status_code == 401
     assert client.post("/api/inbox/fetch", headers=HEADERS).status_code == 401
     assert client.get("/api/inbox/gmail/callback?state=x&code=y", follow_redirects=False).status_code == 401
-    sign_in(client, EVENTS)  # cabinet, not an operator
+    sign_in(client, PRESIDENT)  # J-25: the inbox is a role feature; the secretary has it, Events does not
+    secretary = {"name": "Synthetic Secretary", "email": "ts06@example.org", "role_key": "secretary"}
+    assert client.post("/api/cabinet", json=secretary, headers=HEADERS).status_code == 201
+    sign_in(client, "ts06@example.org")  # inbox feature, not an operator
     assert client.get("/api/inbox/gmail").json()["can_manage"] is False
     assert client.post("/api/inbox/gmail/connect", headers=HEADERS).status_code == 403
     assert client.delete("/api/inbox/gmail/connect", headers=HEADERS).status_code == 403
     assert client.get("/api/inbox/gmail/callback?state=x&code=y", follow_redirects=False).status_code == 403
+    sign_in(client, EVENTS)  # cabinet, but its role has no inbox feature
+    assert client.get("/api/inbox/gmail").status_code == 403
+    assert client.post("/api/inbox/fetch", headers=HEADERS).status_code == 403
     client.post("/api/auth/logout", headers=HEADERS)
     sign_in(client, ADVISER)  # the adviser is not cabinet: no fetch, no state
     assert client.get("/api/inbox/gmail").status_code == 403

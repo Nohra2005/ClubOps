@@ -39,7 +39,12 @@ class Member:
     club_id: str
     name: str
     email: str
-    role: Role
+    role: Role  # the task-ownership label (frozen ``Role`` enum); permissions come from ``role_key`` (J-25)
+    role_key: str = ""  # the club role the member holds (``clubops.api.roles``); "" means the legacy default
+
+    def __post_init__(self) -> None:
+        if not self.role_key:
+            object.__setattr__(self, "role_key", legacy_key(self.role))
 
     def actor(self) -> Actor:
         return Actor(member_id=self.member_id, club_id=self.club_id, roles=frozenset({self.role}), verified=True)
@@ -49,7 +54,22 @@ class Member:
         return self.role in CABINET_ROLES
 
     def view(self) -> dict[str, str]:
-        return {"member_id": self.member_id, "name": self.name, "email": self.email, "role": self.role.value}
+        return {
+            "member_id": self.member_id,
+            "name": self.name,
+            "email": self.email,
+            "role": self.role.value,
+            "role_key": self.role_key,
+        }
+
+
+# Before J-25 a member's only role was the enum value; these are the club-role keys those values became.
+_LEGACY_KEYS = {Role.COMMUNICATIONS: "social_media"}
+
+
+def legacy_key(role: Role) -> str:
+    """The club-role key an old enum-only member holds: the same word, except communications -> social_media."""
+    return _LEGACY_KEYS.get(role, role.value)
 
 
 # ---------------------------------------------------------------- sessions
@@ -101,10 +121,22 @@ class MemberStore:
         data_dir.mkdir(parents=True, exist_ok=True)
         self._lock = threading.RLock()
         self._db = sqlite3.connect(str(data_dir / "general.db"), check_same_thread=False)
-        self._db.execute(
-            "CREATE TABLE IF NOT EXISTS members (member_id TEXT PRIMARY KEY, club_id TEXT NOT NULL, "
-            "name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, role TEXT NOT NULL)"
-        )
+        with self._lock, self._db:
+            self._db.execute(
+                "CREATE TABLE IF NOT EXISTS members (member_id TEXT PRIMARY KEY, club_id TEXT NOT NULL, "
+                "name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, role TEXT NOT NULL, role_key TEXT)"
+            )
+            # J-25, additive and idempotent: an older file has no role_key column. Add it and fill it from the
+            # enum role, never dropping or rewriting the role column that other readers still use.
+            columns = {str(row[1]) for row in self._db.execute("PRAGMA table_info(members)")}
+            if "role_key" not in columns:
+                self._db.execute("ALTER TABLE members ADD COLUMN role_key TEXT")
+            for old, key in _LEGACY_KEYS.items():
+                self._db.execute(
+                    "UPDATE members SET role_key = ? WHERE (role_key IS NULL OR role_key = '') AND role = ?",
+                    (key, old.value),
+                )
+            self._db.execute("UPDATE members SET role_key = role WHERE role_key IS NULL OR role_key = ''")
 
     def close(self) -> None:
         with self._lock:
@@ -119,20 +151,43 @@ class MemberStore:
             return self._db.execute(sql, params).fetchall()
 
     @staticmethod
-    def _row(row: tuple[str, str, str, str, str] | None) -> Member | None:
-        return None if row is None else Member(row[0], row[1], row[2], row[3], Role(row[4]))
+    def _row(row: tuple[str, str, str, str, str, str | None] | None) -> Member | None:
+        return None if row is None else Member(row[0], row[1], row[2], row[3], Role(row[4]), row[5] or "")
+
+    _COLUMNS = "SELECT member_id, club_id, name, email, role, role_key FROM members"
 
     def get(self, member_id: str) -> Member | None:
-        return self._row(self._one("SELECT * FROM members WHERE member_id = ?", (member_id,)))
+        return self._row(self._one(f"{self._COLUMNS} WHERE member_id = ?", (member_id,)))
 
     def by_email(self, email: str) -> Member | None:
-        return self._row(self._one("SELECT * FROM members WHERE email = ?", (email.strip().lower(),)))
+        return self._row(self._one(f"{self._COLUMNS} WHERE email = ?", (email.strip().lower(),)))
 
     def of_club(self, club_id: str) -> list[Member]:
-        rows = self._all("SELECT * FROM members WHERE club_id = ? ORDER BY name", (club_id,))
+        rows = self._all(f"{self._COLUMNS} WHERE club_id = ? ORDER BY name", (club_id,))
         return [m for m in (self._row(r) for r in rows) if m is not None]
 
-    def add(self, club_id: str, name: str, email: str, role: Role) -> Member:
+    def holding(self, club_id: str, role_key: str) -> list[Member]:
+        """The club's members who hold one club role (J-25)."""
+        return [m for m in self.of_club(club_id) if m.role_key == role_key]
+
+    def everyone(self) -> list[Member]:
+        """Every member of every club, for the start-up role migration (J-25)."""
+        rows = self._all(f"{self._COLUMNS} ORDER BY club_id, name", ())
+        return [m for m in (self._row(r) for r in rows) if m is not None]
+
+    def club_ids(self) -> set[str]:
+        return {str(r[0]) for r in self._all("SELECT DISTINCT club_id FROM members", ())}
+
+    def relabel(self, club_id: str, role_key: str, role: Role) -> int:
+        """Give everyone holding a club role its new task label. Returns how many rows changed (J-25)."""
+        with self._lock, self._db:
+            cur = self._db.execute(
+                "UPDATE members SET role = ? WHERE club_id = ? AND role_key = ?", (role.value, club_id, role_key)
+            )
+            return cur.rowcount
+
+    def add(self, club_id: str, name: str, email: str, role: Role, role_key: str | None = None) -> Member:
+        """``role`` is the task label; ``role_key`` the club role (J-25), by default the legacy key of ``role``."""
         email = email.strip().lower()
         if not _EMAIL.match(email):
             raise ValueError("this is not an e-mail address")
@@ -146,7 +201,8 @@ class MemberStore:
                 member_id = f"m-{slug}-{n}"
             with self._db:
                 self._db.execute(
-                    "INSERT INTO members VALUES (?, ?, ?, ?, ?)", (member_id, club_id, name.strip(), email, role.value)
+                    "INSERT INTO members (member_id, club_id, name, email, role, role_key) VALUES (?, ?, ?, ?, ?, ?)",
+                    (member_id, club_id, name.strip(), email, role.value, role_key or legacy_key(role)),
                 )
             member = self.get(member_id)
         assert member is not None  # noqa: S101 (just written)
