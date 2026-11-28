@@ -209,6 +209,7 @@ export type ChatReply =
       text: string;
       basis: 'verified' | 'single_source' | 'disputed';
       citations: Source[];
+      event_source?: string;
       review_id?: string;
       fallback?: boolean;
     }

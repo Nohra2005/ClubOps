@@ -1161,3 +1161,14 @@ replay mode. No provider key was printed or guessed. Live provider configuration
 must be supplied privately; the no-redeploy constraint remains in force. No app
 source changed, so existing green main checks are reused; task-log validation is
 the only new local repository check. This record does not claim chat is repaired.
+
+## 2026-11-28 - Christophe (C-41 event chat preview)
+
+**Did:** Added separate General and per-event conversations in the sample
+workspace, with an entry from Event Detail and history in the Chat sidebar.
+Sample answers to supported event questions read the current event and link to
+its details. Existing sample history becomes a General conversation.
+
+**Next:** Agree on server-owned history and event context with the API owners.
+The live Ask and Teach calls are unchanged. See web/CHAT_CONVERSATIONS.md for
+the operations and access checks needed to turn the preview into the live flow.
