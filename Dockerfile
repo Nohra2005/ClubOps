@@ -28,7 +28,7 @@ COPY src/ ./src/
 RUN --mount=type=secret,id=clubops_build_ca \
     if [ -f /run/secrets/clubops_build_ca ]; then export SSL_CERT_FILE=/run/secrets/clubops_build_ca; fi; \
     uv sync --locked --no-dev --no-editable --system-certs
-COPY scripts/load_rulebook.py scripts/add_member.py ./scripts/
+COPY scripts/load_rulebook.py scripts/add_member.py scripts/move_knowledge.py ./scripts/
 COPY data/rulebook/aub-rules.json ./data/rulebook/aub-rules.json
 COPY --from=frontend /build/web/dist ./web/dist/
 COPY web/Caddyfile web/start.sh web/serve.sh ./web/
