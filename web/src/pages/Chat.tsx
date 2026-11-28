@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { ArrowUp, CheckCheck, FileText, MessageCircle, Plus } from 'lucide-react';
 import { useApp } from '../AppContext';
-import { storage } from '../api';
+import { ChatLibrary } from '../chat/ChatLibrary';
 import { type ChatMessage, type ChatReply } from '../api/types';
 import { Feedback } from '../components/Feedback';
 import {
@@ -54,6 +54,14 @@ function Reply({ reply, id }: { reply: ChatReply; id: string }) {
             </div>
           )}
           <div className="source-list">
+            {reply.event_source && (
+              <Link
+                className="source-chip"
+                to={`/events/${encodeURIComponent(reply.event_source)}`}
+              >
+                <FileText size={11} /> Event details
+              </Link>
+            )}
             {reply.citations.map((source) => (
               <SourceChip key={source.item_id} source={source} />
             ))}
@@ -67,20 +75,38 @@ function Reply({ reply, id }: { reply: ChatReply; id: string }) {
 }
 
 export default function Chat() {
+  const { api, me } = useApp();
+  return api.mode === 'demo' ? (
+    <ChatLibrary key={JSON.stringify([me.club.id, me.user.member_id])} panel={ChatPanel} />
+  ) : (
+    <ChatPanel />
+  );
+}
+
+export interface ChatPanelProps {
+  initialMessages?: ChatMessage[];
+  onTurn?: (messages: ChatMessage[]) => void;
+  onActivity?: (pending: boolean) => void;
+  eventTitle?: string;
+  previewAsk?: (text: string, messages: ChatMessage[]) => Promise<ChatReply>;
+  suggestions?: string[];
+}
+
+function ChatPanel({
+  initialMessages = [],
+  onTurn,
+  onActivity,
+  eventTitle,
+  previewAsk,
+  suggestions = [
+    'What do I need for an event with outside guests?',
+    'Who do we contact about the venue?',
+    'What did we learn from the last run?',
+  ],
+}: ChatPanelProps) {
   const { api, me, canEdit, refresh } = useApp();
   const [search] = useSearchParams();
-  const historyKey = `clubops.chat.demo.${me.club.id}.${me.user.member_id}`;
-  const [messages, setMessages] = useState<ChatMessage[]>(() => {
-    if (api.mode !== 'demo') return [];
-    try {
-      const value = JSON.parse(storage.getItem(historyKey) ?? '[]');
-      return Array.isArray(value)
-        ? value.filter((m) => ['user', 'assistant'].includes(m.role) && typeof m.text === 'string')
-        : [];
-    } catch {
-      return [];
-    }
-  });
+  const [messages, setMessages] = useState(initialMessages);
   const [text, setText] = useState(
     search.get('prepare') === '1'
       ? 'For the next cabinet: what happened, what worked, and what still needs checking: '
@@ -97,72 +123,77 @@ export default function Chat() {
   const sending = useRef(false);
   const bottom = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (api.mode === 'demo') storage.setItem(historyKey, JSON.stringify(messages));
     bottom.current?.scrollIntoView({
       behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
         ? 'instant'
         : 'smooth',
       block: 'end',
     });
-  }, [messages, historyKey, api.mode]);
+  }, [messages]);
   async function send(content = text, inputMode = mode) {
     if (!content.trim() || sending.current || !canEdit) return;
     sending.current = true;
+    onActivity?.(true);
     const submitted = content;
-    const userId = crypto.randomUUID();
-    setMessages((previous) => [...previous, { id: userId, role: 'user', text: submitted }]);
+    const userMessage: ChatMessage = { id: crypto.randomUUID(), role: 'user', text: submitted };
+    setMessages([...messages, userMessage]);
     setText('');
-    const result = await action.run(() =>
-      inputMode === 'teach' ? api.teach(content) : api.ask(submitted),
-    );
+    const result = await action.run(() => {
+      if (inputMode === 'teach') return api.teach(content);
+      return previewAsk ? previewAsk(submitted, messages) : api.ask(submitted);
+    });
     if (result.ok) {
-      setMessages((previous) => [
-        ...previous,
+      const completed: ChatMessage[] = [
+        ...messages,
+        userMessage,
         {
           id: crypto.randomUUID(),
           role: 'assistant',
           text: result.value.text,
           reply: result.value,
         },
-      ]);
+      ];
+      setMessages(completed);
+      onTurn?.(completed);
       setPaste(false);
       setDocument('');
       refresh();
     } else {
-      setMessages((previous) => previous.filter((m) => m.id !== userId));
+      setMessages(messages);
       if (inputMode === 'ask' || !paste) setText(content);
     }
     sending.current = false;
+    onActivity?.(false);
   }
-  const suggestions = [
-    'What do I need for an event with outside guests?',
-    'Who do we contact about the venue?',
-    'What did we learn from the last run?',
-  ];
   return (
     <>
-      <PageHeading
-        title="Chat"
-        action={
-          canEdit && (
-            <button
-              className="button"
-              onClick={() => {
-                setMessages([]);
-                action.clearError();
-              }}
-              disabled={action.pending}
-            >
-              <Plus size={14} /> New chat
-            </button>
-          )
-        }
-      />
-      <section className="chat-workspace">
+      {!onTurn && (
+        <PageHeading
+          title="Chat"
+          action={
+            canEdit && (
+              <button
+                className="button"
+                onClick={() => {
+                  setMessages([]);
+                  action.clearError();
+                }}
+                disabled={action.pending}
+              >
+                <Plus size={14} /> New chat
+              </button>
+            )
+          }
+        />
+      )}
+      <section
+        className="chat-workspace"
+        aria-label={eventTitle ? `Chat about ${eventTitle}` : 'Chat'}
+      >
         <div className="chat-messages" aria-live="polite" aria-relevant="additions">
           {messages.length === 0 ? (
             <div className="chat-welcome">
-              <h2>Ask a question</h2>
+              <h2>{eventTitle ? `Ask about ${eventTitle}` : 'Ask a question'}</h2>
               {canEdit && (
                 <div className="suggestions">
                   {suggestions.map((question) => (
@@ -262,9 +293,7 @@ export default function Chat() {
               </form>
               <div className="compose-note">
                 <span>
-                  {mode === 'teach'
-                    ? 'Nothing is learned until a cabinet member approves it.'
-                    : 'Every answer has a source. Every decision stays with you.'}
+                  {mode === 'teach' ? 'Nothing is learned until a cabinet member approves it.' : ''}
                 </span>
                 <span>
                   Enter to {mode === 'teach' ? 'teach' : 'ask'} · Shift + Enter for a new line

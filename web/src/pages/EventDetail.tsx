@@ -9,6 +9,7 @@ import {
   Edit3,
   LockKeyhole,
   MapPin,
+  MessageCircle,
   Plus,
   RefreshCw,
   Trash2,
@@ -419,6 +420,14 @@ export default function EventDetail() {
               action={
                 <div className="event-heading-actions">
                   <StatusBadge status={data.status} />
+                  {api.mode === 'demo' && (
+                    <Link
+                      className="button"
+                      to={`/chat?event=${encodeURIComponent(data.event_id)}&new=1`}
+                    >
+                      <MessageCircle size={14} /> Event chat
+                    </Link>
+                  )}
                   {canEdit && (
                     <button className="button" onClick={() => setEditing(true)}>
                       <Edit3 size={13} /> Edit details
