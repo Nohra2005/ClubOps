@@ -104,6 +104,24 @@ text, and return only booleans/counts or version metadata. See Microsoft's
 Delete supplied credential downloads only after the effective host settings have
 been verified. Do not remove the host's environment file or private data.
 
+### Calendar Connect fix deployed, 28 November 2026
+
+Deployed green merged main `c782aea`, including #172's Calendar ownership-check
+fix, in place of `6749fb0`. The deployment created seven private SQLite backups
+and preserved every resolved host environment value, including the working Inbox
+configuration. The container is healthy, its sign-in client matches the built
+frontend, and public asset hashes match the running image. HTTPS sign-in/Calendar
+pages return 200; unauthenticated session and connection APIs return 401.
+
+The Calendar ID and HTTPS callback match the supplied reference, with no extra
+whitespace or trailing slash. Chris then reported that the requested owner retry
+returned **Connected**. This records the reported connection result separately
+from administrative checks; it does not claim event creation, mailbox fetching,
+an independent Google-console inspection or a tested backup restore. The sanitized
+[deployment receipt](deployment/evidence/calendar-connect-2026-11-28.json) contains
+version/boolean/count metadata and public asset hashes, without credentials,
+account addresses, calendar IDs or database contents.
+
 ## Local packaging checks
 
 For the complete local app, run `docker compose up --build` from the repo root and open

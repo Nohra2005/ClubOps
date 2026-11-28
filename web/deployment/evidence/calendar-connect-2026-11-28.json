@@ -1,0 +1,64 @@
+{
+  "task": ["C-18", "C-35"],
+  "deployed_at_utc": "2026-11-28T14:25:16.224714+00:00",
+  "inspected_at_utc": "2026-11-28T14:26:25.757067+00:00",
+  "fix_pr": 172,
+  "revision": "c782aea052f16473677c24c6ffa3b427bd30ea3b",
+  "image": "clubops:c782aea",
+  "previous_image": "clubops:6749fb0",
+  "private_sqlite_backups_created": 7,
+  "runtime": {
+    "healthy": true,
+    "host_environment_preserved": true,
+    "login_build_matches_runtime": true,
+    "dev_login_disabled": true
+  },
+  "calendar_configuration": {
+    "client_present": true,
+    "secret_present": true,
+    "redirect_matches_supplied_reference": true,
+    "redirect_has_trailing_slash": false,
+    "redirect_uses_https": true,
+    "calendar_mapping_valid": true,
+    "calendar_matches_supplied_reference": true,
+    "calendar_has_surrounding_whitespace": false
+  },
+  "public_routes": {
+    "/login": {
+      "status": 200,
+      "content_type": "text/html"
+    },
+    "/calendar": {
+      "status": 200,
+      "content_type": "text/html"
+    },
+    "/api/me": {
+      "status": 401,
+      "content_type": "application/json"
+    },
+    "/api/calendar/connection": {
+      "status": 401,
+      "content_type": "application/json"
+    },
+    "/api/inbox/gmail": {
+      "status": 401,
+      "content_type": "application/json"
+    }
+  },
+  "frontend_asset_sha256": {
+    "index-CKGCwili.js": "765209911dcbe38e0a7538ccfcef90704beb8a31353128af66843012733b9aa2",
+    "index-DKz2EDaI.css": "1ca8907baaf7a1d4f4cdfa947b7910466800db4c72adc58301c03c3afa185bc7"
+  },
+  "public_assets_match_running_container": true,
+  "acceptance": {
+    "date_local": "2026-11-28",
+    "calendar": "Chris reported Connected after the requested calendar-owner retry",
+    "inbox": "Chris reported Inbox working before deployment; all host settings were preserved"
+  },
+  "limits": [
+    "No independent Google-console inspection",
+    "No calendar event creation or mailbox fetch in these administrative checks",
+    "Backup restoration not exercised",
+    "No phone/device claim inferred from the Connected report"
+  ]
+}
