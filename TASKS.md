@@ -321,6 +321,13 @@ Reference documents:
 - Done when: `npm run check` passes in `web/`, and Christophe has looked at the screens on desktop and phone (the browser tests were not run in this session).
 - Progress (2026-11-25): #164 merged. Follow-up: the sidebar footer line "Built for the next cabinet" wrapped at 12 px with wide spacing; now sentence case, no letter spacing.
 
+### T-51 Put the real Running Club and ASME knowledge on the host (D-160)
+- Owner: tatiana
+- Status: todo
+- Needs: C-18
+- What: Decision of 28 Nov: the Running Club and ASME run on real data; every other club in the demo is synthetic. The host's data folder is empty apart from the 27 AUB rules, so Running Club tips, contacts and sponsors show nothing. Tatiana copies the Running Club's approved facts (38 approved on 7 Nov) from her own data folder to the host and gets ASME's approved facts the same way (ASME's consent confirmed first, then a leak check, see T-44). Christophe puts the files on the host after a SQLite backup. The files never go into the repository or a chat.
+- Done when: on the deployed app the Running Club's Knowledge tabs show its approved facts, ASME's tabs show its own, and no fact crosses clubs; the synthetic clubs hold only made-up data.
+
 ## Christophe: frontend
 
 ### C-01 Read the UI spec and pick the stack
@@ -547,7 +554,7 @@ Reference documents:
 - Review update (2026-11-11): main #87 setup wiring retained. The seven-chapter script/rehearsal now shows the primary president interview (D-103), a pending fact and explicit pause/resume without resubmitting. Current synthetic silent take is 301.60 seconds; the previous six-chapter evidence is historical. Real deployed/team/narrated acceptance remains pending.
 - Progress (2026-11-10): five-minute presenter script and isolated synthetic HTTP/UI rehearsal prepared. Desktop/phone checks pass; a 301.56-second silent take has six passing chapters, zero unexpected requests, a verified video checksum and inspected frames (web/demo/evidence). Fresh checked output paths preserve previous takes. C-14/C-18 deployment, real backend/model/security outcomes, team rehearsal and final narrated backup remain pending; this stays doing.
 - Needs: C-14, C-18
-- What: `docs/demo-script.md`: 5 minutes on the deployed app, showing what the brief asks: one normal plan, then edge cases (missing facts → the agent asks; the step limit; a hidden instruction in an uploaded document; a member without rights trying to approve). Seed a demo club with synthetic data only. Record a backup video in case the network fails on demo day.
+- What: `docs/demo-script.md`: 5 minutes on the deployed app, showing what the brief asks: one normal plan, then edge cases (missing facts → the agent asks; the step limit; a hidden instruction in an uploaded document; a member without rights trying to approve). Run it on the real Running Club (D-160); any extra club shown is synthetic. Record a backup video in case the network fails on demo day.
 - Done when: the script runs start to end on the deployed app, rehearsed once with the team, video saved.
 
 ### C-29 Keep the docs true (was T-31)
