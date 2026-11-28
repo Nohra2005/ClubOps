@@ -136,6 +136,10 @@ textarea::placeholder {
   position: relative;
   background: transparent;
 }
+.login-art .brand-symbol,
+.login-art .brand-symbol span {
+  color: var(--on-accent);
+}
 .login-page .login-form {
   background: var(--glass);
   border: 1px solid var(--glass-edge);
