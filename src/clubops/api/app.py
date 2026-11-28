@@ -62,7 +62,9 @@ from clubops.contracts.common import Actor, ErrorCode, Role, SourceKind, SourceR
 from clubops.contracts.event import Audience, EventSpec, EventStatus, Venue, VenueKind
 from clubops.contracts.handover import HandoverRequest
 from clubops.contracts.knowhow import (
+    Answer,
     AskRequest,
+    AskWho,
     CaptureRequest,
     CaptureResult,
     ItemStatus,
@@ -150,7 +152,7 @@ class PlanBody(BaseModel):
 
 
 class ChatBody(BaseModel):
-    text: str = Field(min_length=3, max_length=500)
+    text: str = Field(min_length=1, max_length=500)
 
 
 class AnswerBody(BaseModel):
@@ -983,6 +985,16 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
     @app.post("/api/chat/ask")
     def ask(body: ChatBody, member: Member = Depends(cabinet)) -> dict[str, Any]:  # noqa: B008
         """A cabinet click asks only the signed-in club's current approved knowledge."""
+        if len(body.text.strip()) < 3:  # "hi" is a greeting, not a failed request; no model call (F-335)
+            return Answer(
+                known=False,
+                text=(
+                    "Hi! Ask me about your club's rules, rooms, sponsors or past events. "
+                    "For example: How early do we book a room?"
+                ),
+                basis="none",
+                ask=AskWho(who="Your president"),
+            ).model_dump(mode="json") | {"kind": "unknown"}
         with club(member.club_id) as (store, _, _, _):
             answer = ask_question(
                 AskRequest(club_id=member.club_id, question=body.text, as_of=today()), store, model_client()
