@@ -942,6 +942,37 @@ Connect remains under C-18/C-35 diagnosis: saved 26 November host comparisons
 match the supplied ID/redirect, but current Google-console values and the
 callback's exact failure stage are not yet established. Owner handoff is #83.
 
+## 2026-11-28 - Christophe (C-18/C-35 Calendar Connect deployment)
+
+**Did:** After Chris renewed Azure device authorization, deployed green merged
+main c782aea, including #172's owner-check fix, over 6749fb0. Used the existing
+Compose project/environment and persistent data mount. Created seven consistent
+private SQLite backups before recreating the container; verified every resolved
+environment value was preserved, including the working Inbox configuration.
+No new runtime design, API contract or backend implementation was introduced.
+
+**Verified:** Healthy image/revision c782aea. Calendar ID and HTTPS callback match
+the supplied references exactly, with no surrounding whitespace/trailing slash;
+effective settings match Compose and built/runtime sign-in client IDs agree.
+Public frontend asset hashes match those in the running container. HTTPS login
+and Calendar return 200; unauthenticated session/Calendar/Gmail APIs return 401.
+Chris reports the requested owner retry returned Connected and Inbox was already
+working. A post-retry inspection saw one Calendar callback and no matched failed
+redirect/error counts. Raw settings, credentials, logs and data remain private;
+sanitized receipt: web/deployment/evidence/calendar-connect-2026-11-28.json.
+
+**Checks:** All five CI checks passed on deployed main. Local required root gates
+pass: Ruff/format 187 files, mypy 92, schemas/tasks, 949 tests and 93.74% coverage.
+Deployment docs/receipt pass formatting. No runtime/UI source changed in this
+record-only PR, so no new browser suite or failure-mode ID was added.
+
+**Next:** Review this record through a PR. C-18 still needs cabinet event-planning
+acceptance; C-35 retains its broader unfinished scope. The Connected result does
+not establish event creation, a mailbox fetch, an independently inspected Google
+console, a particular device or a tested backup restore. The temporary Azure
+helper was closed and its process confirmed stopped after the successful retry. No other app operation was
+triggered here; #170/#173 remain separate unmerged cabinet/theme work.
+
 ## 2026-11-27 - Christophe (C-31 follow-up sync after #172/#153)
 
 **Did:** Merged main 8828847 after the Calendar owner-check fix and #153's
