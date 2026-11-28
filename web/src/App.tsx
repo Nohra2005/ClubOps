@@ -42,6 +42,7 @@ import Login from './pages/Login';
 import { storage } from './api';
 import { PageHeading } from './components/ui';
 import Turnover from './pages/Turnover';
+import { ThemeToggle } from './theme/ThemeToggle';
 
 const navigation = [
   { to: '/chat', label: 'Chat', icon: MessageCircle },
@@ -163,6 +164,7 @@ function Shell() {
             <kbd>↵</kbd>
           </form>
           <div className="topbar-actions">
+            <ThemeToggle />
             <details className="popover">
               <summary aria-label={`${me.counts.reminders} reminders due`} className="icon-button">
                 <Bell size={20} />

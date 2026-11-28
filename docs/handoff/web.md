@@ -956,28 +956,6 @@ Fresh GitHub CI is required on the follow-up head. No board mutation, provider
 action or host deployment occurred in this merge. The Calendar fix is now in
 main; deployment is queued pending renewed Azure authorization.
 
-## 2026-11-24 - Christophe (C-29 current integration documentation)
-
-**Did:** Reconciled owned architecture, data provenance and memory guides with
-main eae20c5's published decisions: trusted clean new mail facts can apply, while
-overrides/merges and flagged facts need Review (D-151); dated mail deadlines have
-a separate calendar path (D-150); chat wiring and dated sources are merged
-(D-200/#149); chatbot ratings use a private human-marked sheet (D-152/#151).
-Updated the guided-handover integration status without claiming persistent tutoring.
-
-**State:** Documentation only; no backend implementation read or changed, no
-new runtime policy or contract. Checked statements against owner decisions/API,
-kept the paid-read/scheduling distinction and missing Knowledge expiry-edit field
-explicit. C-29 stays doing for report incorporation and fresh/deployed acceptance.
-Local links, web guide formatting and shared task/log checks run before publication;
-full root gates use the same locked dependencies as the verified main source.
-
-**Next:** Publish a separate C-29 PR, preserve small commits, merge after green
-checks under Chris's temporary review waiver. Tatiana owns the stale chat/setup
-availability notes in docs/api.md and the expiry-edit API extension. No completed
-private evaluation, hosting recovery, provider quality or user benefit is inferred.
-
-
 ## 2026-11-26 - Christophe (C-29/C-30 evidence reconciliation)
 
 **Did:** Synced #153 with main 4722838, preserving both shared handoff histories.
@@ -1053,6 +1031,43 @@ required on this synced head; prior workflow/browser receipts are historical.
 stacked on this branch. Neither branch claims real turnover activation, provider
 consent or an Azure redeployment. Current-main deployment needs renewed Azure
 authorization; Tatiana must retry Calendar Connect after #172 is deployed.
+
+## 2026-11-27 - Christophe (C-40 Frost and Afterdark)
+
+**Did:** Implemented the two glass appearances Chris approved after eight isolated
+previews. Added a persistent sun/moon control in the workspace and sign-in, a
+pre-render bounded preference, semantic colors across existing screens, frosted
+navigation, readable form/source/dialog surfaces and stronger phone layouts.
+Theme state is independent of API/session/term state. Preserved source excerpts,
+expiry, disagreement, explicit approvals, costs and role restrictions. D-256,
+F-511/F-512; integration and verification guide: web/THEMES.md. Work is split into
+small commits and stacked on #170 so the turnover flow is not duplicated.
+
+**Verified:** Required root gates pass: Ruff/format 187 files, mypy 92,
+schemas/tasks, 949 tests and 93.74% coverage. Full frontend quality/build passes:
+158 units, 42 board-tool tests, lint/format and rehearsal types. Sixty existing
+demo/workflow cases pass. Eighteen new theme cases pass across the final rerun
+and one explicitly repeated network-interrupted desktop scan; both themes scan
+13 screens on desktop/phone, plus source printing and modal keyboard/reading.
+HTTP contract/provider workflows pass all 116 cases; actual local API/cookie/
+synthetic SQLite workflows pass eight cases with a scripted model. Reviewed
+desktop/phone screenshots in both themes; no page errors in the capture run.
+
+**Harness corrections:** Earlier runs were interrupted by Windows network
+suspension/change; traces record ERR_NETWORK_IO_SUSPENDED/ERR_NETWORK_CHANGED.
+Corrected the new focus assertion to allow Chromium visiting browser chrome
+between native-dialog cycles, and the temporary HTTP port to the recorder's
+existing allowlist. Assertions and recorder safeguards are retained. Temporary
+configs/artifacts remain ignored; final-head GitHub CI is separate.
+
+**Next:** Independent review and merge into #170 first under the stacked-PR rule.
+The design is not deployed. #172's Calendar fix and #153 are in main; #171 is
+synced and green. Current-main deployment is queued pending Chris's renewed
+Azure sign-in, then Tatiana must perform the real Calendar Connect retry. No
+Google consent, live mail/calendar action, paid model call or account change was
+performed here. Tatiana owns docs/evidence.md and docs/rubric-map.md references;
+this visual work does not alter frozen evaluation outcomes or real turnover's
+missing #169 backend contract.
 ## 2026-11-28 - Christophe (C-39/C-40 publication preparation)
 
 **Did:** At Chris's request, synced the turnover branch with current main c782aea
