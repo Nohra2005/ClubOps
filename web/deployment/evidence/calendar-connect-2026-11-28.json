@@ -60,5 +60,12 @@
     "No calendar event creation or mailbox fetch in these administrative checks",
     "Backup restoration not exercised",
     "No phone/device claim inferred from the Connected report"
-  ]
+  ],
+  "post_retry_inspection": {
+    "observed_at_utc": "2026-11-28T14:28:10.305349+00:00",
+    "healthy": true,
+    "calendar_callback_request_count": 1,
+    "calendar_failed_redirect_count": 0,
+    "sanitized_error_counts": {}
+  }
 }
