@@ -1137,3 +1137,27 @@ the green main; schema/task checks pass here. Merge this small correction and
 record through a PR, then redeploy and check the actual mark. No new model call,
 provider consent, data import or calendar write was triggered. Real cabinet
 activation still needs #169; existing Calendar/Inbox configuration is preserved.
+
+## 2026-11-28 - Christophe (C-18/T-51 private import, no redeploy)
+
+**Did:** Followed Tatiana's later instruction as relayed by Chris: kept the
+running aad6fc0 image/container, backed up seven SQLite databases and one other
+data file privately, and copied the exact main importer with docker cp. The
+private export passed the frozen contract/club-scope check: 135 items across 159
+versions. Its contents were never displayed, committed or included in command
+text; transfer used compressed Azure protected parameters and private temporary
+files outside the repository.
+
+**Counts:** Dry-run would add 108 items / 27 already there. Actual import added
+108 / 27 already there. Verification would add zero. Reported dry-run counts to
+Tatiana on #176 before applying, then reported the final counts and cleanup.
+Host/container transfer copies, original local download and compressed local copy
+were deleted after successful verification. Backups remain private on the host.
+No source deployment or container restart occurred; no model call was made.
+
+**Chat diagnosis:** The chat route exists (GET gives 405; an unknown API gives
+404). Runtime and production.env have no CLUBOPS_API_KEY or CLUBOPS_MODEL and use
+replay mode. No provider key was printed or guessed. Live provider configuration
+must be supplied privately; the no-redeploy constraint remains in force. No app
+source changed, so existing green main checks are reused; task-log validation is
+the only new local repository check. This record does not claim chat is repaired.
