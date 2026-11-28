@@ -28,7 +28,6 @@ from typing import Any, Literal
 import httpx
 import openpyxl
 from fastapi import BackgroundTasks, Body, Depends, FastAPI, HTTPException, Request, Response, UploadFile
-from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
@@ -326,17 +325,34 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
 
     @app.exception_handler(RequestValidationError)
     async def _validation_error(request: Request, err: RequestValidationError) -> Response:
-        """Say plainly when a text is too long, so the page can show it (F-332); other problems stay as they were."""
-        for found in err.errors():
-            if found.get("type") == "string_too_long":
-                limit = (found.get("ctx") or {}).get("max_length")
-                used = len(str(found.get("input") or ""))
-                message = (
-                    f"That text is too long: the limit is {limit} characters and it has {used}. "
-                    "Send it in smaller parts."
-                )
-                return JSONResponse({"detail": message}, status_code=422)
-        return await request_validation_exception_handler(request, err)
+        """Say plainly what was wrong with a request, and log which field, never its text (F-332, F-336)."""
+        problems = err.errors()
+        fields = ", ".join(str(p["loc"][-1]) for p in problems if p.get("loc")) or "request"
+        logging.getLogger(__name__).warning(
+            "request refused: %s %s: %s (%s)", request.method, request.url.path, fields, problems[0].get("type")
+        )
+        found = problems[0]
+        name = str(found["loc"][-1]).replace("_", " ") if found.get("loc") else "request"
+        ctx = found.get("ctx") or {}
+        kind = found.get("type")
+        if kind == "string_too_long":
+            used = len(str(found.get("input") or ""))
+            message = (
+                f"That text is too long: the limit is {ctx.get('max_length')} characters and it has {used}. "
+                "Send it in smaller parts."
+            )
+        elif kind == "string_too_short":
+            low = ctx.get("min_length")
+            message = (
+                f"The {name} is empty. Type something and try again."
+                if low == 1
+                else f"The {name} needs at least {low} characters."
+            )
+        elif kind == "missing":
+            message = f"The {name} is missing. Fill it in and try again."
+        else:
+            message = f"The {name} is not valid. Check it and try again."
+        return JSONResponse({"detail": message}, status_code=422)
 
     @app.middleware("http")
     async def _csrf(request: Request, call_next: Callable[[Request], Any]) -> Response:
