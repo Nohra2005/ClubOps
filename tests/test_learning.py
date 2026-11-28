@@ -624,4 +624,10 @@ def test_a_text_over_the_limit_gets_a_plain_message_with_the_numbers(app_client:
     assert reply.json()["detail"] == (
         "That text is too long: the limit is 1000 characters and it has 1200. Send it in smaller parts."
     )
-    assert c.post("/api/chat/teach", json={}, headers=HEADERS).status_code == 422  # other problems stay as they were
+    # F-336: every other refusal also says what was wrong, in words
+    missing = c.post("/api/chat/teach", json={}, headers=HEADERS)
+    assert missing.status_code == 422 and missing.json()["detail"] == "The text is missing. Fill it in and try again."
+    empty = c.post("/api/chat/teach", json={"text": ""}, headers=HEADERS)
+    assert empty.json()["detail"] == "The text is empty. Type something and try again."
+    wrong = c.post("/api/chat/ask", json={"text": 5}, headers=HEADERS)
+    assert wrong.json()["detail"] == "The text is not valid. Check it and try again."
