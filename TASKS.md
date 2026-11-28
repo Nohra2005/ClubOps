@@ -679,7 +679,8 @@ Reference documents:
 
 ### C-40 Revamp the ClubOps visual design
 - Owner: christophe
-- Status: review
+- Status: done
+- Progress (2026-11-28): #173 merged into #170, then into main with merge commits after green checks and Chris's explicit review waiver. Deployed main 01ffab0 after all five main checks passed. Public assets and theme bootstrap match the healthy image; fresh desktop/phone browser checks verify theme switching, styling and reload persistence. Old role controls are absent; Chris confirmed the new UI is visible. Seven private SQLite backups and all host settings preserved. A small sign-in logo contrast correction is recorded separately in this follow-up.
 - Progress (2026-11-27): Approved Frost/Afterdark themes implemented in focused commits, including persistent sign-in/workspace controls, semantic contrast, glass surfaces and phone layouts. Root gates, web quality/build, 60 existing demo cases, 18 theme cases, 116 HTTP cases and eight actual local API cases pass (network-interrupted scans rerun explicitly). Desktop/phone captures inspected. Independent review and deployment after merge remain; live Calendar acceptance and #169's term contract are separate.
 - Direction approved (2026-11-26): Chris selected Frost and Afterdark glassmorphism with an appearance switch and stronger contrast/color after reviewing eight standalone concepts. Implement the approved direction in small commits; Calendar host diagnosis remains C-18/C-35.
 - Needs: C-02, C-03, C-12
