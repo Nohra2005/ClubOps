@@ -17,10 +17,11 @@ from __future__ import annotations
 import json
 import time
 from collections.abc import Callable
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from enum import StrEnum
 from typing import Protocol, Self
+from zoneinfo import ZoneInfo
 
 from pydantic import Field, model_validator
 
@@ -137,7 +138,31 @@ Answer with JSON only: {"tool": ..., "say": "<one plain line>", "query"?, "facts
 
 
 SELF_CHECK = "Before finishing:"
+BEIRUT = ZoneInfo("Asia/Beirut")
+MAX_QUESTIONS = 2  # a plan asks at most two questions; the rest are stated as assumptions (F-337)
 ASKABLE = ("venue", "audience", "has_prizes", "has_catering")  # facts a user can usually answer
+
+
+def _facts_from_answer(question: str, answer: str) -> dict[str, bool]:
+    """A short yes/no to a catering or prizes question is recorded by code, so it is never asked twice (F-337)."""
+    words = answer.lower().replace(",", " ").replace(".", " ").replace("!", " ").split()
+    if not words or len(words) > 3:
+        return {}
+    value = (
+        True if words[0] in ("yes", "yeah", "yep", "sure") else False if words[0] in ("no", "nope", "none") else None
+    )
+    q = question.lower()
+    if value is None:
+        return {}
+    if "prize" in q or "medal" in q:
+        return {"has_prizes": value}
+    if any(w in q for w in ("catering", "food", "drink", "snack")):
+        return {"has_catering": value}
+    return {}
+
+
+def _questions_asked(state: RunState) -> int:
+    return sum(x.tool == Tool.ASK_USER and x.state is StepState.DONE for x in state.run.steps)
 
 
 def _ms(started: float) -> int:
@@ -201,7 +226,14 @@ def _plan_is_current(state: RunState) -> bool:
 
 
 class Refused(Exception):
-    """A step the code will not run; shown as a failed step, and the agent goes on."""
+    """A step the code will not run; shown as a failed step, and the agent goes on.
+
+    ``shown`` is the plain line for the steps panel; the full text stays a note for the model only (F-337).
+    """
+
+    def __init__(self, message: str, shown: str | None = None) -> None:
+        super().__init__(message)
+        self.shown = shown or message
 
 
 class Planner:
@@ -261,7 +293,12 @@ class Planner:
         run = state.run
         answered = run.steps[-1].model_copy(update={"state": StepState.DONE})
         run = run.model_copy(update={"steps": [*run.steps[:-1], answered]})
-        state = state.model_copy(update={"run": run, "answers": [*state.answers, text[:1000]]})
+        update: dict[str, object] = {"run": run, "answers": [*state.answers, text[:1000]]}
+        facts = _facts_from_answer(answered.text, text)
+        if facts:
+            spec = state.spec
+            update["spec"] = EventSpec.model_validate({**spec.model_dump(), **facts, "revision": spec.revision + 1})
+        state = state.model_copy(update=update)
         return self._loop(self._with_run(state, status=RunStatus.RUNNING))
 
     def keep_going(self, state: RunState) -> RunState:
@@ -307,6 +344,13 @@ class Planner:
             model_ms = _ms(started)
             state = self._spent(state, budget)
 
+            if step.tool is Tool.ASK_USER and _questions_asked(state) >= MAX_QUESTIONS:
+                state = self._step(
+                    state, step.tool, "Not asking more; going on with what is known", StepState.FAILED, model_ms
+                )
+                note = "no more questions are allowed: decide with what you know, say what you assumed, and finish"
+                state = state.model_copy(update={"notes": [*state.notes, note]})
+                continue
             if step.tool is Tool.ASK_USER:
                 state = self._step(state, step.tool, step.question or step.say, StepState.QUESTION, model_ms)
                 return self._with_run(state, status=RunStatus.WAITING_FOR_USER, last_call=None)
@@ -319,7 +363,7 @@ class Planner:
                 state, note = self._run_tool(state, step, budget)
                 state = self._spent(state, budget)
             except Refused as why:
-                state = self._step(state, step.tool, str(why), StepState.FAILED, model_ms, tool_ms=_ms(started))
+                state = self._step(state, step.tool, why.shown, StepState.FAILED, model_ms, tool_ms=_ms(started))
                 state = state.model_copy(update={"notes": [*state.notes, f"refused {step.tool}: {why}"]})
                 continue
             state = self._step(state, step.tool, step.say, StepState.DONE, model_ms, tool_ms=_ms(started))
@@ -337,6 +381,12 @@ class Planner:
                 changes = step.facts.model_dump(exclude_none=True) if step.facts else {}
                 if not changes:
                     raise Refused("No new facts to record")
+                for key in ("start", "end"):
+                    when = changes.get(key)
+                    # The prompt example says +03:00 (summer); in winter Beirut is +02:00, so 8:00 became 7:00 (F-338).
+                    # Keep the clock time the user gave, in Beirut time. Other offsets are real instants: left alone.
+                    if isinstance(when, datetime) and when.utcoffset() == timedelta(hours=3):
+                        changes[key] = when.replace(tzinfo=BEIRUT)
                 try:
                     new = EventSpec.model_validate({**spec.model_dump(), **changes, "revision": spec.revision + 1})
                 except ValueError as err:
@@ -402,15 +452,21 @@ class Planner:
         spec = state.spec
         if not _plan_is_current(state) or spec.start is None:
             raise Refused("Can't finish yet: no plan for the latest event details")
-        unsure = [v for v in state.rules.verdicts if v.verdict is Applicability.UNCERTAIN] if state.rules else []
         missing = [f for f in ASKABLE if getattr(spec, f) is None]
-        if unsure and missing and not any(n.startswith(f"refused finish: {SELF_CHECK}") for n in state.notes):
+        # only a "not sure" rule that one of the missing facts would settle is worth a question (F-337)
+        unsure = [
+            v
+            for v in (state.rules.verdicts if state.rules else [])
+            if v.verdict is Applicability.UNCERTAIN and any(f"{f} not known yet" in v.reason for f in missing)
+        ]
+        if unsure and not any(n.startswith(f"refused finish: {SELF_CHECK}") for n in state.notes):
             # Self-check, plain code, once per run: a "not sure" rule a question could settle is worth asking
             # about before finishing (the agent may still finish if the user can't know).
             reasons = "; ".join(f"{v.item_id} - {v.reason}" for v in unsure[:3])
             raise Refused(
                 f"{SELF_CHECK} {len(unsure)} rules are not sure and {', '.join(missing)} not known; ask the user ONE "
-                f"question that would settle one, or finish if they can't know ({reasons})"[:400]
+                f"question that would settle one, or finish if they can't know ({reasons})"[:400],
+                shown="Checking one open point before finishing",
             )
         self.directory.put_event(
             EventRecord(

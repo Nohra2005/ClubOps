@@ -413,3 +413,57 @@ def test_self_check_runs_once_so_the_agent_can_still_finish(memory: KnowHowStore
     )
     state = planner(memory, directory, script).start(request(), "run-s2")
     assert state.run.status.value == "done"
+
+
+# ------------------------------------------------- clutter, questions and time (F-337 to F-339)
+
+
+def test_a_plan_asks_at_most_two_questions(memory: KnowHowStore, directory: Directory) -> None:
+    ask = step(Tool.ASK_USER, question="Which venue will it use?")
+    agent = planner(memory, directory, Script(ask, ask, ask, *full_plan()), step_limit=16)
+    state = agent.start(request(), "run-q1")
+    state = agent.answer(state, "Green Field")
+    state = agent.answer(state, "Green Field")
+    assert state.run.status is RunStatus.DONE  # the third question was not put to the user
+    assert any(s.text == "Not asking more; going on with what is known" for s in state.run.steps)
+
+
+def test_a_yes_or_no_to_a_catering_question_is_recorded_by_code(memory: KnowHowStore, directory: Directory) -> None:
+    ask = step(Tool.ASK_USER, question="Will there be catering (food or drinks)?")
+    agent = planner(memory, directory, Script(ask, *full_plan()), step_limit=16)
+    state = agent.answer(agent.start(request(), "run-q2"), "No")
+    assert state.spec.has_catering is False
+    assert state.spec.revision >= 2
+
+
+def test_a_time_with_the_summer_offset_keeps_its_clock_time_in_beirut(
+    memory: KnowHowStore, directory: Directory
+) -> None:
+    """F-338: the prompt example said +03:00, so 8:00 in December showed as 7:00."""
+    eight = datetime.fromisoformat("2026-12-19T08:00:00+03:00")
+    script = Script(step(Tool.UPDATE_EVENT, facts=EventFacts(start=eight)))
+    state = planner(memory, directory, script, step_limit=1).start(request(), "run-q3")
+    assert state.spec.start is not None and state.spec.start.hour == 8
+    assert state.spec.start.utcoffset().total_seconds() == 2 * 3600  # type: ignore[union-attr]
+
+
+def test_a_free_text_club_rule_is_not_an_event_approval_but_a_deadline_stays() -> None:
+    req = Requirement(requirement_id="adviser-ok", kind=RequirementKind.APPROVAL, name="Adviser approval")
+    base = rule("kh-rule-club")
+    club = verified(
+        base.model_copy(update={"details": RuleDetails(triggers=["semester evaluation"], requirements=[req])})
+    )
+    deadline = verified(
+        base.model_copy(
+            update={
+                "item_id": "kh-rule-deadline",
+                "details": RuleDetails(triggers=["planning events in the fall semester"], requirements=[req]),
+            }
+        )
+    )
+    result = check_rules(spec(audience=Audience.AUB_ONLY), [club, deadline])
+    by_id = {v.item_id: v for v in result.verdicts}
+    assert by_id["kh-rule-club"].verdict is Applicability.NOT_APPLICABLE
+    assert "running the club" in by_id["kh-rule-club"].reason
+    assert by_id["kh-rule-deadline"].verdict is Applicability.UNCERTAIN
+    assert "may concern this event" in by_id["kh-rule-deadline"].reason
