@@ -956,28 +956,6 @@ Fresh GitHub CI is required on the follow-up head. No board mutation, provider
 action or host deployment occurred in this merge. The Calendar fix is now in
 main; deployment is queued pending renewed Azure authorization.
 
-## 2026-11-24 - Christophe (C-29 current integration documentation)
-
-**Did:** Reconciled owned architecture, data provenance and memory guides with
-main eae20c5's published decisions: trusted clean new mail facts can apply, while
-overrides/merges and flagged facts need Review (D-151); dated mail deadlines have
-a separate calendar path (D-150); chat wiring and dated sources are merged
-(D-200/#149); chatbot ratings use a private human-marked sheet (D-152/#151).
-Updated the guided-handover integration status without claiming persistent tutoring.
-
-**State:** Documentation only; no backend implementation read or changed, no
-new runtime policy or contract. Checked statements against owner decisions/API,
-kept the paid-read/scheduling distinction and missing Knowledge expiry-edit field
-explicit. C-29 stays doing for report incorporation and fresh/deployed acceptance.
-Local links, web guide formatting and shared task/log checks run before publication;
-full root gates use the same locked dependencies as the verified main source.
-
-**Next:** Publish a separate C-29 PR, preserve small commits, merge after green
-checks under Chris's temporary review waiver. Tatiana owns the stale chat/setup
-availability notes in docs/api.md and the expiry-edit API extension. No completed
-private evaluation, hosting recovery, provider quality or user benefit is inferred.
-
-
 ## 2026-11-26 - Christophe (C-29/C-30 evidence reconciliation)
 
 **Did:** Synced #153 with main 4722838, preserving both shared handoff histories.
