@@ -107,20 +107,30 @@ def _norm(trigger: str) -> str:
     return trigger.strip().lower().replace("-", "_").replace(" ", "_")
 
 
+def _plain(path: str) -> str:
+    """'spec.has_prizes' -> 'prizes'; a bare 'spec' is the rule that fits every event."""
+    name = path.removeprefix("spec").removeprefix(".").removeprefix("has_")
+    return name.replace("_", " ") or "every event"
+
+
 def judge(spec: EventSpec, rule: KnowHowItem) -> RuleVerdict:
     if not isinstance(rule.details, RuleDetails):
         raise TypeError(f"{rule.item_id} is not a rule")
     true_facts: list[str] = []
     false_facts: list[str] = []
     unknown: list[str] = []
+    club_only: list[str] = []
     for raw in rule.details.triggers:
         known = TRIGGERS.get(_norm(raw))
         if known is None:
-            unknown.append(
-                f"'{raw}' depends on the event description"
-                if _norm(raw) in MODEL_TRIGGERS
-                else f"'{raw}' needs a person to judge"
-            )
+            if _norm(raw) in MODEL_TRIGGERS:
+                unknown.append(f"'{raw}' depends on the event description")
+            elif "event" in raw.lower():  # may concern this event (a deadline, a cut-off): keep it visible
+                unknown.append(f"'{raw}' may concern this event; check it")
+            elif " " in raw.strip():  # a free-text phrase about running the club, not about one event (F-339)
+                club_only.append(raw)
+            else:  # a key the code does not know yet: never silently skipped (D-49)
+                unknown.append(f"'{raw}' needs a person to judge")
             continue
         path, test = known
         value = test(spec)
@@ -129,11 +139,17 @@ def judge(spec: EventSpec, rule: KnowHowItem) -> RuleVerdict:
         elif value is False:
             false_facts.append(path)
         else:
-            unknown.append(f"{path.removeprefix('spec.')} not known yet")
+            unknown.append(f"{path.removeprefix('spec.')} not known yet")  # planner reads this exact wording
     if true_facts:
-        verdict, reason, used = Applicability.APPLIES, "the event has: " + ", ".join(true_facts), true_facts
+        verdict, reason, used = (
+            Applicability.APPLIES,
+            "applies because of: " + ", ".join(_plain(f) for f in true_facts),
+            true_facts,
+        )
     elif unknown:
         verdict, reason, used = Applicability.UNCERTAIN, "; ".join(unknown), false_facts
+    elif club_only and not false_facts:
+        verdict, reason, used = Applicability.NOT_APPLICABLE, "about running the club, not about this event", ["spec"]
     else:
         verdict, reason, used = Applicability.NOT_APPLICABLE, "none of its triggers fit the event", false_facts
     return RuleVerdict(
