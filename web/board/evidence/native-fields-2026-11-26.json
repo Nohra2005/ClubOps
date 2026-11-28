@@ -1,0 +1,55 @@
+{
+  "kind": "verified native-field backlog reconciliation",
+  "observed_at_utc": "2026-11-26T16:05:24.192Z",
+  "source_commit": "4722838c3d2f371cfcbd6076cd689fc013821fe8",
+  "source_ref": "4722838c3d2f371cfcbd6076cd689fc013821fe8",
+  "task_cards": 98,
+  "issue_cards": [
+    {
+      "number": 43,
+      "owner": "christophe",
+      "status": "In progress"
+    },
+    {
+      "number": 83,
+      "owner": "tatiana",
+      "status": "In progress"
+    },
+    {
+      "number": 84,
+      "owner": "christophe",
+      "status": "In progress"
+    },
+    {
+      "number": 128,
+      "owner": "christophe",
+      "status": "Done"
+    },
+    {
+      "number": 129,
+      "owner": "tatiana",
+      "status": "In progress"
+    },
+    {
+      "number": 169,
+      "owner": "tatiana",
+      "status": "In progress"
+    }
+  ],
+  "meeting_dates": ["2026-11-02", "2026-11-09", "2026-11-16", "2026-11-23"],
+  "meeting_dates_source": "Meeting dates reported by Christophe on 23 November 2026; attendance and oral decisions are not inferred from commits.",
+  "native_mutations": 59,
+  "remaining_mutations": 0,
+  "verified": true,
+  "allocation_note": "Current planning/grouping from repository history; not original meeting assignments or verified minutes",
+  "bulk_invocations": 1,
+  "total_cards": 104,
+  "tool_commit": "2ade9652f7fa1f217d1458ddcae0ff50f000811a",
+  "mirror": {
+    "tasks": 98,
+    "created": 5,
+    "updates": 118,
+    "verified": true,
+    "unmanaged_preserved": true
+  }
+}
