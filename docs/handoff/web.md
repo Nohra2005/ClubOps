@@ -1112,3 +1112,28 @@ separate main deployment; this sync does not replace that working configuration.
 merging #173 into #170, then #170 into main with merge commits. The two PRs
 currently have no independent review. Redeploy the merged main and verify the
 served bundle and old-control removal; do not claim the UI is already live.
+
+## 2026-11-28 - Christophe (C-39/C-40 merged and live)
+
+**Did:** Merged #173 into #170 with a merge commit, checked that the Git tree
+matched the green UI source, then enabled #170's merge after GitHub's required
+checks. Main ff582da contains both. The final deployment pinned green latest main
+01ffab0 after the team's subsequent #175/#174 merges. Seven private SQLite
+backups; all resolved host settings preserved. D-257 records Chris's explicit
+review waiver from now on; no independent review is claimed.
+
+**Verified:** Healthy image/revision and public JS/CSS/theme-bootstrap hashes
+match. Public pages return 200 and protected APIs 401. Fresh desktop/phone
+sessions switch both themes, render different styles, retain the choice after
+reload and fit the viewport. The served bundle has no old role-learning controls;
+Chris confirmed the new UI is visible. Sanitized evidence is
+web/deployment/evidence/ui-publication-2026-11-28.json. C-40 is done.
+
+**Follow-up:** Live visual inspection caught the login mark inheriting the same
+foreground as its accent background. A four-line semantic foreground correction
+keeps it legible in both themes. Full frontend gates pass: 158 units, 43 board
+tools, lint/format, rehearsal types and build. Python source/tests/lockfile match
+the green main; schema/task checks pass here. Merge this small correction and
+record through a PR, then redeploy and check the actual mark. No new model call,
+provider consent, data import or calendar write was triggered. Real cabinet
+activation still needs #169; existing Calendar/Inbox configuration is preserved.
