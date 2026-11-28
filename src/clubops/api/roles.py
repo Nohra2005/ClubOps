@@ -13,7 +13,10 @@ What a signed-in person may *do* in the app is a separate, API-layer idea kept h
 
 Members store a ``role_key``; the members table keeps its enum ``role`` column as the task label. Start-up
 migration is additive and idempotent: every club with members gets the base roles, and holders of the old
-``events`` and ``sponsorship`` labels get a custom role of that name, so nobody loses access.
+``events`` and ``sponsorship`` labels get a custom role of that name, so nobody loses their account or calendar.
+By the agreed grant table, roles that are not president or vice president (treasurer, social media, secretary and
+the migrated Events and Sponsorship roles) no longer approve plans, decide Review cards or edit knowledge, and only
+the secretary keeps the inbox; the president can grant these to a custom role.
 
 New clubs come from a sign-up request: a person proves their e-mail with Google, asks for a club, and an operator
 of this host approves (the club is created with its base roles and the requester as president) or rejects it.
@@ -32,7 +35,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
 
-from clubops.api.security import Member, MemberStore
+from clubops.api.security import EMAIL_PATTERN, Member, MemberStore
 from clubops.contracts.common import CABINET_ROLES, Role
 
 # ---------------------------------------------------------------- features
@@ -176,6 +179,23 @@ class ClubRoles:
                 "name TEXT NOT NULL, task_label TEXT NOT NULL, features TEXT NOT NULL, base INTEGER NOT NULL, "
                 "PRIMARY KEY (club_id, role_key))"
             )
+            # A deleted custom role's key is never handed out again, so a member left on it can't inherit a new
+            # role's features (F-407).
+            self._db.execute(
+                "CREATE TABLE IF NOT EXISTS retired_role_keys (club_id TEXT NOT NULL, role_key TEXT NOT NULL, "
+                "PRIMARY KEY (club_id, role_key))"
+            )
+
+    @property
+    def lock(self) -> threading.RLock:
+        """Held by a caller that resolves a role and then adds a member to it, so a delete can't run between."""
+        return self._lock
+
+    def _retired(self, club_id: str, key: str) -> bool:
+        row = self._db.execute(
+            "SELECT 1 FROM retired_role_keys WHERE club_id = ? AND role_key = ?", (club_id, key)
+        ).fetchone()
+        return row is not None
 
     def close(self) -> None:
         with self._lock:
@@ -248,6 +268,11 @@ class ClubRoles:
             ),
         )
 
+    @staticmethod
+    def base_rows(club_id: str) -> list[tuple[str, str, str, str, str, int]]:
+        """The five base roles as ``club_roles`` rows, for a caller writing them inside its own transaction."""
+        return [(club_id, b.key, b.name, b.label.value, json.dumps(sorted(b.features)), 1) for b in BASE_ROLES]
+
     def seed(self, club_id: str) -> None:
         """The five base roles, if missing. Never overwrites a row that exists."""
         with self._lock, self._db:
@@ -293,7 +318,7 @@ class ClubRoles:
             if any(r.name.casefold() == name.casefold() for r in self.of_club(club_id)):
                 raise RoleError(409, "Your club already has a role with this name.")
             key, n = stem, 1
-            while self.get(club_id, key) is not None:
+            while self.get(club_id, key) is not None or self._retired(club_id, key):
                 n += 1
                 key = f"{stem}_{n}"
             role = ClubRole(club_id, key, name, label, chosen, base=False)
@@ -348,6 +373,7 @@ class ClubRoles:
                 raise RoleError(409, "Someone still holds this role. Give them another role first.")
             with self._db:
                 self._db.execute("DELETE FROM club_roles WHERE club_id = ? AND role_key = ?", (club_id, key))
+                self._db.execute("INSERT OR IGNORE INTO retired_role_keys VALUES (?, ?)", (club_id, key))
 
 
 # ------------------------------------------------------------ club sign-up
@@ -438,6 +464,8 @@ class ClubRequests:
             raise RoleError(422, "A club name has 2 to 80 characters, with letters or digits.")
         if not 2 <= len(name) <= 120:
             raise RoleError(422, "Your name has 2 to 120 characters.")
+        if not EMAIL_PATTERN.match(email):
+            raise RoleError(422, "This is not an e-mail address.")
         with self._lock:
             if self.members.by_email(email) is not None:
                 raise RoleError(409, "This e-mail is already on a club's cabinet list.")
@@ -478,33 +506,43 @@ class ClubRequests:
         return found
 
     def _decide(self, request: ClubRequest, status: str, club_id: str, operator: Member, now: datetime) -> None:
-        with self._db:
-            self._db.execute(
-                "UPDATE club_requests SET status = ?, club_id = ?, decided_at = ?, decided_by = ? WHERE request_id = ?",
-                (status, club_id, now.isoformat(), operator.member_id, request.request_id),
-            )
+        """Inside the caller's transaction: never commits on its own."""
+        self._db.execute(
+            "UPDATE club_requests SET status = ?, club_id = ?, decided_at = ?, decided_by = ? WHERE request_id = ?",
+            (status, club_id, now.isoformat(), operator.member_id, request.request_id),
+        )
 
     def approve(self, request_id: str, operator: Member, now: datetime) -> tuple[ClubRequest, Member]:
-        """Create the club: a free slug, its five base roles, and the requester as president."""
-        with self._lock:
+        """Create the club: a free slug, its five base roles, and the requester as president.
+
+        All or nothing (F-409): the roles, the president and the decision are written in one transaction on one
+        connection, so a failure at any step leaves no role, no member and a request still pending. Nothing else
+        is created here; a club's own files appear on its first use."""
+        with self._lock, self.roles.lock, self.members.lock:
             request = self._waiting(request_id)
             if self.members.by_email(request.email) is not None:
                 raise RoleError(409, "This e-mail is already on a club's cabinet list.")
             club_id = self._free_slug(request.club_name, self._taken(but=request.request_id))
-            self.roles.seed(club_id)
             try:
-                president = self.members.add(club_id, request.name, request.email, Role.PRESIDENT, PRESIDENT_KEY)
+                row = self.members.new_row(club_id, request.name, request.email, Role.PRESIDENT, PRESIDENT_KEY)
             except ValueError as err:
                 raise RoleError(422, str(err)) from None
-            self._decide(request, "approved", club_id, operator, now)
+            with self._db:  # one transaction: commits only if every statement below succeeds
+                self._db.executemany(
+                    "INSERT OR IGNORE INTO club_roles VALUES (?, ?, ?, ?, ?, ?)", self.roles.base_rows(club_id)
+                )
+                self._db.execute(MemberStore.INSERT, row)
+                self._decide(request, "approved", club_id, operator, now)
+            president = self.members.get(row[0])
         decided = self.get(request_id)
-        assert decided is not None  # noqa: S101 (just written)
+        assert decided is not None and president is not None  # noqa: S101 (just written)
         return decided, president
 
     def reject(self, request_id: str, operator: Member, now: datetime) -> ClubRequest:
         with self._lock:
             request = self._waiting(request_id)
-            self._decide(request, "rejected", request.club_id, operator, now)
+            with self._db:
+                self._decide(request, "rejected", request.club_id, operator, now)
         decided = self.get(request_id)
         assert decided is not None  # noqa: S101 (just written)
         return decided

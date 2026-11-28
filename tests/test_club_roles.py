@@ -18,7 +18,7 @@ from fastapi.testclient import TestClient
 
 from clubops.api import roles as perms
 from clubops.api.app import ApiConfig, create_app
-from clubops.api.roles import BASE_ROLES, TREASURER_GRANTS, ClubRoles
+from clubops.api.roles import BASE_ROLES, TREASURER_GRANTS, ClubRequests, ClubRoles
 from clubops.api.security import MemberStore
 from clubops.calendar.connect import AUTH_FILE
 from clubops.calendar.service import CalendarSettings, cabinet_addresses
@@ -190,9 +190,15 @@ def test_each_base_role_meets_the_grant_table_on_every_route(client: TestClient,
         kw: dict[str, Any] = {} if method == "GET" else {"headers": HEADERS, "json": {}}
         status = client.request(method, url, **kw).status_code
         assert status != 401, (method, path)
-        if (status == 403) == _allowed(who, role_key, email):
+        allowed = _allowed(who, role_key, email)
+        if (status == 403) == allowed or (allowed and status not in PAST_THE_CHECK):
             wrong.append((method, path, status))
     assert wrong == []
+
+
+# An allowed call got past the permission check and failed (if at all) on the missing or empty input: never a
+# 500, so a granted feature that crashes fails the test instead of passing as "not 403".
+PAST_THE_CHECK = frozenset({200, 201, 202, 204, 400, 404, 409, 422, 501, 503})
 
 
 FEATURE_PROBE: dict[str, tuple[str, str, dict[str, Any] | None]] = {
@@ -216,7 +222,10 @@ def test_grant_table_feature_by_feature(client: TestClient, role_key: str, featu
     method, url, body = FEATURE_PROBE[feature]
     kw: dict[str, Any] = {} if body is None else {"headers": HEADERS, "json": body}
     status = client.request(method, url, **kw).status_code
-    assert (status != 403) is (feature in GRANTS[role_key]), (role_key, feature, status)
+    if feature in GRANTS[role_key]:
+        assert status in PAST_THE_CHECK, (role_key, feature, status)
+    else:
+        assert status == 403, (role_key, feature, status)
 
 
 def test_me_lists_the_features_and_role(client: TestClient) -> None:
@@ -469,3 +478,62 @@ def test_a_member_added_outside_the_app_gets_their_role_lazily(client: TestClien
     people.close()
     me = as_(client, "sponsor@example.org").get("/api/me").json()
     assert me["role_key"] == "sponsorship" and set(me["features"]) == TREASURER_GRANTS
+
+
+def test_club_approval_is_all_or_nothing(client: TestClient, data_dir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """F-409: a failure in the middle of an approval leaves no club, no roles and no president behind."""
+    asked = ask(client).json()
+    slug = asked["club_id"]
+
+    def fail(*_args: Any, **_kwargs: Any) -> None:  # the last step, after the roles and president are written
+        raise sqlite3.OperationalError("synthetic failure while recording the decision")
+
+    monkeypatch.setattr(ClubRequests, "_decide", fail)
+    as_(client, EMAIL["president"])  # the operator
+    with pytest.raises(sqlite3.OperationalError):
+        client.post(f"/api/clubs/requests/{asked['id']}/approve", headers=HEADERS)
+    with closing(sqlite3.connect(data_dir / "general.db")) as db:
+        assert db.execute("SELECT COUNT(*) FROM club_roles WHERE club_id = ?", (slug,)).fetchone() == (0,)
+        assert db.execute("SELECT COUNT(*) FROM members WHERE club_id = ?", (slug,)).fetchone() == (0,)
+        assert db.execute("SELECT status FROM club_requests WHERE request_id = ?", (asked["id"],)).fetchone() == (
+            "pending",
+        )
+    assert not (data_dir / "clubs" / f"{slug}.db").exists()
+    assert client.post("/api/auth/dev", json={"email": "founder@example.org"}, headers=HEADERS).status_code == 403
+
+    monkeypatch.undo()  # once the fault is gone, the same request approves cleanly
+    as_(client, EMAIL["president"])
+    assert client.post(f"/api/clubs/requests/{asked['id']}/approve", headers=HEADERS).status_code == 200
+    assert as_(client, "founder@example.org").get("/api/me").json()["role_key"] == "president"
+
+
+def test_club_request_needs_a_real_e_mail(client: TestClient) -> None:
+    assert ask(client, email="not-an-address").status_code == 422
+
+
+def test_a_deleted_role_key_is_never_reused(data_dir: Path) -> None:
+    """F-407: a member left on a deleted role's key must not inherit a later role's features."""
+    people = MemberStore(data_dir)
+    roles = ClubRoles(data_dir, people)
+    first = roles.create(CLUB, "Field Trip", ["plan_events"])
+    roles.delete(CLUB, first.key)
+    orphan = people.add(CLUB, "Synthetic Orphan", "orphan@example.org", Role.EVENTS, first.key)
+    again = roles.create(CLUB, "Field Trip", ["chat"])
+    assert again.key != first.key
+    assert roles.features_for(orphan) == frozenset()
+    roles.close()
+    people.close()
+
+
+def test_one_bad_stored_label_does_not_stop_start_up(tmp_path: Path) -> None:
+    """F-408: a member row whose label is outside the Role enum is skipped; the club's other members still work."""
+    old_members_file(tmp_path)
+    with closing(sqlite3.connect(tmp_path / "general.db")) as db, db:
+        db.execute("INSERT INTO members VALUES ('m-x', 'old-club', 'X', 'x@example.org', 'no-such-label')")
+    people = MemberStore(tmp_path)
+    roles = ClubRoles(tmp_path, people)
+    roles.migrate()  # does not raise
+    assert "p@example.org" in {m.email for m in people.of_club("old-club")}
+    assert "x@example.org" not in {m.email for m in people.of_club("old-club")}
+    roles.close()
+    people.close()

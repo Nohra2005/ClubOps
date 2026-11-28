@@ -110,7 +110,7 @@ def read_session(secret: str, token: str | None, now: float | None = None) -> tu
 
 # ----------------------------------------------------------------- members
 
-_EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[a-z]{2,}$")
+EMAIL_PATTERN = _EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[a-z]{2,}$")
 
 
 class MemberStore:
@@ -164,7 +164,15 @@ class MemberStore:
 
     def of_club(self, club_id: str) -> list[Member]:
         rows = self._all(f"{self._COLUMNS} WHERE club_id = ? ORDER BY name", (club_id,))
-        return [m for m in (self._row(r) for r in rows) if m is not None]
+        found = []
+        for row in rows:
+            try:
+                member = self._row(row)
+            except ValueError:  # a stored label outside the Role enum: skip that row, keep the club working (F-408)
+                continue
+            if member is not None:
+                found.append(member)
+        return found
 
     def holding(self, club_id: str, role_key: str) -> list[Member]:
         """The club's members who hold one club role (J-25)."""
@@ -186,25 +194,36 @@ class MemberStore:
             )
             return cur.rowcount
 
-    def add(self, club_id: str, name: str, email: str, role: Role, role_key: str | None = None) -> Member:
-        """``role`` is the task label; ``role_key`` the club role (J-25), by default the legacy key of ``role``."""
+    INSERT = "INSERT INTO members (member_id, club_id, name, email, role, role_key) VALUES (?, ?, ?, ?, ?, ?)"
+
+    @property
+    def lock(self) -> threading.RLock:
+        """Held while a caller writes a member row on its own connection, so no two writers pick the same id."""
+        return self._lock
+
+    def new_row(
+        self, club_id: str, name: str, email: str, role: Role, role_key: str | None = None
+    ) -> tuple[str, str, str, str, str, str]:
+        """A checked members row with a free id, not yet written. Call with ``lock`` held until it is written."""
         email = email.strip().lower()
         if not _EMAIL.match(email):
             raise ValueError("this is not an e-mail address")
         if role is Role.MEMBER:
             raise ValueError("only cabinet members and the adviser have accounts")
         slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:40] or "member"
+        member_id, n = f"m-{slug}", 1
+        while self.get(member_id) is not None:
+            n += 1
+            member_id = f"m-{slug}-{n}"
+        return (member_id, club_id, name.strip(), email, role.value, role_key or legacy_key(role))
+
+    def add(self, club_id: str, name: str, email: str, role: Role, role_key: str | None = None) -> Member:
+        """``role`` is the task label; ``role_key`` the club role (J-25), by default the legacy key of ``role``."""
         with self._lock:  # pick a free id and insert it as one step, so two requests can't take the same id
-            member_id, n = f"m-{slug}", 1
-            while self.get(member_id) is not None:
-                n += 1
-                member_id = f"m-{slug}-{n}"
+            row = self.new_row(club_id, name, email, role, role_key)
             with self._db:
-                self._db.execute(
-                    "INSERT INTO members (member_id, club_id, name, email, role, role_key) VALUES (?, ?, ?, ?, ?, ?)",
-                    (member_id, club_id, name.strip(), email, role.value, role_key or legacy_key(role)),
-                )
-            member = self.get(member_id)
+                self._db.execute(self.INSERT, row)
+            member = self.get(row[0])
         assert member is not None  # noqa: S101 (just written)
         return member
 

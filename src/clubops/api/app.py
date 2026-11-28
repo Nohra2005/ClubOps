@@ -877,18 +877,19 @@ def create_app(  # noqa: PLR0915 (one function per route below; kept together on
             raise HTTPException(422, "only cabinet members and the adviser have accounts")
         if members.by_email(body.email) is not None:
             raise HTTPException(409, "This e-mail is already on a cabinet list.")
-        if key == perms.ADVISER_KEY:
-            label, reader = Role.ADVISER, False
-        else:
+        with roles.lock:  # the role can't be deleted between checking it and adding the member (F-407)
+            if key == perms.ADVISER_KEY:
+                label, reader = Role.ADVISER, False
+            else:
+                try:
+                    held = roles.resolve(member.club_id, key)
+                except RoleError as err:
+                    raise role_error(err) from None
+                label, reader = held.task_label, perms.CALENDAR_ACCESS in held.features
             try:
-                held = roles.resolve(member.club_id, key)
-            except RoleError as err:
-                raise role_error(err) from None
-            label, reader = held.task_label, perms.CALENDAR_ACCESS in held.features
-        try:
-            added = members.add(member.club_id, body.name, body.email, label, key)
-        except ValueError as err:
-            raise HTTPException(422, str(err)) from None
+                added = members.add(member.club_id, body.name, body.email, label, key)
+            except ValueError as err:
+                raise HTTPException(422, str(err)) from None
         if reader:  # read-only access to the club calendar; sent after the reply, retried on failure
             calendar_service.share_with(member.club_id, added.email, grant=True)
             background.add_task(calendar_service.drain, member.club_id)
