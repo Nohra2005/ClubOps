@@ -75,16 +75,15 @@ export default function Settings() {
           </a>
         </nav>
         <div className="settings-sections">
-          <section className="panel" id="transition">
-            <h2>Cabinet transition</h2>
-            <p>
-              Prepare the outgoing questions and help the next officer find their way. This
-              introduction does not replace adding members or assigning their roles.
-            </p>
-            <Link to="/handover" className="button">
-              {isPresident ? 'Prepare cabinet handover' : 'Open role introduction'}
-            </Link>
-          </section>
+          {isPresident && (
+            <section className="panel" id="transition">
+              <h2>Cabinet turnover</h2>
+              <p>Prepare the next cabinet and transfer the club at the start of their term.</p>
+              <Link to="/settings/turnover" className="button">
+                Manage turnover
+              </Link>
+            </section>
+          )}
           <section className="panel" id="cabinet">
             <div className="panel-header">
               <div>

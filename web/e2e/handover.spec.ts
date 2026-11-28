@@ -1,15 +1,12 @@
 import { expect, test } from '@playwright/test';
 
-test('handover exports a sourced guide and requires explicit sign-off', async ({ page }) => {
+test('role reference exports sources without implying cabinet activation', async ({ page }) => {
   await page.goto('/handover');
-  await page.getByText('Reference guide, sources and outgoing questions', { exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Sign off handover', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Role reference', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Sign off|Activate/ })).toHaveCount(0);
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download text', exact: true }).click();
   expect((await download).suggestedFilename()).toBe('running-club-president-handover.txt');
-  await page.getByRole('button', { name: 'Sign off handover', exact: true }).click();
-  await page.getByRole('button', { name: 'Confirm sign-off', exact: true }).click();
-  await expect(page.getByText('Signed off by Alex Morgan', { exact: true })).toBeVisible();
   await page.getByLabel('Guide for').selectOption('treasurer');
-  await expect(page.getByRole('button', { name: 'Sign off handover', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Download text', exact: true })).toBeEnabled();
 });

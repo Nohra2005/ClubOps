@@ -1,0 +1,106 @@
+/* Glass is a backdrop; content, controls and semantic state keep strong contrast. */
+:root {
+  color-scheme: light;
+  --canvas: #dceaf3;
+  --ink: #142f45;
+  --muted: #405d72;
+  --line: #33576c38;
+  --paper: #f8fcff;
+  --surface-soft: #e9f2f8;
+  --surface-raised: #fff;
+  --green: #075e77;
+  --green-soft: #d4f3ed;
+  --lime: #83ebce;
+  --red: #9b332e;
+  --red-soft: #fff0ec;
+  --amber: #77500a;
+  --amber-soft: #fff4d9;
+  --blue: #264faa;
+  --blue-soft: #e8f0ff;
+  --success: #226345;
+  --success-soft: #dff4e9;
+  --on-accent: #fff;
+  --focus: #005d88;
+  --glass: #f6fcffd1;
+  --glass-edge: #ffffffdc;
+  --glass-shine: #ffffffd9;
+  --glass-shadow: 0 16px 48px #21536c18;
+  --control: #ffffffc9;
+  --control-hover: #e8f5fb;
+  --radius: 18px;
+  --scene:
+    radial-gradient(ellipse at 95% 2%, #ffc799aa, transparent 48%),
+    radial-gradient(ellipse at 7% 82%, #6abddc88, transparent 50%),
+    radial-gradient(ellipse at 64% 65%, #b5f1e36b, transparent 48%), #dceaf3;
+  color: var(--ink);
+  background: var(--canvas);
+}
+
+:root[data-theme='afterdark'] {
+  color-scheme: dark;
+  --canvas: #0b2233;
+  --ink: #edf8ff;
+  --muted: #c3d9e7;
+  --line: #a8c9df42;
+  --paper: #142e43;
+  --surface-soft: #19394e;
+  --surface-raised: #173b52;
+  --green: #86f7d9;
+  --green-soft: #194d48;
+  --lime: #b5ffe7;
+  --red: #ffc3b8;
+  --red-soft: #422b34;
+  --amber: #ffdd96;
+  --amber-soft: #3c3423;
+  --blue: #b5d2ff;
+  --blue-soft: #233f59;
+  --success: #a2f3c2;
+  --success-soft: #193e34;
+  --on-accent: #082e34;
+  --focus: #b2ffef;
+  --glass: #102a3fe8;
+  --glass-edge: #d9f1ff47;
+  --glass-shine: #e8f6ff24;
+  --glass-shadow: 0 18px 52px #030e1d48;
+  --control: #1c3b51;
+  --control-hover: #284c61;
+  --scene:
+    radial-gradient(ellipse at 98% 0%, #259f9b65, transparent 51%),
+    radial-gradient(ellipse at 4% 84%, #2d73956e, transparent 55%),
+    radial-gradient(ellipse at 60% 62%, #4b758e30, transparent 50%), #0b2233;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass: var(--paper);
+    --control: var(--surface-raised);
+  }
+}
+
+@media print {
+  :root,
+  :root[data-theme='afterdark'] {
+    color-scheme: light;
+    --canvas: #fff;
+    --ink: #111;
+    --muted: #333;
+    --line: #aaa;
+    --paper: #fff;
+    --surface-soft: #f4f4f4;
+    --surface-raised: #fff;
+    --glass: #fff;
+    --glass-edge: #aaa;
+    --green: #111;
+    --green-soft: #eee;
+    --red: #111;
+    --red-soft: #f4f4f4;
+    --amber: #111;
+    --amber-soft: #f4f4f4;
+    --blue: #111;
+    --blue-soft: #f4f4f4;
+    --success: #111;
+    --success-soft: #f4f4f4;
+    --control: #fff;
+    --scene: none;
+  }
+}

@@ -131,11 +131,16 @@ export default function Knowledge() {
       <PageHeading
         title="Knowledge"
         action={
-          isPresident && (
-            <Link to="/settings#documents" className="button">
-              <Upload size={14} /> Upload a document
+          <div className="compact-actions">
+            <Link to="/handover" className="text-button">
+              Role references
             </Link>
-          )
+            {isPresident && (
+              <Link to="/settings#documents" className="button">
+                <Upload size={14} /> Upload a document
+              </Link>
+            )}
+          </div>
         }
       />
       <div className="knowledge-search">
@@ -278,7 +283,9 @@ export function KnowledgeFact() {
             />
             <section className="panel fact-statement">
               <p className="inline-note">
-                {item.scope === 'aub' ? 'AUB-wide' : 'Club-only'} ? {item.kind}
+                {item.scope === 'aub' ? 'AUB-wide' : 'Club-only'}
+                {' \u00b7 '}
+                {item.kind}
               </p>
               <FactValidity validTo={item.valid_to} text={item.statement} />
               <p>

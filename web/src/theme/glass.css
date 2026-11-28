@@ -1,0 +1,305 @@
+body {
+  color: var(--ink);
+  background: var(--scene);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+:focus-visible {
+  outline-color: var(--focus);
+}
+.app-shell {
+  position: relative;
+  z-index: 0;
+  display: grid;
+  grid-template-columns: 195px minmax(0, 1fr);
+  gap: 24px;
+  max-width: 1580px;
+  margin: 0 auto;
+  padding: 26px;
+}
+.sidebar {
+  position: sticky;
+  inset: auto;
+  top: 26px;
+  width: auto;
+  height: calc(100dvh - 52px);
+  border: 1px solid var(--glass-edge);
+  border-radius: 24px;
+  padding: 27px 14px;
+  background: var(--glass);
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 1px 0 var(--glass-shine);
+  backdrop-filter: blur(24px) saturate(140%);
+}
+.brand {
+  gap: 8px;
+  font-size: 25px;
+  color: var(--ink);
+  letter-spacing: -1.4px;
+  padding: 0 7px;
+}
+.brand-symbol {
+  background: var(--control);
+  color: var(--green);
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 0 var(--glass-shine);
+  border-radius: 11px;
+}
+.brand-symbol span,
+.brand-dot {
+  color: var(--green);
+}
+.sidebar nav {
+  margin-top: 37px;
+  gap: 7px;
+}
+.nav-link {
+  border: 1px solid transparent;
+  color: var(--muted);
+  border-radius: 12px;
+  min-height: 45px;
+  height: auto;
+  padding: 12px;
+}
+.nav-link:hover {
+  background: var(--control-hover);
+  color: var(--ink);
+}
+.nav-link.active {
+  background: var(--control);
+  color: var(--green);
+  border-color: var(--glass-edge);
+  box-shadow:
+    0 3px 9px #10283b09,
+    inset 0 1px 0 var(--glass-shine);
+  font-weight: 750;
+}
+.nav-count,
+.review-count {
+  color: var(--green);
+  background: var(--green-soft);
+  border-radius: 7px;
+}
+.app-body {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--glass-edge);
+  border-radius: 28px;
+  background: transparent;
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 1px 0 var(--glass-shine);
+}
+/* A backdrop on a pseudo-element leaves fixed dialogs tied to the viewport. */
+.app-body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(140%);
+  pointer-events: none;
+}
+.topbar {
+  height: 80px;
+  gap: 18px;
+  padding: 0 28px;
+  border-radius: 28px 28px 0 0;
+  background: transparent;
+  border-color: var(--line);
+}
+.club-monogram,
+.avatar {
+  color: var(--green);
+  background: var(--control);
+  border: 1px solid var(--glass-edge);
+}
+.topbar-actions {
+  gap: 13px;
+}
+.theme-toggle {
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--glass-edge);
+  border-radius: 50%;
+  background: var(--control);
+  color: var(--green);
+}
+.theme-toggle:hover {
+  background: var(--control-hover);
+}
+.page {
+  padding: 30px 29px 38px;
+}
+.page-heading h1 {
+  font-size: clamp(28px, 3vw, 42px);
+  letter-spacing: -1.6px;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+}
+.page-heading {
+  margin-bottom: 28px;
+}
+.popover-panel,
+.modal,
+.popover-panel select {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--line);
+}
+.popover-panel {
+  box-shadow: var(--glass-shadow);
+  border-radius: 16px;
+}
+.login-appearance {
+  position: absolute;
+  right: 27px;
+  top: 25px;
+}
+@media (max-width: 1100px) {
+  .app-shell {
+    grid-template-columns: 170px minmax(0, 1fr);
+    padding: 20px;
+    gap: 17px;
+  }
+  .sidebar {
+    padding: 24px 10px;
+    top: 20px;
+    height: calc(100dvh - 40px);
+  }
+  .brand {
+    font-size: 22px;
+  }
+  .page,
+  .topbar {
+    padding-left: 23px;
+    padding-right: 23px;
+  }
+}
+@media (max-width: 800px) {
+  .app-shell {
+    display: block;
+    padding: 12px;
+  }
+  .sidebar {
+    display: none;
+  }
+  .app-body {
+    padding-bottom: 85px;
+    border-radius: 24px;
+  }
+  .topbar {
+    height: 74px;
+    padding: 0 16px;
+    gap: 8px;
+  }
+  .topbar-actions {
+    gap: 5px;
+  }
+  .club-monogram {
+    display: none;
+  }
+  .club-selector select {
+    max-width: 115px;
+  }
+  .page {
+    padding: 25px 18px 30px;
+  }
+  .page-heading {
+    margin-bottom: 24px;
+  }
+  .page-heading h1 {
+    font-size: 30px;
+    letter-spacing: -1px;
+  }
+  .mobile-nav {
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    height: auto;
+    min-height: 72px;
+    padding: 10px 2px max(10px, env(safe-area-inset-bottom, 0px));
+    border: 1px solid var(--glass-edge);
+    border-radius: 23px;
+    background: var(--glass);
+    box-shadow:
+      var(--glass-shadow),
+      inset 0 1px 0 var(--glass-shine);
+    backdrop-filter: blur(28px) saturate(145%);
+  }
+  .mobile-nav a {
+    color: var(--muted);
+    min-width: 0;
+    min-height: 44px;
+  }
+  .mobile-nav a.active {
+    color: var(--green);
+  }
+  .mobile-nav b {
+    background: var(--green-soft);
+    color: var(--green);
+    border-color: var(--glass-edge);
+  }
+  .toast {
+    bottom: 100px;
+  }
+}
+@media (max-width: 400px) {
+  .topbar {
+    padding: 0 10px;
+    gap: 5px;
+  }
+  .club-selector select {
+    max-width: 116px;
+  }
+  .topbar-actions {
+    gap: 3px;
+  }
+  .top-search {
+    width: 40px;
+    max-width: 40px;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .sidebar,
+  .app-body::before,
+  .mobile-nav {
+    backdrop-filter: none;
+  }
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .sidebar,
+  .app-body::before,
+  .mobile-nav {
+    background: var(--paper);
+  }
+}
+@media print {
+  body {
+    background: #fff;
+  }
+  .app-shell {
+    display: block;
+    padding: 0;
+  }
+  .sidebar,
+  .theme-toggle,
+  .app-body::before {
+    display: none;
+  }
+  .app-body {
+    border: 0;
+    box-shadow: none;
+    width: 100%;
+    padding: 0;
+    background: #fff;
+  }
+  .page {
+    padding: 0;
+  }
+}

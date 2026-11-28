@@ -10,6 +10,7 @@
 scripts/*
 !scripts/load_rulebook.py
 !scripts/add_member.py
+!scripts/move_knowledge.py
 !data/
 data/*
 !data/rulebook/
