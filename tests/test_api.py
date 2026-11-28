@@ -396,8 +396,10 @@ def test_chat_access_and_invalid_input_never_call_model(data_dir: Path, scripts:
         sign_in(c, "ta03@aub.edu.lb")
         assert c.post("/api/chat/ask", json={"text": "Green Field"}, headers=HEADERS).status_code == 403
         sign_in(c)
-        for body in ({}, {"text": "x"}, {"text": "x" * 501}):
+        for body in ({}, {"text": ""}, {"text": "x" * 501}):
             assert c.post("/api/chat/ask", json=body, headers=HEADERS).status_code == 422
+        hi = c.post("/api/chat/ask", json={"text": "hi"}, headers=HEADERS)  # F-335: a greeting is answered, not refused
+        assert hi.status_code == 200 and hi.json()["known"] is False and hi.json()["kind"] == "unknown"
         assert c.post("/api/chat/ask", json={"text": "Green Field"}).status_code == 403
 
 
