@@ -891,6 +891,93 @@ reviews/merges #168. Do not treat the deployed PR head as already merged into ma
 or these public/host checks as real Google consent, mail fetch or event acceptance.
 No external provider operation was triggered by the redeploy checks.
 
+## 2026-11-26 - Christophe (C-31 current backlog maintenance)
+
+**Found / changed:** Read-only preview stopped before mutation because legitimate
+issues #128/#129/#169 had been added beyond the original three manual handoffs.
+Registered those explicit primary owners, retaining original handoffs and refusing
+unknown/duplicate/foreign cards. Existing issue assignees are added to, not removed;
+card content and underlying state stay unchanged. #128's shared API/web ownership
+is not transferred by its primary board assignment. D-255/F-510.
+
+**Verified:** All root gates pass: Ruff/format 187 files, mypy 92, schemas/tasks,
+949 tests, 93.76% coverage. Matching locked dependencies reused. Full web checks
+pass: lint/format, 151 units, 43 board-tool tests, rehearsal types and build.
+The regression covers new closed/open issue mapping, preservation and refusal of
+unknown/duplicate/foreign issues. No app/UI/provider behavior changes.
+
+**Live run:** One explicit bulk invocation pinned to merged main 4722838 verified
+98 task cards and six issue cards: five tasks created, 118 mirror updates,
+59 native updates, zero remaining native changes. #128 Done/Christophe;
+#129 and #169 In progress/Tatiana. Existing content, assignments, views and
+iteration identities preserved. Reviewed metadata receipt is
+web/board/evidence/native-fields-2026-11-26.json; raw inventory stays ignored.
+
+**Next:** Independent PR review and merge commit; C-31 remains doing for team
+review. Board deliberately excludes unmerged #153 task corrections and #170's
+turnover task. After those merge, reconcile again from the new exact main.
+The four Monday dates remain owner-reported, not inferred meeting decisions.
+Tatiana: #169 needs the atomic turnover API contract; report/grading handoff is
+in #153 (all five checks green). No claim of completed final evaluation, live
+provider acceptance, production telemetry or backup restoration.
+
+## 2026-11-27 - Christophe (C-31 sync after #168)
+
+**Did:** Merged main b3ce74e after #168. Resolved the handoff conflict by
+retaining every complete branch section and every main deployment/verification
+section; checked that no section heading from either side was lost. Existing
+task statuses and dated receipts are retained. No backend contract, host setting
+or live provider operation changed as part of this merge.
+
+**Verified:** Required root gates pass: Ruff/format 187 files, mypy 92, schemas
+and task validation; 949 Python tests, 93.76% coverage. Full web quality/build
+checks pass (151 units and 43 board-tool tests), lint/format, rehearsal types
+and production build. Matching locked dependencies used. Current-head GitHub CI
+will run after this sync is pushed; prior green checks are historical.
+
+**Next:** Independent owner review and merge commit after all fresh checks pass.
+Chris requests a verified current-main redeploy whenever this assistant merges
+to main; that operational step is separate from syncing a PR branch. Calendar
+Connect remains under C-18/C-35 diagnosis: saved 26 November host comparisons
+match the supplied ID/redirect, but current Google-console values and the
+callback's exact failure stage are not yet established. Owner handoff is #83.
+
+## 2026-11-27 - Christophe (C-31 follow-up sync after #172/#153)
+
+**Did:** Merged main 8828847 after the Calendar owner-check fix and #153's
+grading/docs merge. Kept every complete handoff section from both parents,
+including the longer C-29 reconciliation entry. A local failed resolver was
+corrected before publication; the final merge contains no conflict markers.
+
+**Verified:** All required root gates pass: Ruff/format 187 files, mypy 92,
+schema/task validation, 949 tests and 93.74% coverage. Full web checks pass:
+151 units, 43 board-tool tests, lint/format, rehearsal types and production build.
+Fresh GitHub CI is required on the follow-up head. No board mutation, provider
+action or host deployment occurred in this merge. The Calendar fix is now in
+main; deployment is queued pending renewed Azure authorization.
+
+## 2026-11-24 - Christophe (C-29 current integration documentation)
+
+**Did:** Reconciled owned architecture, data provenance and memory guides with
+main eae20c5's published decisions: trusted clean new mail facts can apply, while
+overrides/merges and flagged facts need Review (D-151); dated mail deadlines have
+a separate calendar path (D-150); chat wiring and dated sources are merged
+(D-200/#149); chatbot ratings use a private human-marked sheet (D-152/#151).
+Updated the guided-handover integration status without claiming persistent tutoring.
+
+**State:** Documentation only; no backend implementation read or changed, no
+new runtime policy or contract. Checked statements against owner decisions/API,
+kept the paid-read/scheduling distinction and missing Knowledge expiry-edit field
+explicit. C-29 stays doing for report incorporation and fresh/deployed acceptance.
+Local links, web guide formatting and shared task/log checks run before publication;
+full root gates use the same locked dependencies as the verified main source.
+
+**Next:** Publish a separate C-29 PR, preserve small commits, merge after green
+checks under Chris's temporary review waiver. Tatiana owns the stale chat/setup
+availability notes in docs/api.md and the expiry-edit API extension. No completed
+private evaluation, hosting recovery, provider quality or user benefit is inferred.
+
+
 ## 2026-11-26 - Christophe (C-29/C-30 evidence reconciliation)
 
 **Did:** Synced #153 with main 4722838, preserving both shared handoff histories.

@@ -2,7 +2,16 @@
 import { operation, preflight } from './project-github.mjs';
 
 export const ownerLogins = { tatiana: 'Nohra2005', christophe: 'chrs-005', joey: 'JS9872' };
-const issueOwners = { 43: 'christophe', 83: 'tatiana', 84: 'christophe' };
+// Explicit primary backlog owners; issue assignments already present are retained.
+const issueOwners = {
+  43: 'christophe',
+  83: 'tatiana',
+  84: 'christophe',
+  128: 'christophe',
+  129: 'tatiana',
+  169: 'tatiana',
+};
+const requiredIssues = [43, 83, 84];
 const critical = new Set([
   'T-06',
   'T-26',
@@ -186,8 +195,10 @@ export function planNative(project, plan, dates, completedDates, { allowMissing 
   });
   const managedIds = new Set([...managed.values()].map((item) => item.id));
   const issues = project.items.filter((item) => !managedIds.has(item.id));
+  const issueNumbers = new Set(issues.map((item) => item.content?.number));
   if (
-    issues.length !== 3 ||
+    requiredIssues.some((number) => !issueNumbers.has(number)) ||
+    issueNumbers.size !== issues.length ||
     issues.some(
       (x) =>
         x.content.__typename !== 'Issue' ||
