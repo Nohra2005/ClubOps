@@ -122,6 +122,22 @@ an independent Google-console inspection or a tested backup restore. The sanitiz
 version/boolean/count metadata and public asset hashes, without credentials,
 account addresses, calendar IDs or database contents.
 
+### UI publication verified, 28 November 2026
+
+The turnover/frontend and Frost/Afterdark PRs #170/#173 are merged with their
+individual commits retained. Deployed main `01ffab0` includes those changes and
+the subsequent main updates; all five checks passed before deployment. Seven
+private SQLite backups were created and every resolved host setting was preserved.
+
+The healthy image's JS/CSS and theme-bootstrap hashes match the public site.
+Fresh desktop/phone browser checks verify both styles, switching, reload
+persistence and no horizontal overflow. The old role-learning controls are absent
+from the served bundle; Chris confirmed the new UI is visible after refresh.
+See the sanitized [UI receipt](deployment/evidence/ui-publication-2026-11-28.json).
+Actual cabinet activation still awaits #169. A separate small follow-up corrects
+the sign-in logo's foreground contrast; these dated receipts are not a claim that
+every later commit has already been deployed.
+
 ## Local packaging checks
 
 For the complete local app, run `docker compose up --build` from the repo root and open

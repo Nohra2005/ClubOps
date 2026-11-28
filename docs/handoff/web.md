@@ -724,6 +724,86 @@ serve the new published GET states; unknown mutations remain rejected. Final
 combined CI is required. The current PR is #167; initial failed CI was the stale
 fixture expectations, not evidence of host configuration or Google acceptance.
 
+## 2026-11-26 - Christophe (C-39 term-based cabinet turnover)
+
+**Did:** Replaced the recurring role tour, account-menu entry, raw Ask prefix
+and guide sign-off with a president Settings turnover flow: draft dates/officers,
+review inherited work and vacancies, confirm activation, archive the former
+cabinet and persist the sample active term. Draft edits and changed work invalidate
+review; stale/double activation fails before save. Incoming officers acknowledge
+once per identity/term; legacy learning preferences no longer affect chat. Sourced
+role references and exports remain. Changes are split into focused commits.
+Reused #168's two punctuation fixes so this branch does not regress them.
+
+**State:** Root gates pass: 949 tests, 93.76% coverage; Ruff/format 187 files,
+mypy 92, schemas/tasks. Frontend quality/build passes: 158 units and 42 board
+checks. Final broad browser runs pass 58 demo/workflow/Axe, 116 HTTP contract
+cases and 8 real local API/cookie/SQLite cases with a scripted model. Reviewed
+synthetic prepare/review/arrival captures on desktop/phone. Local test config
+allows only this worktree plus shared dependency files and separates artifacts;
+no missing-font workaround or weakened test assertions. Early harness failures
+were fixed (an overbroad request matcher, parallel artifact collision and an
+ambiguous label locator); they are not reported as product failures or passes.
+D-253/F-506-F-508; old F-269-F-271 now reference the replacement safeguards.
+
+**Next / owner boundary:** Tatiana's contract request is #169, detailed in
+web/CABINET_TURNOVER.md. The current API cannot atomically switch term, cabinet
+and sessions or provide server-confirmed term context to the chatbot. HTTP shows
+activation unavailable and sends no invented route or sequential membership
+writes. The complete lifecycle is synthetic and browser-persistent only; it is
+not live identity transfer, server durability, invitations, Google access changes
+or proven model tutoring. No backend-owned implementation or contract was read
+or changed. C-39 remains doing for that integration; frontend PR is reviewable.
+This work does not deploy to Azure or replace frozen T-33 outcome claims.
+
+## 2026-11-26 - Christophe (C-39 sourced incoming brief)
+
+**Did:** Replaced the generic new-term greeting with inherited open events,
+unfinished-task counts and up to two sourced entries from the session role's
+existing handover view. Events shares its read result with the brief; opening it
+makes no model call. Moved it below the Events heading, renamed acknowledgment to
+Continue to workspace and retained full references under Knowledge after dismissal.
+Independent read errors cannot claim empty work/reference data; failed acknowledgment
+keeps the introduction visible. Fixed literal question-mark punctuation in owned
+metadata/docs. The optional C-39 demo appendix is separate from the five-minute
+recording and labels the current browser-only boundary. D-254/F-509.
+
+**State:** Root gates pass: 949 tests, 93.76% coverage, Ruff/format 187 files,
+mypy 92, schemas/tasks. Frontend quality/build passes 158 units and 42 board tools.
+Fourteen targeted demo/reference/Knowledge cases plus six HTTP boundary cases pass
+on desktop/phone, including source excerpt links, per-officer acknowledgment,
+read failure versus empty data, failed acknowledgment and full-page Axe scans.
+New desktop/phone incoming-brief captures were inspected with fonts available.
+The prior #170 head had all five CI checks green; the new head needs fresh CI.
+Earlier broad 58/116/8 runs remain historical, not claimed as rerun this session.
+
+**Next:** Independent review of #170 and Tatiana's term/membership/session contract
+in #169. That issue has no owner reply yet. Real activation stays unavailable;
+no live account, host environment, deployment, external provider or model was
+changed in this session. C-39 remains doing for persistent live integration.
+
+## 2026-11-24 - Christophe (C-29 current integration documentation)
+
+**Did:** Reconciled owned architecture, data provenance and memory guides with
+main eae20c5's published decisions: trusted clean new mail facts can apply, while
+overrides/merges and flagged facts need Review (D-151); dated mail deadlines have
+a separate calendar path (D-150); chat wiring and dated sources are merged
+(D-200/#149); chatbot ratings use a private human-marked sheet (D-152/#151).
+Updated the guided-handover integration status without claiming persistent tutoring.
+
+**State:** Documentation only; no backend implementation read or changed, no
+new runtime policy or contract. Checked statements against owner decisions/API,
+kept the paid-read/scheduling distinction and missing Knowledge expiry-edit field
+explicit. C-29 stays doing for report incorporation and fresh/deployed acceptance.
+Local links, web guide formatting and shared task/log checks run before publication;
+full root gates use the same locked dependencies as the verified main source.
+
+**Next:** Publish a separate C-29 PR, preserve small commits, merge after green
+checks under Chris's temporary review waiver. Tatiana owns the stale chat/setup
+availability notes in docs/api.md and the expiry-edit API extension. No completed
+private evaluation, hosting recovery, provider quality or user benefit is inferred.
+
+
 ## 2026-11-26 - Christophe (C-18/C-35 Azure host verification)
 
 **Did:** #167 merged at main 4722838. Patched only the requested OAuth,
@@ -862,6 +942,37 @@ Connect remains under C-18/C-35 diagnosis: saved 26 November host comparisons
 match the supplied ID/redirect, but current Google-console values and the
 callback's exact failure stage are not yet established. Owner handoff is #83.
 
+## 2026-11-28 - Christophe (C-18/C-35 Calendar Connect deployment)
+
+**Did:** After Chris renewed Azure device authorization, deployed green merged
+main c782aea, including #172's owner-check fix, over 6749fb0. Used the existing
+Compose project/environment and persistent data mount. Created seven consistent
+private SQLite backups before recreating the container; verified every resolved
+environment value was preserved, including the working Inbox configuration.
+No new runtime design, API contract or backend implementation was introduced.
+
+**Verified:** Healthy image/revision c782aea. Calendar ID and HTTPS callback match
+the supplied references exactly, with no surrounding whitespace/trailing slash;
+effective settings match Compose and built/runtime sign-in client IDs agree.
+Public frontend asset hashes match those in the running container. HTTPS login
+and Calendar return 200; unauthenticated session/Calendar/Gmail APIs return 401.
+Chris reports the requested owner retry returned Connected and Inbox was already
+working. A post-retry inspection saw one Calendar callback and no matched failed
+redirect/error counts. Raw settings, credentials, logs and data remain private;
+sanitized receipt: web/deployment/evidence/calendar-connect-2026-11-28.json.
+
+**Checks:** All five CI checks passed on deployed main. Local required root gates
+pass: Ruff/format 187 files, mypy 92, schemas/tasks, 949 tests and 93.74% coverage.
+Deployment docs/receipt pass formatting. No runtime/UI source changed in this
+record-only PR, so no new browser suite or failure-mode ID was added.
+
+**Next:** Review this record through a PR. C-18 still needs cabinet event-planning
+acceptance; C-35 retains its broader unfinished scope. The Connected result does
+not establish event creation, a mailbox fetch, an independently inspected Google
+console, a particular device or a tested backup restore. The temporary Azure
+helper was closed and its process confirmed stopped after the successful retry. No other app operation was
+triggered here; #170/#173 remain separate unmerged cabinet/theme work.
+
 ## 2026-11-27 - Christophe (C-31 follow-up sync after #172/#153)
 
 **Did:** Merged main 8828847 after the Calendar owner-check fix and #153's
@@ -875,28 +986,6 @@ schema/task validation, 949 tests and 93.74% coverage. Full web checks pass:
 Fresh GitHub CI is required on the follow-up head. No board mutation, provider
 action or host deployment occurred in this merge. The Calendar fix is now in
 main; deployment is queued pending renewed Azure authorization.
-
-## 2026-11-24 - Christophe (C-29 current integration documentation)
-
-**Did:** Reconciled owned architecture, data provenance and memory guides with
-main eae20c5's published decisions: trusted clean new mail facts can apply, while
-overrides/merges and flagged facts need Review (D-151); dated mail deadlines have
-a separate calendar path (D-150); chat wiring and dated sources are merged
-(D-200/#149); chatbot ratings use a private human-marked sheet (D-152/#151).
-Updated the guided-handover integration status without claiming persistent tutoring.
-
-**State:** Documentation only; no backend implementation read or changed, no
-new runtime policy or contract. Checked statements against owner decisions/API,
-kept the paid-read/scheduling distinction and missing Knowledge expiry-edit field
-explicit. C-29 stays doing for report incorporation and fresh/deployed acceptance.
-Local links, web guide formatting and shared task/log checks run before publication;
-full root gates use the same locked dependencies as the verified main source.
-
-**Next:** Publish a separate C-29 PR, preserve small commits, merge after green
-checks under Chris's temporary review waiver. Tatiana owns the stale chat/setup
-availability notes in docs/api.md and the expiry-edit API extension. No completed
-private evaluation, hosting recovery, provider quality or user benefit is inferred.
-
 
 ## 2026-11-26 - Christophe (C-29/C-30 evidence reconciliation)
 
@@ -955,95 +1044,6 @@ to main; that operational step is separate from syncing a PR branch. Calendar
 Connect remains under C-18/C-35 diagnosis: saved 26 November host comparisons
 match the supplied ID/redirect, but current Google-console values and the
 callback's exact failure stage are not yet established. Owner handoff is #83.
-
-## 2026-11-28 - Christophe (C-18/C-35 Calendar Connect deployment)
-
-**Did:** After Chris renewed Azure device authorization, deployed green merged
-main c782aea, including #172's owner-check fix, over 6749fb0. Used the existing
-Compose project/environment and persistent data mount. Created seven consistent
-private SQLite backups before recreating the container; verified every resolved
-environment value was preserved, including the working Inbox configuration.
-No new runtime design, API contract or backend implementation was introduced.
-
-**Verified:** Healthy image/revision c782aea. Calendar ID and HTTPS callback match
-the supplied references exactly, with no surrounding whitespace/trailing slash;
-effective settings match Compose and built/runtime sign-in client IDs agree.
-Public frontend asset hashes match those in the running container. HTTPS login
-and Calendar return 200; unauthenticated session/Calendar/Gmail APIs return 401.
-Chris reports the requested owner retry returned Connected and Inbox was already
-working. A post-retry inspection saw one Calendar callback and no matched failed
-redirect/error counts. Raw settings, credentials, logs and data remain private;
-sanitized receipt: web/deployment/evidence/calendar-connect-2026-11-28.json.
-
-**Checks:** All five CI checks passed on deployed main. Local required root gates
-pass: Ruff/format 187 files, mypy 92, schemas/tasks, 949 tests and 93.74% coverage.
-Deployment docs/receipt pass formatting. No runtime/UI source changed in this
-record-only PR, so no new browser suite or failure-mode ID was added.
-
-**Next:** Review this record through a PR. C-18 still needs cabinet event-planning
-acceptance; C-35 retains its broader unfinished scope. The Connected result does
-not establish event creation, a mailbox fetch, an independently inspected Google
-console, a particular device or a tested backup restore. The temporary Azure
-helper was closed and its process confirmed stopped after the successful retry. No other app operation was
-triggered here; #170/#173 remain separate unmerged cabinet/theme work.
-
-## 2026-11-26 - Christophe (C-39 term-based cabinet turnover)
-
-**Did:** Replaced the recurring role tour, account-menu entry, raw Ask prefix
-and guide sign-off with a president Settings turnover flow: draft dates/officers,
-review inherited work and vacancies, confirm activation, archive the former
-cabinet and persist the sample active term. Draft edits and changed work invalidate
-review; stale/double activation fails before save. Incoming officers acknowledge
-once per identity/term; legacy learning preferences no longer affect chat. Sourced
-role references and exports remain. Changes are split into focused commits.
-Reused #168's two punctuation fixes so this branch does not regress them.
-
-**State:** Root gates pass: 949 tests, 93.76% coverage; Ruff/format 187 files,
-mypy 92, schemas/tasks. Frontend quality/build passes: 158 units and 42 board
-checks. Final broad browser runs pass 58 demo/workflow/Axe, 116 HTTP contract
-cases and 8 real local API/cookie/SQLite cases with a scripted model. Reviewed
-synthetic prepare/review/arrival captures on desktop/phone. Local test config
-allows only this worktree plus shared dependency files and separates artifacts;
-no missing-font workaround or weakened test assertions. Early harness failures
-were fixed (an overbroad request matcher, parallel artifact collision and an
-ambiguous label locator); they are not reported as product failures or passes.
-D-253/F-506-F-508; old F-269-F-271 now reference the replacement safeguards.
-
-**Next / owner boundary:** Tatiana's contract request is #169, detailed in
-web/CABINET_TURNOVER.md. The current API cannot atomically switch term, cabinet
-and sessions or provide server-confirmed term context to the chatbot. HTTP shows
-activation unavailable and sends no invented route or sequential membership
-writes. The complete lifecycle is synthetic and browser-persistent only; it is
-not live identity transfer, server durability, invitations, Google access changes
-or proven model tutoring. No backend-owned implementation or contract was read
-or changed. C-39 remains doing for that integration; frontend PR is reviewable.
-This work does not deploy to Azure or replace frozen T-33 outcome claims.
-
-## 2026-11-26 - Christophe (C-39 sourced incoming brief)
-
-**Did:** Replaced the generic new-term greeting with inherited open events,
-unfinished-task counts and up to two sourced entries from the session role's
-existing handover view. Events shares its read result with the brief; opening it
-makes no model call. Moved it below the Events heading, renamed acknowledgment to
-Continue to workspace and retained full references under Knowledge after dismissal.
-Independent read errors cannot claim empty work/reference data; failed acknowledgment
-keeps the introduction visible. Fixed literal question-mark punctuation in owned
-metadata/docs. The optional C-39 demo appendix is separate from the five-minute
-recording and labels the current browser-only boundary. D-254/F-509.
-
-**State:** Root gates pass: 949 tests, 93.76% coverage, Ruff/format 187 files,
-mypy 92, schemas/tasks. Frontend quality/build passes 158 units and 42 board tools.
-Fourteen targeted demo/reference/Knowledge cases plus six HTTP boundary cases pass
-on desktop/phone, including source excerpt links, per-officer acknowledgment,
-read failure versus empty data, failed acknowledgment and full-page Axe scans.
-New desktop/phone incoming-brief captures were inspected with fonts available.
-The prior #170 head had all five CI checks green; the new head needs fresh CI.
-Earlier broad 58/116/8 runs remain historical, not claimed as rerun this session.
-
-**Next:** Independent review of #170 and Tatiana's term/membership/session contract
-in #169. That issue has no owner reply yet. Real activation stays unavailable;
-no live account, host environment, deployment, external provider or model was
-changed in this session. C-39 remains doing for persistent live integration.
 
 ## 2026-11-27 - Christophe (C-39 current-main sync)
 
@@ -1112,3 +1112,28 @@ separate main deployment; this sync does not replace that working configuration.
 merging #173 into #170, then #170 into main with merge commits. The two PRs
 currently have no independent review. Redeploy the merged main and verify the
 served bundle and old-control removal; do not claim the UI is already live.
+
+## 2026-11-28 - Christophe (C-39/C-40 merged and live)
+
+**Did:** Merged #173 into #170 with a merge commit, checked that the Git tree
+matched the green UI source, then enabled #170's merge after GitHub's required
+checks. Main ff582da contains both. The final deployment pinned green latest main
+01ffab0 after the team's subsequent #175/#174 merges. Seven private SQLite
+backups; all resolved host settings preserved. D-257 records Chris's explicit
+review waiver from now on; no independent review is claimed.
+
+**Verified:** Healthy image/revision and public JS/CSS/theme-bootstrap hashes
+match. Public pages return 200 and protected APIs 401. Fresh desktop/phone
+sessions switch both themes, render different styles, retain the choice after
+reload and fit the viewport. The served bundle has no old role-learning controls;
+Chris confirmed the new UI is visible. Sanitized evidence is
+web/deployment/evidence/ui-publication-2026-11-28.json. C-40 is done.
+
+**Follow-up:** Live visual inspection caught the login mark inheriting the same
+foreground as its accent background. A four-line semantic foreground correction
+keeps it legible in both themes. Full frontend gates pass: 158 units, 43 board
+tools, lint/format, rehearsal types and build. Python source/tests/lockfile match
+the green main; schema/task checks pass here. Merge this small correction and
+record through a PR, then redeploy and check the actual mark. No new model call,
+provider consent, data import or calendar write was triggered. Real cabinet
+activation still needs #169; existing Calendar/Inbox configuration is preserved.

@@ -1,0 +1,48 @@
+{
+  "tasks": ["C-18", "C-39", "C-40"],
+  "deployed_at_utc": "2026-11-28T15:02:01.412037+00:00",
+  "inspected_at_utc": "2026-11-28T15:03:58.754176+00:00",
+  "revision": "01ffab0c6a739e4f26b794f9bc30414a62bf1cb9",
+  "image": "clubops:01ffab0",
+  "previous_image": "clubops:c782aea",
+  "private_sqlite_backups_created": 7,
+  "host_environment_preserved": true,
+  "healthy": true,
+  "public_assets_match_running_container": true,
+  "public_routes": {
+    "/login": 200,
+    "/calendar": 200,
+    "/api/me": 401,
+    "/api/calendar/connection": 401,
+    "/api/inbox/gmail": 401
+  },
+  "public_asset_sha256": {
+    "/assets/index-FYhLcNdW.js": "bef1c57700cf8af3f25adc9e66bb1337ac36a8578aa92cf18fcc418feab671fa",
+    "/assets/index-Bh2gZsVY.css": "da7d713311ca053cc36321bfcb805945bf7e5f2e51bdd34846dce65df8eee8df",
+    "/theme.js": "ad9670a2e17eeb0dfcada2fd4f3378792cb1534a79d2c03c8f7be007ba338422"
+  },
+  "old_role_learning_controls_absent": true,
+  "turnover_and_both_themes_present": true,
+  "live_browser_checks": [
+    {
+      "device": "desktop",
+      "themes": "both",
+      "persistedAfterReload": true,
+      "horizontalOverflow": false
+    },
+    {
+      "device": "phone",
+      "themes": "both",
+      "persistedAfterReload": true,
+      "horizontalOverflow": false
+    }
+  ],
+  "user_confirmed_new_ui_visible": true,
+  "review_requirement_waived_by_user": true,
+  "review_decision": "D-257",
+  "limits": [
+    "Live cabinet activation awaits the contract in #169",
+    "Public browser checks used fresh signed-out sessions; no Google consent/event/mail/model operation",
+    "No backup restoration performed"
+  ]
+}
