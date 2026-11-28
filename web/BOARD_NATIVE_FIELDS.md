@@ -21,6 +21,15 @@ The three issue cards stay on the board: #43 is assigned to Christophe, #83 to
 Tatiana and #84 to Christophe. Open handoffs are In progress; closed issues map to
 Done. Underlying issue state and card content are not changed.
 
+The 26 November board also contains #128 (expiry UI, primary Christophe), #129
+(fact-pipeline audit, primary Tatiana) and #169 (server turnover contract, primary
+Tatiana). The reconciler accepts these explicitly known additions, uses actual
+open/closed issue state and adds the primary owner without removing existing
+assignees. Primary board ownership does not transfer API/web folder ownership.
+The original three handoff cards remain required. Unknown, duplicate or foreign
+manual issues still stop the run before mutation; no ownership is guessed from
+a title or arbitrary card body (D-255/F-510).
+
 Native Iteration uses the four Monday weeks. Open items are planned in the current
 week; done tasks use their first recorded done date in main's TASKS history. Earlier
 completed baseline work stays unassigned rather than being backdated. Priority,
@@ -67,3 +76,14 @@ invocation, 93 task cards plus 3 issue cards, native assignees/status/iterations
 planning values verified; 542 native mutations and zero remaining native changes.
 The source is the pinned merged TASKS revision, not unmerged completion claims.
 All three issue handoffs are In progress: #43 and #84 Christophe, #83 Tatiana.
+
+## Verified 26 November refresh
+
+[Read-back receipt](board/evidence/native-fields-2026-11-26.json): one bulk run
+pinned to merged main `4722838`; 98 task cards plus six issues. Five task cards
+were added, 118 mirror updates and 59 native updates applied, and read-back found
+zero remaining native changes. Existing manual content, assignees, views and
+iteration identities were retained. #128 is Done/Christophe; #129 and #169 are
+In progress/Tatiana. This receipt is metadata only; raw card bodies/IDs stay in
+ignored output. Unmerged #153 task corrections and #170 turnover status are not
+presented as merged work. Team review of the weekly evidence remains separate.
