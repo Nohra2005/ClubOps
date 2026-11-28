@@ -688,6 +688,13 @@ Reference documents:
 - What: Apply the approved Frost/Afterdark glass design across the shared shell, Events, Chat, Review, Knowledge, Calendar, Inbox, Settings, setup and sign-in. Provide a persistent theme switch, vivid accents and readable layered surfaces; preserve source/expiry/approval/cost/role context. Build on C-39's frontend; real turnover activation remains blocked on #169's owner contract.
 - Done when: a coherent desktop/phone interface is visually inspected, workflow/accessibility and required checks pass, and small commits are published for independent review. No backend contract or automatic model-call behavior changes.
 
+### C-41 Event chat and conversation history
+- Owner: christophe
+- Status: doing
+- Needs: C-06, C-05
+- What: Group conversations under their existing event or General. Start from Chat or an event, and reopen earlier conversations.
+- Done when: The sample workflow is verified and the live API persists private threads, resolves authorized event context, and uses previous turns in replies.
+
 ## Joey: calendar, reminders, drafts
 
 ### J-01 Read the calendar contract and set up Google
