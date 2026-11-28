@@ -1161,3 +1161,18 @@ replay mode. No provider key was printed or guessed. Live provider configuration
 must be supplied privately; the no-redeploy constraint remains in force. No app
 source changed, so existing green main checks are reused; task-log validation is
 the only new local repository check. This record does not claim chat is repaired.
+
+## 2026-11-28 - Christophe (C-18 model configuration handoff)
+
+**Did:** After the import, applied the supplied model settings on Azure after
+another private SQLite backup. OpenRouter accepted the configured key and its
+catalog listed the configured model at the time of the check. Recreated the
+container from the same image, aad6fc0. The login page returned 200 and the
+session endpoint returned 401 while signed out.
+
+**Open:** Chris's signed-in Ask attempt returned HTTP 422. The web client sends
+the documented JSON body with a text field. The server response detail was
+unavailable, so the rejected field or condition is unconfirmed. Tatiana is
+handling provider settings on Azure. After her update, run one normal signed-in
+Ask. If it returns 422 again, capture only the validation field and message;
+omit question text, credentials and session data.
