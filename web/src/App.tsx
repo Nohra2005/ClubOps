@@ -41,8 +41,8 @@ import Inbox from './pages/Inbox';
 import Login from './pages/Login';
 import { storage } from './api';
 import { PageHeading } from './components/ui';
-import { RoleLearningProvider } from './handover/RoleLearning';
-import { RoleTour } from './handover/RoleTour';
+import Turnover from './pages/Turnover';
+import { ThemeToggle } from './theme/ThemeToggle';
 
 const navigation = [
   { to: '/chat', label: 'Chat', icon: MessageCircle },
@@ -55,15 +55,6 @@ const navigation = [
 ];
 
 function Shell() {
-  const { api, me } = useApp();
-  return (
-    <RoleLearningProvider key={JSON.stringify([api.mode, me.club.id, me.user.member_id, me.role])}>
-      <ShellContent />
-    </RoleLearningProvider>
-  );
-}
-
-function ShellContent() {
   const { me, api, switchDemo, signOut, signingOut, signedOut, offline, isPresident } = useApp();
   const location = useLocation();
   const navigate = useNavigate();
@@ -71,7 +62,7 @@ function ShellContent() {
   const [searchOpen, setSearchOpen] = useState(false);
   const title =
     navigation.find((n) => location.pathname.startsWith(n.to))?.label ??
-    (location.pathname === '/handover' ? 'Start your role' : 'Workspace');
+    (location.pathname === '/handover' ? 'Role reference' : 'Workspace');
   useEffect(() => {
     document.title = `${title} · ClubOps`;
   }, [title]);
@@ -151,6 +142,9 @@ function ShellContent() {
               ) : (
                 <strong>{me.club.name}</strong>
               )}
+              {api.mode === 'demo' && me.demo_term && (
+                <small className="active-term-label">{me.demo_term.label}</small>
+              )}
             </div>
           </div>
           <form className={`top-search${searchOpen ? ' expanded' : ''}`} onSubmit={search}>
@@ -170,6 +164,7 @@ function ShellContent() {
             <kbd>↵</kbd>
           </form>
           <div className="topbar-actions">
+            <ThemeToggle />
             <details className="popover">
               <summary aria-label={`${me.counts.reminders} reminders due`} className="icon-button">
                 <Bell size={20} />
@@ -205,7 +200,6 @@ function ShellContent() {
                 <p>
                   {roleLabels[me.role]} · {me.club.name}
                 </p>
-                <Link to="/handover">Start your role / handover</Link>
                 <Link to="/settings">{isPresident ? 'Settings' : 'View club settings'}</Link>
                 {api.mode === 'demo' && (
                   <label className="field">
@@ -254,7 +248,6 @@ function ShellContent() {
           className="page"
           key={`${api.mode}:${me.club.id}:${me.user.member_id}:${me.role}`}
         >
-          <RoleTour />
           <Outlet />
         </main>
       </div>
@@ -310,6 +303,7 @@ export default function App() {
             <Route path="knowledge/:id" element={<KnowledgeFact />} />
             <Route path="handover" element={<Handover />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="settings/turnover" element={<Turnover />} />
             <Route path="setup" element={<Setup />} />
             <Route path="*" element={<NotFound />} />
           </Route>

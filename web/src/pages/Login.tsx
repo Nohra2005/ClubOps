@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { apiMode } from '../api';
 import { GoogleSignIn } from '../components/GoogleSignIn';
 import { DevSignIn } from '../components/DevSignIn';
+import { ThemeToggle } from '../theme/ThemeToggle';
 
 /** Public route: it must remain reachable when /me is unauthorized or the server is down. */
 export default function Login() {
@@ -16,6 +17,9 @@ export default function Login() {
   }
   return (
     <main className="login-page">
+      <div className="login-appearance">
+        <ThemeToggle />
+      </div>
       <div className="login-art">
         <Link to="/events" className="brand">
           <div className="brand-symbol">

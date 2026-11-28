@@ -5,6 +5,7 @@
     "demo",
     "e2e/demo-rehearsal.spec.ts",
     "e2e/role-learning.spec.ts",
+    "e2e/cabinet-turnover.spec.ts",
     "e2e/google-connections.spec.ts",
     "playwright.demo.config.ts"
   ]

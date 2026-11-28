@@ -659,6 +659,24 @@ Reference documents:
 - What: Apply Chris's 25 November design direction: remove marketing eyebrows, redundant subtitles and slogans, decorative cards/icons and excessive rounded containers. Use a compact working interface while retaining source, cost, approval, error and role information where actions need it.
 - Done when: desktop/phone workflow and accessibility checks pass, screenshots are reviewed and the scoped UI changes are delivered in small commits. OAuth host/connect work remains C-18/C-35.
 
+### C-39 Cabinet turnover by term
+- Owner: christophe
+- Status: doing
+- Progress (2026-11-26 follow-up): #170 previously passed all five CI checks; server contract #169 is still awaiting the owner. Improving the incoming brief with existing open work and sourced role references, preserving later access in Knowledge and explicit failed-read/acknowledgment states (D-254/F-509). Verified 949 Python tests (93.76% coverage), 158 frontend units/42 board tools, 14 targeted demo/reference cases and 6 HTTP boundary cases on desktop/phone; fresh PR CI is required after these updates.
+- Progress (2026-11-26): demo lifecycle and president Settings entry implemented; recurring tours, raw question prefixes and reference sign-off removed. Persistent real activation is waiting on Tatiana's contract request #169; HTTP cannot infer term authority from local state. Verified 949 Python tests, 158 web units/42 board tools, 58 demo, 116 HTTP and 8 real local API cases; desktop/phone captures reviewed. Frontend ready for review; C-39 stays doing until the persistent live transition is integrated.
+- Needs: C-19, C-37
+- What: Replace recurring role-tour and raw chat-prompt controls with president-led term preparation, cabinet review and explicit one-time activation. Preserve work and sourced knowledge; introduce incoming officers once per active term. Build the complete synthetic demo lifecycle and remove obsolete entry points in HTTP mode. Ask Tatiana for a persistent, atomic server transition contract before enabling real activation or changing authorization.
+- Done when: lifecycle, stale/double activation, isolation, role and no-automatic-call tests pass; desktop/phone flows are reviewed; production integration gaps are explicit and the backend owner has a concrete contract request.
+
+### C-40 Revamp the ClubOps visual design
+- Owner: christophe
+- Status: review
+- Progress (2026-11-27): Approved Frost/Afterdark themes implemented in focused commits, including persistent sign-in/workspace controls, semantic contrast, glass surfaces and phone layouts. Root gates, web quality/build, 60 existing demo cases, 18 theme cases, 116 HTTP cases and eight actual local API cases pass (network-interrupted scans rerun explicitly). Desktop/phone captures inspected. Independent review and deployment after merge remain; live Calendar acceptance and #169's term contract are separate.
+- Direction approved (2026-11-26): Chris selected Frost and Afterdark glassmorphism with an appearance switch and stronger contrast/color after reviewing eight standalone concepts. Implement the approved direction in small commits; Calendar host diagnosis remains C-18/C-35.
+- Needs: C-02, C-03, C-12
+- What: Apply the approved Frost/Afterdark glass design across the shared shell, Events, Chat, Review, Knowledge, Calendar, Inbox, Settings, setup and sign-in. Provide a persistent theme switch, vivid accents and readable layered surfaces; preserve source/expiry/approval/cost/role context. Build on C-39's frontend; real turnover activation remains blocked on #169's owner contract.
+- Done when: a coherent desktop/phone interface is visually inspected, workflow/accessibility and required checks pass, and small commits are published for independent review. No backend contract or automatic model-call behavior changes.
+
 ## Joey: calendar, reminders, drafts
 
 ### J-01 Read the calendar contract and set up Google

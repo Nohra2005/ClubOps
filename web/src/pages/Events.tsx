@@ -6,6 +6,7 @@ import type { EventSummary } from '../api/types';
 import { PageHeading, EmptyState, FilterTabs, Resource, StatusBadge } from '../components/ui';
 import { useResource } from '../hooks';
 import { formatDate, formatTime } from '../lib';
+import TermArrival from '../turnover/TermArrival';
 
 function EventCard({ event }: { event: EventSummary }) {
   const day = new Date(event.start).getDate();
@@ -90,6 +91,7 @@ export default function Events() {
           )
         }
       />
+      <TermArrival events={events} />
       <div className="events-overview">
         <div>
           <span className="overview-icon">

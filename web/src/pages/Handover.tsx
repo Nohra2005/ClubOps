@@ -1,19 +1,16 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { ArrowRight, Check, Download, GraduationCap, Printer } from 'lucide-react';
+import { ArrowRight, Download, Printer } from 'lucide-react';
 import { useApp } from '../AppContext';
 import { roleLabels, roles, type Role } from '../api/types';
-import { ErrorNotice, Modal, NotSure, Resource, SourceChip } from '../components/ui';
-import { useAction, useResource } from '../hooks';
-import { downloadText, formatDate } from '../lib';
-import RoleIntroduction from '../handover/RoleIntroduction';
+import { NotSure, PageHeading, Resource, SourceChip } from '../components/ui';
+import { useResource } from '../hooks';
+import { downloadText } from '../lib';
 
 export default function Handover() {
-  const { api, me, isPresident, notify } = useApp();
+  const { api, me } = useApp();
   const [role, setRole] = useState<Role>(me.role === 'adviser' ? 'president' : me.role);
   const guide = useResource(() => api.handover(role), [api, role]);
-  const action = useAction();
-  const [confirm, setConfirm] = useState(false);
   const exportGuide = () => {
     if (!guide.value) return;
     const text = [
@@ -35,30 +32,11 @@ export default function Handover() {
   };
   return (
     <>
-      <RoleIntroduction />
-      {guide.value?.role === me.role && guide.value.sections[0]?.entries[0] && (
-        <section className="panel role-first-fact" aria-label="A first thing to know">
-          <h2>A first thing to know</h2>
-          <p>{guide.value.sections[0].entries[0].text}</p>
-          {(
-            guide.value.sections[0].entries[0].sources ?? [
-              guide.value.sections[0].entries[0].source,
-            ]
-          ).map((source) => (
-            <SourceChip key={source.item_id} source={source} />
-          ))}
-          <p className="inline-note">
-            Open the reference below for the rest of this role's sources and unanswered questions.
-          </p>
-        </section>
-      )}
-
-      <details className="handover-reference">
-        <summary>Reference guide, sources and outgoing questions</summary>
+      <PageHeading title="Role reference" />
+      <section className="handover-reference" aria-label="Role reference sources">
         <header className="page-heading">
           <div>
-            <h2>Handover</h2>
-            <p>Keep the sources and open questions behind this role.</p>
+            <h2>Approved knowledge</h2>
           </div>
           <div className="compact-actions">
             <button className="button" onClick={exportGuide} disabled={!guide.value}>
@@ -69,18 +47,7 @@ export default function Handover() {
             </button>
           </div>
         </header>
-        <div className="handover-banner">
-          <span className="handover-banner-icon">
-            <GraduationCap size={32} />
-          </span>
-          <div>
-            <h2>
-              A cabinet changes.
-              <br />
-              The know-how shouldn't.
-            </h2>
-            <p>This guide is assembled from approved knowledge. No AI call, no extra cost.</p>
-          </div>
+        <div className="turnover-reference-role">
           <label className="field">
             <span>Guide for</span>
             <select value={role} onChange={(e) => setRole(e.target.value as Role)}>
@@ -147,67 +114,10 @@ export default function Handover() {
                   </section>
                 </aside>
               </div>
-              {guide.value.signed_off_at ? (
-                <div className="signed-guide">
-                  <Check size={18} />
-                  <div>
-                    <strong>Signed off by {guide.value.signed_off_by}</strong>
-                    <p>
-                      {formatDate(guide.value.signed_off_at, true)} · This version is confirmed by
-                      the outgoing cabinet.
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                isPresident &&
-                api.mode === 'demo' && (
-                  <div className="handover-signoff">
-                    <div>
-                      <strong>Ready to pass it on?</strong>
-                      <p>Check the guide and its open questions before signing off this version.</p>
-                    </div>
-                    <button className="button primary" onClick={() => setConfirm(true)}>
-                      Sign off handover
-                    </button>
-                  </div>
-                )
-              )}
             </>
           )}
         </Resource>
-        {isPresident && api.mode === 'http' && (
-          <p className="inline-note">
-            Handover sign-off is not available here yet. You can still read and download the sourced
-            guide.
-          </p>
-        )}
-      </details>
-      <Modal open={confirm} title="Sign off this handover?" onClose={() => setConfirm(false)}>
-        <p>
-          You are confirming the current {roleLabels[role].toLowerCase()} guide, including its
-          sources and open gaps. Changed knowledge will need a fresh sign-off.
-        </p>
-        <ErrorNotice message={action.error} />
-        <div className="form-actions">
-          <button
-            className="button primary"
-            disabled={action.pending}
-            onClick={async () => {
-              const result = await action.run(() => api.signOff(role));
-              if (result.ok) {
-                setConfirm(false);
-                guide.reload();
-                notify('This handover version is signed off.');
-              }
-            }}
-          >
-            {action.pending ? 'Signing…' : 'Confirm sign-off'}
-          </button>
-          <button className="button" onClick={() => setConfirm(false)}>
-            Cancel
-          </button>
-        </div>
-      </Modal>
+      </section>
     </>
   );
 }
